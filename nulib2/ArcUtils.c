@@ -199,10 +199,17 @@ GetSimpleComment(NulibState* pState, const char* pathname, int maxLen)
 static Boolean
 SpecMatchesRecord(NulibState* pState, const char* spec, const NuRecord* pRecord)
 {
+#ifdef NU_CASE_SENSITIVE
     if (NState_GetModRecurse(pState))
         return (strncmp(spec, pRecord->filename, strlen(spec)) == 0);
     else
         return (strcmp(spec, pRecord->filename) == 0);
+#else
+    if (NState_GetModRecurse(pState))
+        return (strncasecmp(spec, pRecord->filename, strlen(spec)) == 0);
+    else
+        return (strcasecmp(spec, pRecord->filename) == 0);
+#endif
 }
 
 /*

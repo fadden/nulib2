@@ -71,6 +71,7 @@ NameIsSpecified(NulibState* pState, const char* filename)
 
     pSpec = NState_GetFilespecPointer(pState);
     for (i = NState_GetFilespecCount(pState); i > 0; i--, pSpec++) {
+#ifdef NU_CASE_SENSITIVE
         if (NState_GetModRecurse(pState)) {
             if (strncmp(*pSpec, filename, strlen(*pSpec)) == 0)
                 return true;
@@ -78,6 +79,15 @@ NameIsSpecified(NulibState* pState, const char* filename)
             if (strcmp(*pSpec, filename) == 0)
                 return true;
         }
+#else
+        if (NState_GetModRecurse(pState)) {
+            if (strncasecmp(*pSpec, filename, strlen(*pSpec)) == 0)
+                return true;
+        } else {
+            if (strcasecmp(*pSpec, filename) == 0)
+                return true;
+        }
+#endif
     }
 
     return false;
