@@ -1561,9 +1561,9 @@ Nu_StreamExtract(NuArchive* pArchive)
                 } else if (err != kNuErrNone)
                     goto bail;
             } else {
-                printf("IGNORING 0x%08lx from '%s'\n",
+                DBUG(("IGNORING 0x%08lx from '%s'\n",
                   NuMakeThreadID(pThread->thThreadClass, pThread->thThreadKind),
-                    tmpRecord.filename);
+                    tmpRecord.filename));
                 if (NuGetThreadID(pThread) != kNuThreadIDComment &&
                     NuGetThreadID(pThread) != kNuThreadIDFilename)
                 {
