@@ -78,11 +78,14 @@ ErrorMessageHandler(NuArchive* pArchive, void* vErrorMessage)
         return kNuOK;
 
     if (pErrorMessage->isDebug) {
-        fprintf(stderr, "NufxLib says: [%s:%d %s] %s\n",
+        fprintf(stderr, "%sNufxLib says: [%s:%d %s] %s\n",
+            pArchive == nil ? "GLOBAL>" : "",
             pErrorMessage->file, pErrorMessage->line, pErrorMessage->function,
             pErrorMessage->message);
     } else {
-        fprintf(stderr, "NufxLib says: %s\n", pErrorMessage->message);
+        fprintf(stderr, "%sNufxLib says: %s\n",
+            pArchive == nil ? "GLOBAL>" : "",
+            pErrorMessage->message);
     }
 
     return kNuOK;
@@ -132,7 +135,7 @@ Test_OpenFlags(void)
 
     err = NuClose(pArchive);
     if (err != kNuErrNone) {
-        fprintf(stderr, "ERROR: close faileded\n");
+        fprintf(stderr, "ERROR: close failed\n");
         goto failed;
     }
     pArchive = nil;
@@ -187,7 +190,7 @@ Test_AddStuff(NuArchive* pArchive)
             0, nil, 0, 131072, &pDataSource);
     FAIL_BAD;
     if (err == kNuErrNone) {
-        fprintf(stderr, "ERROR: that should've faileded!\n");
+        fprintf(stderr, "ERROR: that should've failed!\n");
         goto failed;
     }
 
@@ -198,21 +201,21 @@ Test_AddStuff(NuArchive* pArchive)
             0, buf, 0, 131072, &pDataSource);
     if (err != kNuErrNone) {
         fprintf(stderr,
-            "ERROR: 'bytes' data source create faileded (err=%d)\n", err);
+            "ERROR: 'bytes' data source create failed (err=%d)\n", err);
         goto failed;
     }
     buf = nil;  /* now owned by library */
 
     err = AddSimpleRecord(pArchive, kTestEntryBytes, &recordIdx);
     if (err != kNuErrNone) {
-        fprintf(stderr, "ERROR: 'bytes' record faileded (err=%d)\n", err);
+        fprintf(stderr, "ERROR: 'bytes' record failed (err=%d)\n", err);
         goto failed;
     }
 
     err = NuAddThread(pArchive, recordIdx, kNuThreadIDDataFork, pDataSource,
             nil);
     if (err != kNuErrNone) {
-        fprintf(stderr, "ERROR: 'bytes' thread add faileded (err=%d)\n", err);
+        fprintf(stderr, "ERROR: 'bytes' thread add failed (err=%d)\n", err);
         goto failed;
     }
     pDataSource = nil;  /* now owned by library */
@@ -226,7 +229,7 @@ Test_AddStuff(NuArchive* pArchive)
             0, (const uchar*)testMsg, 0, strlen(testMsg), &pDataSource);
     if (err != kNuErrNone) {
         fprintf(stderr,
-            "ERROR: 'English' source create faileded (err=%d)\n", err);
+            "ERROR: 'English' source create failed (err=%d)\n", err);
         goto failed;
     }
 
@@ -243,20 +246,20 @@ Test_AddStuff(NuArchive* pArchive)
     err = AddSimpleRecord(pArchive, kTestEntryBytes, &recordIdx);
     FAIL_BAD;
     if (err == kNuErrNone) {
-        fprintf(stderr, "ERROR: duplicates not allowed, should've faileded\n");
+        fprintf(stderr, "ERROR: duplicates not allowed, should've failed\n");
         goto failed;
     }
 
     err = AddSimpleRecord(pArchive, kTestEntryEnglish, &recordIdx);
     if (err != kNuErrNone) {
-        fprintf(stderr, "ERROR: 'English' record faileded (err=%d)\n", err);
+        fprintf(stderr, "ERROR: 'English' record failed (err=%d)\n", err);
         goto failed;
     }
 
     err = NuAddThread(pArchive, recordIdx, kNuThreadIDDataFork, pDataSource,
             nil);
     if (err != kNuErrNone) {
-        fprintf(stderr, "ERROR: 'English' thread add faileded (err=%d)\n", err);
+        fprintf(stderr, "ERROR: 'English' thread add failed (err=%d)\n", err);
         goto failed;
     }
     pDataSource = nil;  /* now owned by library */
@@ -270,20 +273,20 @@ Test_AddStuff(NuArchive* pArchive)
             0, nil, 0, 0, &pDataSource);
     if (err != kNuErrNone) {
         fprintf(stderr,
-            "ERROR: 'English' source create faileded (err=%d)\n", err);
+            "ERROR: 'English' source create failed (err=%d)\n", err);
         goto failed;
     }
 
     err = AddSimpleRecord(pArchive, kTestEntryLong, &recordIdx);
     if (err != kNuErrNone) {
-        fprintf(stderr, "ERROR: 'long' record faileded (err=%d)\n", err);
+        fprintf(stderr, "ERROR: 'long' record failed (err=%d)\n", err);
         goto failed;
     }
 
     err = NuAddThread(pArchive, recordIdx, kNuThreadIDRsrcFork, pDataSource,
             nil);
     if (err != kNuErrNone) {
-        fprintf(stderr, "ERROR: 'long' thread add faileded (err=%d)\n", err);
+        fprintf(stderr, "ERROR: 'long' thread add failed (err=%d)\n", err);
         goto failed;
     }
     pDataSource = nil;  /* now owned by library */
@@ -966,7 +969,7 @@ DoTests(void)
     err = NuOpenRW(kTestArchive, kTestTempFile, kNuOpenCreat|kNuOpenExcl,
             &pArchive);
     if (err != kNuErrNone) {
-        fprintf(stderr, "ERROR: NuOpenRW faileded (err=%d)\n", err);
+        fprintf(stderr, "ERROR: NuOpenRW failed (err=%d)\n", err);
         goto failed;
     }
     err = NuSetErrorMessageHandler(pArchive, ErrorMessageHandler);
