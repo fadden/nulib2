@@ -15,7 +15,7 @@
 #
 
 # set this to where the NuFX library and ".h" file live
-VERSION		= 100
+VERSION		= 0
 NUFXSRCDIR	= ../nufxlib-$(VERSION)
 NUFXLIB		= $(NUFXSRCDIR)/$(LIB_PRODUCT)
 
