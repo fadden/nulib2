@@ -8,8 +8,9 @@
  * and Andy Nicholas.
  *
  * Unisys holds US patent #4,558,302 (filed June 20, 1983 and issued December
- * 10, 1985).  Patents are good for 17 years from date of issue, so the
- * patent remains in effect until the end of 2002.
+ * 10, 1985).  A policy set in 1995 specifies the lifetime of a patent as
+ * the longer of 20 years from the date of application or 17 years from the
+ * date of grant, so the Unisys LZW patent will expire on June 20, 2003.
  *
  * The Unisys patent is one of many that covers LZW compression, but Unisys
  * is the only company actively attacking anyone who uses it. The statement
