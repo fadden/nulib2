@@ -982,6 +982,20 @@ TestFunc(ExerciserState* pState, int argc, char** argv)
 }
 
 /*
+ * tr - test record
+ */
+static NuError
+TestRecordFunc(ExerciserState* pState, int argc, char** argv)
+{
+    (void) pState, (void) argc, (void) argv;    /* shut up, gcc */
+    assert(ExerciserState_GetNuArchive(pState) != nil);
+    assert(argc == 2);
+
+    return NuTestRecord(ExerciserState_GetNuArchive(pState),
+            strtol(argv[1], nil, 0));
+}
+
+/*
  * upt - update pre-sized thread
  */
 static NuError
@@ -1113,6 +1127,8 @@ static const struct {
         "Set record attributes" },
     { "t", TestFunc, 0, "", kFlagArchiveReq,
         "Test archive" },
+    { "tr", TestRecordFunc, 1, "recordIdx", kFlagArchiveReq,
+        "Test record" },
     { "upt", UpdatePresizedThreadFunc, 1, "threadIdx", kFlagArchiveReq,
         "Update pre-sized thread" },
 };
@@ -1330,6 +1346,7 @@ main(void)
             &nufxLibDate, &nufxLibFlags);
     printf("NufxLib exerciser, linked with NufxLib v%ld.%ld.%ld [%s]\n\n",
         majorVersion, minorVersion, bugVersion, nufxLibFlags);
+    printf("Use 'h' or '?' for help, 'q' to quit.\n");
 
     /* stuff useful when debugging lots */
     if (unlink(kTempFile) == 0)
