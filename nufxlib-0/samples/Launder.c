@@ -16,7 +16,7 @@
  * also tests NufxLib's thread ordering and verifies that you can abort
  * frequently with no adverse effects.
  *
- * NOTE: depending on the options you select, you have to have enough
+ * NOTE: depending on the options you select, you may need to have enough
  * memory to hold the entire uncompressed contents of the original archive.
  * The memory requirements are reduced if you use the "copy only" flag, and
  * are virtually eliminated if you use "frequent flush".
@@ -410,7 +410,8 @@ bail:
  * Returns 0 on success, nonzero on failure.
  */
 int
-LaunderArchive(const char* inFile, const char* outFile, long flags)
+LaunderArchive(const char* inFile, const char* outFile, NuValue compressMethod,
+    long flags)
 {
     NuError err = kNuErrNone;
     NuArchive* pInArchive = nil;
@@ -436,6 +437,14 @@ LaunderArchive(const char* inFile, const char* outFile, long flags)
     err = NuSetValue(pOutArchive, kNuValueAllowDuplicates, true);
     if (err != kNuErrNone) {
         fprintf(stderr, "ERROR: couldn't allow duplicates (err=%d)\n", err);
+        goto bail;
+    }
+
+    /* set the compression method */
+    err = NuSetValue(pOutArchive, kNuValueDataCompression, compressMethod);
+    if (err != kNuErrNone) {
+        fprintf(stderr, "ERROR: unable to set compression (err=%d)\n",
+            err);
         goto bail;
     }
 
@@ -473,7 +482,7 @@ LaunderArchive(const char* inFile, const char* outFile, long flags)
          * If "frequent abort" is set, abort what we just did and redo it.
          */
         if (flags & kFlagFrequentAbort) {
-            printf("(abort)\n");
+            /*printf("(abort)\n");*/
             err = NuAbort(pOutArchive);
             if (err != kNuErrNone) {
                 fprintf(stderr, "ERROR: abort failed (err=%d)\n", err);
@@ -491,7 +500,7 @@ LaunderArchive(const char* inFile, const char* outFile, long flags)
          * each record is copied.
          */
         if ((flags & kFlagFrequentAbort) || (flags & kFlagFrequentFlush)) {
-            printf("(flush)\n");
+            /*printf("(flush)\n");*/
             err = NuFlush(pOutArchive, &flushStatus);
             if (err != kNuErrNone) {
                 fprintf(stderr,
@@ -528,7 +537,16 @@ bail:
 void
 Usage(const char* argv0)
 {
-    fprintf(stderr, "Usage: %s [-crfat] infile.shk outfile.shk\n", argv0);
+    fprintf(stderr, "Usage: %s [-crfat] [-m method] infile.shk outfile.shk\n",
+        argv0);
+    fprintf(stderr, "\t-c : copy only, does not recompress data\n");
+    fprintf(stderr, "\t-r : copy threads in reverse order to test ordering\n");
+    fprintf(stderr, "\t-f : call Flush frequently to reduce memory usage\n");
+    fprintf(stderr, "\t-a : exercise nufxlib Abort code frequently\n");
+    fprintf(stderr, "\t-t : force use of temp file\n");
+    fprintf(stderr,
+        "\t[method] is one of {sq,lzw1,lzw2,lzc12,lzc16,deflate,bzip2}\n");
+    fprintf(stderr, "\tIf not specified, method defaults to lzw2\n");
 }
 
 /*
@@ -537,46 +555,78 @@ Usage(const char* argv0)
 int
 main(int argc, char** argv)
 {
+    extern char* optarg;
+    extern int optind;
+    NuValue compressMethod = kNuCompressLZW2;
     long major, minor, bug;
     const char* pBuildDate;
     long flags = 0;
-    char* cp = nil;
+    int errorFlag;
+    int ic;
     int cc;
 
     (void) NuGetVersion(&major, &minor, &bug, &pBuildDate, nil);
     printf("Using NuFX lib %ld.%ld.%ld built on or after %s\n",
         major, minor, bug, pBuildDate);
 
-    if (argc < 3 || argc > 4) {
+    errorFlag = false;
+    while ((ic = getopt(argc, argv, "crfatm:")) != EOF) {
+        switch (ic) {
+        case 'c':   flags |= kFlagCopyOnly;         break;
+        case 'r':   flags |= kFlagReverseThreads;   break;
+        case 'f':   flags |= kFlagFrequentFlush;    break;
+        case 'a':   flags |= kFlagFrequentAbort;    break;
+        case 't':   flags |= kFlagUseTmp;           break;
+        case 'm':
+            {
+                struct {
+                    const char* str;
+                    NuValue val;
+                    NuFeature feature;
+                } methods[] = {
+                    { "sq",      kNuCompressSQ,      kNuFeatureCompressSQ },
+                    { "lzw1",    kNuCompressLZW1,    kNuFeatureCompressLZW },
+                    { "lzw2",    kNuCompressLZW2,    kNuFeatureCompressLZW },
+                    { "lzc12",   kNuCompressLZC12,   kNuFeatureCompressLZC },
+                    { "lzc16",   kNuCompressLZC16,   kNuFeatureCompressLZC },
+                    { "deflate", kNuCompressDeflate, kNuFeatureCompressDeflate},
+                    { "bzip2",   kNuCompressBzip2,   kNuFeatureCompressBzip2 },
+                };
+                char* methodStr = optarg;
+                int i;
+
+                for (i = 0; i < NELEM(methods); i++) {
+                    if (strcmp(methods[i].str, methodStr) == 0) {
+                        compressMethod = methods[i].val;
+                        break;
+                    }
+                }
+                if (i == NELEM(methods)) {
+                    fprintf(stderr, "ERROR: unknown method '%s'\n", methodStr);
+                    errorFlag++;
+                    break;
+                }
+                if (NuTestFeature(methods[i].feature) != kNuErrNone) {
+                    fprintf(stderr,
+                        "ERROR: compression method '%s' not supported\n",
+                        methodStr);
+                    errorFlag++;
+                    break;
+                }
+            }
+            break;
+        default:
+            errorFlag++;
+            break;
+        }
+    }
+
+    if (errorFlag || argc != optind+2) {
         Usage(argv[0]);
         exit(2);
     }
 
-    if (argc == 4) {
-        cp = argv[1];
-        if (*cp++ != '-') {
-            Usage(argv[0]);
-            exit(2);
-        }
-
-        while (*cp != '\0') {
-            switch (*cp) {
-            case 'c':   flags |= kFlagCopyOnly;         break;
-            case 'r':   flags |= kFlagReverseThreads;   break;
-            case 'f':   flags |= kFlagFrequentFlush;    break;
-            case 'a':   flags |= kFlagFrequentAbort;    break;
-            case 't':   flags |= kFlagUseTmp;           break;
-            default:
-                Usage(argv[0]);
-                exit(2);
-            }
-            cp++;
-        }
-
-        argv++;
-    }
-
-    cc = LaunderArchive(argv[1], argv[2], flags);
+    cc = LaunderArchive(argv[optind], argv[optind+1], compressMethod, flags);
 
     if (cc == 0)
         printf("Success!\n");
