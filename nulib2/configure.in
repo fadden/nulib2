@@ -67,6 +67,22 @@ dnl AC_FUNC_SETVBUF_REVERSED
 AC_FUNC_UTIME_NULL
 AC_CHECK_FUNCS(memmove mkdir strtoul strcasecmp strncasecmp strerror)
 
+dnl if we're using gcc, include gcc-specific warning flags
+if test -z "$GCC"; then
+    BUILD_FLAGS='$(OPT)'
+else
+    BUILD_FLAGS='$(OPT) $(GCC_FLAGS)'
+fi
+
+dnl ---------------------------------------------------------------------------
+dnl Some host-specific stuff.  Variables you can test (set by the
+dnl AC_CANONICAL_HOST call earlier) look like this:
+dnl
+dnl     $host = i686-pc-linux-gnu
+dnl     $host_cpu = i686
+dnl     $host_vendor = pc
+dnl     $host_os = linux-gnu
+
 dnl BeOS doesn't like /usr/local/include, and gets feisty about it.  If libdir
 dnl and includedir are set to defaults, replace them with BeOS values.  This
 dnl might be going a little too far...
@@ -91,6 +107,12 @@ if test "$host_os" = "beos"; then
     fi
 fi
 
+dnl Mac OS X (powerpc-apple-darwin6.6) needs an extra flag.
+if test "$host_vendor" = "apple" -a ${host_os:0:6} = "darwin"; then
+    echo "checking for Mac OS X... yes, adding -framework Carbon"
+    LIBS="$LIBS -framework Carbon"
+fi
+
 
 dnl Figure out what the build and link flags should be
 if test "$host_cpu" = "powerpc" -a "$host_os" = "beos"; then
@@ -99,14 +121,6 @@ if test "$host_cpu" = "powerpc" -a "$host_os" = "beos"; then
     GCC=
     CFLAGS='-proc 603 -opt full'
     echo "forcing CC to \"$CC\" and CFLAGS to \"$CFLAGS\""
-fi
-
-dnl if we're using gcc, include gcc-specific warning flags
-dnl (
-if test -z "$GCC"; then
-    BUILD_FLAGS='$(OPT)'
-else
-    BUILD_FLAGS='$(OPT) $(GCC_FLAGS)'
 fi
 
 AC_SUBST(BUILD_FLAGS)

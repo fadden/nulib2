@@ -1655,6 +1655,14 @@ EOF
 fi
 echo "$ac_t""$nufxlib_cv_vsnprintf_in_header" 1>&6
 
+if test -z "$GCC"; then
+    BUILD_FLAGS='$(OPT)'
+else
+    BUILD_FLAGS='$(OPT) $(GCC_FLAGS)'
+fi
+
+
+
 SHARE_FLAGS='-shared'
 if test "$host_cpu" = "powerpc" -a "$host_os" = "beos"; then
         CC=cc
@@ -1666,12 +1674,10 @@ elif test "$host_os" = "beos"; then
         SHARE_FLAGS='-nostartfiles -Xlinker -soname="$@"'
 fi
 
-if test -z "$GCC"; then
-    BUILD_FLAGS='$(OPT)'
-else
-    BUILD_FLAGS='$(OPT) $(GCC_FLAGS)'
+if test "$host_vendor" = "apple" -a ${host_os:0:6} = "darwin"; then
+    echo "checking for Mac OS X... yes, adding -framework Carbon"
+    LIBS="$LIBS -framework Carbon"
 fi
-
 
 
 
@@ -1697,8 +1703,10 @@ if test "$host_os" = "beos"; then
     fi
 fi
 
+
+
 echo $ac_n "checking if sprintf returns int""... $ac_c" 1>&6
-echo "configure:1702: checking if sprintf returns int" >&5
+echo "configure:1710: checking if sprintf returns int" >&5
 if eval "test \"`echo '$''{'nufxlib_cv_sprintf_returns_int'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -1707,7 +1715,7 @@ else
   nufxlib_cv_sprintf_returns_int=no
 else
   cat > conftest.$ac_ext <<EOF
-#line 1711 "configure"
+#line 1719 "configure"
 #include "confdefs.h"
 
         #include <stdio.h>
@@ -1720,7 +1728,7 @@ else
         }
     
 EOF
-if { (eval echo configure:1724: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
+if { (eval echo configure:1732: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
 then
   nufxlib_cv_sprintf_returns_int=yes
 else
@@ -1799,7 +1807,7 @@ fi
 
 if test $enable_deflate = "yes"; then
         echo $ac_n "checking for deflate in -lz""... $ac_c" 1>&6
-echo "configure:1803: checking for deflate in -lz" >&5
+echo "configure:1811: checking for deflate in -lz" >&5
 ac_lib_var=`echo z'_'deflate | sed 'y%./+-%__p_%'`
 if eval "test \"`echo '$''{'ac_cv_lib_$ac_lib_var'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -1807,7 +1815,7 @@ else
   ac_save_LIBS="$LIBS"
 LIBS="-lz  $LIBS"
 cat > conftest.$ac_ext <<EOF
-#line 1811 "configure"
+#line 1819 "configure"
 #include "confdefs.h"
 /* Override any gcc2 internal prototype to avoid an error.  */
 /* We use char because int might match the return type of a gcc2
@@ -1818,7 +1826,7 @@ int main() {
 deflate()
 ; return 0; }
 EOF
-if { (eval echo configure:1822: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:1830: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_lib_$ac_lib_var=yes"
 else
@@ -1835,17 +1843,17 @@ if eval "test \"`echo '$ac_cv_lib_'$ac_lib_var`\" = yes"; then
   echo "$ac_t""yes" 1>&6
   ac_safe=`echo "zlib.h" | sed 'y%./+-%__p_%'`
 echo $ac_n "checking for zlib.h""... $ac_c" 1>&6
-echo "configure:1839: checking for zlib.h" >&5
+echo "configure:1847: checking for zlib.h" >&5
 if eval "test \"`echo '$''{'ac_cv_header_$ac_safe'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 1844 "configure"
+#line 1852 "configure"
 #include "confdefs.h"
 #include <zlib.h>
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:1849: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:1857: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
 if test -z "$ac_err"; then
   rm -rf conftest*
@@ -1885,7 +1893,7 @@ fi
 
 if test $enable_bzip2 = "yes"; then
         echo $ac_n "checking for BZ2_bzCompress in -lbz2""... $ac_c" 1>&6
-echo "configure:1889: checking for BZ2_bzCompress in -lbz2" >&5
+echo "configure:1897: checking for BZ2_bzCompress in -lbz2" >&5
 ac_lib_var=`echo bz2'_'BZ2_bzCompress | sed 'y%./+-%__p_%'`
 if eval "test \"`echo '$''{'ac_cv_lib_$ac_lib_var'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -1893,7 +1901,7 @@ else
   ac_save_LIBS="$LIBS"
 LIBS="-lbz2  $LIBS"
 cat > conftest.$ac_ext <<EOF
-#line 1897 "configure"
+#line 1905 "configure"
 #include "confdefs.h"
 /* Override any gcc2 internal prototype to avoid an error.  */
 /* We use char because int might match the return type of a gcc2
@@ -1904,7 +1912,7 @@ int main() {
 BZ2_bzCompress()
 ; return 0; }
 EOF
-if { (eval echo configure:1908: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:1916: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_lib_$ac_lib_var=yes"
 else
@@ -1921,17 +1929,17 @@ if eval "test \"`echo '$ac_cv_lib_'$ac_lib_var`\" = yes"; then
   echo "$ac_t""yes" 1>&6
   ac_safe=`echo "bzlib.h" | sed 'y%./+-%__p_%'`
 echo $ac_n "checking for bzlib.h""... $ac_c" 1>&6
-echo "configure:1925: checking for bzlib.h" >&5
+echo "configure:1933: checking for bzlib.h" >&5
 if eval "test \"`echo '$''{'ac_cv_header_$ac_safe'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 1930 "configure"
+#line 1938 "configure"
 #include "confdefs.h"
 #include <bzlib.h>
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:1935: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:1943: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
 if test -z "$ac_err"; then
   rm -rf conftest*

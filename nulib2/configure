@@ -1823,6 +1823,13 @@ fi
 done
 
 
+if test -z "$GCC"; then
+    BUILD_FLAGS='$(OPT)'
+else
+    BUILD_FLAGS='$(OPT) $(GCC_FLAGS)'
+fi
+
+
 if test "$host_os" = "beos"; then
     if test "$prefix" = "NONE" -a \
             "$includedir" = '${prefix}/include' -a \
@@ -1844,18 +1851,17 @@ if test "$host_os" = "beos"; then
     fi
 fi
 
+if test "$host_vendor" = "apple" -a ${host_os:0:7} = "darwin6"; then
+    echo "checking for Mac OS X... yes, adding -framework Carbon"
+    LIBS="$LIBS -framework Carbon"
+fi
+
 
 if test "$host_cpu" = "powerpc" -a "$host_os" = "beos"; then
         CC=cc
     GCC=
     CFLAGS='-proc 603 -opt full'
     echo "forcing CC to \"$CC\" and CFLAGS to \"$CFLAGS\""
-fi
-
-if test -z "$GCC"; then
-    BUILD_FLAGS='$(OPT)'
-else
-    BUILD_FLAGS='$(OPT) $(GCC_FLAGS)'
 fi
 
 
