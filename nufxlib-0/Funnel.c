@@ -255,7 +255,13 @@ Nu_FunnelNew(NuArchive* pArchive, NuDataSink* pDataSink, NuValue convertEOL,
     pFunnel->pDataSink = pDataSink;
     pFunnel->convertEOL = convertEOL;
     pFunnel->convertEOLTo = convertEOLTo;
+    pFunnel->convertEOLFrom = kNuEOLUnknown;
     pFunnel->pProgress = pProgress;
+
+    pFunnel->checkStripHighASCII = pArchive->valStripHighASCII;
+    pFunnel->doStripHighASCII = false;  /* determined on first write */
+
+    pFunnel->isFirstWrite = true;
 
 bail:
     if (err != kNuErrNone)
@@ -314,6 +320,34 @@ Nu_FunnelSetMaxOutput(NuFunnel* pFunnel, ulong maxBytes)
 
 
 /*
+ * Check to see if this is a high-ASCII file.  To qualify, EVERY
+ * character must have its high bit set, except for spaces (0x20).
+ * (The exception is courtesy Glen Bredon's "Merlin".)
+ */
+static Boolean
+Nu_CheckHighASCII(const NuFunnel* pFunnel, const unsigned char* buffer,
+    unsigned long count)
+{
+    Boolean isHighASCII;
+
+    Assert(buffer != nil);
+    Assert(count != 0);
+    Assert(pFunnel->checkStripHighASCII);
+
+    isHighASCII = true;
+    while (count--) {
+        if ((*buffer & 0x80) == 0 && *buffer != 0x20) {
+            isHighASCII = false;
+            break;
+        }
+        
+        buffer++;
+    }
+
+    return isHighASCII;
+}
+
+/*
  * Table determining what's a binary character and what isn't.  It would
  * possibly be more compact to generate this from a simple description,
  * but I'm hoping static/const data will end up in the code segment and
@@ -323,7 +357,8 @@ Nu_FunnelSetMaxOutput(NuFunnel* pFunnel, ulong maxBytes)
  * may be too loose by itself; we may want to require that the lower-ASCII
  * values appear in higher proportions than the upper-ASCII values.
  * Otherwise we run the risk of converting a binary file with specific
- * properties.
+ * properties.  (Note that "upper-ASCII" refers to umlauts and other
+ * accented characters, not DOS 3.3 "high ASCII".)
  *
  * The auto-detect mechanism will never be perfect though, so there's not
  * much point in tweaking it to death.
@@ -347,7 +382,7 @@ static const char gNuIsBinary[256] = {
     0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0,    /* 0xf0 */
 };
 
-#define kNuMaxHighASCII     1       /* max #of binary chars per 100 bytes */
+#define kNuMaxUpperASCII    1       /* max #of binary chars per 100 bytes */
 #define kNuMinConvThreshold 40      /* min of 40 chars for auto-detect */
 /*
  * Decide, based on the contents of the buffer, whether we should do an
@@ -358,25 +393,43 @@ static const char gNuIsBinary[256] = {
  *
  * If we don't have enough data to make a determination, don't mess with it.
  * (Thought for the day: add a "bias" flag, based on the NuRecord fileType,
- * that causes us to handle borderline cases more reasonably.  If it's of
- * type TXT, it's probably text.)
+ * that causes us to handle borderline or sub-min-threshold cases more
+ * reasonably.  If it's of type TXT, it's probably text.)
  *
  * We try to figure out whether it's CR, LF, or CRLF, so that we can
  * skip the CPU-intensive conversion process if it isn't necessary.
+ *
+ * We will also enable a "high-ASCII" stripper if requested.  This is
+ * only enabled when EOL conversions are enabled.
  */
 static NuValue
 Nu_DetermineConversion(NuFunnel* pFunnel, const uchar* buffer, ulong count)
 {
     ulong bufCount, numBinary, numLF, numCR;
+    Boolean isHighASCII;
     uchar val;
 
     if (count < kNuMinConvThreshold)
         return kNuConvertOff;
 
+    /*
+     * Check to see if the buffer is all high-ASCII characters.  If it is,
+     * we want to strip characters before we test them below.
+     */
+    if (pFunnel->checkStripHighASCII) {
+        isHighASCII = Nu_CheckHighASCII(pFunnel, buffer, count);
+        DBUG(("+++ determined isHighASCII=%d\n", isHighASCII));
+    } else {
+        isHighASCII = false;
+        DBUG(("+++ not even checking isHighASCII\n"));
+    }
+
     bufCount = count;
     numBinary = numLF = numCR = 0;
     while (bufCount--) {
         val = *buffer++;
+        if (isHighASCII)
+            val &= 0x7f;
         if (gNuIsBinary[val])
             numBinary++;
         if (val == kNuCharLF)
@@ -388,9 +441,9 @@ Nu_DetermineConversion(NuFunnel* pFunnel, const uchar* buffer, ulong count)
     /* if #found is > #allowed, it's a binary file */
     if (count < 100) {
         /* use simplified check on files between kNuMinConvThreshold and 100 */
-        if (numBinary > kNuMaxHighASCII)
+        if (numBinary > kNuMaxUpperASCII)
             return kNuConvertOff;
-    } else if (numBinary > (count / 100) * kNuMaxHighASCII)
+    } else if (numBinary > (count / 100) * kNuMaxUpperASCII)
         return kNuConvertOff;
 
     /*
@@ -402,19 +455,24 @@ Nu_DetermineConversion(NuFunnel* pFunnel, const uchar* buffer, ulong count)
      * and they just happen to be in equal amounts, but it's not clear
      * to me that an automatic EOL conversion makes sense on that sort
      * of file anyway.
+     *
+     * None of this applies if we also need to do a high-ASCII conversion.
      */
-    if (numLF && !numCR)
-        pFunnel->convertEOLFrom = kNuEOLLF;
-    else if (!numLF && numCR)
-        pFunnel->convertEOLFrom = kNuEOLCR;
-    else if (numLF && numLF == numCR)
-        pFunnel->convertEOLFrom = kNuEOLCRLF;
-    else
-        pFunnel->convertEOLFrom = kNuEOLUnknown;
+    if (isHighASCII) {
+        pFunnel->doStripHighASCII = true;
+    } else {
+        if (numLF && !numCR)
+            pFunnel->convertEOLFrom = kNuEOLLF;
+        else if (!numLF && numCR)
+            pFunnel->convertEOLFrom = kNuEOLCR;
+        else if (numLF && numLF == numCR)
+            pFunnel->convertEOLFrom = kNuEOLCRLF;
+        else
+            pFunnel->convertEOLFrom = kNuEOLUnknown;
+    }
 
     return kNuConvertOn;
 }
-
 
 /*
  * Write a block of data to the appropriate output device.  Test for
@@ -488,53 +546,75 @@ Nu_FunnelWriteConvert(NuFunnel* pFunnel, const uchar* buffer, ulong count)
     /*if (pFunnel->outMaxExceeded)
         return kNuErrOutMax;*/
 
-    if (pFunnel->convertEOL == kNuConvertAuto) {
+    if (pFunnel->isFirstWrite) {
         /*
          * This is the first write/flush we've done on this Funnel.
          * Check the data we have buffered to decide whether or not
-         * we want to convert this.
+         * we want to do text conversions.
          */
-        pFunnel->convertEOL = Nu_DetermineConversion(pFunnel, buffer, count);
-        DBUG(("+++ DetermineConversion --> %ld / %ld\n", pFunnel->convertEOL,
-            pFunnel->convertEOLFrom));
+        if (pFunnel->convertEOL == kNuConvertAuto) {
+            pFunnel->convertEOL = Nu_DetermineConversion(pFunnel, buffer,count);
+            DBUG(("+++ DetermineConversion --> %ld / %ld (%d)\n",
+                pFunnel->convertEOL, pFunnel->convertEOLFrom,
+                pFunnel->doStripHighASCII));
 
-        if (pFunnel->convertEOLFrom == pFunnel->convertEOLTo) {
-            DBUG(("+++ Switching redundant converter off\n"));
-            pFunnel->convertEOL = kNuConvertOff;
+            if (pFunnel->convertEOLFrom == pFunnel->convertEOLTo) {
+                DBUG(("+++ Switching redundant converter off\n"));
+                pFunnel->convertEOL = kNuConvertOff;
+            }
+            /* put it where the progress meter can see it */
+            if (pFunnel->pProgress != nil)
+                pFunnel->pProgress->expand.convertEOL = pFunnel->convertEOL;
+        } else if (pFunnel->convertEOL == kNuConvertOn) {
+            if (pFunnel->checkStripHighASCII) {
+                /* assume this part of the buffer is representative */
+                pFunnel->doStripHighASCII = Nu_CheckHighASCII(pFunnel,
+                                                buffer, count);
+            } else {
+                Assert(!pFunnel->doStripHighASCII);
+            }
+            DBUG(("+++ Converter is on, convHighASCII=%d\n",
+                pFunnel->doStripHighASCII));
         }
-        /* put it where the progress meter can see it */
-        if (pFunnel->pProgress != nil)
-            pFunnel->pProgress->expand.convertEOL = pFunnel->convertEOL;
     }
+    Assert(pFunnel->convertEOL != kNuConvertAuto);  /* on or off now */
+    pFunnel->isFirstWrite = false;
 
     if (pFunnel->convertEOL == kNuConvertOff) {
         /* write it straight */
         Nu_FunnelPutBlock(pFunnel, buffer, count);
     } else {
-        /* do the LF conversion */
-        Boolean lastCR = pFunnel->lastCR;   /* local copy */
+        /* do the EOL conversion and optional high-bit stripping */
+        Boolean lastCR = pFunnel->lastCR;   /* make local copy */
         uchar uch;
+        int mask;
+
+        if (pFunnel->doStripHighASCII)
+            mask = 0x7f;
+        else
+            mask = 0xff;
 
         /*
          * We could get a significant speed improvement here by writing
          * non-EOL chars as a larger block instead of single bytes.
          */
         while (count--) {
-            if (*buffer == kNuCharCR) {
+            uch = (*buffer) & mask;
+
+            if (uch == kNuCharCR) {
                 Nu_PutEOL(pFunnel);
                 lastCR = true;
-            } else if (*buffer == kNuCharLF) {
+            } else if (uch == kNuCharLF) {
                 if (!lastCR)
                     Nu_PutEOL(pFunnel);
                 lastCR = false;
             } else {
-                uch = *buffer;
                 Nu_FunnelPutBlock(pFunnel, &uch, 1);
                 lastCR = false;
             }
             buffer++;
         }
-        pFunnel->lastCR = lastCR;
+        pFunnel->lastCR = lastCR;   /* save copy */
 
     }
 

@@ -92,6 +92,7 @@ Nu_NuArchiveNew(NuArchive** ppArchive)
     (*ppArchive)->valModifyOrig = false;
     (*ppArchive)->valMimicSHK = false;
     (*ppArchive)->valMaskDataless = false;
+    (*ppArchive)->valStripHighASCII = false;
 
     (*ppArchive)->messageHandlerFunc = gNuGlobalErrorMessageHandler;
 

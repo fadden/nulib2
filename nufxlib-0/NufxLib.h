@@ -267,7 +267,8 @@ typedef enum NuValueID {
     kNuValueHandleExisting      = 8,
     kNuValueModifyOrig          = 9,
     kNuValueMimicSHK            = 10,
-    kNuValueMaskDataless        = 11
+    kNuValueMaskDataless        = 11,
+    kNuValueStripHighASCII      = 12
 } NuValueID;
 typedef unsigned long NuValue;
 

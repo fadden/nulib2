@@ -151,6 +151,7 @@ struct NuArchive {
     NuValue         valMimicSHK;            /* mimic some ShrinkIt quirks */
     NuValue         valModifyOrig;          /* modify original arc in place? */
     NuValue         valOnlyUpdateOlder;     /* modify original arc in place? */
+    NuValue         valStripHighASCII;      /* during EOL conv, strip hi bit? */
 
     /* callback functions */
     NuCallback      selectionFilterFunc;
@@ -252,11 +253,15 @@ typedef struct NuFunnel {
     uchar*          buffer;         /* kNuFunnelBufSize worth of storage */
     long            bufCount;       /* #of bytes in buffer */
 
-    /* EOL conversion; if "auto", on first flush we convert to "on" or "off" */
+    /* text conversion; if "auto", on first flush we convert to "on" or "off" */
     NuValue         convertEOL;     /* on/off/auto */
     NuValue         convertEOLTo;   /* EOL to switch to */
     NuValue         convertEOLFrom; /* EOL terminator we think we found */
+    Boolean         checkStripHighASCII;    /* do we want to check for it? */
+    Boolean         doStripHighASCII;   /* strip high ASCII during EOL conv */
     Boolean         lastCR;         /* was last char a CR? */
+
+    Boolean         isFirstWrite;   /* cleared on first write */
 
 #if 0
     ulong           inCount;        /* total #of bytes in the top */

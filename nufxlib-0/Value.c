@@ -54,6 +54,9 @@ Nu_GetValue(NuArchive* pArchive, NuValueID ident, NuValue* pValue)
     case kNuValueOnlyUpdateOlder:
         *pValue = pArchive->valOnlyUpdateOlder;
         break;
+    case kNuValueStripHighASCII:
+        *pValue = pArchive->valStripHighASCII;
+        break;
     default:
         err = kNuErrInvalidArg;
         Nu_ReportError(NU_BLOB, err, "Unknown ValueID %d requested", ident);
@@ -161,6 +164,14 @@ Nu_SetValue(NuArchive* pArchive, NuValueID ident, NuValue value)
             goto bail;
         }
         pArchive->valOnlyUpdateOlder = value;
+        break;
+    case kNuValueStripHighASCII:
+        if (value != true && value != false) {
+            Nu_ReportError(NU_BLOB, err,
+                "Invalid kNuStripHighASCII value %ld", value);
+            goto bail;
+        }
+        pArchive->valStripHighASCII = value;
         break;
     default:
         Nu_ReportError(NU_BLOB, err, "Unknown ValueID %d requested", ident);
