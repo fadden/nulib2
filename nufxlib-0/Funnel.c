@@ -258,7 +258,7 @@ Nu_FunnelNew(NuArchive* pArchive, NuDataSink* pDataSink, NuValue convertEOL,
     pFunnel->convertEOLFrom = kNuEOLUnknown;
     pFunnel->pProgress = pProgress;
 
-    pFunnel->checkStripHighASCII = pArchive->valStripHighASCII;
+    pFunnel->checkStripHighASCII = (pArchive->valStripHighASCII != 0);
     pFunnel->doStripHighASCII = false;  /* determined on first write */
 
     pFunnel->isFirstWrite = true;
@@ -401,6 +401,9 @@ static const char gNuIsBinary[256] = {
  *
  * We will also enable a "high-ASCII" stripper if requested.  This is
  * only enabled when EOL conversions are enabled.
+ *
+ * Returns kConvEOLOff or kConvEOLOn, and sets pFunnel->doStripHighASCII
+ * if pFunnel->CheckStripHighASCII is set.
  */
 static NuValue
 Nu_DetermineConversion(NuFunnel* pFunnel, const uchar* buffer, ulong count)
