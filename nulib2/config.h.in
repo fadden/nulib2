@@ -1,3 +1,10 @@
+/*
+ * Nulib2
+ * Copyright (C) 2000-2002 by Andy McFadden, All Rights Reserved.
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU General Public License, see the file COPYING.
+ *
+ */
 /* config.h.in.  Generated automatically from configure.in by autoheader.  */
 
 /* Define to empty if the keyword does not work.  */
