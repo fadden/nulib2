@@ -3,17 +3,17 @@
 # To extract the files from this archive, save it to some FILE, remove
 # everything before the `!/bin/sh' line above, then type `sh FILE'.
 #
-# Made on 2002-10-11 17:29 PDT by <fadden@shiny>.
-# Source directory was `/home/fadden/STAGE'.
+# Made on 2003-03-18 19:02 PST by <fadden@shiny>.
+# Source directory was `/home/fadden/Stage'.
 #
 # Existing files will *not* be overwritten unless `-c' is specified.
 #
 # This shar contains:
 # length mode       name
 # ------ ---------- ------------------------------------------
-#    856 -rwxr-xr-x prep.sh
+#    908 -rwxr-xr-x prep.sh
 #    477 -rwxr-xr-x post.sh
-#    564 -rwxr-xr-x mkzip
+#    682 -rwxr-xr-x mkzip
 #      4 -rw-r--r-- VERSION
 #
 save_IFS="${IFS}"
@@ -64,7 +64,7 @@ else
 fi
 rm -f 200112312359.59 123123592001.59 123123592001.5 1231235901 $$.touch
 #
-if mkdir _sh01765; then
+if mkdir _sh01355; then
   $echo 'x -' 'creating lock directory'
 else
   $echo 'failed to create lock directory'
@@ -117,23 +117,24 @@ mv -f Makefile.new Makefile.msc
 X
 cd ..
 X
+echo IMPORTANT: you did "make baktar" first, right?
 echo IMPORTANT: put the release into ChangeLog.txt
 X
 Xexit 0
 SHAR_EOF
-  (set 20 02 10 11 15 40 07 'prep.sh'; eval "$shar_touch") &&
+  (set 20 03 03 18 19 02 04 'prep.sh'; eval "$shar_touch") &&
   chmod 0755 'prep.sh' ||
   $echo 'restore of' 'prep.sh' 'failed'
   if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
   && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
     md5sum -c << SHAR_EOF >/dev/null 2>&1 \
     || $echo 'prep.sh:' 'MD5 check failed'
-403d6849f37fe0aaf33d9380611e83b3  prep.sh
+e90f77fcaef20dc96dd521257744763c  prep.sh
 SHAR_EOF
   else
     shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < 'prep.sh'`"
-    test 856 -eq "$shar_count" ||
-    $echo 'prep.sh:' 'original size' '856,' 'current size' "$shar_count!"
+    test 908 -eq "$shar_count" ||
+    $echo 'prep.sh:' 'original size' '908,' 'current size' "$shar_count!"
   fi
 fi
 # ============= post.sh ==============
@@ -212,24 +213,27 @@ zip -9jl $archive $manout
 rm $manout
 zip -9j $archive $basedir/nulib2-$version/nulib2.exe
 zip -9jl $archive $basedir/nufxlib-$version/samples/README-S.txt
-zip -9j $archive $basedir/nufxlib-$version/samples/*.exe
+zip -9j $archive \
+X    $basedir/nufxlib-$version/samples/exerciser.exe \
+X    $basedir/nufxlib-$version/samples/imgconv.exe \
+X    $basedir/nufxlib-$version/samples/launder.exe
 X
 Xexit 0
 X
 SHAR_EOF
-  (set 20 02 10 11 16 01 06 'mkzip'; eval "$shar_touch") &&
+  (set 20 03 03 18 18 14 44 'mkzip'; eval "$shar_touch") &&
   chmod 0755 'mkzip' ||
   $echo 'restore of' 'mkzip' 'failed'
   if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
   && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
     md5sum -c << SHAR_EOF >/dev/null 2>&1 \
     || $echo 'mkzip:' 'MD5 check failed'
-dc224623d9d2d9df478bc622ecf7f61a  mkzip
+a70595bee88da7257676c10e42784e76  mkzip
 SHAR_EOF
   else
     shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < 'mkzip'`"
-    test 564 -eq "$shar_count" ||
-    $echo 'mkzip:' 'original size' '564,' 'current size' "$shar_count!"
+    test 682 -eq "$shar_count" ||
+    $echo 'mkzip:' 'original size' '682,' 'current size' "$shar_count!"
   fi
 fi
 # ============= VERSION ==============
@@ -238,16 +242,16 @@ if test -f 'VERSION' && test "$first_param" != -c; then
 else
   $echo 'x -' extracting 'VERSION' '(text)'
   sed 's/^X//' << 'SHAR_EOF' > 'VERSION' &&
-110
+200
 SHAR_EOF
-  (set 20 02 10 11 13 53 35 'VERSION'; eval "$shar_touch") &&
+  (set 20 03 03 18 17 15 52 'VERSION'; eval "$shar_touch") &&
   chmod 0644 'VERSION' ||
   $echo 'restore of' 'VERSION' 'failed'
   if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
   && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
     md5sum -c << SHAR_EOF >/dev/null 2>&1 \
     || $echo 'VERSION:' 'MD5 check failed'
-2fe51daae840593fb0f4076b307ccefb  VERSION
+c1ba58b05f6245f221ad65391fa6690b  VERSION
 SHAR_EOF
   else
     shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < 'VERSION'`"
@@ -255,5 +259,5 @@ SHAR_EOF
     $echo 'VERSION:' 'original size' '4,' 'current size' "$shar_count!"
   fi
 fi
-rm -fr _sh01765
+rm -fr _sh01355
 exit 0
