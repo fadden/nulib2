@@ -219,8 +219,21 @@ Nu_ReadThreadHeaders(NuArchive* pArchive, NuRecord* pRecord, ushort* pCrc)
 		{
 			if (pRecord->recStorageType <= 13) {
 				/* supposed to be block size, but SHK v3.0.1 stored it wrong */
-				pThread->actualThreadEOF =
-					pRecord->recExtraType * 512;
+				pThread->actualThreadEOF = pRecord->recExtraType * 512;
+
+			} else if (pRecord->recStorageType == 256 &&
+					   pRecord->recExtraType == 280 &&
+					   pRecord->recFileSysID == kNuFileSysDOS33)
+			{
+				/*
+				 * Fix for less-common ShrinkIt problem: looks like an old
+				 * version of GS/ShrinkIt used 256 as the block size when
+				 * compressing DOS 3.3 images from 5.25" disks.  If that
+				 * appears to be the case here, crank up the block size.
+				 */
+				DBUG(("--- no such thing as a 70K disk image!\n"));
+				pThread->actualThreadEOF = pRecord->recExtraType * 512;
+
 			} else {
 				pThread->actualThreadEOF =
 					pRecord->recExtraType * pRecord->recStorageType;

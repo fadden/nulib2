@@ -1,3 +1,8 @@
+2000/05/22	***** v1.0.1 shipped *****
+
+2000/05/22	fadden
+	- added workaround for buggy 140K DOS3.3 GSHK images
+
 2000/05/18	***** v1.0.0 shipped *****
 
 2000/05/18	fadden
