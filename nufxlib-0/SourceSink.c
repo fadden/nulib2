@@ -819,11 +819,13 @@ Nu_DataSinkPutBlock(NuDataSink* pDataSink, const uchar* buf, ulong len)
 
     switch (pDataSink->sinkType) {
     case kNuDataSinkToFile:
+        Assert(pDataSink->toFile.fp != nil);
         err = Nu_FWrite(pDataSink->toFile.fp, buf, len);
         if (err != kNuErrNone)
             return err;
         break;
     case kNuDataSinkToFP:
+        Assert(pDataSink->toFP.fp != nil);
         err = Nu_FWrite(pDataSink->toFP.fp, buf, len);
         if (err != kNuErrNone)
             return err;
