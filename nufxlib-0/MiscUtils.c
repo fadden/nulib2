@@ -104,6 +104,8 @@ Nu_StrError(NuError err)
         return "Unable to set file date";
     case kNuErrFileSetAccess:
         return "Unable to set file access";
+    case kNuErrFileAccessDenied:
+        return "Access denied";
 
     case kNuErrNotNuFX:
         return "Input is not a NuFX archive";

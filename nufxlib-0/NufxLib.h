@@ -84,6 +84,7 @@ typedef enum NuError {
     kNuErrReadDir       = -35,      /* error reading directory */
     kNuErrFileSetDate   = -36,      /* unable to set file date */
     kNuErrFileSetAccess = -37,      /* unable to set file access permissions */
+    kNuErrFileAccessDenied = -38,   /* equivalent to EACCES */
 
     kNuErrNotNuFX       = -40,      /* 'NuFile' missing; not a NuFX archive? */
     kNuErrBadMHVersion  = -41,      /* bad master header version */

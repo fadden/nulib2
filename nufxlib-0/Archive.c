@@ -769,6 +769,9 @@ bail:
 /*
  * Open a temp file.  If "fileName" contains six Xs ("XXXXXX"), it will
  * be treated as a mktemp-style template, and modified before use.
+ *
+ * Thought for the day: consider using Win32 SetFileAttributes() to make
+ * temp files hidden.  We will need to un-hide it before rolling it over.
  */
 static NuError
 Nu_OpenTempFile(char* fileName, FILE** pFp)
@@ -914,8 +917,11 @@ Nu_OpenRW(const char* archivePathname, const char* tmpPathname, ulong flags,
     }
 
     if (fp == nil) {
+        if (errno == EACCES)
+            err = kNuErrFileAccessDenied;
+        else
+            err = kNuErrFileOpen;
         Nu_ReportError(NU_BLOB, errno, "Unable to open '%s'", archivePathname);
-        err = kNuErrFileOpen;
         goto bail;
     }
 
