@@ -20,6 +20,7 @@ CFG=nufxlib - Win32 Debug
 MY_BUILD_FLAGS=/D "DEBUG_MSGS"
 !ifdef NODEBUG
 CFG=nufxlib - Win32 Release
+#MY_BUILD_FLAGS=/D "NDEBUG"
 MY_BUILD_FLAGS=
 !endif
 
@@ -105,7 +106,7 @@ CLEAN :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
 CPP=cl.exe
-CPP_PROJ=/nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "NUFXLIB_EXPORTS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c $(MY_BUILD_FLAGS)
+CPP_PROJ=/nologo /MD /W3 /GX /O2 /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "NUFXLIB_EXPORTS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c $(MY_BUILD_FLAGS)
 
 .c{$(INTDIR)}.obj::
    $(CPP) @<<

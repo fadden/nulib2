@@ -28,9 +28,11 @@ LIB_PRODUCT = $(NUFXSRCDIR)\nufxlib2.lib
 !ifdef DLL
 ### build using the same libc as the DLL
 !ifdef NODEBUG
+#OPT = /D NUFXLIB_DLL /D NDEBUG /MD /Ogityb2
 OPT = /D NUFXLIB_DLL /MD /Ogityb2
 LIB_FLAGS = /nodefaultlib:libcd.lib /nologo setargv.obj
 !else
+#OPT = /D NUFXLIB_DLL /MDd /Od
 OPT = /D NUFXLIB_DLL /D DEBUG_MSGS /MDd /Od
 LIB_FLAGS = /nodefaultlib:libc.lib /nologo setargv.obj
 !endif
@@ -38,9 +40,11 @@ LIB_FLAGS = /nodefaultlib:libc.lib /nologo setargv.obj
 
 ### build against static lib
 !ifdef NODEBUG
+#OPT = /D NDEBUG /ML /Ogityb2
 OPT = /ML /Ogityb2
 LIB_FLAGS = /nodefaultlib:libcd.lib /nologo libc.lib setargv.obj
 !else
+#OPT = /MLd /Od
 OPT = /D DEBUG_MSGS /MLd /Od
 LIB_FLAGS = /nodefaultlib:libc.lib /nologo libcd.lib setargv.obj
 !endif
