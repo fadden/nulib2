@@ -48,7 +48,7 @@ BUILD_FLAGS = $(BUILD_FLAGS) /D "ENABLE_BZIP2"
 	@$(cc) $(OPT) $(BUILD_FLAGS) $(cflags) $(cvars) -o $@ $<
 
 
-PRODUCT = nufxlib.lib
+PRODUCT = nufxlib2.lib
 
 all: $(PRODUCT) samples
 
@@ -70,7 +70,7 @@ Version.c: Version.c.in
 	@echo - NOTE: you must update Version.c by hand (use flags=$(OPT))
 	@echo -
 
-nufxlib.lib: $(OBJS)
+nufxlib2.lib: $(OBJS)
 	if exist $(PRODUCT) del $(PRODUCT)
 	$(link) -lib /out:$(PRODUCT) $(OBJS) /nologo
 

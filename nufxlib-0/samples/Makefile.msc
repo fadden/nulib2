@@ -23,7 +23,7 @@ TARGETOS = BOTH
 !include <ntwin32.mak>
 
 NUFXSRCDIR = ..
-LIB_PRODUCT = $(NUFXSRCDIR)\nufxlib.lib
+LIB_PRODUCT = $(NUFXSRCDIR)\nufxlib2.lib
 
 !ifdef DLL
 ### build using the same libc as the DLL
@@ -66,25 +66,25 @@ PRODUCTS = exerciser.exe imgconv.exe launder.exe test-basic.exe test-extract.exe
 all: $(PRODUCTS)
 
 exerciser.exe: Exerciser.obj $(LIB_PRODUCT)
-	$(link) $(ldebug) Exerciser.obj -out:$@ $(NUFXSRCDIR)\nufxlib.lib $(LIB_FLAGS)
+	$(link) $(ldebug) Exerciser.obj -out:$@ $(NUFXSRCDIR)\nufxlib2.lib $(LIB_FLAGS)
 
 imgconv.exe: ImgConv.obj $(LIB_PRODUCT)
-	$(link) $(ldebug) ImgConv.obj -out:$@ $(NUFXSRCDIR)\nufxlib.lib $(LIB_FLAGS)
+	$(link) $(ldebug) ImgConv.obj -out:$@ $(NUFXSRCDIR)\nufxlib2.lib $(LIB_FLAGS)
 
 launder.exe: Launder.obj $(LIB_PRODUCT)
-	$(link) $(ldebug) Launder.obj -out:$@ $(NUFXSRCDIR)\nufxlib.lib $(LIB_FLAGS)
+	$(link) $(ldebug) Launder.obj -out:$@ $(NUFXSRCDIR)\nufxlib2.lib $(LIB_FLAGS)
 
 test-basic.exe: TestBasic.obj $(LIB_PRODUCT)
-	$(link) $(ldebug) TestBasic.obj -out:$@ $(NUFXSRCDIR)\nufxlib.lib $(LIB_FLAGS)
+	$(link) $(ldebug) TestBasic.obj -out:$@ $(NUFXSRCDIR)\nufxlib2.lib $(LIB_FLAGS)
 
 test-simple.exe: TestSimple.obj $(LIB_PRODUCT)
-	$(link) $(ldebug) TestSimple.obj -out:$@ $(NUFXSRCDIR)\nufxlib.lib $(LIB_FLAGS)
+	$(link) $(ldebug) TestSimple.obj -out:$@ $(NUFXSRCDIR)\nufxlib2.lib $(LIB_FLAGS)
 
 test-extract.exe: TestExtract.obj $(LIB_PRODUCT)
-	$(link) $(ldebug) TestExtract.obj -out:$@ $(NUFXSRCDIR)\nufxlib.lib $(LIB_FLAGS)
+	$(link) $(ldebug) TestExtract.obj -out:$@ $(NUFXSRCDIR)\nufxlib2.lib $(LIB_FLAGS)
 
 test-twirl.exe: TestTwirl.obj $(LIB_PRODUCT)
-	$(link) $(ldebug) TestTwirl.obj -out:$@ $(NUFXSRCDIR)\nufxlib.lib $(LIB_FLAGS)
+	$(link) $(ldebug) TestTwirl.obj -out:$@ $(NUFXSRCDIR)\nufxlib2.lib $(LIB_FLAGS)
 
 clean:
 	-del *.obj

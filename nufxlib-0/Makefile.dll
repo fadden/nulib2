@@ -7,8 +7,8 @@
 # To build with libz, use "nmake libz=1".
 # To build with libbz2, use "nmake libbz2=1".
 #
-# Output is nufxlib.dll/nufxlib.lib for the "release" version, and
-# nufxlibD.dll/nufxlibD.lib for the "debug" version.  It's important
+# Output is nufxlib2.dll/nufxlib2.lib for the "release" version, and
+# nufxlib2D.dll/nufxlib2D.lib for the "debug" version.  It's important
 # to keep this separate because the "debug" version links against
 # msvcrtd.dll, which non-developer systems won't have.
 #
@@ -70,7 +70,7 @@ OutDir=.\Release
 # End Custom Macros
 MY_LIB_FLAGS = /nodefaultlib:libc.lib $(MY_LIB_FLAGS)
 
-ALL : "$(OUTDIR)\nufxlib.dll"
+ALL : "$(OUTDIR)\nufxlib2.dll"
 
 CLEAN :
 	-@erase "$(INTDIR)\Archive.obj"
@@ -96,9 +96,9 @@ CLEAN :
 	-@erase "$(INTDIR)\Value.obj"
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\Version.obj"
-	-@erase "$(OUTDIR)\nufxlib.dll"
-	-@erase "$(OUTDIR)\nufxlib.exp"
-	-@erase "$(OUTDIR)\nufxlib.lib"
+	-@erase "$(OUTDIR)\nufxlib2.dll"
+	-@erase "$(OUTDIR)\nufxlib2.exp"
+	-@erase "$(OUTDIR)\nufxlib2.lib"
 	-@erase "Version.c"
 
 "$(OUTDIR)" :
@@ -145,7 +145,7 @@ BSC32_FLAGS=/nologo /o"$(OUTDIR)\nufxlib.bsc"
 BSC32_SBRS= \
 	
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib $(MY_LIB_FLAGS) /nologo /dll /incremental:no /pdb:"$(OUTDIR)\nufxlib.pdb" /machine:I386 /out:"$(OUTDIR)\nufxlib.dll" /implib:"$(OUTDIR)\nufxlib.lib" 
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib $(MY_LIB_FLAGS) /nologo /dll /incremental:no /pdb:"$(OUTDIR)\nufxlib.pdb" /machine:I386 /out:"$(OUTDIR)\nufxlib2.dll" /implib:"$(OUTDIR)\nufxlib2.lib" 
 LINK32_OBJS= \
 	"$(INTDIR)\Archive.obj" \
 	"$(INTDIR)\ArchiveIO.obj" \
@@ -170,7 +170,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\Value.obj" \
 	"$(INTDIR)\Version.obj"
 
-"$(OUTDIR)\nufxlib.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
+"$(OUTDIR)\nufxlib2.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
   $(LINK32_FLAGS) $(LINK32_OBJS)
 <<
@@ -184,9 +184,9 @@ ALL : $(DS_POSTBUILD_DEP)
 OutDir=.\Release
 # End Custom Macros
 
-$(DS_POSTBUILD_DEP) : "$(OUTDIR)\nufxlib.dll"
-   copy Release\nufxlib.dll .
-	copy Release\nufxlib.lib .
+$(DS_POSTBUILD_DEP) : "$(OUTDIR)\nufxlib2.dll"
+   copy Release\nufxlib2.dll .
+	copy Release\nufxlib2.lib .
 	echo Helper for Post-build step > "$(DS_POSTBUILD_DEP)"
 
 !ELSEIF  "$(CFG)" == "nufxlib - Win32 Debug"
@@ -198,7 +198,7 @@ OutDir=.\Debug
 # End Custom Macros
 MY_LIB_FLAGS = /nodefaultlib:libcd.lib $(MY_LIB_FLAGS)
 
-ALL : "$(OUTDIR)\nufxlibD.dll" "$(OUTDIR)\nufxlib.bsc"
+ALL : "$(OUTDIR)\nufxlib2D.dll" "$(OUTDIR)\nufxlib.bsc"
 
 
 CLEAN :
@@ -249,10 +249,10 @@ CLEAN :
 	-@erase "$(INTDIR)\Version.obj"
 	-@erase "$(INTDIR)\Version.sbr"
 	-@erase "$(OUTDIR)\nufxlib.bsc"
-	-@erase "$(OUTDIR)\nufxlibD.dll"
-	-@erase "$(OUTDIR)\nufxlib.exp"
-	-@erase "$(OUTDIR)\nufxlib.ilk"
-	-@erase "$(OUTDIR)\nufxlibD.lib"
+	-@erase "$(OUTDIR)\nufxlib2D.dll"
+	-@erase "$(OUTDIR)\nufxlib2D.exp"
+	-@erase "$(OUTDIR)\nufxlib2D.ilk"
+	-@erase "$(OUTDIR)\nufxlib2D.lib"
 	-@erase "$(OUTDIR)\nufxlib.pdb"
 	-@erase "Version.c"
 
@@ -327,7 +327,7 @@ BSC32_SBRS= \
 <<
 
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib $(MY_LIB_FLAGS) /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\nufxlib.pdb" /debug /machine:I386 /out:"$(OUTDIR)\nufxlibD.dll" /implib:"$(OUTDIR)\nufxlibD.lib" /pdbtype:sept 
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib $(MY_LIB_FLAGS) /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\nufxlib.pdb" /debug /machine:I386 /out:"$(OUTDIR)\nufxlib2D.dll" /implib:"$(OUTDIR)\nufxlib2D.lib" /pdbtype:sept 
 LINK32_OBJS= \
 	"$(INTDIR)\Archive.obj" \
 	"$(INTDIR)\ArchiveIO.obj" \
@@ -352,7 +352,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\Value.obj" \
 	"$(INTDIR)\Version.obj"
 
-"$(OUTDIR)\nufxlibD.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
+"$(OUTDIR)\nufxlib2D.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
   $(LINK32_FLAGS) $(LINK32_OBJS)
 <<
@@ -366,9 +366,9 @@ ALL : $(DS_POSTBUILD_DEP)
 OutDir=.\Debug
 # End Custom Macros
 
-$(DS_POSTBUILD_DEP) : "$(OUTDIR)\nufxlibD.dll" "$(OUTDIR)\nufxlib.bsc"
-   copy Debug\nufxlibD.dll .
-	copy Debug\nufxlibD.lib .
+$(DS_POSTBUILD_DEP) : "$(OUTDIR)\nufxlib2D.dll" "$(OUTDIR)\nufxlib.bsc"
+   copy Debug\nufxlib2D.dll .
+	copy Debug\nufxlib2D.lib .
 	echo Helper for Post-build step > "$(DS_POSTBUILD_DEP)"
 
 !ENDIF 
