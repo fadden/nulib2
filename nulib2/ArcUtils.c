@@ -384,6 +384,10 @@ ProgressUpdater(NuArchive* pArchive, void* vProgress)
         actionStr = nil;
         percStr = "SKIP\n";
         break;
+    case kNuProgressAborted:    /* not currently possible in NuLib2 */
+        actionStr = nil;
+        percStr = "CNCL\n";
+        break;
     case kNuProgressFailed:
         actionStr = nil;
         percStr = "FAIL\n";
