@@ -607,6 +607,11 @@ retry:
         goto bail;
     }
 
+    if (pArchive->junkOffset != 0) {
+        DBUG(("+++ found apparent start of archive at offset %ld\n",
+            pArchive->junkOffset));
+    }
+
     crc = 0;
     pHeader->mhMasterCRC = Nu_ReadTwo(pArchive, fp);
     pHeader->mhTotalRecords = Nu_ReadFourC(pArchive, fp, &crc);
@@ -626,7 +631,7 @@ retry:
     }
     if (pHeader->mhMasterVersion > kNuMaxMHVersion) {
         err = kNuErrBadMHVersion;
-        Nu_ReportError(NU_BLOB, err, "Bad MH version %u",
+        Nu_ReportError(NU_BLOB, err, "Bad Master Header version %u",
             pHeader->mhMasterVersion);
         goto bail;
     }
@@ -650,8 +655,16 @@ retry:
      * 3.5" disk across a slow AppleTalk network.  The only obvious
      * indication of brain-damage, until you try to unpack the archive,
      * seems to be a bogus MasterEOF==48.
+     *
+     * Matthew Fischer found some archives that exhibit MasterEOF==0
+     * but are otherwise functional, suggesting that there might be a
+     * version of ShrinkIt that created these without reporting an error.
+     * One such archive was a disk image with no filename entry, suggesting
+     * that it was created by an early version of P8 ShrinkIt.
+     *
+     * So, we only fail if the EOF equals 48.
      */
-    if (pHeader->mhMasterEOF <= kNuMasterHeaderSize) {
+    if (pHeader->mhMasterEOF == kNuMasterHeaderSize) {
         err = kNuErrNoRecords;
         Nu_ReportError(NU_BLOB, err,
             "Master EOF is %ld, archive is probably truncated",

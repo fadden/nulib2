@@ -461,8 +461,10 @@ Nu_ScanThreads(NuArchive* pArchive, NuRecord* pRecord, long numThreads)
      * end up with a disk image that had no name attached.  This will tend
      * to confuse things, so we go ahead and give it a name.
      */
-    if (pRecord->filename == nil)
+    if (pRecord->filename == nil) {
+        DBUG(("+++ no filename found, using default record name\n"));
         pRecord->filename = kNuDefaultRecordName;
+    }
 
     pArchive->currentOffset += pRecord->totalCompLength;
 
