@@ -1,3 +1,16 @@
+2003/02/08  fadden
+    - Upped version to v2.0.0.
+    - Many fixes to pathname handling:
+        - Correctly handle '%' when preservation is OFF.
+        - Accept 4-char extensions in '-ee' without risk of buffer overflow.
+        - Fixed broken assert when converting long %xx names.
+        - Store "AUX" as "%00AUX" when preserving Win32 names (vs. "_AUX").
+        - Always store files with ':' as path separator.
+        - Recognize that some Win32 variants (Win2K and later at the least)
+          will accept both '/' and '\' as pathname separators.
+        - Correctly convert ".//foo" to "foo" instead of "/foo".
+    - Tracked changes to NufxLib DataSource API.
+
 2003/01/10  fadden
     - Check NufxLib "compiled" version against "linked" version.
 

@@ -108,3 +108,14 @@ Free(void* ptr)
 }
 #endif
 
+/*  
+ * This gets called when a buffer DataSource is no longer needed.
+ */
+NuResult
+FreeCallback(NuArchive* pArchive, void* args)
+{
+    DBUG(("+++ free callback 0x%08lx\n", (long) args));
+    Free(args);
+    return kNuOK;
+}
+

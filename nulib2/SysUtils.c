@@ -660,8 +660,8 @@ DoAddFile(NulibState* pState, NuArchive* pArchive, const char* pathname,
             NuDataSource* pDataSource;
 
             err = NuCreateDataSourceForBuffer(kNuThreadFormatUncompressed,
-                    true, kDefaultCommentLen, (unsigned char*)comment, 0,
-                    strlen(comment), &pDataSource);
+                    kDefaultCommentLen, (unsigned char*)comment, 0,
+                    strlen(comment), FreeCallback, &pDataSource);
             if (err != kNuErrNone) {
                 ReportError(err, "comment buffer create failed");
                 Free(comment);

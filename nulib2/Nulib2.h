@@ -97,6 +97,7 @@ void* Calloc(size_t size);
 void* Realloc(void* ptr, size_t size);
 void Free(void* ptr);
 #endif
+NuResult FreeCallback(NuArchive* pArchive, void* args);
 
 /* SysUtils.c */
 NuError NormalizeFileName(NulibState* pState, const char* srcp, long srcLen,
