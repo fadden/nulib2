@@ -256,7 +256,7 @@ Nu_ConvertCompressValToFormat(NuArchive* pArchive, NuValue compValue)
 
     if (unsup) {
         Nu_ReportError(NU_BLOB, kNuErrNone,
-            "Unsupported compression type 0x%04x requested (%ld), not compressing",
+            "Unsupported compression 0x%04x requested (%ld), storing",
             threadFormat, compValue);
         return kNuThreadFormatUncompressed;
     }

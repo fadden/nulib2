@@ -663,7 +663,7 @@ NuTestFeature(NuFeature feature)
     NuError err = kNuErrUnsupFeature;
 
     switch (feature) {
-    case kNuFeatureCompressHuffmanSQ:
+    case kNuFeatureCompressSQ:
         #ifdef ENABLE_SQ
         err = kNuErrNone;
         #endif

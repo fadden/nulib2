@@ -1,3 +1,8 @@
+2002/10/09  fadden
+    - added support for "bzip2" compression via libbz2
+    - added ability to selectively disable compression methods
+    - added "-m" flag to samples/launder so you can specify compression
+
 2002/09/30  fadden
     - added support for "deflate" compression via zlib
 

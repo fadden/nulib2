@@ -635,7 +635,7 @@ typedef struct NuErrorMessage {
 typedef enum NuFeature {
     kNuFeatureUnknown = 0,
 
-    kNuFeatureCompressHuffmanSQ = 1,    /* kNuThreadFormatHuffmanSQ */
+    kNuFeatureCompressSQ = 1,           /* kNuThreadFormatHuffmanSQ */
     kNuFeatureCompressLZW = 2,          /* kNuThreadFormatLZW1 and LZW2 */
     kNuFeatureCompressLZC = 3,          /* kNuThreadFormatLZC12 and LZC16 */
     kNuFeatureCompressDeflate = 4,      /* kNuThreadFormatDeflate */

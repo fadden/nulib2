@@ -1140,7 +1140,7 @@ main(void)
 
     (void) NuGetVersion(&major, &minor, &bug, &pBuildDate, &pBuildFlags);
     printf("Using NuFX library v%ld.%ld.%ld, built on or after\n"
-           "%s with [%s]\n\n",
+           "  %s with [%s]\n\n",
         major, minor, bug, pBuildDate, pBuildFlags);
 
     if (NuSetGlobalErrorMessageHandler(ErrorMessageHandler) != kNuErrNone) {
