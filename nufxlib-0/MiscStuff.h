@@ -9,6 +9,8 @@
 #ifndef __MiscStuff__
 #define __MiscStuff__
 
+#define VALGRIND        /* assume we're using it */
+
 #include "SysDefs.h"
 
 /*
@@ -93,7 +95,7 @@ typedef uchar   Boolean;
 
 #else
  /* when debugging, fill Malloc blocks with junk, unless we're using Purify */
- #if !defined(PURIFY)
+ #if !defined(PURIFY) && !defined(VALGRIND)
   #define DebugFill(addr, len)  memset(addr, 0xa3, len)
  #else
   #define DebugFill(addr, len)  ((void)0)
@@ -102,7 +104,6 @@ typedef uchar   Boolean;
  #define DebugAbort()           abort()
 #endif
 
-#define kInvalidFill    (0xa3)
 #define kInvalidPtr     ((void*)0xa3a3a3a3)
 
 #endif /*__MiscStuff__*/

@@ -997,7 +997,7 @@ fi
 echo "$ac_t""$CPP" 1>&6
 
 for ac_hdr in fcntl.h malloc.h stdlib.h sys/stat.h sys/time.h sys/types.h \
-	sys/utime.h unistd.h utime.h
+    sys/utime.h unistd.h utime.h
 do
 ac_safe=`echo "$ac_hdr" | sed 'y%./+-%__p_%'`
 echo $ac_n "checking for $ac_hdr""... $ac_c" 1>&6
@@ -1524,7 +1524,7 @@ fi
 
 
 for ac_func in fdopen ftruncate memmove mkdir mkstemp mktime timelocal \
-	localtime_r snprintf strcasecmp strncasecmp strtoul strerror vsnprintf
+    localtime_r snprintf strcasecmp strncasecmp strtoul strerror vsnprintf
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
 echo "configure:1531: checking for $ac_func" >&5
@@ -1586,7 +1586,7 @@ if eval "test \"`echo '$''{'nufxlib_cv_snprintf_in_header'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   
-	cat > conftest.$ac_ext <<EOF
+    cat > conftest.$ac_ext <<EOF
 #line 1591 "configure"
 #include "confdefs.h"
 #include <stdio.h>
@@ -1605,7 +1605,7 @@ rm -f conftest*
 fi
 
 if test $nufxlib_cv_snprintf_in_header = "yes"; then
-	cat >> confdefs.h <<\EOF
+    cat >> confdefs.h <<\EOF
 #define SNPRINTF_DECLARED 1
 EOF
 
@@ -1618,7 +1618,7 @@ if eval "test \"`echo '$''{'nufxlib_cv_vsnprintf_in_header'+set}'`\" = set"; the
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   
-	cat > conftest.$ac_ext <<EOF
+    cat > conftest.$ac_ext <<EOF
 #line 1623 "configure"
 #include "confdefs.h"
 #include <stdio.h>
@@ -1637,7 +1637,7 @@ rm -f conftest*
 fi
 
 if test $nufxlib_cv_vsnprintf_in_header = "yes"; then
-	cat >> confdefs.h <<\EOF
+    cat >> confdefs.h <<\EOF
 #define VSNPRINTF_DECLARED 1
 EOF
 
@@ -1646,19 +1646,19 @@ echo "$ac_t""$nufxlib_cv_vsnprintf_in_header" 1>&6
 
 SHARE_FLAGS='-shared'
 if test "$host_cpu" = "powerpc" -a "$host_os" = "beos"; then
-		CC=cc
-	GCC=
-	CFLAGS='-proc 603 -opt full'
-	SHARE_FLAGS='-shared -nostdlib'
-	echo "forcing CC to \"$CC\" and CFLAGS to \"$CFLAGS\""
+        CC=cc
+    GCC=
+    CFLAGS='-proc 603 -opt full'
+    SHARE_FLAGS='-shared -nostdlib'
+    echo "forcing CC to \"$CC\" and CFLAGS to \"$CFLAGS\""
 elif test "$host_os" = "beos"; then
-		SHARE_FLAGS='-nostartfiles -Xlinker -soname="$@"'
+        SHARE_FLAGS='-nostartfiles -Xlinker -soname="$@"'
 fi
 
 if test -z "$GCC"; then
-	BUILD_FLAGS='$(OPT)'
+    BUILD_FLAGS='$(OPT)'
 else
-	BUILD_FLAGS='$(OPT) $(GCC_FLAGS)'
+    BUILD_FLAGS='$(OPT) $(GCC_FLAGS)'
 fi
 
 
@@ -1666,24 +1666,24 @@ fi
 
 
 if test "$host_os" = "beos"; then
-	if test "$prefix" = "NONE" -a \
-			"$includedir" = '${prefix}/include' -a \
-			"$libdir" = '${exec_prefix}/lib' -a \
-			"$bindir" = '${exec_prefix}/bin' -a \
-			"$mandir" = '${prefix}/man'
-	then
-		echo replacing install locations with BeOS values
-		prefix=/boot
-		includedir='${prefix}/develop/headers'
-		libdir='${exec_prefix}/home/config/lib'
-		bindir='${exec_prefix}/home/config/bin'
-		mandir='/tmp'
-		
-		
-		
-		
-		
-	fi
+    if test "$prefix" = "NONE" -a \
+            "$includedir" = '${prefix}/include' -a \
+            "$libdir" = '${exec_prefix}/lib' -a \
+            "$bindir" = '${exec_prefix}/bin' -a \
+            "$mandir" = '${prefix}/man'
+    then
+        echo replacing install locations with BeOS values
+        prefix=/boot
+        includedir='${prefix}/develop/headers'
+        libdir='${exec_prefix}/home/config/lib'
+        bindir='${exec_prefix}/home/config/bin'
+        mandir='/tmp'
+        
+        
+        
+        
+        
+    fi
 fi
 
 echo $ac_n "checking if sprintf returns int""... $ac_c" 1>&6
@@ -1692,22 +1692,22 @@ if eval "test \"`echo '$''{'nufxlib_cv_sprintf_returns_int'+set}'`\" = set"; the
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   
-	if test "$cross_compiling" = yes; then
+    if test "$cross_compiling" = yes; then
   nufxlib_cv_sprintf_returns_int=no
 else
   cat > conftest.$ac_ext <<EOF
 #line 1700 "configure"
 #include "confdefs.h"
 
-		#include <stdio.h>
-		int main(void)
-		{
-			int count;
-			char buf[8];
-			count = sprintf(buf, "123");	/* should return three */
-			exit(count != 3);
-		}
-	
+        #include <stdio.h>
+        int main(void)
+        {
+            int count;
+            char buf[8];
+            count = sprintf(buf, "123");    /* should return three */
+            exit(count != 3);
+        }
+    
 EOF
 if { (eval echo configure:1713: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
 then
@@ -1725,7 +1725,7 @@ fi
 fi
 
 if test $nufxlib_cv_sprintf_returns_int = "yes"; then
-	cat >> confdefs.h <<\EOF
+    cat >> confdefs.h <<\EOF
 #define SPRINTF_RETURNS_INT 1
 EOF
 
@@ -1737,8 +1737,8 @@ DMALLOC=
 if test "${enable_dmalloc+set}" = set; then
   enableval="$enable_dmalloc"
   \
-	 echo "--- enabling dmalloc"; \
-	DMALLOC="-L/usr/local/lib -ldmalloc"; cat >> confdefs.h <<\EOF
+     echo "--- enabling dmalloc"; \
+    DMALLOC="-L/usr/local/lib -ldmalloc"; cat >> confdefs.h <<\EOF
 #define USE_DMALLOC 1
 EOF
  

@@ -40,6 +40,9 @@ static const uchar kNuSHKSEAID[] =
 #define kNuSEALength2       12001   /* length of archive (4B?) */
 
 
+static void Nu_CloseAndFree(NuArchive* pArchive);
+
+
 /*
  * ===========================================================================
  *      Archive and MasterHeader utility functions
@@ -703,6 +706,7 @@ Nu_OpenRO(const char* archivePathname, NuArchive** ppArchive)
 
     pArchive->openMode = kNuOpenRO;
     pArchive->archiveFp = fp;
+    fp = nil;
     pArchive->archivePathname = strdup(archivePathname);
 
     err = Nu_ReadMasterHeader(pArchive);
@@ -710,8 +714,10 @@ Nu_OpenRO(const char* archivePathname, NuArchive** ppArchive)
 
 bail:
     if (err != kNuErrNone) {
-        if (pArchive != nil)
-            (void) Nu_NuArchiveFree(pArchive);
+        if (pArchive != nil) {
+            (void) Nu_CloseAndFree(pArchive);
+            *ppArchive = nil;
+        }
         if (fp != nil)
             fclose(fp);
     }
@@ -908,8 +914,8 @@ Nu_OpenRW(const char* archivePathname, const char* tmpPathname, ulong flags,
 
     pArchive->openMode = kNuOpenRW;
     pArchive->newlyCreated = newlyCreated;
-    pArchive->archiveFp = fp;
     pArchive->archivePathname = strdup(archivePathname);
+    pArchive->archiveFp = fp;
     fp = nil;
     pArchive->tmpFp = tmpFp;
     tmpFp = nil;
@@ -926,7 +932,7 @@ Nu_OpenRW(const char* archivePathname, const char* tmpPathname, ulong flags,
 bail:
     if (err != kNuErrNone) {
         if (pArchive != nil) {
-            (void) Nu_NuArchiveFree(pArchive);
+            (void) Nu_CloseAndFree(pArchive);
             *ppArchive = nil;
         }
         if (fp != nil)
@@ -1063,6 +1069,9 @@ Nu_Close(NuArchive* pArchive)
         DBUG(("--- Close NuFlush status was 0x%4lx\n", flushStatus));
     }
 
+    if (err != kNuErrNone) {
+        DBUG(("--- Nu_Close returning error %d\n", err));
+    }
     return err;
 }
 

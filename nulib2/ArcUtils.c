@@ -764,7 +764,7 @@ NuError
 OpenArchiveReadOnly(NulibState* pState)
 {
     NuError err;
-    NuArchive* pArchive;
+    NuArchive* pArchive = nil;
 
     assert(pState != nil);
 
@@ -844,6 +844,11 @@ OpenArchiveReadOnly(NulibState* pState)
     BailError(err);
 
 bail:
+    if (err != kNuErrNone && pArchive != nil) {
+        /* clean up */
+        (void) NuClose(pArchive);
+        NState_SetNuArchive(pState, nil);
+    }
     return err;
 }
 
@@ -858,7 +863,7 @@ NuError
 OpenArchiveReadWrite(NulibState* pState)
 {
     NuError err = kNuErrNone;
-    NuArchive* pArchive;
+    NuArchive* pArchive = nil;
     char* tempName = nil;
 
     assert(pState != nil);
@@ -930,6 +935,12 @@ OpenArchiveReadWrite(NulibState* pState)
 
 bail:
     Free(tempName);
+    if (err != kNuErrNone && pArchive != nil) {
+        /* clean up */
+        NuAbort(pArchive);
+        (void) NuClose(pArchive);
+        NState_SetNuArchive(pState, nil);
+    }
     return err;
 }
 

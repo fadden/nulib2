@@ -1169,7 +1169,7 @@ EOF
 fi
 
 for ac_hdr in fcntl.h limits.h malloc.h stdlib.h strings.h sys/stat.h \
-	sys/time.h sys/types.h unistd.h
+    sys/time.h sys/types.h unistd.h
 do
 ac_safe=`echo "$ac_hdr" | sed 'y%./+-%__p_%'`
 echo $ac_n "checking for $ac_hdr""... $ac_c" 1>&6
@@ -1653,38 +1653,38 @@ done
 
 
 if test "$host_os" = "beos"; then
-	if test "$prefix" = "NONE" -a \
-			"$includedir" = '${prefix}/include' -a \
-			"$libdir" = '${exec_prefix}/lib' -a \
-			"$bindir" = '${exec_prefix}/bin' -a \
-			"$mandir" = '${prefix}/man'
-	then
-		echo replacing install locations with BeOS values
-		prefix=/boot
-		includedir='${prefix}/develop/headers'
-		libdir='${exec_prefix}/home/config/lib'
-		bindir='${exec_prefix}/home/config/bin'
-		mandir='/tmp'
-		
-		
-		
-		
-		
-	fi
+    if test "$prefix" = "NONE" -a \
+            "$includedir" = '${prefix}/include' -a \
+            "$libdir" = '${exec_prefix}/lib' -a \
+            "$bindir" = '${exec_prefix}/bin' -a \
+            "$mandir" = '${prefix}/man'
+    then
+        echo replacing install locations with BeOS values
+        prefix=/boot
+        includedir='${prefix}/develop/headers'
+        libdir='${exec_prefix}/home/config/lib'
+        bindir='${exec_prefix}/home/config/bin'
+        mandir='/tmp'
+        
+        
+        
+        
+        
+    fi
 fi
 
 
 if test "$host_cpu" = "powerpc" -a "$host_os" = "beos"; then
-		CC=cc
-	GCC=
-	CFLAGS='-proc 603 -opt full'
-	echo "forcing CC to \"$CC\" and CFLAGS to \"$CFLAGS\""
+        CC=cc
+    GCC=
+    CFLAGS='-proc 603 -opt full'
+    echo "forcing CC to \"$CC\" and CFLAGS to \"$CFLAGS\""
 fi
 
 if test -z "$GCC"; then
-	BUILD_FLAGS='$(OPT)'
+    BUILD_FLAGS='$(OPT)'
 else
-	BUILD_FLAGS='$(OPT) $(GCC_FLAGS)'
+    BUILD_FLAGS='$(OPT) $(GCC_FLAGS)'
 fi
 
 
@@ -1694,8 +1694,8 @@ DMALLOC=
 if test "${enable_dmalloc+set}" = set; then
   enableval="$enable_dmalloc"
   \
-	 echo "--- enabling dmalloc";
-	DMALLOC="-L/usr/local/lib -ldmalloc"; cat >> confdefs.h <<\EOF
+     echo "--- enabling dmalloc";
+    DMALLOC="-L/usr/local/lib -ldmalloc"; cat >> confdefs.h <<\EOF
 #define USE_DMALLOC 1
 EOF
  

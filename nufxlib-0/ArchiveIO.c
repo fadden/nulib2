@@ -12,6 +12,11 @@
 #include "NufxLibPriv.h"
 
 
+/* this makes valgrind and purify happy, at some tiny cost in speed */
+#define CLEAN_INIT  =0
+/*#define CLEAN_INIT */
+
+
 /*
  * ===========================================================================
  *      Read and write
@@ -39,7 +44,7 @@ Nu_ReadOneC(NuArchive* pArchive, FILE* fp, ushort* pCrc)
 uchar
 Nu_ReadOne(NuArchive* pArchive, FILE* fp)
 {
-    ushort dummyCrc /*= 0*/;
+    ushort dummyCrc CLEAN_INIT;
     return Nu_ReadOneC(pArchive, fp, &dummyCrc);
 }
 
@@ -59,7 +64,7 @@ Nu_WriteOneC(NuArchive* pArchive, FILE* fp, uchar val, ushort* pCrc)
 void
 Nu_WriteOne(NuArchive* pArchive, FILE* fp, uchar val)
 {
-    ushort dummyCrc /*= 0*/;
+    ushort dummyCrc CLEAN_INIT;
     Nu_WriteOneC(pArchive, fp, val, &dummyCrc);
 }
 
@@ -87,7 +92,7 @@ Nu_ReadTwoC(NuArchive* pArchive, FILE* fp, ushort* pCrc)
 ushort
 Nu_ReadTwo(NuArchive* pArchive, FILE* fp)
 {
-    ushort dummyCrc /*= 0*/;
+    ushort dummyCrc CLEAN_INIT;
     return Nu_ReadTwoC(pArchive, fp, &dummyCrc);
 }
 
@@ -116,7 +121,7 @@ Nu_WriteTwoC(NuArchive* pArchive, FILE* fp, ushort val, ushort* pCrc)
 void
 Nu_WriteTwo(NuArchive* pArchive, FILE* fp, ushort val)
 {
-    ushort dummyCrc /*= 0*/;
+    ushort dummyCrc CLEAN_INIT;
     Nu_WriteTwoC(pArchive, fp, val, &dummyCrc);
 }
 
@@ -148,7 +153,7 @@ Nu_ReadFourC(NuArchive* pArchive, FILE* fp, ushort* pCrc)
 ulong
 Nu_ReadFour(NuArchive* pArchive, FILE* fp)
 {
-    ushort dummyCrc /*= 0*/;
+    ushort dummyCrc CLEAN_INIT;
     return Nu_ReadFourC(pArchive, fp, &dummyCrc);
 }
 
@@ -183,7 +188,7 @@ Nu_WriteFourC(NuArchive* pArchive, FILE* fp, ulong val, ushort* pCrc)
 void
 Nu_WriteFour(NuArchive* pArchive, FILE* fp, ulong val)
 {
-    ushort dummyCrc /*=0*/;
+    ushort dummyCrc CLEAN_INIT;
     Nu_WriteFourC(pArchive, fp, val, &dummyCrc);
 }
 
@@ -236,7 +241,7 @@ Nu_ReadDateTimeC(NuArchive* pArchive, FILE* fp, ushort* pCrc)
 NuDateTime
 Nu_ReadDateTime(NuArchive* pArchive, FILE* fp, ushort* pCrc)
 {
-    ushort dummyCrc /*= 0*/;
+    ushort dummyCrc CLEAN_INIT;
     return Nu_ReadDateTimeC(pArchive, fp, &dummyCrc);
 }
 
@@ -283,7 +288,7 @@ Nu_WriteDateTimeC(NuArchive* pArchive, FILE* fp, NuDateTime dateTime,
 void
 Nu_WriteDateTime(NuArchive* pArchive, FILE* fp, NuDateTime dateTime)
 {
-    ushort dummyCrc /*= 0*/;
+    ushort dummyCrc CLEAN_INIT;
     Nu_WriteDateTimeC(pArchive, fp, dateTime, &dummyCrc);
 }
 
@@ -314,7 +319,7 @@ Nu_ReadBytesC(NuArchive* pArchive, FILE* fp, void* vbuffer, long count,
 void
 Nu_ReadBytes(NuArchive* pArchive, FILE* fp, void* vbuffer, long count)
 {
-    ushort dummyCrc /*= 0*/;
+    ushort dummyCrc CLEAN_INIT;
     Nu_ReadBytesC(pArchive, fp, vbuffer, count, &dummyCrc);
 }
 
@@ -345,7 +350,7 @@ Nu_WriteBytesC(NuArchive* pArchive, FILE* fp, const void* vbuffer, long count,
 void
 Nu_WriteBytes(NuArchive* pArchive, FILE* fp, const void* vbuffer, long count)
 {
-    ushort dummyCrc /*= 0*/;
+    ushort dummyCrc CLEAN_INIT;
     Nu_WriteBytesC(pArchive, fp, vbuffer, count, &dummyCrc);
 }
 
@@ -381,9 +386,9 @@ Nu_SeekArchive(NuArchive* pArchive, FILE* fp, long offset, int ptrname)
 {
     if (Nu_IsStreaming(pArchive)) {
         Assert(ptrname == SEEK_CUR);
-        Assert(offset > 0);
+        Assert(offset >= 0);
 
-        /* might be faster to fread a chunk at a time */
+        /* OPT: might be faster to fread a chunk at a time */
         while (offset--)
             (void) getc(fp);
 
