@@ -164,13 +164,13 @@ Usage(const NulibState* pState)
         "  -r  recurse into subdirs              -j  junk (don't record) directory names\n"
         "  -0  don't use compression             -c  add one-line comments\n");
     if (NuTestFeature(kNuFeatureCompressDeflate) == kNuErrNone)
-        printf("  -z  use gzip 'deflate' compression    ");
+        printf("  -z  use zlib 'deflate' compression    ");
     else
         printf("  -z  use zlib [not included]           ");
     if (NuTestFeature(kNuFeatureCompressBzip2) == kNuErrNone)
-        printf("-zz use bzip2 'BWT' compression\n");
+        printf("-zz use bzip2 BWT compression\n");
     else
-        printf("-zz use BWT [not included]\n");
+        printf("-zz use bzip2 [not included]\n");
     printf(
         "  -l  auto-convert text files           -ll convert CR/LF on ALL files\n"
         "  -s  stomp existing files w/o asking   -k  store files as disk images\n"
@@ -193,29 +193,51 @@ DoHelp(const NulibState* pState)
         const char* longDescr;
     } help[] = {
         { kCommandListVerbose, 'v', "verbose listing of archive contents",
-"  List files in the archive, blah blah blah\n"
+"  List archive contents in a multi-column format with summary totals.\n"
+"  The output is similar to what ShrinkIt produces.  You can specify the\n"
+"  names of the files to list.\n"
+"\n"
+"  The '-b' modifier will force NuLib2 to open the file as Binary II.\n"
+"  This can be useful when working with encapsulated archives (.BXY and\n"
+"  .BSE) and when the archive is presented on standard input (i.e.\n"
+"  \"nulib2 -vb - < archive.bny\").\n",
         },
         { kCommandListShort, 't', "quick dump of table of contents",
-"  shortList files in the archive, blah blah blah\n"
+"  List the filenames, one per line, without any truncation or embellishment.\n"
+"  Useful for feeding into another program.\n",
         },
-        { kCommandAdd, 'a', "add files, creating the archive if necessary",
-"  Add files to the archive, blah blah blah\n"
-        },
-        { kCommandDelete, 'd', "delete files from archive",
-"  Delete files from the archive, blah blah blah\n"
+        { kCommandAdd, 'a', "add files to an archive",
+"  Add files to an archive, possibly creating it first.  Files in\n"
+"  subdirectories will not be added unless the '-r' flag is provided.\n",
         },
         { kCommandExtract, 'x', "extract files from an archive",
-"  Extracts files, blah blah blah\n"
+"  Extract the specified items from the archive.  If nothing is specified,\n"
+"  everything is extracted.  The '-r' modifier tells NuLib2 to do a prefix\n"
+"  match, so \"nulib2 -xr archive.shk doc\" will extract everything in the\n"
+"  \"doc\" directory.  It will also extract a file called \"document\".  If\n"
+"  you just want a directory, tack on the filename separator character, e.g.\n"
+"  \"nulib2 -xr archive.shk doc:\".\n"
+"\n"
+"  When working with Binary II archives, the following suboptions aren't\n"
+"  allowed: -u -f -c -l -ll\n",
         },
         { kCommandExtractToPipe, 'p', "extract files to pipe",
-"  Extracts files to stdout, blah blah blah\n"
+"  Works just like '-x', but all files are written to stdout.  Useful for\n"
+"  viewing a file, e.g. \"nulib2 -pl archive.shk document.txt | less\".\n"
+"  The progress indicators and interactive prompts are disabled.\n",
         },
         { kCommandTest, 'i', "test archive integrity",
-"  Tests files, blah blah blah\n"
+"  Verify the contents of an archive by extracting all files and verifying\n"
+"  all CRCs.  Note that uncompressed files in archives created by P8\n"
+"  ShrinkIt and un-SQueezed files in Binary II archives do not have any\n"
+"  sort of checksum.\n",
+        },
+        { kCommandDelete, 'd', "delete files from archive",
+"  Delete the named files from the archive.  If you delete all of the files,\n"
+"  the archive itself will be removed.\n",
         },
         { kCommandHelp, 'h', "show extended help",
-"  This is the extended help text\n"
-"  A full manual is available from http://www.nulib.com/.\n"
+"  This is the extended help text.  Go to www.nulib.com for a full manual.\n",
         },
     };
 
@@ -234,8 +256,12 @@ DoHelp(const NulibState* pState)
 "This program is distributed in the hope that it will be useful,\n"
 "but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
 "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
-"README file for more details.\n"
+"README file for more details.\n\n"
     );
+
+    printf("Usage: %s -command[modifiers] archive [filename-list]\n\n",
+        gProgName);
+    printf("If \"archive\" is \"-\", the archive will be read from stdin.\n");
 
     for (i = 0; i < NELEM(help); i++) {
         const ValidCombo* pvc;
@@ -265,15 +291,15 @@ DoHelp(const NulibState* pState)
     putchar('\n');
 
     printf("Compression algorithms supported by this copy of NufxLib:\n");
-    printf("  Huffman SQueeze ...... %s\n",
+    printf("  SQueeze (Huffman+RLE) ...... %s\n",
         NuTestFeature(kNuFeatureCompressSQ) == kNuErrNone? "yes" : "no");
-    printf("  LZW/1 and LZW/2 ...... %s\n",
+    printf("  LZW/1 and LZW/2 ............ %s\n",
         NuTestFeature(kNuFeatureCompressLZW) == kNuErrNone ? "yes" : "no");
-    printf("  12- and 16-bit LZC ... %s\n",
+    printf("  12- and 16-bit LZC ......... %s\n",
         NuTestFeature(kNuFeatureCompressLZC) == kNuErrNone ? "yes" : "no");
-    printf("  Deflate .............. %s\n",
+    printf("  Deflate .................... %s\n",
         NuTestFeature(kNuFeatureCompressDeflate) == kNuErrNone ? "yes" : "no");
-    printf("  bzip2 ................ %s\n",
+    printf("  Bzip2 ...................... %s\n",
         NuTestFeature(kNuFeatureCompressBzip2) == kNuErrNone ? "yes" : "no");
 
 
@@ -367,18 +393,22 @@ ProcessOptions(NulibState* pState, int argc, char* const* argv)
                 if (*(cp+1) == 'z') {
                     if (NuTestFeature(kNuFeatureCompressBzip2) == kNuErrNone)
                         NState_SetModCompressBzip2(pState, true);
-                    else
+                    else {
                         fprintf(stderr,
-                            "%s: WARNING: libbz2 support not compiled in\n",
+                            "%s: ERROR: libbz2 support not compiled in\n",
                             gProgName);
+                        goto fail;
+                    }
                     cp++;
                 } else {
                     if (NuTestFeature(kNuFeatureCompressDeflate) == kNuErrNone)
                         NState_SetModCompressDeflate(pState, true);
-                    else
+                    else {
                         fprintf(stderr,
-                            "%s: WARNING: zlib support not compiled in\n",
+                            "%s: ERROR: zlib support not compiled in\n",
                             gProgName);
+                        goto fail;
+                    }
                 }
                 break;
             case 'e':
