@@ -201,7 +201,7 @@ typedef enum NuThreadFormat {
             ((char) ((sysInfo) & 0xff))
 /* return a file_sys_info with a replaced filesystem separator */
 #define NuSetSepInSysInfo(sysInfo, newSep) \
-            ((ushort) (((sysInfo) & 0xff00) | ((newSep) & 0xff)) )
+            ((unsigned short) (((sysInfo) & 0xff00) | ((newSep) & 0xff)) )
 
 /* GS/OS-defined file system identifiers; sadly, UNIX is not among them */
 typedef enum NuFileSysID {
