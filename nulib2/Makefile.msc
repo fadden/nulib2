@@ -69,8 +69,8 @@ PRODUCT = nulib2.exe
 
 all: $(PRODUCT)
 
-nulib2.exe: $(OBJS) $(NUFXSRCDIR)\nufxlib.lib
-	$(link) $(ldebug) $** -out:$@ $(NUFXSRCDIR)\nufxlib.lib $(LIB_FLAGS)
+nulib2.exe: $(OBJS) $(NUFXSRCDIR)\nufxlib2.lib
+	$(link) $(ldebug) $** -out:$@ $(NUFXSRCDIR)\nufxlib2.lib $(LIB_FLAGS)
 
 clean:
 	del *.obj
