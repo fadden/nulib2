@@ -578,9 +578,17 @@ bail:
     return result;
 }
 
-#if 0
 /*
  * Tried to add a nonexistent file; continue?
+ *
+ * To make this happen, you need to:
+ *  - nulib2 aer lots-of-files another-file
+ *  - remove another-file while nulib2 is still processing lots-of-files
+ *
+ * The trick is to delete a file explicitly mentioned on the command line
+ * after NuFlush starts to do its thing.  Otherwise, we're just using
+ * the system equivalent of readdir to scan a directory, so deleting a
+ * file just means it won't get added.
  */
 static NuResult
 HandleAddNotFound(NulibState* pState, NuArchive* pArchive,
@@ -601,7 +609,7 @@ HandleAddNotFound(NulibState* pState, NuArchive* pArchive,
     }
 
     while (1) {
-        fprintf("\n  Couldn't find %s, continue?  [y]es, [n]o: ",
+        fprintf(stderr, "\n  Couldn't find %s, continue?  [y]es, [n]o: ",
             pErrorStatus->pathname);
         fflush(stderr);
 
@@ -624,7 +632,6 @@ HandleAddNotFound(NulibState* pState, NuArchive* pArchive,
 bail:
     return result;
 }
-#endif
 
 /*
  * Something failed, and the user may want to choose how to handle it.
@@ -684,14 +691,8 @@ ErrorHandler(NuArchive* pArchive, void* vErrorStatus)
             else
                 result = HandleReplaceExisting(pState, pArchive, pErrorStatus);
         } else if (pErrorStatus->err == kNuErrFileNotFound) {
-            /*
-             * This should never happen, because NuLib2 verifies the
-             * presence of the files.  (If you want to test this out,
-             * you have to "sabotage" AddFile, or remove a file from disk
-             * while NuFlush is running.)
-             */
-            Assert(0);
-            /*result = HandleAddNotFound(pState, pArchive, pErrorStatus);*/
+            /* file was specified with NuAdd but removed during NuFlush */
+            result = HandleAddNotFound(pState, pArchive, pErrorStatus);
         }
     } else if (pErrorStatus->operation == kNuOpTest) {
         if (pErrorStatus->err == kNuErrBadMHCRC ||
@@ -809,11 +810,11 @@ OpenArchiveReadOnly(NulibState* pState)
     NState_SetNuArchive(pState, pArchive);
     err = NuSetExtraData(pArchive, pState);
 
-    err = NuSetSelectionFilter(pArchive, SelectionFilter);
-    err = NuSetOutputPathnameFilter(pArchive, OutputPathnameFilter);
-    err = NuSetProgressUpdater(pArchive, ProgressUpdater);
-    err = NuSetErrorHandler(pArchive, ErrorHandler);
-    /*err = NuSetErrorMessageHandler(pArchive, ErrorMessageHandler);*/
+    NuSetSelectionFilter(pArchive, SelectionFilter);
+    NuSetOutputPathnameFilter(pArchive, OutputPathnameFilter);
+    NuSetProgressUpdater(pArchive, ProgressUpdater);
+    NuSetErrorHandler(pArchive, ErrorHandler);
+    /*NuSetErrorMessageHandler(pArchive, ErrorMessageHandler);*/
 
     /* set the EOL conversion */
     if (NState_GetModConvertAll(pState))
@@ -908,13 +909,10 @@ OpenArchiveReadWrite(NulibState* pState)
     err = NuSetExtraData(pArchive, pState);
     BailError(err);
 
-    err = NuSetSelectionFilter(pArchive, SelectionFilter);
-    BailError(err)
-    err = NuSetProgressUpdater(pArchive, ProgressUpdater);
-    BailError(err)
-    err = NuSetErrorHandler(pArchive, ErrorHandler);
-    BailError(err)
-    /*err = NuSetErrorMessageHandler(pArchive, ErrorMessageHandler);*/
+    NuSetSelectionFilter(pArchive, SelectionFilter);
+    NuSetProgressUpdater(pArchive, ProgressUpdater);
+    NuSetErrorHandler(pArchive, ErrorHandler);
+    /*NuSetErrorMessageHandler(pArchive, ErrorMessageHandler);*/
 
     /* handle "-0" flag */
     if (NState_GetModNoCompression(pState)) {

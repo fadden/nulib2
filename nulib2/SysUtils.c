@@ -464,6 +464,7 @@ GetFileDetails(NulibState* pState, const char* pathname, struct stat* psb,
     memset(pDetails, 0, sizeof(*pDetails));
     pDetails->threadID = kNuThreadIDDataFork;
     pDetails->storageName = livePathStr;    /* point at temp buffer */
+    pDetails->origName = nil;
     pDetails->fileSysID = kNuFileSysUnknown;
     pDetails->fileSysInfo = kStorageFssep;
     pDetails->fileType = 0;

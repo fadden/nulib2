@@ -1,3 +1,7 @@
+2003/02/18  fadden
+    - When extracting with "-ee", disk images now have ".PO" appended.
+    - Resurrected HandleAddNotFound().
+
 2003/02/08  fadden
     - Upped version to v2.0.0.
     - Many fixes to pathname handling:
