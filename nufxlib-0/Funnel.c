@@ -560,7 +560,10 @@ Nu_FunnelWrite(NuArchive* pArchive, NuFunnel* pFunnel, const uchar* buffer,
      * If it will fit into the buffer, just copy it in.
      */
     if (pFunnel->bufCount + count < kNuFunnelBufSize) {
-        memcpy(pFunnel->buffer + pFunnel->bufCount, buffer, count);
+        if (count == 1)     /* minor optimization */
+            *(pFunnel->buffer + pFunnel->bufCount) = *buffer;
+        else
+            memcpy(pFunnel->buffer + pFunnel->bufCount, buffer, count);
         pFunnel->bufCount += count;
         goto bail;
     } else {
@@ -584,8 +587,6 @@ Nu_FunnelWrite(NuArchive* pArchive, NuFunnel* pFunnel, const uchar* buffer,
     }
 
 bail:
-    /*if (err == kNuErrNone)
-        err = Nu_FunnelSendProgressUpdate(pArchive, pFunnel);*/
     return err;
 }
 

@@ -4,7 +4,8 @@
  * This is free software; you can redistribute it and/or modify it under the
  * terms of the GNU Library General Public License, see the file COPYING.LIB.
  *
- * Compute 16-bit CRCs.
+ * Compute 16-bit CRCs.  Depending on the hardware, the table version
+ * might be slower than the loop computation.
  */
 #define __Crc16_c__ 1
 #include "NufxLibPriv.h"

@@ -162,9 +162,8 @@ Nu_ExpandStream(NuArchive* pArchive, const NuRecord* pRecord,
                 pCalcCrc);
         break;
     case kNuThreadFormatHuffmanSQ:
-        err = kNuErrBadFormat;
-        Nu_ReportError(NU_BLOB, kNuErrNone,
-            "Huffman-compressed threads not supported");
+        err = Nu_ExpandHuffmanSQ(pArchive, pRecord, pThread, infp, pFunnel,
+                pCalcCrc);
         break;
     case kNuThreadFormatLZW1:
     case kNuThreadFormatLZW2:

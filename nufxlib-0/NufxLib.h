@@ -527,6 +527,7 @@ typedef enum NuProgressState {
     kNuProgressPreparing,       /* not started yet */
     kNuProgressOpening,         /* opening files */
 
+    kNuProgressAnalyzing,       /* analyzing data */
     kNuProgressCompressing,     /* compressing data */
     kNuProgressStoring,         /* storing (no compression) data */
     kNuProgressExpanding,       /* expanding data */

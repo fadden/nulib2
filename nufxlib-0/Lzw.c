@@ -333,15 +333,15 @@ Nu_LZWPutCode(uchar** pOutBuf, ulong prefixCode, int codeBits, int* pAtBit)
  *
  * This function is patterned after the LZC compress function, rather
  * than the NuLib LZW code, because the NuLib code was abysmal (a rather
- * straight translation from assembly).  This function differs from LZC
+ * straight translation from 6502 assembly).  This function differs from LZC
  * in a few areas in order to make the output match GS/ShrinkIt.
  *
- * There is a minor bug here: if a table clear is emitted when there is
- * only one character left in the input, nothing will be added to the
- * hash table (as there is nothing to add) but "nextFree" will be
- * advanced.  This mimics GSHK's behavior, and accounts for the "resetFix"
- * logic in the expansion functions.  Code 0x0101 is essentially lost
- * in this situation.
+ * There is a (deliberate) minor bug here: if a table clear is emitted
+ * when there is only one character left in the input, nothing will be
+ * added to the hash table (as there is nothing to add) but "nextFree"
+ * will be advanced.  This mimics GSHK's behavior, and accounts for the
+ * "resetFix" logic in the expansion functions.  Code 0x0101 is essentially
+ * lost in this situation.
  */
 static NuError
 Nu_CompressLZWBlock(LZWCompressState* lzwState, const uchar* inputBuf,
@@ -1393,8 +1393,7 @@ Nu_ExpandLZW(NuArchive* pArchive, const NuRecord* pRecord,
             /*printf("+++ READING %ld\n", getSize);*/
             err = Nu_FRead(infp, lzwState->dataPtr + lzwState->dataInBuffer,
                     getSize);
-            if (err != kNuErrNone)
-            {
+            if (err != kNuErrNone) {
                 Nu_ReportError(NU_BLOB, err,
                     "failed reading compressed data (%ld bytes)", getSize);
                 goto bail;

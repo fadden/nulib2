@@ -28,10 +28,10 @@ CFLAGS		= @BUILD_FLAGS@ -I. @DEFS@
 
 SRCS		= Archive.c ArchiveIO.c Compress.c Crc16.c Debug.c Deferred.c \
 			  Entry.c Expand.c FileIO.c Funnel.c Lzw.c MiscStuff.c MiscUtils.c \
-			  Record.c SourceSink.c Thread.c Value.c Version.c
+			  Record.c SourceSink.c Squeeze.c Thread.c Value.c Version.c
 OBJS		= Archive.o ArchiveIO.o Compress.o Crc16.o Debug.o Deferred.o \
 			  Entry.o Expand.o FileIO.o Funnel.o Lzw.o MiscStuff.o MiscUtils.o \
-			  Record.o SourceSink.o Thread.o Value.o Version.o
+			  Record.o SourceSink.o Squeeze.o Thread.o Value.o Version.o
 
 STATIC_PRODUCT	= libnufx.a
 SHARED_PRODUCT	= libnufx.so

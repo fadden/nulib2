@@ -30,9 +30,6 @@ Nu_CompressUncompressed(NuArchive* pArchive, NuStraw* pStraw,
 
     *pDstLen = srcLen;  /* get this over with */
 
-    /* doesn't have to be same size as funnel, but it's not a bad idea */
-    /*buffer = Nu_Malloc(pArchive, kNuFunnelBufSize);*/
-    /*BailAlloc(buffer);*/
     err = Nu_AllocCompressionBufferIFN(pArchive);
     BailError(err);
 
@@ -64,25 +61,31 @@ bail:
  *
  * All archive-specified fields in "pThread" will be filled in, as will
  * "actualThreadEOF".  The "nuThreadIdx" and "fileOffset" fields will
- * not be modified.
+ * not be modified, and must be specified before calling here.
  *
  * If "sourceFormat" is uncompressed:
  *  "targetFormat" will be used to compress the data
  *  the data source length will be placed into pThread->thThreadEOF
  *  the compressed size will be placed into pThread->thCompThreadEOF
+ *  the CRC is computed
  *
  * If "sourceFormat" is compressed:
  *  the data will be copied without compression (targetFormat is ignored)
  *  the data source "otherLen" value will be placed into pThread->thThreadEOF
  *  the data source length will be placed into pThread->thCompThreadEOF
+ *  the CRC is retrieved from Nu_DataSourceGetRawCrc
  *
  * The actual format used will be placed in pThread->thThreadFormat, and
  * the CRC of the uncompressed data will be placed in pThread->thThreadCRC.
  * The remaining fields of "pThread", thThreadClass and thThreadKind, will
  * be set based on the fields in "pDataSource".
  *
- * The output file will be positioned after the last byte of the output.
- * (For a pre-sized buffer, this may not be the desired result.)
+ * Data will be written to "dstFp", which must be positioned at the
+ * correct point in the output.  The position is expected to match
+ * pThread->fileOffset.
+ *
+ * On exit, the output file will be positioned after the last byte of the
+ * output.  (For a pre-sized buffer, this may not be the desired result.)
  */
 NuError
 Nu_CompressToArchive(NuArchive* pArchive, NuDataSource* pDataSource,
@@ -145,6 +148,9 @@ Nu_CompressToArchive(NuArchive* pArchive, NuDataSource* pDataSource,
 
     if (!srcLen) {
         /* empty file! */
+        if (sourceFormat != kNuThreadFormatUncompressed) {
+            DBUG(("ODD: empty source is compressed?\n"));
+        }
         pThread->thThreadFormat = kNuThreadFormatUncompressed;
         pThread->thThreadCRC = threadCrc;
         pThread->thThreadEOF = 0;
@@ -155,10 +161,10 @@ Nu_CompressToArchive(NuArchive* pArchive, NuDataSource* pDataSource,
 
     if (sourceFormat == kNuThreadFormatUncompressed) {
         /*
-         * Compress the input.
+         * Compress the input to the requested target format.
          */
 
-        /* GSHK doesn't compress anything under 512 bytes */
+        /* for some reason, GSHK doesn't compress anything under 512 bytes */
         if (pArchive->valMimicSHK && srcLen < kNuSHKLZWThreshold)
             targetFormat = kNuThreadFormatUncompressed;
 
@@ -175,6 +181,10 @@ Nu_CompressToArchive(NuArchive* pArchive, NuDataSource* pDataSource,
         switch (targetFormat) {
         case kNuThreadFormatUncompressed:
             err = Nu_CompressUncompressed(pArchive, pStraw, dstFp, srcLen,
+                    &dstLen, &threadCrc);
+            break;
+        case kNuThreadFormatHuffmanSQ:
+            err = Nu_CompressHuffmanSQ(pArchive, pStraw, dstFp, srcLen,
                     &dstLen, &threadCrc);
             break;
         case kNuThreadFormatLZW1:
@@ -220,7 +230,7 @@ Nu_CompressToArchive(NuArchive* pArchive, NuDataSource* pDataSource,
                     &dstLen, &threadCrc);
             BailError(err);
 
-            /* [didn't need to recompute CRC, but I was being paranoid] */
+            /* [can set "&threadCrc" above to nil to speed things up] */
             Assert(threadCrc == pThread->thThreadCRC);
 
             pThread->thThreadEOF = srcLen;
@@ -284,7 +294,6 @@ Nu_CopyPresizedToArchive(NuArchive* pArchive, NuDataSource* pDataSource,
 {
     NuError err = kNuErrNone;
     NuStraw* pStraw = nil;
-    /*uchar* buffer = nil;*/
     ulong srcLen, bufferLen;
     ulong count, getsize;
 
@@ -316,8 +325,6 @@ Nu_CopyPresizedToArchive(NuArchive* pArchive, NuDataSource* pDataSource,
     BailError(err);
 
     count = srcLen;
-    /*buffer = Nu_Malloc(pArchive, kNuFunnelBufSize);*/
-    /*BailAlloc(buffer);*/
     err = Nu_AllocCompressionBufferIFN(pArchive);
     BailError(err);
 

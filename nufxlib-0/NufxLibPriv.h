@@ -766,6 +766,12 @@ void Nu_DataSinkFile_Close(NuDataSink* pDataSink);
 NuError Nu_DataSinkPutBlock(NuDataSink* pDataSink, const uchar* buf, ulong len);
 NuError Nu_DataSinkGetError(NuDataSink* pDataSink);
 
+/* Squeeze.c */
+NuError Nu_CompressHuffmanSQ(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
+    ulong srcLen, ulong* pDstLen, ushort* pCrc);
+NuError Nu_ExpandHuffmanSQ(NuArchive* pArchive, const NuRecord* pRecord,
+    const NuThread* pThread, FILE* infp, NuFunnel* pFunnel, ushort* pCrc);
+
 /* Thread.c */
 #ifdef __Thread_c__
  #define THREAD_INLINE  /**/

@@ -12,8 +12,8 @@
 
 /* version number; edit by hand */
 static const long gNuMajorVersion = 1;
-static const long gNuMinorVersion = 0;
-static const long gNuBugVersion = 1;
+static const long gNuMinorVersion = 1;
+static const long gNuBugVersion = 0;
 
 /* executable was build on or after this date (inserted automatically) */
 static const char gNuBuildDate[] = "BUILT"; /* approximate */
