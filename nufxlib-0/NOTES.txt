@@ -64,15 +64,15 @@ threads are annotated in the "copy" list.)
 
 One of the goals was to be able to execute a sequence of operations like:
 
-	- open original archive
-	- read original archive
-	- modify archive
-	- flush (success)
-	- modify archive
-	- flush (failure, rollback)
-	- modify archive
-	- flush (success)
-	- close archive
+    - open original archive
+    - read original archive
+    - modify archive
+    - flush (success)
+    - modify archive
+    - flush (failure, rollback)
+    - modify archive
+    - flush (success)
+    - close archive
 
 The archive is opened at the start and held open across many operations.
 There is never a need to re-read the entire archive.  We could avoid the
@@ -98,7 +98,7 @@ In summary:
     initially contains a complete copy of "orig".
   "new" list contains all new additions to the archive, including
     new additions that replace existing entries (the existing entry
-	is deleted from "copy" and then added to "new").
+    is deleted from "copy" and then added to "new").
 
 
 Each Record in the list has a "thread modification" list attached to it.
@@ -106,9 +106,9 @@ Any changes to the record header or additions to the thread mod list are
 made in the "copy" set; the "original" set remains untouched.  The thread
 mod list can have the following items in it:
 
-	- delete thread (NuThreadIdx)
-	- add thread (type, otherSize, format, +contents)
-	- update pre-sized thread (NuThreadIdx, +contents)
+    - delete thread (NuThreadIdx)
+    - add thread (type, otherSize, format, +contents)
+    - update pre-sized thread (NuThreadIdx, +contents)
 
 Contents are specified with a NuDataSource, which allows the application
 to indicate that the data is already compressed.  This is useful for
