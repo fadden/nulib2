@@ -750,9 +750,24 @@ Nu_HandleAddThreadMods(NuArchive* pArchive, NuRecord* pRecord,
                  * reading the data out of.  We could do this differently
                  * for a "file" data source, but we might as well be
                  * consistent.
+                 *
+                 * [Actually, the above remark is bogus.  During a bulk add
+                 * there's no other way to recover the original filename.
+                 * Do something different here for data sinks with
+                 * filenames attached. ++ATM 2003/02/17]
                  */
-                err = Nu_ProgressDataInit_Compress(pArchive, &progressData,
-                        pRecord, pRecord->filename);
+                if (Nu_DataSourceGetType(pThreadMod->entry.add.pDataSource)
+                    == kNuDataSourceFromFile)
+                {
+                    /* use on-disk filename */
+                    err = Nu_ProgressDataInit_Compress(pArchive, &progressData,
+                            pRecord, Nu_DataSourceFile_GetPathname(
+                                pThreadMod->entry.add.pDataSource));
+                } else {
+                    /* use archive filename for both */
+                    err = Nu_ProgressDataInit_Compress(pArchive, &progressData,
+                            pRecord, pRecord->filename);
+                }
                 BailError(err);
 
                 /* send initial progress so they see name if "open" fails */

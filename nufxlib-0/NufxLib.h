@@ -222,15 +222,18 @@ typedef enum NuFileSysID {
 
 /* simplified definition of storage types */
 typedef enum NuStorageType {
-    kNuStorageUnknown           = 0,
+    kNuStorageUnknown           = 0,    /* (used by ProDOS for deleted files) */
     kNuStorageSeedling          = 1,    /* <= 512 bytes */
     kNuStorageSapling           = 2,    /* < 128KB */
     kNuStorageTree              = 3,    /* < 16MB */
+    kNuStoragePascalVol         = 4,    /* (embedded pascal volume; rare) */
     kNuStorageExtended          = 5,    /* forked (any size) */
-    kNuStorageDirectory         = 0x0d
+    kNuStorageDirectory         = 13,   /* directory */
+    kNuStorageSubdirHeader      = 14,   /* (only used in subdir headers) */
+    kNuStorageVolumeHeader      = 15,   /* (only used in volume dir header) */
 } NuStorageType;
 
-/* flags for NuOpenRW */
+/* bit flags for NuOpenRW */
 enum {
     kNuOpenCreat                = 0x0001,
     kNuOpenExcl                 = 0x0002
@@ -514,6 +517,7 @@ typedef struct NuRecordAttr {
 typedef struct NuFileDetails {
     /* used during AddFile call */
     NuThreadID          threadID;       /* data, rsrc, disk img? */
+    const char*         origName;
 
     /* these go straight into the NuRecord */
     const char*         storageName;
@@ -634,8 +638,9 @@ typedef struct NuErrorStatus {
     int                 sysErr;         /* system error code, if applicable */
     const char*         message;        /* (optional) message to user */
     const NuRecord*     pRecord;        /* relevant record, if any */
-    const char*         pathname;       /* relevant pathname, if any */
-    char                filenameSeparator;  /* fssep for this path, if any */
+    const char*         pathname;       /* problematic pathname, if any */
+    const char*         origPathname;   /* original pathname, if any */
+    char                filenameSeparator;  /* fssep for pathname, if any */
     /*char              origArchiveTouched;*/
 
     char                canAbort;       /* give option to abort */
@@ -803,17 +808,20 @@ NUFXLIB_API short NuIsPresizedThreadID(NuThreadID threadID);
 
 
 /* callback setters */
-NUFXLIB_API NuError NuSetSelectionFilter(NuArchive* pArchive,
+#define kNuInvalidCallback  ((NuCallback) 1)
+NUFXLIB_API NuCallback NuSetSelectionFilter(NuArchive* pArchive,
             NuCallback filterFunc);
-NUFXLIB_API NuError NuSetOutputPathnameFilter(NuArchive* pArchive,
+NUFXLIB_API NuCallback NuSetOutputPathnameFilter(NuArchive* pArchive,
             NuCallback filterFunc);
-NUFXLIB_API NuError NuSetProgressUpdater(NuArchive* pArchive,
+NUFXLIB_API NuCallback NuSetProgressUpdater(NuArchive* pArchive,
             NuCallback updateFunc);
-NUFXLIB_API NuError NuSetFreeHandler(NuArchive* pArchive, NuCallback freeFunc);
-NUFXLIB_API NuError NuSetErrorHandler(NuArchive* pArchive,NuCallback errorFunc);
-NUFXLIB_API NuError NuSetErrorMessageHandler(NuArchive* pArchive,
+NUFXLIB_API NuCallback NuSetFreeHandler(NuArchive* pArchive,
+            NuCallback freeFunc);
+NUFXLIB_API NuCallback NuSetErrorHandler(NuArchive* pArchive,
+            NuCallback errorFunc);
+NUFXLIB_API NuCallback NuSetErrorMessageHandler(NuArchive* pArchive,
             NuCallback messageHandlerFunc);
-NUFXLIB_API NuError NuSetGlobalErrorMessageHandler(NuCallback messageHandlerFunc);
+NUFXLIB_API NuCallback NuSetGlobalErrorMessageHandler(NuCallback messageHandlerFunc);
 
 
 #ifdef __cplusplus

@@ -810,6 +810,7 @@ Nu_ShouldIgnoreBadCRC(NuArchive* pArchive, const NuRecord* pRecord, NuError err)
         errorStatus.message = nil;
         errorStatus.pRecord = pRecord;
         errorStatus.pathname = nil;
+        errorStatus.origPathname = nil;
         errorStatus.filenameSeparator = 0;
         if (pRecord != nil) {
             errorStatus.pathname = pRecord->filename;
@@ -2044,6 +2045,7 @@ Nu_HandleAddDuplicateRecord(NuArchive* pArchive, NuRecordSet* pRecordSet,
             errorStatus.message = nil;
             errorStatus.pRecord = pRecord;
             errorStatus.pathname = pFileDetails->storageName;
+            errorStatus.origPathname = pFileDetails->origName;
             errorStatus.filenameSeparator =
                                 NuGetSepFromSysInfo(pFileDetails->fileSysInfo);
             /*errorStatus.origArchiveTouched = false;*/

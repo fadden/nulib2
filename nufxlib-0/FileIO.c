@@ -719,6 +719,7 @@ Nu_OpenOutputFile(NuArchive* pArchive, const NuRecord* pRecord,
     errorStatus.message = nil;
     errorStatus.pRecord = pRecord;
     errorStatus.pathname = newPathname;
+    errorStatus.origPathname = nil;
     errorStatus.filenameSeparator = newFssep;
     /*errorStatus.origArchiveTouched = false;*/
     errorStatus.canAbort = true;
@@ -1021,6 +1022,7 @@ retry:
         errorStatus.message = nil;
         errorStatus.pRecord = nil;
         errorStatus.pathname = pathname;
+        errorStatus.origPathname = nil;
         errorStatus.filenameSeparator = '\0';
         /*errorStatus.origArchiveTouched = false;*/
         errorStatus.canAbort = true;
