@@ -1,0 +1,42 @@
+/*
+ * NuFX archive manipulation library
+ * Copyright (C) 2000 by Andy McFadden, All Rights Reserved.
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Library General Public License, see the file COPYING.LIB.
+ *
+ * !!! NOTE !!!
+ * The file Version.c is automatically generated from Version.c.in.  Don't
+ * edit the .c file if you want your changes to be permanent.
+ */
+#include "NufxLibPriv.h"
+
+/* version number; edit by hand */
+static const long gNuMajorVersion = 1;
+static const long gNuMinorVersion = 0;
+static const long gNuBugVersion = 0;
+
+/* executable was build on or after this date (inserted automatically) */
+static const char gNuBuildDate[] = "BUILT";	/* approximate */
+static const char gNuBuildFlags[] = "OPTFLAGS";
+
+
+/*
+ * Return the version number, date built, and build flags.
+ */
+NuError
+Nu_GetVersion(long* pMajorVersion, long* pMinorVersion, long* pBugVersion,
+	const char** ppBuildDate, const char** ppBuildFlags)
+{
+	if (pMajorVersion != nil)
+		*pMajorVersion = gNuMajorVersion;
+	if (pMinorVersion != nil)
+		*pMinorVersion = gNuMinorVersion;
+	if (pBugVersion != nil)
+		*pBugVersion = gNuBugVersion;
+	if (ppBuildDate != nil)
+		*ppBuildDate = gNuBuildDate;
+	if (ppBuildFlags != nil)
+		*ppBuildFlags = gNuBuildFlags;
+	return kNuErrNone;
+}
+

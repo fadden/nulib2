@@ -1,0 +1,154 @@
+2000/05/18	***** v1.0.0 shipped *****
+
+2000/05/18	fadden
+	- updated version information to indicate final release
+
+2000/03/25	***** v0.6.1 shipped *****
+
+2000/03/25	fadden
+	- Sheppy says Mac OS X PPC v1.02 and v1.2 work with minor SysDefs tweak
+
+2000/03/05	***** v0.6.0 (beta) shipped *****
+
+2000/03/05	fadden
+	- modified NuOpenRW to call mktemp or mkstemp if tmpPath looks like
+	  a template
+	- removed DEBUG_MSGS from default CFLAGS
+	- updated version information to indicate beta release
+
+2000/02/24	***** v0.5.1 shipped *****
+
+2000/02/20	changes from Scott Blackman
+	- portability fixes for DJGPP under Win95
+
+2000/02/17	changes from Devin Reade
+	- portability fixes for BSD, AIX, and others
+
+2000/02/09	***** v0.5.0 (alpha) shipped *****
+
+2000/02/08	fadden
+	- tweaked the BeOS/PPC config around a little
+	- deleted some commas to make "gcc -pendantic" happy
+
+2000/02/06	fadden
+	- include @CFLAGS@ in case somebody wants to override them
+
+2000/02/06	***** v0.4.0b shipped *****
+
+2000/02/06	fadden
+	- added "install-shared" make target
+	- portability fixes for HP/UX
+	- configure.in test for presence of snprintf/vsnprintf declarations
+
+2000/02/06	***** v0.4.0a shipped *****
+
+2000/02/06	fadden
+	- massaged configure.in for BeOS, and added some type casts for mwerks
+
+2000/02/06	***** v0.4.0 shipped *****
+
+2000/02/06	fadden
+	- added value range checking to Nu_SetValue
+
+2000/02/05	fadden
+	- finished "test-basic"
+	- added an "install" target to copy libnufx and NufxLib.h
+	- added "mkinstalldirs"
+	- fixed a memory leak in NuTest
+	- made several implicit typecasts explicit for Visual C++'s benefit
+	- renamed MiscStuff's replacement function to "Nu_function"
+	- use "rb" or "wb" as fopen arg in sample code for Win32
+
+2000/02/04	fadden
+	- wrote a fair piece of "test-basic"
+	- added "stickyErr" to "toBuffer" data sink so we can catch overruns
+
+2000/02/02	fadden
+	- minor changes to get it working under Win32 (Visual C++ 6.0)
+	- added --enable-dmalloc to configuration
+	- instead of constantly allocating 16K buffers, use pArchive->compBuf
+	- ignore DataSink convertEOL value when doExpand is false
+
+2000/02/01	fadden
+	- added system-specific PATH_SEP define for samples (imgconv, exerciser)
+	- set the pathname in ErrorStatus for CRC failures
+
+2000/01/31	fadden
+	- fixed a typo causing zero-byte GSHK-damaged files to report CRC errors
+	- added support for DOS-ordered 2MG images to "imgconv"
+
+2000/01/29	***** v0.3.0 shipped *****
+
+2000/01/29	fadden
+	- renamed "tests" to "samples"
+	- changed library version to x.y.z format (major, minor, bug-fix)
+	- added DEBUG_VERBOSE define, took some stuff out of DEBUG_MSGS
+
+2000/01/28	fadden
+	- make the Skip result work when an input file can't be opened
+	- don't allow leading fssep chars in AddRecord
+	- don't treat a multi-file BNY that happens to have a ShrinkIt archive
+	  in the first slot as a BXY
+	- added "-t" flag (write to temp) to "launder"
+	- in OpenReadWrite, treat zero-length archive files as newly-created
+	- added workaround for GSHK's zero-byte data fork bug
+
+2000/01/26	fadden
+	- added status result flags to NuFlush
+	- dropped kNuAbortAll and added kNuIgnore
+	- implemented kNuValueIgnoreCRC
+	- update the storageType whenever we change the record
+
+2000/01/25	fadden
+	- don't remove the temp file if the rename fails
+	- Nu_ReportError now optionally uses a callback instead of stderr
+	- pass NuArchive* and all the trimmings into Nu_ReportError so we can
+	  do the callback thing; required adding arguments to lots of places
+	- clearly labeled BailError output as debug-only, then replaced most
+	  of the BailErrorQuiet calls with BailError
+	- added global error message for when pArchive doesn't exist (e.g. Open)
+
+2000/01/24	fadden
+	- added args to "launder", and made it work right with 0-length threads
+	- reject disk image threads that aren't a valid size
+	- in NuFlush, recognize when a "copy" set hasn't had any changes made
+	- AddThread no longer makes a copy of the DataSource
+
+2000/01/24	***** v0.2 shipped *****
+
+2000/01/23	fadden
+	- added "sec" (Set ErrorHandler Callback) to exerciser
+	- wrote "launder" test program
+	- made "doExpand" option on data sinks work
+
+2000/01/22	fadden
+	- added OnlyUpdateOlder attribute and implemented for add and extract
+	- made HandleExisting work for AddFile/AddRecord
+	- AddThread's validation now blocks data and control threads in same
+	  record
+	- AddFile and AddRecord now use same validation function as AddThread
+
+2000/01/20	fadden
+	- added Eric Shepherd's BeOS shared lib stuff to configure.in
+	- restructed the progress updater, and made it work when adding files
+
+2000/01/19	fadden
+	- normalized SysDefs.h, changing UNIX to UNIX_LIKE and defining for BeOS
+	- added "shared" target to makefile
+	- added BeOS stuff to autoconf setup
+
+2000/01/17	fadden
+	- fixed Makefile issue preventing "tests" from working with old GNU make
+	- fixed Lzw.c problem fouling up SunOS gcc v2.5.8
+	- discovered "<" vs "<=" flapping in GSHK, which I can't Mimic
+	- fixed option list dump in debug print
+	- properly return from all Malloc errors; abort is now debug-only again
+	- lots of BeOS/Metrowerks "it's not gcc" changes from Eric Shepherd
+
+2000/01/17	***** v0.1 shipped *****
+
+(much time passes)
+
+mid-1998	fadden
+	- work begins
+

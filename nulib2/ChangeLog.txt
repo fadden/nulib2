@@ -1,0 +1,123 @@
+2000/05/18	***** v1.0.0 shipped *****
+
+2000/05/18	fadden
+	- added nulib2 to set of things stripped by "distbin"
+	- updated version information to indicate final release
+
+2000/03/25	***** v0.6.1 shipped *****
+
+2000/03/25      fadden
+	- Sheppy says Mac OS X PPC v1.02 and v1.2 work with minor SysDefs tweak
+
+2000/03/05	***** v0.6.0 (beta) shipped *****
+
+2000/03/05	fadden
+	- don't call mktemp(), just pass template into NuOpenRW
+	- removed DEBUG_MSGS from default CFLAGS
+	- updated version information to indicate beta release
+
+2000/02/24	***** v0.5.1 shipped *****
+
+2000/02/20	changes from Scott Blackman
+	- portability fixes for DJGPP under Win95
+
+2000/02/17	changes from Devin Reade
+	- portability fixes for BSD, AIX, and others
+	- added "distbin" target
+
+2000/02/09	***** v0.5.0 (alpha) shipped *****
+
+2000/02/09	fadden
+	- changed the comparison used when extracting/deleting a list of files
+	  from strcasecmp to strcmp, since NufxLib does case-sensitive compares.
+	- fixed the percentage for files and archives larger than 21MB
+
+2000/02/08	fadden
+	- tweaked the BeOS/PPC config around a little
+	- deleted some commas to make "gcc -pedantic" happy
+	- changed version to x.y.z format here too
+	- generalized the "aux" handling to include all MS-DOS device names
+
+2000/02/06	fadden
+	- include @CFLAGS@ in case somebody wants to override them
+
+2000/02/06	***** v0.4b shipped *****
+
+2000/02/06	fadden
+	- added "install-shared" make target
+	- portability fixes for HP/UX
+
+2000/02/06	***** v0.4a shipped *****
+
+2000/02/06	fadden
+	- massaged configure.in for BeOS, and added some type casts for mwerks
+
+2000/02/06	***** v0.4 shipped *****
+
+2000/02/05	fadden
+	- added "mkinstalldirs" to install target
+	- added Win32 makefile
+	- made a few implicit typecasts explicit for Visual C++'s benefit
+	- change "aux" to "_aux", because FAT filesystems choke on it
+
+2000/02/04	fadden
+	- added Win32 recursive directory descent
+
+2000/02/02	fadden
+	- minor changes to get it working under Win32 (Visual C++ 6.0)
+	- added --enable-dmalloc to configuration
+
+2000/02/01	fadden
+	- screen out leading "./", and junk the path if ".." shows up in path
+	- don't try to add comments to records we're skipping
+	- set kNuValueEOL appropriately for the current system
+
+2000/01/29	***** v0.3 shipped *****
+
+2000/01/29	fadden
+	- added "make install" target, with the standard autoconf defines
+	- added some examples to the man page
+
+2000/01/28	fadden
+	- merged "Kind" and "Type" columns in "v" output
+	- display a '+' when doing EOL conversions on an extracted file
+
+2000/01/26	fadden
+	- added UI for allowing the user to ignore bad CRCs
+	- implemented "-j" (junk paths) for add and extract
+	- implemented "-c" (comments) for add and extract
+	- added totals to bottom of "v" output
+
+2000/01/25	fadden
+	- when extracting without type preservation, append "_rsrc_" to
+	  resource forks
+
+2000/01/24	fadden
+	- added support for "-k" (add as disk image) flag
+
+2000/01/24	***** v0.2 shipped *****
+
+2000/01/22	fadden
+	- added support for "-u" (update) and "-f" (freshen) flags
+	- set file dates in AddFile call
+
+2000/01/20	fadden
+	- restructed the progress updater
+
+2000/01/19	fadden
+	- normalized SysDefs.h, changing UNIX to UNIX_LIKE and defining for BeOS
+	- added "shared" target to makefile
+	- added BeOS stuff to autoconf setup
+
+2000/01/17	fadden
+	- started recording locked/unlocked status
+	- some BeOS/Metrowerks "it's not gcc" changes from Eric Shepherd
+	- implemented "-s" (stomp existing) and "-0" (no compression) modifiers
+
+2000/01/17	***** v0.1 shipped *****
+
+(much time passes)
+
+mid-1998	fadden
+	- work begins
+

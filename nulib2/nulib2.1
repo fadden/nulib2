@@ -1,0 +1,178 @@
+.\" nulib2.1
+.\" Copyright (C) 2000 by Andy McFadden.  All Rights Reserved.
+.\" This is free software; you can redistribute it and/or modify it under the
+.\" terms of the GNU General Public License, see the file COPYING.
+.\"
+.\" The general structure of this man page was borrowed from "zip.1" in
+.\" the Red Hat Linux 6.0 distribution.
+.\"
+.TH NULIB2 1L "17 Jan 2000"
+.SH NAME
+nulib2 \- package and compress (archive) files
+.SH SYNOPSIS
+.B nulib2
+.RB \-command[modifiers]
+.I archive
+.I [ filenames ]
+.SH DESCRIPTION
+.I nulib2
+is a disk and file archiver for NuFX (ShrinkIt) files.  It can add files
+to and extract files from
+.IR .SHK ,
+.IR .BXY ,
+.IR .SEA
+(as created by GS/ShrinkIt), and
+.I .BSE
+files.
+.LP
+When extracting, testing, or listing the contents of an archive, you can
+specify "-" for the archive name.  The archive will be read from stdin.
+.LP
+Filenames are considered case-sensitive.
+.\" .LP
+.\" The
+.\" .I filenames
+.\" will be compared in a case-sensitive fashion.  While this would be
+.\" inappropriate for most UNIX systems, it makes sense for Apple II archives,
+.\" because most Apple II filesystems are case-insensitive.
+.LP
+This man page contains a summary of available options.  For full
+documentation and the latest versions, visit http://www.nulib.com/.
+.SH "OPTIONS"
+.TP
+.B \-a
+Add files to an archive.  If the archive does not exist, a new one
+will be created.  The list of files to add must be given.
+.TP
+.B \-d
+Delete files from an archive.  The set of files to delete must be provided.
+.TP
+.B \-i
+Integrity test.  If no files are listed, all files in the archive are
+tested.
+.TP
+.B \-p
+Pipe extraction.  All extracted files are written to stdout instead of
+a file on disk.  Normal archive progress messages are suppressed.
+.TP
+.B \-t
+Table of contents.  Provides a simple list of files in the archive, one
+per line.
+.TP
+.B \-v
+Verbose table of contents.  Output similar to what ShrinkIt displays is
+shown.
+.TP
+.B \-x
+Extract files from an archive.  If no files are listed, all files in
+the archive are extracted.
+.\" There's also a '-z' command that does a verbose archive dump, but it's
+.\" only available if NufxLib was built with debugging enabled.
+.SH "MODIFIERS"
+.TP
+.B \-0
+Don't use compression.  Files added will be stored without compression.
+.TP
+.B \-c
+Comments.  When extracting, comments will be displayed.  When adding,
+you will be prompted to enter a one-line comment for every file.
+.TP
+.B \-e
+Preserve ProDOS file types.  See the ProDOS File Type Preservation document
+on http://www.nulib.com/ for details on how this works.
+.TP
+.B \-ee
+Preserve file types, using extended names.  A file extension is appended
+to extracted files.  Useful on operating systems like Windows, where
+filename extensions are important.  When adding files,
+.I nulib2
+will try to guess at correct file types by examining the filename extension.
+.TP
+.B \-f
+Freshen files.  When adding, files in the archive that are older than files
+on disk are "freshened", meaning that no new files are added, and files
+that are the same age or newer aren't touched.  Works similarly when
+extracting.
+.TP
+.B \-j
+Junk directory names.  Only the filename is kept; the rest of the pathname
+is thrown away.  Empty directories aren't stored.  Works when adding or
+extracting.
+.TP
+.B \-k
+Store files as disk images.  Files that are a multiple of 512 bytes will
+be added as disk images rather than normal files.  This does not override
+the "-e" flag.
+.TP
+.B \-l
+Auto-convert text files.  A reasonably smart algorithm is used to identify
+which files are text and which aren't during extraction.  It then converts
+whatever EOL
+indicator is being used by the text file into something appropriate for
+the current system.
+.TP
+.B \-ll
+Auto-convert all files.  All files being extracted are considered text,
+and will be converted.  Don't use this unless you're sure you need it.
+.TP
+.B \-r
+Recurse into subdirectories.  When adding, this causes
+.I nulib2
+to descend into subdirectories and store all of the files found.  When
+extracting, testing, or deleting, this causes the files listed to match
+against all records whose prefix matches, allowing you to extract, test,
+or delete entire subdirectories from the archive.
+.TP
+.B \-u
+Update files.  When adding, files in the archive that are older than files
+on disk are updated.  Files in the archive that are the same age or newer
+aren't touched.  New files will be added.  Works similarly when extracting.
+.SH "EXAMPLES"
+A simple example:
+.IP
+\fCnulib2 a foo.shk *\fP
+.LP
+creates the archive
+.I foo.shk
+(assuming it doesn't exist) and stores all of the files in the current
+directory in it, in compressed form.
+.LP
+If you wanted to add all the files in the current directory, as well as
+all files in all subdirectories, you could use:
+.IP
+\fCnulib2 ar foo.shk *\fP
+.LP
+to recursively descend into the directory tree.
+.LP
+Using the command:
+.IP
+\fCnulib2 xe foo.shk\fP
+.LP
+would extract all files from
+.I foo.shk,
+preserving ProDOS file types.  If you then used the command:
+.IP
+\fCnulib2 aer foo.shk *\fP
+.LP
+you would add the files,
+preserving the file types of anything that was extracted with the
+"-e" flag set.
+.LP
+A handy way to look at text documents is to use:
+.IP
+\fCnulib2 xeel foo.shk\fP
+.LP
+to convert end-of-line terminators (e.g. CRLF to LF) as the files are
+being extracted.  The "-ee" flag adds ".TXT" to all files with a ProDOS
+file type of TXT ($04).
+.SH "SEE ALSO"
+compress(1),
+tar(1),
+zip(1L),
+unzip(1L),
+nulib(1L)
+.SH BUGS
+Probably.
+.SH AUTHOR
+Copyright (C) 2000 by Andy McFadden.  All Rights Reserved.
+.\" end of file

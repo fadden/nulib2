@@ -1,0 +1,140 @@
+#
+# Makefile for nulib2 stuff (should work with non-GNU make).
+#
+# You can use:
+# 	make (builds nulib2 and checks for libnufx.a)
+# 	make shared (builds nulib2 and checks for libnufx.so)
+#
+# This will try to link against the library in $(NUFXSRCDIR) first, then
+# look for a copy in the standard system install location (usually
+# /usr/local/lib).
+#
+# Note that this really wants to find $(NUFXLIB) for dependency checking.
+# If you're building against a copy in /usr/local/lib, just put a '#' in
+# front of the "NUFXLIB" line below.
+#
+
+# set this to where the NuFX library and ".h" file live
+VERSION		= 100
+NUFXSRCDIR	= ../nufxlib-$(VERSION)
+NUFXLIB		= $(NUFXSRCDIR)/$(LIB_PRODUCT)
+
+# NuLib2 install location.  The man page will go into $(mandir)/man1.
+prefix		= @prefix@
+exec_prefix	= @exec_prefix@
+includedir	= @includedir@
+libdir		= @libdir@
+bindir		= @bindir@
+mandir		= @mandir@
+srcdir		= @srcdir@
+
+SHELL		= @SHELL@
+INSTALL		= @INSTALL@
+INSTALL_PROGRAM	= @INSTALL_PROGRAM@
+INSTALL_DATA	= @INSTALL_DATA@
+CC			= @CC@
+#OPT 		= @CFLAGS@ -DNDEBUG
+OPT			= @CFLAGS@
+#OPT 		= @CFLAGS@ -DDEBUG_MSGS
+#OPT 		= @CFLAGS@ -DDEBUG_VERBOSE
+GCC_FLAGS	= -Wall -Wwrite-strings -Wstrict-prototypes -Wpointer-arith -Wshadow
+CFLAGS		= @BUILD_FLAGS@ -I. -I$(NUFXSRCDIR) -I$(includedir) @DEFS@
+
+#ifdef PURIFY_BUILD
+#  PURIFY	= purify
+#  CFLAGS	+= -DPURIFY
+#endif
+#ifdef QUANTIFY_BUILD
+#  QUANTIFY	= quantify
+#  CFLAGS	+= -DQUANTIFY
+#endif
+
+SRCS		= Add.c ArcUtils.c Delete.c Extract.c Filename.c List.c Main.c \
+			  MiscStuff.c MiscUtils.c State.c SysUtils.c
+OBJS		= Add.o ArcUtils.o Delete.o Extract.o Filename.o List.o Main.o \
+			  MiscStuff.o MiscUtils.o State.o SysUtils.o
+
+PRODUCT		= nulib2
+
+# this is used for dependency checking
+LIB_PRODUCT	= libnufx.a
+
+
+#
+# Build stuff
+#
+
+all: $(PRODUCT)
+	@true
+
+install: $(PRODUCT)
+	$(srcdir)/mkinstalldirs $(bindir)
+	$(INSTALL_PROGRAM) $(PRODUCT) $(bindir)
+	$(srcdir)/mkinstalldirs $(mandir)/man1
+	$(INSTALL_DATA) nulib2.1 $(mandir)/man1/
+
+install-shared:
+	LIB_PRODUCT="libnufx.so" $(MAKE) -e install
+
+# Link against the shared version of libnufx.  This is only needed so
+# the dependency checking does the right thing.
+shared::
+	LIB_PRODUCT="libnufx.so" $(MAKE) -e
+
+quantify:
+	-rm -f $(PRODUCT)
+	@$(MAKE) QUANTIFY_BUILD=1
+
+purify:
+	-rm -f $(PRODUCT)
+	@$(MAKE) PURIFY_BUILD=1
+
+$(PRODUCT): $(OBJS) $(NUFXLIB)
+	$(PURIFY) $(QUANTIFY) $(CC) -o $@ $(OBJS) -L$(NUFXSRCDIR) -L$(libdir) -lnufx @DMALLOC@
+
+clean:
+	-rm -f *.o core
+	-rm -f $(PRODUCT)
+
+tags::
+	ctags -R --totals * $(NUFXSRCDIR)/*
+	@#ctags *.[ch] $(NUFXSRCDIR)/*.[ch]
+
+distclean: clean
+	-rm -f Makefile Makefile.bak
+	-rm -f config.log config.cache config.status config.h
+	-rm -f tags
+	-rm -f nulib2-$(VERSION)-@host_alias@ nulib2-$(VERSION)-@host_alias@.tar.Z
+
+# Copy all of the binaries into a directory and tar them up for distribution.
+# All binaries except "nulib2" are stripped to reduce their size.
+distbin: $(PRODUCT)
+	@ \
+		builddir="nulib2-$(VERSION)-@host_alias@"; \
+		samples=$(NUFXSRCDIR)/samples; \
+		echo "building $$builddir.tar.Z"; \
+		rm -rf $$builddir; \
+		mkdir -p $$builddir; \
+		cp -p $(PRODUCT) nulib2.1 README.txt COPYING $$samples/README-S.txt \
+			  $$samples/exerciser $$samples/imgconv $$samples/launder \
+			  $$samples/test-basic $$samples/test-extract \
+			  $$samples/test-simple \
+			  $$builddir; \
+		strip $$builddir/$(PRODUCT) \
+			  $$builddir/exerciser $$builddir/imgconv $$builddir/launder \
+			  $$builddir/test-basic $$builddir/test-extract \
+			  $$builddir/test-simple; \
+		tar -cf - $$builddir | compress > $$builddir.tar.Z; \
+		rm -rf $$builddir
+
+baktar:
+	@tar cvf nulib2.tar *.txt COPYING INSTALL nulib2.1 configure *.in Makefile \
+		Makefile.msc install-sh config.guess config.sub mkinstalldirs *.[ch]
+	@gzip -9 nulib2.tar
+	@mv -i nulib2.tar.gz /home/fadden/BAK/
+
+depend:
+	makedepend -- $(CFLAGS) -- $(SRCS)
+
+# DO NOT DELETE THIS LINE -- make depend depends on it.
+

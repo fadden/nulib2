@@ -1,0 +1,71 @@
+#
+# Makefile for Microsoft C compilers.  Tested against Visual C++ 6.0.
+# Not pretty but it seems to work.
+#
+# Run with "nmake /f Makefile.msc".  Expects NufxLib to have been built
+# in "..".
+#
+# To build without debugging info, use "nmake nodebug=1".
+#
+
+# Windows magic
+TARGETOS = BOTH
+!include <ntwin32.mak>
+
+NUFXSRCDIR = ..
+LIB_PRODUCT = $(NUFXSRCDIR)\nufxlib.lib
+
+!ifdef NODEBUG
+#OPT = /D NDEBUG /ML /Ogityb2
+OPT = /D DEBUG_MSGS /ML /Ogityb2
+LIB_FLAGS = /nodefaultlib:libcd.lib /nologo libc.lib setargv.obj
+!else
+OPT = /D DEBUG_MSGS /MLd /Od
+LIB_FLAGS = /nodefaultlib:libc.lib /nologo libcd.lib setargv.obj
+!endif
+
+BUILD_FLAGS = /W3 /GX /D "WIN32" /D "_CONSOLE" /I "$(NUFXSRCDIR)"
+
+# how to compile sources
+.c.obj:
+	@$(cc) $(cdebug) $(OPT) $(BUILD_FLAGS) $(cflags) $(cvars) -o $@ $<
+
+
+PRODUCTS = exerciser.exe imgconv.exe launder.exe test-basic.exe test-extract.exe test-simple.exe
+
+all: $(PRODUCTS)
+
+exerciser.exe: Exerciser.obj $(LIB_PRODUCT)
+	$(link) $(ldebug) Exerciser.obj -out:$@ $(NUFXSRCDIR)\nufxlib.lib $(LIB_FLAGS)
+
+imgconv.exe: ImgConv.obj $(LIB_PRODUCT)
+	$(link) $(ldebug) ImgConv.obj -out:$@ $(NUFXSRCDIR)\nufxlib.lib $(LIB_FLAGS)
+
+launder.exe: Launder.obj $(LIB_PRODUCT)
+	$(link) $(ldebug) Launder.obj -out:$@ $(NUFXSRCDIR)\nufxlib.lib $(LIB_FLAGS)
+
+test-basic.exe: TestBasic.obj $(LIB_PRODUCT)
+	$(link) $(ldebug) TestBasic.obj -out:$@ $(NUFXSRCDIR)\nufxlib.lib $(LIB_FLAGS)
+
+test-simple.exe: TestSimple.obj $(LIB_PRODUCT)
+	$(link) $(ldebug) TestSimple.obj -out:$@ $(NUFXSRCDIR)\nufxlib.lib $(LIB_FLAGS)
+
+test-extract.exe: TestExtract.obj $(LIB_PRODUCT)
+	$(link) $(ldebug) TestExtract.obj -out:$@ $(NUFXSRCDIR)\nufxlib.lib $(LIB_FLAGS)
+
+clean:
+	del *.obj
+	del exerciser.exe
+	del imgconv.exe
+	del launder.exe
+	del test-basic.exe
+	del test-simple.exe
+	del test-extract.exe
+
+Exerciser.obj: Exerciser.c Common.h $(NUFXSRCDIR)\NufxLib.h $(NUFXSRCDIR)\SysDefs.h
+ImgConv.obj: ImgConv.c Common.h $(NUFXSRCDIR)\NufxLib.h $(NUFXSRCDIR)\SysDefs.h
+Launder.obj: Launder.c Common.h $(NUFXSRCDIR)\NufxLib.h $(NUFXSRCDIR)\SysDefs.h
+TestBasic.obj: TestBasic.c Common.h $(NUFXSRCDIR)\NufxLib.h $(NUFXSRCDIR)\SysDefs.h
+TestSimple.obj: TestSimple.c Common.h $(NUFXSRCDIR)\NufxLib.h $(NUFXSRCDIR)\SysDefs.h
+TestExtract.obj: TestExtract.c Common.h $(NUFXSRCDIR)\NufxLib.h $(NUFXSRCDIR)\SysDefs.h
+

@@ -1,0 +1,75 @@
+#
+# Makefile for Microsoft C compilers.  Tested against Visual C++ 6.0.
+# Not pretty but it seems to work.
+#
+# Run with "nmake /f Makefile.msc".
+#
+# To build without debugging info, use "nmake nodebug=1".
+#
+
+# Windows magic
+TARGETOS = BOTH
+!include <ntwin32.mak>
+
+# object files
+OBJS1 = Archive.obj ArchiveIO.obj Compress.obj Crc16.obj Debug.obj Deferred.obj
+OBJS2 = Entry.obj Expand.obj FileIO.obj Funnel.obj Lzw.obj MiscStuff.obj
+OBJS3 = MiscUtils.obj Record.obj SourceSink.obj Thread.obj Value.obj Version.obj
+OBJS = $(OBJS1) $(OBJS2) $(OBJS3)
+
+!ifdef NODEBUG
+#OPT = $(cdebug) /D NDEBUG /ML
+OPT = $(cdebug) /ML
+!else
+OPT = $(cdebug) /MLd
+!endif
+
+BUILD_FLAGS = /W3 /GX /D "WIN32"
+
+# how to compile sources
+.c.obj:
+	@$(cc) $(OPT) $(BUILD_FLAGS) $(cflags) $(cvars) -o $@ $<
+
+
+PRODUCT = nufxlib.lib
+
+all: $(PRODUCT) samples
+
+samples::
+	@echo -
+	@echo - Change to the samples directory and run $(MAKE) there.
+	@echo -
+
+# this isn't great, but it'll have to do
+Version.c: Version.c.in
+	copy Version.c.in Version.c
+	@echo -
+	@echo - NOTE: you must update Version.c by hand (use flags=$(OPT))
+	@echo -
+
+nufxlib.lib: $(OBJS)
+	$(link) -lib /out:$(PRODUCT) $(OBJS) /nologo
+
+clean::
+        del *.obj
+        del $(PRODUCT)
+
+Archive.obj: Archive.c NufxLibPriv.h NufxLib.h MiscStuff.h SysDefs.h
+ArchiveIO.obj: ArchiveIO.c NufxLibPriv.h NufxLib.h MiscStuff.h SysDefs.h
+Compress.obj: Compress.c NufxLibPriv.h NufxLib.h MiscStuff.h SysDefs.h
+Crc16.obj: Crc16.c NufxLibPriv.h NufxLib.h MiscStuff.h SysDefs.h
+Debug.obj: Debug.c NufxLibPriv.h NufxLib.h MiscStuff.h SysDefs.h
+Deferred.obj: Deferred.c NufxLibPriv.h NufxLib.h MiscStuff.h SysDefs.h
+Entry.obj: Entry.c NufxLibPriv.h NufxLib.h MiscStuff.h SysDefs.h
+Expand.obj: Expand.c NufxLibPriv.h NufxLib.h MiscStuff.h SysDefs.h
+FileIO.obj: FileIO.c NufxLibPriv.h NufxLib.h MiscStuff.h SysDefs.h
+Funnel.obj: Funnel.c NufxLibPriv.h NufxLib.h MiscStuff.h SysDefs.h
+Lzw.obj: Lzw.c NufxLibPriv.h NufxLib.h MiscStuff.h SysDefs.h
+MiscStuff.obj: MiscStuff.c NufxLibPriv.h NufxLib.h MiscStuff.h SysDefs.h
+MiscUtils.obj: MiscUtils.c NufxLibPriv.h NufxLib.h MiscStuff.h SysDefs.h
+Record.obj: Record.c NufxLibPriv.h NufxLib.h MiscStuff.h SysDefs.h
+SourceSink.obj: SourceSink.c NufxLibPriv.h NufxLib.h MiscStuff.h SysDefs.h
+Thread.obj: Thread.c NufxLibPriv.h NufxLib.h MiscStuff.h SysDefs.h
+Value.obj: Value.c NufxLibPriv.h NufxLib.h MiscStuff.h SysDefs.h
+Version.obj: Version.c NufxLibPriv.h NufxLib.h MiscStuff.h SysDefs.h
+
