@@ -311,6 +311,16 @@ typedef enum NuArchiveType {
  * Some common values for "locked" and "unlocked".  Under ProDOS each bit
  * can be set independently, so don't use these defines to *interpret*
  * what you see.  They're reasonable things to *set* the access field to.
+ *
+ * The defined bits are:
+ *  0x80 'D' destroy enabled
+ *  0x40 'N' rename enabled
+ *  0x20 'B' file needs to be backed up
+ *  0x10 (reserved, must be zero)
+ *  0x08 (reserved, must be zero)
+ *  0x04 'I' file is invisible
+ *  0x02 'W' write enabled
+ *  0x01 'R' read enabled
  */
 #define kNuAccessLocked     0x21
 #define kNuAccessUnlocked   0xe3
