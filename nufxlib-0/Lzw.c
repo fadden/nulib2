@@ -648,10 +648,9 @@ Nu_CompressLZW(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
 
         /*
          * Compute the CRC.  For LZW/1 this is on the entire 4K block, for
-         * the "version 3" thread CRC this is on just the "real" data.
+         * the "version 3" thread header CRC this is on just the "real" data.
          */
-        *pThreadCrc = Nu_CalcCRC16(*pThreadCrc,
-            lzwState->inputBuf, blockSize);
+        *pThreadCrc = Nu_CalcCRC16(*pThreadCrc, lzwState->inputBuf, blockSize);
         if (!isType2) {
             lzwState->chunkCrc = Nu_CalcCRC16(lzwState->chunkCrc,
                 lzwState->inputBuf, kNuLZWBlockSize);
@@ -1514,15 +1513,10 @@ Nu_ExpandLZW(NuArchive* pArchive, const NuRecord* pRecord,
          * See commentary in the compression code for why we have to
          * compute two CRCs for LZW/1.
          */
-        if (isType2) {
-            if (pThreadCrc != nil) {
-                *pThreadCrc = Nu_CalcCRC16(*pThreadCrc, writeBuf, writeLen);
-            }
-        } else {
-            if (pThreadCrc != nil) {
-                *pThreadCrc = Nu_CalcCRC16(*pThreadCrc, writeBuf,
-                                kNuLZWBlockSize);
-            }
+        if (pThreadCrc != nil) {
+            *pThreadCrc = Nu_CalcCRC16(*pThreadCrc, writeBuf, writeLen);
+        }
+        if (!isType2) {
             lzwState->chunkCrc = Nu_CalcCRC16(lzwState->chunkCrc,
                 writeBuf, kNuLZWBlockSize);
         }
