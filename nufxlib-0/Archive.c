@@ -454,6 +454,11 @@ bail:
  * This also handles skipping the first 128 bytes of a .BXY file and the
  * front part of a self-extracting GSHK archive.
  *
+ * We try to provide helpful messages about things that aren't archives,
+ * but try to stay silent about files that are other types of archives.
+ * That way, if the application is trying a series of libraries to find
+ * one that will accept the file, we don't generate spurious complaints.
+ *
  * On exit, the stream will be positioned just past the master header.
  */
 static NuError
@@ -473,6 +478,7 @@ Nu_ReadMasterHeader(NuArchive* pArchive)
 
     pArchive->headerOffset = 0;
     Nu_ReadBytes(pArchive, fp, pHeader->mhNufileID, kNufileIDLen);
+    /* may have read fewer than kNufileIDLen; that's okay */
 
     if (memcmp(pHeader->mhNufileID, kNuBinary2ID, sizeof(kNuBinary2ID)) == 0)
     {
@@ -483,6 +489,7 @@ Nu_ReadMasterHeader(NuArchive* pArchive)
                 SEEK_CUR);
         if (err != kNuErrNone) {
             err = kNuErrNotNuFX;
+            /* probably too short to be BNY, so go ahead and whine */
             Nu_ReportError(NU_BLOB, kNuErrNone,
                 "Might be Binary II, but it's not NuFX");
             goto bail;
@@ -496,8 +503,9 @@ Nu_ReadMasterHeader(NuArchive* pArchive)
         count = Nu_ReadOne(pArchive, fp);
         if (count != 0) {
             err = kNuErrNotNuFX;
-            Nu_ReportError(NU_BLOB, kNuErrNone,
-                "This is a Binary II archive with %d files in it", count+1);
+            /*Nu_ReportError(NU_BLOB, kNuErrNone,
+                "This is a Binary II archive with %d files in it", count+1);*/
+            DBUG(("This is a Binary II archive with %d files in it\n",count+1));
             goto bail;
         }
 
@@ -528,10 +536,11 @@ Nu_ReadMasterHeader(NuArchive* pArchive)
     if (memcmp(kNuMasterID, pHeader->mhNufileID, kNufileIDLen) != 0) {
         err = kNuErrNotNuFX;
 
-        if (isBinary2)
-            Nu_ReportError(NU_BLOB, kNuErrNone,
-                "Looks like Binary II, not NuFX");
-        else if (isSea)
+        if (isBinary2) {
+            /*Nu_ReportError(NU_BLOB, kNuErrNone,
+                "Looks like Binary II, not NuFX");*/
+            DBUG(("Looks like Binary II, not NuFX\n"));
+        } else if (isSea)
             Nu_ReportError(NU_BLOB, kNuErrNone,
                 "Looks like GS executable, not NuFX");
         else if (Nu_HeaderIOFailed(pArchive, fp) != kNuErrNone)
