@@ -1,3 +1,5 @@
+2002/10/20  ***** v1.1.0 shipped *****
+
 2002/10/10  fadden
     - changed behavior so that deleting all records is allowed
 
