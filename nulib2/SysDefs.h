@@ -93,16 +93,16 @@
 
 #if defined(WINDOWS_LIKE)
 # ifndef F_OK
-#  define F_OK	02
+#  define F_OK  02
 # endif
 # ifndef R_OK
-#  define R_OK	04
+#  define R_OK  04
 # endif
 #endif
 
 
 #if defined(__unix__) || defined(__unix) || defined(__BEOS__) || \
-	defined(__hpux) || defined(_AIX) || defined(__APPLE__)
+    defined(__hpux) || defined(_AIX) || defined(__APPLE__)
 # define UNIX_LIKE
 #endif
 
@@ -190,7 +190,7 @@
 #  endif
 #endif
 
-#ifdef __GNUC__	/* this was missing from BeOS __MWERKS__, and probably others */
+#ifdef __GNUC__ /* this was missing from BeOS __MWERKS__, and probably others */
 # define HAS__FUNCTION__
 #endif
 
@@ -207,7 +207,7 @@
 # define SYSTEM_DEFAULT_EOL "\n"
 #endif
 #ifndef MAX_PATH_LEN
-# define MAX_PATH_LEN	1024
+# define MAX_PATH_LEN   1024
 #endif
 
 #endif /*__SysDefs__*/

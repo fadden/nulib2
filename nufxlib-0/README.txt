@@ -69,9 +69,9 @@ DJGPP, follow the UNIX instructions.
 
 NufxLib has been tested with Microsoft Visual C++ 6.0.  To build NufxLib,
 start up a DOS shell and run vcvars32.bat to set your environment.  Run:
-	nmake -f makefile.msc
+    nmake -f makefile.msc
 to build with debugging info, or
-	nmake -f makefile.msc nodebug=1
+    nmake -f makefile.msc nodebug=1
 to build optimized.
 
 Once the library has been built, "cd samples" and run the same command there.
@@ -81,7 +81,7 @@ When it finishes, run "test-basic.exe".
 Other Notes
 ===========
 
-All of the source code was formatted with four-space hard tabs.
+All of the source code is now formatted with spaces instead of tabs.
 
 If you want to use the library in a multithreaded application, you should
 define "USE_REENTRANT_CALLS" to tell it to use reentrant versions of

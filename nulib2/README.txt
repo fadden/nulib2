@@ -59,16 +59,16 @@ DJGPP, follow the UNIX instructions.
 
 NuLib2 has been tested with Microsoft Visual C++ 6.0.  To build NuLib2,
 start up a DOS shell and run vcvars32.bat to set your environment.  Run:
-	nmake -f makefile.msc
+    nmake -f makefile.msc
 to build with debugging info, or
-	nmake -f makefile.msc nodebug=1
+    nmake -f makefile.msc nodebug=1
 to build optimized.
 
 
 Other Notes
 ===========
 
-All of the source code was formatted with four-space hard tabs.
+All of the source code is now formatted with spaces instead of tabs.
 
 
 Fun benchmark of the day:

@@ -7,7 +7,7 @@
 #ifndef __Nulib2__
 #define __Nulib2__
 
-#include "SysDefs.h"	/* system-dependent defs; must come first */
+#include "SysDefs.h"    /* system-dependent defs; must come first */
 #include <NufxLib.h>
 #include "State.h"
 #include "MiscStuff.h"
@@ -18,10 +18,10 @@
 #endif
 
 /* replace unsupported chars with '%xx' */
-#define kForeignIndic		'%'
+#define kForeignIndic       '%'
 
 /* make our one-line comments this big */
-#define kDefaultCommentLen	200
+#define kDefaultCommentLen  200
 
 
 /*
@@ -52,9 +52,9 @@ NuError DoTest(NulibState* pState);
 const char* GetFileTypeString(ulong fileType);
 const char* NormalizePath(NulibState* pState, NuPathnameProposal* pathProposal);
 void InterpretExtension(NulibState* pState, const char* pathName,
-	ulong* pFileType, ulong* pAuxType);
+    ulong* pFileType, ulong* pAuxType);
 Boolean ExtractPreservationString(NulibState* pState, char* pathname,
-	ulong* pFileType, ulong* pAuxType, NuThreadID* pThreadID);
+    ulong* pFileType, ulong* pAuxType, NuThreadID* pThreadID);
 void DenormalizePath(NulibState* pState, char* pathBuf);
 const char* FilenameOnly(NulibState* pState, const char* pathname);
 const char* FindExtension(NulibState* pState, const char* pathname);
@@ -73,7 +73,7 @@ void ReportError(NuError err, const char* format, ...)
         __attribute__ ((format(printf, 2, 3)))
     #endif
     ;
-#ifdef USE_DMALLOC	/* want file and line numbers for calls */
+#ifdef USE_DMALLOC  /* want file and line numbers for calls */
 # define Malloc(size) malloc(size)
 # define Calloc(size) calloc(1, size)
 # define Realloc(ptr, size) realloc(ptr, size)
@@ -87,11 +87,11 @@ void Free(void* ptr);
 
 /* SysUtils.c */
 NuError NormalizeFileName(NulibState* pState, const char* srcp, long srcLen,
-	char fssep, char** pDstp, long dstLen);
+    char fssep, char** pDstp, long dstLen);
 NuError NormalizeDirectoryName(NulibState* pState, const char* srcp,
-	long srcLen, char fssep, char** pDstp, long dstLen);
+    long srcLen, char fssep, char** pDstp, long dstLen);
 char* MakeTempArchiveName(NulibState* pState);
 NuError AddFile(NulibState* pState, NuArchive* pArchive,
-	const char* pathname);
+    const char* pathname);
 
 #endif /*__Nulib2__*/

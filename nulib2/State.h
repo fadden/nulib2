@@ -16,15 +16,15 @@
  * (Some debug code in NState_DebugDump() is sensitive to the order here.)
  */
 typedef enum Command {
-	kCommandUnknown = 0,
-	kCommandAdd,
-	kCommandDelete,
-	kCommandExtract,
-	kCommandExtractToPipe,
-	kCommandListShort,
-	kCommandListVerbose,
-	kCommandListDebug,
-	kCommandTest
+    kCommandUnknown = 0,
+    kCommandAdd,
+    kCommandDelete,
+    kCommandExtract,
+    kCommandExtractToPipe,
+    kCommandListShort,
+    kCommandListVerbose,
+    kCommandListDebug,
+    kCommandTest
 } Command;
 
 
@@ -32,48 +32,48 @@ typedef enum Command {
  * Program-wide state.
  */
 typedef struct NulibState {
-	/* global goodness */
-	const char*		programVersion;
+    /* global goodness */
+    const char*     programVersion;
 
-	/* system-specific values */
-	char			systemPathSeparator;
+    /* system-specific values */
+    char            systemPathSeparator;
 
-	/* pointer to archive we're working with */
-	NuArchive*		pArchive;
+    /* pointer to archive we're working with */
+    NuArchive*      pArchive;
 
-	/* misc state */
-	Boolean			suppressOutput;
-	Boolean			inputUnavailable;
-	NuRecordIdx		renameFromIdx;
-	char*			renameToStr;
-	NuDataSink*		pPipeSink;
-	NuDataSink*		pCommentSink;
-	long			matchCount;
-	long			totalLen;
-	long			totalCompLen;
+    /* misc state */
+    Boolean         suppressOutput;
+    Boolean         inputUnavailable;
+    NuRecordIdx     renameFromIdx;
+    char*           renameToStr;
+    NuDataSink*     pPipeSink;
+    NuDataSink*     pCommentSink;
+    long            matchCount;
+    long            totalLen;
+    long            totalCompLen;
 
-	/* temp storage */
-	long			tempPathnameAlloc;
-	char*			tempPathnameBuf;
+    /* temp storage */
+    long            tempPathnameAlloc;
+    char*           tempPathnameBuf;
 
-	/* command-line options */
-	Command			command;
-	Boolean			modUpdate;
-	Boolean			modFreshen;
-	Boolean			modRecurse;
-	Boolean			modJunkPaths;
-	Boolean			modNoCompression;
-	Boolean			modComments;
-	Boolean			modConvertText;
-	Boolean			modConvertAll;
-	Boolean			modOverwriteExisting;
-	Boolean			modAddAsDisk;
-	Boolean			modPreserveType;
-	Boolean			modPreserveTypeExtended;
+    /* command-line options */
+    Command         command;
+    Boolean         modUpdate;
+    Boolean         modFreshen;
+    Boolean         modRecurse;
+    Boolean         modJunkPaths;
+    Boolean         modNoCompression;
+    Boolean         modComments;
+    Boolean         modConvertText;
+    Boolean         modConvertAll;
+    Boolean         modOverwriteExisting;
+    Boolean         modAddAsDisk;
+    Boolean         modPreserveType;
+    Boolean         modPreserveTypeExtended;
 
-	const char*		archiveFilename;
-	char* const*	filespecPointer;
-	long			filespecCount;
+    const char*     archiveFilename;
+    char* const*    filespecPointer;
+    long            filespecCount;
 } NulibState;
 
 NuError NState_Init(NulibState** ppState);

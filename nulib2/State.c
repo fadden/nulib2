@@ -18,19 +18,19 @@ static const char* gProgramVersion = "1.0.1";
 NuError
 NState_Init(NulibState** ppState)
 {
-	assert(ppState != nil);
+    assert(ppState != nil);
 
-	*ppState = Calloc(sizeof(**ppState));
-	if (*ppState == nil)
-		return kNuErrMalloc;
+    *ppState = Calloc(sizeof(**ppState));
+    if (*ppState == nil)
+        return kNuErrMalloc;
 
-	/*
-	 * Initialize the contents to default values.
-	 */
-	(*ppState)->systemPathSeparator = PATH_SEP;
-	(*ppState)->programVersion = gProgramVersion;
+    /*
+     * Initialize the contents to default values.
+     */
+    (*ppState)->systemPathSeparator = PATH_SEP;
+    (*ppState)->programVersion = gProgramVersion;
 
-	return kNuErrNone;
+    return kNuErrNone;
 }
 
 /*
@@ -39,30 +39,30 @@ NState_Init(NulibState** ppState)
 NuError
 NState_ExtraInit(NulibState* pState)
 {
-	NuError err;
-	NuValue convertEOL;
+    NuError err;
+    NuValue convertEOL;
 
-	/*
-	 * Create a data sink for "stdout", in case we use the "-p" command.
-	 * Set the EOL conversion according to the "-l" modifier.
-	 */
-	convertEOL = kNuConvertOff;
-	if (pState->modConvertText)
-		convertEOL = kNuConvertAuto;
-	if (pState->modConvertAll)
-		convertEOL = kNuConvertOn;
+    /*
+     * Create a data sink for "stdout", in case we use the "-p" command.
+     * Set the EOL conversion according to the "-l" modifier.
+     */
+    convertEOL = kNuConvertOff;
+    if (pState->modConvertText)
+        convertEOL = kNuConvertAuto;
+    if (pState->modConvertAll)
+        convertEOL = kNuConvertOn;
 
-	err = NuCreateDataSinkForFP(true, convertEOL, stdout, &pState->pPipeSink);
-	if (err != kNuErrNone)
-		return err;
+    err = NuCreateDataSinkForFP(true, convertEOL, stdout, &pState->pPipeSink);
+    if (err != kNuErrNone)
+        return err;
 
-	/*
-	 * Create a data sink for "stdout", in case we use the "-c" modifier.
-	 * The EOL conversion is always on.
-	 */
-	err = NuCreateDataSinkForFP(true, kNuConvertOn, stdout,
-			&pState->pCommentSink);
-	return err;
+    /*
+     * Create a data sink for "stdout", in case we use the "-c" modifier.
+     * The EOL conversion is always on.
+     */
+    err = NuCreateDataSinkForFP(true, kNuConvertOn, stdout,
+            &pState->pCommentSink);
+    return err;
 }
 
 
@@ -72,16 +72,16 @@ NState_ExtraInit(NulibState* pState)
 void
 NState_Free(NulibState* pState)
 {
-	if (pState == nil)
-		return;
+    if (pState == nil)
+        return;
 
-	Free(pState->renameToStr);	/* ?? */
-	Free(pState->tempPathnameBuf);
-	if (pState->pPipeSink != nil)
-		NuFreeDataSink(pState->pPipeSink);
-	if (pState->pCommentSink != nil)
-		NuFreeDataSink(pState->pCommentSink);
-	Free(pState);
+    Free(pState->renameToStr);  /* ?? */
+    Free(pState->tempPathnameBuf);
+    if (pState->pPipeSink != nil)
+        NuFreeDataSink(pState->pPipeSink);
+    if (pState->pCommentSink != nil)
+        NuFreeDataSink(pState->pCommentSink);
+    Free(pState);
 }
 
 
@@ -89,411 +89,411 @@ NState_Free(NulibState* pState)
 void
 NState_DebugDump(const NulibState* pState)
 {
-	/* this will break when the code changes, but it's just for debugging */
-	static const char* kCommandNames[] = {
-		"<unknown>",
-		"add",
-		"delete",
-		"extract",
-		"extractToPipe",
-		"listShort",
-		"listVerbose",
-		"listDebug",
-		"test",
-	};
+    /* this will break when the code changes, but it's just for debugging */
+    static const char* kCommandNames[] = {
+        "<unknown>",
+        "add",
+        "delete",
+        "extract",
+        "extractToPipe",
+        "listShort",
+        "listVerbose",
+        "listDebug",
+        "test",
+    };
 
-	assert(pState != nil);
+    assert(pState != nil);
 
-	printf("NState:\n");
-	printf("  programVersion: '%s'\n", pState->programVersion);
-	printf("  systemPathSeparator: '%c'\n", pState->systemPathSeparator);
-	printf("  archiveFilename: '%s'\n", pState->archiveFilename);
-	printf("  filespec: %ld (%s ...)\n", pState->filespecCount,
-		!pState->filespecCount ? "<none>" : *pState->filespecPointer);
+    printf("NState:\n");
+    printf("  programVersion: '%s'\n", pState->programVersion);
+    printf("  systemPathSeparator: '%c'\n", pState->systemPathSeparator);
+    printf("  archiveFilename: '%s'\n", pState->archiveFilename);
+    printf("  filespec: %ld (%s ...)\n", pState->filespecCount,
+        !pState->filespecCount ? "<none>" : *pState->filespecPointer);
 
-	printf("  command: %d (%s); modifiers:\n", pState->command,
-		kCommandNames[pState->command]);
-	if (pState->modUpdate)
-		printf("    update\n");
-	if (pState->modFreshen)
-		printf("    freshen\n");
-	if (pState->modRecurse)
-		printf("    recurse\n");
-	if (pState->modJunkPaths)
-		printf("    junkPaths\n");
-	if (pState->modNoCompression)
-		printf("    noCompression\n");
-	if (pState->modComments)
-		printf("    comments\n");
-	if (pState->modConvertText)
-		printf("    convertText\n");
-	if (pState->modConvertAll)
-		printf("    convertAll\n");
-	if (pState->modOverwriteExisting)
-		printf("    overwriteExisting\n");
-	if (pState->modPreserveType)
-		printf("    preserveType\n");
-	if (pState->modPreserveTypeExtended)
-		printf("    preserveTypeExtended\n");
+    printf("  command: %d (%s); modifiers:\n", pState->command,
+        kCommandNames[pState->command]);
+    if (pState->modUpdate)
+        printf("    update\n");
+    if (pState->modFreshen)
+        printf("    freshen\n");
+    if (pState->modRecurse)
+        printf("    recurse\n");
+    if (pState->modJunkPaths)
+        printf("    junkPaths\n");
+    if (pState->modNoCompression)
+        printf("    noCompression\n");
+    if (pState->modComments)
+        printf("    comments\n");
+    if (pState->modConvertText)
+        printf("    convertText\n");
+    if (pState->modConvertAll)
+        printf("    convertAll\n");
+    if (pState->modOverwriteExisting)
+        printf("    overwriteExisting\n");
+    if (pState->modPreserveType)
+        printf("    preserveType\n");
+    if (pState->modPreserveTypeExtended)
+        printf("    preserveTypeExtended\n");
 
-	printf("\n");
+    printf("\n");
 }
 #endif
 
 
 /*
  * ===========================================================================
- *		Simple set/get functions
+ *      Simple set/get functions
  * ===========================================================================
  */
 
 char
 NState_GetSystemPathSeparator(const NulibState* pState)
 {
-	return pState->systemPathSeparator;
+    return pState->systemPathSeparator;
 }
 
 const char*
 NState_GetProgramVersion(const NulibState* pState)
 {
-	return pState->programVersion;
+    return pState->programVersion;
 }
 
 NuArchive*
 NState_GetNuArchive(const NulibState* pState)
 {
-	return pState->pArchive;
+    return pState->pArchive;
 }
 
 void
 NState_SetNuArchive(NulibState* pState, NuArchive* pArchive)
 {
-	pState->pArchive = pArchive;
+    pState->pArchive = pArchive;
 }
 
 
 Boolean
 NState_GetSuppressOutput(const NulibState* pState)
 {
-	return pState->suppressOutput;
+    return pState->suppressOutput;
 }
 
 void
 NState_SetSuppressOutput(NulibState* pState, Boolean doSuppress)
 {
-	pState->suppressOutput = doSuppress;
+    pState->suppressOutput = doSuppress;
 }
 
 Boolean
 NState_GetInputUnavailable(const NulibState* pState)
 {
-	return pState->inputUnavailable;
+    return pState->inputUnavailable;
 }
 
 void
 NState_SetInputUnavailable(NulibState* pState, Boolean isUnavailable)
 {
-	pState->inputUnavailable = isUnavailable;
+    pState->inputUnavailable = isUnavailable;
 }
 
 NuRecordIdx
 NState_GetRenameFromIdx(const NulibState* pState)
 {
-	return pState->renameFromIdx;
+    return pState->renameFromIdx;
 }
 
 void
 NState_SetRenameFromIdx(NulibState* pState, NuRecordIdx recordIdx)
 {
-	pState->renameFromIdx = recordIdx;
+    pState->renameFromIdx = recordIdx;
 }
 
 char*
 NState_GetRenameToStr(const NulibState* pState)
 {
-	return pState->renameToStr;
+    return pState->renameToStr;
 }
 
 void
 NState_SetRenameToStr(NulibState* pState, char* str)
 {
-	Free(pState->renameToStr);
-	pState->renameToStr = str;
+    Free(pState->renameToStr);
+    pState->renameToStr = str;
 }
 
 
 NuDataSink*
 NState_GetPipeSink(const NulibState* pState)
 {
-	return pState->pPipeSink;
+    return pState->pPipeSink;
 }
 
 NuDataSink*
 NState_GetCommentSink(const NulibState* pState)
 {
-	return pState->pCommentSink;
+    return pState->pCommentSink;
 }
 
 long
 NState_GetMatchCount(const NulibState* pState)
 {
-	return pState->matchCount;
+    return pState->matchCount;
 }
 
 void
 NState_SetMatchCount(NulibState* pState, long count)
 {
-	pState->matchCount = count;
+    pState->matchCount = count;
 }
 
 void
 NState_IncMatchCount(NulibState* pState)
 {
-	pState->matchCount++;
+    pState->matchCount++;
 }
 
 void
 NState_AddToTotals(NulibState* pState, long len, long compLen)
 {
-	pState->totalLen += len;
-	pState->totalCompLen += compLen;
+    pState->totalLen += len;
+    pState->totalCompLen += compLen;
 }
 
 void
 NState_GetTotals(NulibState* pState, long* pTotalLen, long* pTotalCompLen)
 {
-	*pTotalLen = pState->totalLen;
-	*pTotalCompLen = pState->totalCompLen;
+    *pTotalLen = pState->totalLen;
+    *pTotalCompLen = pState->totalCompLen;
 }
 
 long
 NState_GetTempPathnameLen(NulibState* pState)
 {
-	return pState->tempPathnameAlloc;
+    return pState->tempPathnameAlloc;
 }
 
 void
 NState_SetTempPathnameLen(NulibState* pState, long len)
 {
-	char* newBuf;
+    char* newBuf;
 
-	len++;		/* add one for the '\0' */
+    len++;      /* add one for the '\0' */
 
-	if (pState->tempPathnameAlloc < len) {
-		if (pState->tempPathnameBuf == nil)
-			newBuf = Malloc(len);
-		else
-			newBuf = Realloc(pState->tempPathnameBuf, len);
-		assert(newBuf != nil);
-		if (newBuf == nil) {
-			Free(pState->tempPathnameBuf);
-			pState->tempPathnameBuf = nil;
-			pState->tempPathnameAlloc = 0;
-			ReportError(kNuErrMalloc, "buf realloc failed (%ld)", len);
-			return;
-		}
+    if (pState->tempPathnameAlloc < len) {
+        if (pState->tempPathnameBuf == nil)
+            newBuf = Malloc(len);
+        else
+            newBuf = Realloc(pState->tempPathnameBuf, len);
+        assert(newBuf != nil);
+        if (newBuf == nil) {
+            Free(pState->tempPathnameBuf);
+            pState->tempPathnameBuf = nil;
+            pState->tempPathnameAlloc = 0;
+            ReportError(kNuErrMalloc, "buf realloc failed (%ld)", len);
+            return;
+        }
 
-		pState->tempPathnameBuf = newBuf;
-		pState->tempPathnameAlloc = len;
-	}
+        pState->tempPathnameBuf = newBuf;
+        pState->tempPathnameAlloc = len;
+    }
 }
 
 char*
 NState_GetTempPathnameBuf(NulibState* pState)
 {
-	return pState->tempPathnameBuf;
+    return pState->tempPathnameBuf;
 }
 
 
 Command
 NState_GetCommand(const NulibState* pState)
 {
-	return pState->command;
+    return pState->command;
 }
 
 void
 NState_SetCommand(NulibState* pState, Command cmd)
 {
-	pState->command = cmd;
+    pState->command = cmd;
 }
 
 const char*
 NState_GetArchiveFilename(const NulibState* pState)
 {
-	return pState->archiveFilename;
+    return pState->archiveFilename;
 }
 
 void
 NState_SetArchiveFilename(NulibState* pState, const char* archiveFilename)
 {
-	pState->archiveFilename = archiveFilename;
+    pState->archiveFilename = archiveFilename;
 }
 
 char* const*
 NState_GetFilespecPointer(const NulibState* pState)
 {
-	return pState->filespecPointer;
+    return pState->filespecPointer;
 }
 
 void
 NState_SetFilespecPointer(NulibState* pState, char* const* filespecPointer)
 {
-	pState->filespecPointer = filespecPointer;
+    pState->filespecPointer = filespecPointer;
 }
 
 long
 NState_GetFilespecCount(const NulibState* pState)
 {
-	return pState->filespecCount;
+    return pState->filespecCount;
 }
 
 void
 NState_SetFilespecCount(NulibState* pState, long filespecCount)
 {
-	pState->filespecCount = filespecCount;
+    pState->filespecCount = filespecCount;
 }
 
 Boolean
 NState_GetModUpdate(const NulibState* pState)
 {
-	return pState->modUpdate;
+    return pState->modUpdate;
 }
 
 void
 NState_SetModUpdate(NulibState* pState, Boolean val)
 {
-	pState->modUpdate = val;
+    pState->modUpdate = val;
 }
 
 Boolean
 NState_GetModFreshen(const NulibState* pState)
 {
-	return pState->modFreshen;
+    return pState->modFreshen;
 }
 
 void
 NState_SetModFreshen(NulibState* pState, Boolean val)
 {
-	pState->modFreshen = val;
+    pState->modFreshen = val;
 }
 
 Boolean
 NState_GetModRecurse(const NulibState* pState)
 {
-	return pState->modRecurse;
+    return pState->modRecurse;
 }
 
 void
 NState_SetModRecurse(NulibState* pState, Boolean val)
 {
-	pState->modRecurse = val;
+    pState->modRecurse = val;
 }
 
 Boolean
 NState_GetModJunkPaths(const NulibState* pState)
 {
-	return pState->modJunkPaths;
+    return pState->modJunkPaths;
 }
 
 void
 NState_SetModJunkPaths(NulibState* pState, Boolean val)
 {
-	pState->modJunkPaths = val;
+    pState->modJunkPaths = val;
 }
 
 Boolean
 NState_GetModNoCompression(const NulibState* pState)
 {
-	return pState->modNoCompression;
+    return pState->modNoCompression;
 }
 
 void
 NState_SetModNoCompression(NulibState* pState, Boolean val)
 {
-	pState->modNoCompression = val;
+    pState->modNoCompression = val;
 }
 
 Boolean
 NState_GetModComments(const NulibState* pState)
 {
-	return pState->modComments;
+    return pState->modComments;
 }
 
 void
 NState_SetModComments(NulibState* pState, Boolean val)
 {
-	pState->modComments = val;
+    pState->modComments = val;
 }
 
 Boolean
 NState_GetModConvertText(const NulibState* pState)
 {
-	return pState->modConvertText;
+    return pState->modConvertText;
 }
 
 void
 NState_SetModConvertText(NulibState* pState, Boolean val)
 {
-	pState->modConvertText = val;
+    pState->modConvertText = val;
 }
 
 Boolean
 NState_GetModConvertAll(const NulibState* pState)
 {
-	return pState->modConvertAll;
+    return pState->modConvertAll;
 }
 
 void
 NState_SetModConvertAll(NulibState* pState, Boolean val)
 {
-	pState->modConvertAll = val;
+    pState->modConvertAll = val;
 }
 
 Boolean
 NState_GetModOverwriteExisting(const NulibState* pState)
 {
-	return pState->modOverwriteExisting;
+    return pState->modOverwriteExisting;
 }
 
 void
 NState_SetModOverwriteExisting(NulibState* pState, Boolean val)
 {
-	pState->modOverwriteExisting = val;
+    pState->modOverwriteExisting = val;
 }
 
 Boolean
 NState_GetModAddAsDisk(const NulibState* pState)
 {
-	return pState->modAddAsDisk;
+    return pState->modAddAsDisk;
 }
 
 void
 NState_SetModAddAsDisk(NulibState* pState, Boolean val)
 {
-	pState->modAddAsDisk = val;
+    pState->modAddAsDisk = val;
 }
 
 Boolean
 NState_GetModPreserveType(const NulibState* pState)
 {
-	return pState->modPreserveType;
+    return pState->modPreserveType;
 }
 
 void
 NState_SetModPreserveType(NulibState* pState, Boolean val)
 {
-	pState->modPreserveType = val;
+    pState->modPreserveType = val;
 }
 
 Boolean
 NState_GetModPreserveTypeExtended(const NulibState* pState)
 {
-	return pState->modPreserveTypeExtended;
+    return pState->modPreserveTypeExtended;
 }
 
 void
 NState_SetModPreserveTypeExtended(NulibState* pState, Boolean val)
 {
-	pState->modPreserveTypeExtended = val;
+    pState->modPreserveTypeExtended = val;
 }
 

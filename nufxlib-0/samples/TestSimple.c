@@ -24,11 +24,11 @@
 NuResult
 ShowContents(NuArchive* pArchive, void* vpRecord)
 {
-	const NuRecord* pRecord = (NuRecord*) vpRecord;
+    const NuRecord* pRecord = (NuRecord*) vpRecord;
 
-	printf("*** Filename = '%s'\n", pRecord->filename);
+    printf("*** Filename = '%s'\n", pRecord->filename);
 
-	return kNuOK;
+    return kNuOK;
 }
 
 
@@ -41,31 +41,31 @@ ShowContents(NuArchive* pArchive, void* vpRecord)
 int
 DoStreamStuff(FILE* fp)
 {
-	NuError err;
-	NuArchive* pArchive = nil;
+    NuError err;
+    NuArchive* pArchive = nil;
 
-	err = NuStreamOpenRO(fp, &pArchive);
-	if (err != kNuErrNone) {
-		fprintf(stderr, "ERROR: unable to open stream archive (err=%d)\n", err);
-		goto bail;
-	}
+    err = NuStreamOpenRO(fp, &pArchive);
+    if (err != kNuErrNone) {
+        fprintf(stderr, "ERROR: unable to open stream archive (err=%d)\n", err);
+        goto bail;
+    }
 
-	printf("*** Streaming contents!\n");
+    printf("*** Streaming contents!\n");
 
-	err = NuContents(pArchive, ShowContents);
-	if (err != kNuErrNone) {
-		fprintf(stderr, "ERROR: NuContents failed (err=%d)\n", err);
-		goto bail;
-	}
+    err = NuContents(pArchive, ShowContents);
+    if (err != kNuErrNone) {
+        fprintf(stderr, "ERROR: NuContents failed (err=%d)\n", err);
+        goto bail;
+    }
 
 bail:
-	if (pArchive != nil) {
-		NuError err2 = NuClose(pArchive);
-		if (err == kNuErrNone)
-			err = err2;
-	}
+    if (pArchive != nil) {
+        NuError err2 = NuClose(pArchive);
+        if (err == kNuErrNone)
+            err = err2;
+    }
 
-	return err;
+    return err;
 }
 
 
@@ -75,31 +75,31 @@ bail:
 int
 main(int argc, char** argv)
 {
-	long major, minor, bug;
-	const char* pBuildDate;
-	FILE* infp = nil;
-	int cc;
+    long major, minor, bug;
+    const char* pBuildDate;
+    FILE* infp = nil;
+    int cc;
 
-	(void) NuGetVersion(&major, &minor, &bug, &pBuildDate, nil);
-	printf("Using NuFX lib %ld.%ld.%ld built on or after %s\n",
-		major, minor, bug, pBuildDate);
+    (void) NuGetVersion(&major, &minor, &bug, &pBuildDate, nil);
+    printf("Using NuFX lib %ld.%ld.%ld built on or after %s\n",
+        major, minor, bug, pBuildDate);
 
-	if (argc != 2) {
-		fprintf(stderr, "Usage: %s (archive-name|-)\n", argv[0]);
-		exit(2);
-	}
+    if (argc != 2) {
+        fprintf(stderr, "Usage: %s (archive-name|-)\n", argv[0]);
+        exit(2);
+    }
 
-	if (strcmp(argv[1], "-") == 0)
-		infp = stdin;
-	else {
-		infp = fopen(argv[1], kNuFileOpenReadOnly);
-		if (infp == nil) {
-			fprintf(stderr, "ERROR: unable to open '%s'\n", argv[1]);
-			exit(1);
-		}
-	}
+    if (strcmp(argv[1], "-") == 0)
+        infp = stdin;
+    else {
+        infp = fopen(argv[1], kNuFileOpenReadOnly);
+        if (infp == nil) {
+            fprintf(stderr, "ERROR: unable to open '%s'\n", argv[1]);
+            exit(1);
+        }
+    }
 
-	cc = DoStreamStuff(infp);
-	exit(cc != 0);
+    cc = DoStreamStuff(infp);
+    exit(cc != 0);
 }
 

@@ -20,14 +20,14 @@
 static const char kFssep = PATH_SEP;
 
 /* ProDOS access permissions */
-#define kUnlocked	0xe3
+#define kUnlocked   0xe3
 
-#define kTempFile	"exer-temp"
+#define kTempFile   "exer-temp"
 
 
 /*
  * ===========================================================================
- *		ExerciserState object
+ *      ExerciserState object
  * ===========================================================================
  */
 
@@ -38,96 +38,96 @@ static const char kFssep = PATH_SEP;
  * then converted back to C.
  */
 typedef struct ExerciserState {
-	NuArchive* pArchive;
-	char* archivePath;
-	const char* archiveFile;
+    NuArchive* pArchive;
+    char* archivePath;
+    const char* archiveFile;
 } ExerciserState;
 
 
 ExerciserState*
 ExerciserState_New(void)
 {
-	ExerciserState* pExerState;
-	
-	pExerState = (ExerciserState*) malloc(sizeof(*pExerState));
-	if (pExerState == nil)
-		return nil;
+    ExerciserState* pExerState;
+    
+    pExerState = (ExerciserState*) malloc(sizeof(*pExerState));
+    if (pExerState == nil)
+        return nil;
 
-	pExerState->pArchive = nil;
-	pExerState->archivePath = nil;
-	pExerState->archiveFile = nil;
+    pExerState->pArchive = nil;
+    pExerState->archivePath = nil;
+    pExerState->archiveFile = nil;
 
-	return pExerState;
+    return pExerState;
 }
 
 void
 ExerciserState_Free(ExerciserState* pExerState)
 {
-	if (pExerState == nil)
-		return;
+    if (pExerState == nil)
+        return;
 
-	if (pExerState->pArchive != nil) {
-		printf("Exerciser: aborting open archive\n");
-		(void) NuAbort(pExerState->pArchive);
-		(void) NuClose(pExerState->pArchive);
-	}
-	if (pExerState->archivePath != nil)
-		free(pExerState->archivePath);
+    if (pExerState->pArchive != nil) {
+        printf("Exerciser: aborting open archive\n");
+        (void) NuAbort(pExerState->pArchive);
+        (void) NuClose(pExerState->pArchive);
+    }
+    if (pExerState->archivePath != nil)
+        free(pExerState->archivePath);
 
-	free(pExerState);
+    free(pExerState);
 }
 
 inline NuArchive*
 ExerciserState_GetNuArchive(const ExerciserState* pExerState)
 {
-	return pExerState->pArchive;
+    return pExerState->pArchive;
 }
 
 inline void
 ExerciserState_SetNuArchive(ExerciserState* pExerState, NuArchive* newArchive)
 {
-	pExerState->pArchive = newArchive;
+    pExerState->pArchive = newArchive;
 }
 
 inline char*
 ExerciserState_GetArchivePath(const ExerciserState* pExerState)
 {
-	return pExerState->archivePath;
+    return pExerState->archivePath;
 }
 
 inline void
 ExerciserState_SetArchivePath(ExerciserState* pExerState, char* newPath)
 {
-	if (pExerState->archivePath != nil)
-		free(pExerState->archivePath);
+    if (pExerState->archivePath != nil)
+        free(pExerState->archivePath);
 
-	if (newPath == nil) {
-		pExerState->archivePath = nil;
-		pExerState->archiveFile = nil;
-	} else {
-		pExerState->archivePath = strdup(newPath);
-		pExerState->archiveFile = strrchr(newPath, kFssep);
-		if (pExerState->archiveFile != nil)
-			pExerState->archiveFile++;
+    if (newPath == nil) {
+        pExerState->archivePath = nil;
+        pExerState->archiveFile = nil;
+    } else {
+        pExerState->archivePath = strdup(newPath);
+        pExerState->archiveFile = strrchr(newPath, kFssep);
+        if (pExerState->archiveFile != nil)
+            pExerState->archiveFile++;
 
-		if (pExerState->archiveFile == nil || *pExerState->archiveFile == '\0')
-			pExerState->archiveFile = pExerState->archivePath;
-	}
+        if (pExerState->archiveFile == nil || *pExerState->archiveFile == '\0')
+            pExerState->archiveFile = pExerState->archivePath;
+    }
 }
 
 inline const char*
 ExerciserState_GetArchiveFile(const ExerciserState* pExerState)
 {
-	if (pExerState->archiveFile == nil)
-		return "[no archive open]";
-	else
-		return pExerState->archiveFile;
+    if (pExerState->archiveFile == nil)
+        return "[no archive open]";
+    else
+        return pExerState->archiveFile;
 }
 
 
 /*
  * ===========================================================================
- *		Utility functions
+ *      Utility functions
  * ===========================================================================
  */
 
@@ -137,76 +137,76 @@ ExerciserState_GetArchiveFile(const ExerciserState* pExerState)
 NuResult
 PrintEntry(NuArchive* pArchive, void* vpRecord)
 {
-	const NuRecord* pRecord = (const NuRecord*) vpRecord;
-	int idx;
+    const NuRecord* pRecord = (const NuRecord*) vpRecord;
+    int idx;
 
-	(void)pArchive;	/* shut up, gcc */
+    (void)pArchive; /* shut up, gcc */
 
-	printf("RecordIdx %ld: '%s'\n",
-		pRecord->recordIdx, pRecord->filename);
+    printf("RecordIdx %ld: '%s'\n",
+        pRecord->recordIdx, pRecord->filename);
 
-	for (idx = 0; idx < (int) pRecord->recTotalThreads; idx++) {
-		const NuThread* pThread;
-		NuThreadID threadID;
-		const char* threadLabel;
+    for (idx = 0; idx < (int) pRecord->recTotalThreads; idx++) {
+        const NuThread* pThread;
+        NuThreadID threadID;
+        const char* threadLabel;
 
-		pThread = NuGetThread(pRecord, idx);
-		assert(pThread != nil);
+        pThread = NuGetThread(pRecord, idx);
+        assert(pThread != nil);
 
-		threadID = NuGetThreadID(pThread);
-		switch (NuThreadIDGetClass(threadID)) {
-		case kNuThreadClassMessage:
-			threadLabel = "message class";
-			break;
-		case kNuThreadClassControl:
-			threadLabel = "control class";
-			break;
-		case kNuThreadClassData:
-			threadLabel = "data class";
-			break;
-		case kNuThreadClassFilename:
-			threadLabel = "filename class";
-			break;
-		default:
-			threadLabel = "(unknown class)";
-			break;
-		}
+        threadID = NuGetThreadID(pThread);
+        switch (NuThreadIDGetClass(threadID)) {
+        case kNuThreadClassMessage:
+            threadLabel = "message class";
+            break;
+        case kNuThreadClassControl:
+            threadLabel = "control class";
+            break;
+        case kNuThreadClassData:
+            threadLabel = "data class";
+            break;
+        case kNuThreadClassFilename:
+            threadLabel = "filename class";
+            break;
+        default:
+            threadLabel = "(unknown class)";
+            break;
+        }
 
-		switch (threadID) {
-		case kNuThreadIDComment:
-			threadLabel = "comment";
-			break;
-		case kNuThreadIDIcon:
-			threadLabel = "icon";
-			break;
-		case kNuThreadIDMkdir:
-			threadLabel = "mkdir";
-			break;
-		case kNuThreadIDDataFork:
-			threadLabel = "data fork";
-			break;
-		case kNuThreadIDDiskImage:
-			threadLabel = "disk image";
-			break;
-		case kNuThreadIDRsrcFork:
-			threadLabel = "rsrc fork";
-			break;
-		case kNuThreadIDFilename:
-			threadLabel = "filename";
-			break;
-		default:
-			break;
-		}
+        switch (threadID) {
+        case kNuThreadIDComment:
+            threadLabel = "comment";
+            break;
+        case kNuThreadIDIcon:
+            threadLabel = "icon";
+            break;
+        case kNuThreadIDMkdir:
+            threadLabel = "mkdir";
+            break;
+        case kNuThreadIDDataFork:
+            threadLabel = "data fork";
+            break;
+        case kNuThreadIDDiskImage:
+            threadLabel = "disk image";
+            break;
+        case kNuThreadIDRsrcFork:
+            threadLabel = "rsrc fork";
+            break;
+        case kNuThreadIDFilename:
+            threadLabel = "filename";
+            break;
+        default:
+            break;
+        }
 
-		printf("  ThreadIdx %ld - 0x%08lx (%s)\n", pThread->threadIdx,
-			threadID, threadLabel);
-	}
+        printf("  ThreadIdx %ld - 0x%08lx (%s)\n", pThread->threadIdx,
+            threadID, threadLabel);
+    }
 
-	return kNuOK;
+    return kNuOK;
 }
 
 
-#define kNiceLineLen	256
+#define kNiceLineLen    256
 
 /*
  * Get a line of input, stripping the '\n' off the end.
@@ -214,16 +214,16 @@ PrintEntry(NuArchive* pArchive, void* vpRecord)
 static NuError
 GetLine(const char* prompt, char* buffer, int bufferSize)
 {
-	printf("%s> ", prompt);
-	fflush(stdout);
+    printf("%s> ", prompt);
+    fflush(stdout);
 
-	if (fgets(buffer, bufferSize, stdin) == nil)
-		return kNuErrGeneric;
+    if (fgets(buffer, bufferSize, stdin) == nil)
+        return kNuErrGeneric;
 
-	if (buffer[strlen(buffer)-1] == '\n')
-		buffer[strlen(buffer)-1] = '\0';
+    if (buffer[strlen(buffer)-1] == '\n')
+        buffer[strlen(buffer)-1] = '\0';
 
-	return kNuErrNone;
+    return kNuErrNone;
 }
 
 
@@ -233,19 +233,19 @@ GetLine(const char* prompt, char* buffer, int bufferSize)
 NuResult
 SelectionFilter(NuArchive* pArchive, void* vselFilt)
 {
-	const NuSelectionProposal* selProposal = (NuSelectionProposal*) vselFilt;
-	char buffer[8];
+    const NuSelectionProposal* selProposal = (NuSelectionProposal*) vselFilt;
+    char buffer[8];
 
-	printf("%s (N/y)? ", selProposal->pRecord->filename);
-	fflush(stdout);
+    printf("%s (N/y)? ", selProposal->pRecord->filename);
+    fflush(stdout);
 
-	if (fgets(buffer, sizeof(buffer), stdin) == nil)
-		return kNuAbort;
+    if (fgets(buffer, sizeof(buffer), stdin) == nil)
+        return kNuAbort;
 
-	if (tolower(buffer[0]) == 'y')
-		return kNuOK;
-	else
-		return kNuSkip;
+    if (tolower(buffer[0]) == 'y')
+        return kNuOK;
+    else
+        return kNuSkip;
 }
 
 
@@ -255,60 +255,60 @@ SelectionFilter(NuArchive* pArchive, void* vselFilt)
 NuResult
 ErrorHandler(NuArchive* pArchive, void* vErrorStatus)
 {
-	const NuErrorStatus* pErrorStatus = (const NuErrorStatus*) vErrorStatus;
-	char buffer[8];
-	NuResult result = kNuSkip;
+    const NuErrorStatus* pErrorStatus = (const NuErrorStatus*) vErrorStatus;
+    char buffer[8];
+    NuResult result = kNuSkip;
 
-	printf("Exerciser: error handler op=%d err=%d sysErr=%d message='%s'\n"
-			"\tfilename='%s' '%c'(0x%02x)\n",
-		pErrorStatus->operation, pErrorStatus->err, pErrorStatus->sysErr,
-		pErrorStatus->message == nil ? "(nil)" : pErrorStatus->message,
-		pErrorStatus->pathname, pErrorStatus->filenameSeparator,
-		pErrorStatus->filenameSeparator);
-	printf("\tValid options are:");
-	if (pErrorStatus->canAbort)
-		printf(" a)bort");
-	if (pErrorStatus->canRetry)
-		printf(" r)etry");
-	if (pErrorStatus->canIgnore)
-		printf(" i)gnore");
-	if (pErrorStatus->canSkip)
-		printf(" s)kip");
-	if (pErrorStatus->canRename)
-		printf(" re)name");
-	if (pErrorStatus->canOverwrite)
-		printf(" o)verwrite");
-	putc('\n', stdout);
+    printf("Exerciser: error handler op=%d err=%d sysErr=%d message='%s'\n"
+            "\tfilename='%s' '%c'(0x%02x)\n",
+        pErrorStatus->operation, pErrorStatus->err, pErrorStatus->sysErr,
+        pErrorStatus->message == nil ? "(nil)" : pErrorStatus->message,
+        pErrorStatus->pathname, pErrorStatus->filenameSeparator,
+        pErrorStatus->filenameSeparator);
+    printf("\tValid options are:");
+    if (pErrorStatus->canAbort)
+        printf(" a)bort");
+    if (pErrorStatus->canRetry)
+        printf(" r)etry");
+    if (pErrorStatus->canIgnore)
+        printf(" i)gnore");
+    if (pErrorStatus->canSkip)
+        printf(" s)kip");
+    if (pErrorStatus->canRename)
+        printf(" re)name");
+    if (pErrorStatus->canOverwrite)
+        printf(" o)verwrite");
+    putc('\n', stdout);
 
-	printf("Return what (a/r/i/s/e/o)? ");
-	fflush(stdout);
+    printf("Return what (a/r/i/s/e/o)? ");
+    fflush(stdout);
 
-	if (fgets(buffer, sizeof(buffer), stdin) == nil) {
-		printf("Returning kNuSkip\n");
-	} else switch (buffer[0]) {
-		case 'a':	result = kNuAbort;		break;
-		case 'r':	result = kNuRetry;		break;
-		case 'i':	result = kNuIgnore;		break;
-		case 's':	result = kNuSkip;		break;
-		case 'e':	result = kNuRename;		break;
-		case 'o':	result = kNuOverwrite;	break;
-		default:
-			printf("Unknown value '%c', returning kNuSkip\n", buffer[0]);
-			break;
-	}
+    if (fgets(buffer, sizeof(buffer), stdin) == nil) {
+        printf("Returning kNuSkip\n");
+    } else switch (buffer[0]) {
+        case 'a':   result = kNuAbort;      break;
+        case 'r':   result = kNuRetry;      break;
+        case 'i':   result = kNuIgnore;     break;
+        case 's':   result = kNuSkip;       break;
+        case 'e':   result = kNuRename;     break;
+        case 'o':   result = kNuOverwrite;  break;
+        default:
+            printf("Unknown value '%c', returning kNuSkip\n", buffer[0]);
+            break;
+    }
 
-	return result;
+    return result;
 }
 
 
 /*
  * ===========================================================================
- *		Command handlers
+ *      Command handlers
  * ===========================================================================
  */
 
 typedef NuError (*CommandFunc)(ExerciserState* pState, int argc,
-	char** argv);
+    char** argv);
 
 static NuError HelpFunc(ExerciserState* pState, int argc, char** argv);
 
@@ -316,9 +316,9 @@ static NuError HelpFunc(ExerciserState* pState, int argc, char** argv);
 static NuError
 GenericFunc(ExerciserState* pState, int argc, char** argv)
 {
-	(void) pState, (void) argc, (void) argv;	/* shut up, gcc */
-	printf("Generic! argc=%d\n", argc);
-	return kNuErrNone;
+    (void) pState, (void) argc, (void) argv;    /* shut up, gcc */
+    printf("Generic! argc=%d\n", argc);
+    return kNuErrNone;
 }
 #endif
 
@@ -328,8 +328,8 @@ GenericFunc(ExerciserState* pState, int argc, char** argv)
 static NuError
 NothingFunc(ExerciserState* pState, int argc, char** argv)
 {
-	(void) pState, (void) argc, (void) argv;	/* shut up, gcc */
-	return kNuErrNone;
+    (void) pState, (void) argc, (void) argv;    /* shut up, gcc */
+    return kNuErrNone;
 }
 
 /*
@@ -341,9 +341,9 @@ NothingFunc(ExerciserState* pState, int argc, char** argv)
 static NuError
 QuitFunc(ExerciserState* pState, int argc, char** argv)
 {
-	(void) pState, (void) argc, (void) argv;	/* shut up, gcc */
-	assert(0);
-	return kNuErrNone;
+    (void) pState, (void) argc, (void) argv;    /* shut up, gcc */
+    assert(0);
+    return kNuErrNone;
 }
 
 
@@ -354,11 +354,11 @@ QuitFunc(ExerciserState* pState, int argc, char** argv)
 static NuError
 AbortFunc(ExerciserState* pState, int argc, char** argv)
 {
-	(void) pState, (void) argc, (void) argv;	/* shut up, gcc */
-	assert(ExerciserState_GetNuArchive(pState) != nil);
-	assert(argc == 1);
+    (void) pState, (void) argc, (void) argv;    /* shut up, gcc */
+    assert(ExerciserState_GetNuArchive(pState) != nil);
+    assert(argc == 1);
 
-	return NuAbort(ExerciserState_GetNuArchive(pState));
+    return NuAbort(ExerciserState_GetNuArchive(pState));
 }
 
 /*
@@ -367,22 +367,22 @@ AbortFunc(ExerciserState* pState, int argc, char** argv)
 static NuError
 AddFileFunc(ExerciserState* pState, int argc, char** argv)
 {
-	NuFileDetails nuFileDetails;
+    NuFileDetails nuFileDetails;
 
-	(void) pState, (void) argc, (void) argv;	/* shut up, gcc */
-	assert(ExerciserState_GetNuArchive(pState) != nil);
-	assert(argc == 2);
+    (void) pState, (void) argc, (void) argv;    /* shut up, gcc */
+    assert(ExerciserState_GetNuArchive(pState) != nil);
+    assert(argc == 2);
 
-	memset(&nuFileDetails, 0, sizeof(nuFileDetails));
-	nuFileDetails.threadID = kNuThreadIDDataFork;
-	nuFileDetails.storageName = argv[1];
-	nuFileDetails.fileSysID = kNuFileSysUnknown;
-	nuFileDetails.fileSysInfo = (short) kFssep;
-	nuFileDetails.access = kUnlocked;
-	/* fileType, extraType, storageType, dates */
+    memset(&nuFileDetails, 0, sizeof(nuFileDetails));
+    nuFileDetails.threadID = kNuThreadIDDataFork;
+    nuFileDetails.storageName = argv[1];
+    nuFileDetails.fileSysID = kNuFileSysUnknown;
+    nuFileDetails.fileSysInfo = (short) kFssep;
+    nuFileDetails.access = kUnlocked;
+    /* fileType, extraType, storageType, dates */
 
-	return NuAddFile(ExerciserState_GetNuArchive(pState), argv[1],
-			&nuFileDetails, false, nil);
+    return NuAddFile(ExerciserState_GetNuArchive(pState), argv[1],
+            &nuFileDetails, false, nil);
 }
 
 /*
@@ -391,27 +391,27 @@ AddFileFunc(ExerciserState* pState, int argc, char** argv)
 static NuError
 AddRecordFunc(ExerciserState* pState, int argc, char** argv)
 {
-	NuError err;
-	NuRecordIdx recordIdx;
-	NuFileDetails nuFileDetails;
+    NuError err;
+    NuRecordIdx recordIdx;
+    NuFileDetails nuFileDetails;
 
-	(void) pState, (void) argc, (void) argv;	/* shut up, gcc */
-	assert(ExerciserState_GetNuArchive(pState) != nil);
-	assert(argc == 2);
+    (void) pState, (void) argc, (void) argv;    /* shut up, gcc */
+    assert(ExerciserState_GetNuArchive(pState) != nil);
+    assert(argc == 2);
 
-	memset(&nuFileDetails, 0, sizeof(nuFileDetails));
-	nuFileDetails.threadID = 0;		/* irrelevant */
-	nuFileDetails.storageName = argv[1];
-	nuFileDetails.fileSysID = kNuFileSysUnknown;
-	nuFileDetails.fileSysInfo = (short) kFssep;
-	nuFileDetails.access = kUnlocked;
-	/* fileType, extraType, storageType, dates */
+    memset(&nuFileDetails, 0, sizeof(nuFileDetails));
+    nuFileDetails.threadID = 0;     /* irrelevant */
+    nuFileDetails.storageName = argv[1];
+    nuFileDetails.fileSysID = kNuFileSysUnknown;
+    nuFileDetails.fileSysInfo = (short) kFssep;
+    nuFileDetails.access = kUnlocked;
+    /* fileType, extraType, storageType, dates */
 
-	err = NuAddRecord(ExerciserState_GetNuArchive(pState),
-			&nuFileDetails, &recordIdx);
-	if (err == kNuErrNone)
-		printf("Exerciser: success, new recordIdx=%ld\n", recordIdx);
-	return err;
+    err = NuAddRecord(ExerciserState_GetNuArchive(pState),
+            &nuFileDetails, &recordIdx);
+    if (err == kNuErrNone)
+        printf("Exerciser: success, new recordIdx=%ld\n", recordIdx);
+    return err;
 }
 
 /*
@@ -420,86 +420,86 @@ AddRecordFunc(ExerciserState* pState, int argc, char** argv)
 static NuError
 AddThreadFunc(ExerciserState* pState, int argc, char** argv)
 {
-	NuError err;
-	NuDataSource* pDataSource = nil;
-	char* lineBuf = nil;
-	long ourLen, maxLen;
-	NuThreadID threadID;
-	NuThreadIdx threadIdx;
+    NuError err;
+    NuDataSource* pDataSource = nil;
+    char* lineBuf = nil;
+    long ourLen, maxLen;
+    NuThreadID threadID;
+    NuThreadIdx threadIdx;
 
-	(void) pState, (void) argc, (void) argv;	/* shut up, gcc */
-	assert(ExerciserState_GetNuArchive(pState) != nil);
-	assert(argc == 3);
+    (void) pState, (void) argc, (void) argv;    /* shut up, gcc */
+    assert(ExerciserState_GetNuArchive(pState) != nil);
+    assert(argc == 3);
 
-	lineBuf = (char*)malloc(kNiceLineLen);
-	assert(lineBuf != nil);
+    lineBuf = (char*)malloc(kNiceLineLen);
+    assert(lineBuf != nil);
 
-	threadID = strtol(argv[2], nil, 0);
-	if (NuThreadIDGetClass(threadID) == kNuThreadClassData) {
-		/* load data from a file on disk */
-		maxLen = 0;
-		err = GetLine("Enter filename", lineBuf, kNiceLineLen);
-		if (err != kNuErrNone)
-			goto bail;
-		if (!lineBuf[0]) {
-			fprintf(stderr, "Invalid filename\n");
-			err = kNuErrInvalidArg;
-			goto bail;
-		}
+    threadID = strtol(argv[2], nil, 0);
+    if (NuThreadIDGetClass(threadID) == kNuThreadClassData) {
+        /* load data from a file on disk */
+        maxLen = 0;
+        err = GetLine("Enter filename", lineBuf, kNiceLineLen);
+        if (err != kNuErrNone)
+            goto bail;
+        if (!lineBuf[0]) {
+            fprintf(stderr, "Invalid filename\n");
+            err = kNuErrInvalidArg;
+            goto bail;
+        }
 
-		err = NuCreateDataSourceForFile(kNuThreadFormatUncompressed,
-				true, 0, lineBuf, false, &pDataSource);
-		if (err != kNuErrNone) {
-			fprintf(stderr,
-				"Exerciser: file data source create failed (err=%d)\n", err);
-			goto bail;
-		}
-	} else {
-		if (threadID == kNuThreadIDFilename || threadID == kNuThreadIDComment) {
-			/* select the buffer pre-size */
-			err = GetLine("Enter max buffer size", lineBuf, kNiceLineLen);
-			if (err != kNuErrNone)
-				goto bail;
-			maxLen = strtol(lineBuf, nil, 0);
-			if (maxLen <= 0) {
-				fprintf(stderr, "Bad length\n");
-				err = kNuErrInvalidArg;
-				goto bail;
-			}
-		} else {
-			maxLen = 0;
-		}
+        err = NuCreateDataSourceForFile(kNuThreadFormatUncompressed,
+                true, 0, lineBuf, false, &pDataSource);
+        if (err != kNuErrNone) {
+            fprintf(stderr,
+                "Exerciser: file data source create failed (err=%d)\n", err);
+            goto bail;
+        }
+    } else {
+        if (threadID == kNuThreadIDFilename || threadID == kNuThreadIDComment) {
+            /* select the buffer pre-size */
+            err = GetLine("Enter max buffer size", lineBuf, kNiceLineLen);
+            if (err != kNuErrNone)
+                goto bail;
+            maxLen = strtol(lineBuf, nil, 0);
+            if (maxLen <= 0) {
+                fprintf(stderr, "Bad length\n");
+                err = kNuErrInvalidArg;
+                goto bail;
+            }
+        } else {
+            maxLen = 0;
+        }
 
-		err = GetLine("Enter the thread contents", lineBuf, kNiceLineLen);
-		if (err != kNuErrNone)
-			goto bail;
-		ourLen = strlen(lineBuf);
+        err = GetLine("Enter the thread contents", lineBuf, kNiceLineLen);
+        if (err != kNuErrNone)
+            goto bail;
+        ourLen = strlen(lineBuf);
 
-		/* create a data source from the buffer */
-		err = NuCreateDataSourceForBuffer(kNuThreadFormatUncompressed,
-				true, maxLen, (unsigned char*)lineBuf, 0, ourLen, &pDataSource);
-		if (err != kNuErrNone) {
-			fprintf(stderr,
-				"Exerciser: buffer data source create failed (err=%d)\n", err);
-			goto bail;
-		}
-		lineBuf = nil;	/* now owned by the library */
-	}
+        /* create a data source from the buffer */
+        err = NuCreateDataSourceForBuffer(kNuThreadFormatUncompressed,
+                true, maxLen, (unsigned char*)lineBuf, 0, ourLen, &pDataSource);
+        if (err != kNuErrNone) {
+            fprintf(stderr,
+                "Exerciser: buffer data source create failed (err=%d)\n", err);
+            goto bail;
+        }
+        lineBuf = nil;  /* now owned by the library */
+    }
 
 
-	err = NuAddThread(ExerciserState_GetNuArchive(pState),
-			strtol(argv[1], nil, 0), threadID, pDataSource, &threadIdx);
-	if (err == kNuErrNone) {
-		pDataSource = nil;	/* library owns it now */
-		printf("Exerciser: success; function returned threadIdx=%ld\n",
-			threadIdx);
-	}
+    err = NuAddThread(ExerciserState_GetNuArchive(pState),
+            strtol(argv[1], nil, 0), threadID, pDataSource, &threadIdx);
+    if (err == kNuErrNone) {
+        pDataSource = nil;  /* library owns it now */
+        printf("Exerciser: success; function returned threadIdx=%ld\n",
+            threadIdx);
+    }
 
 bail:
-	NuFreeDataSource(pDataSource);
-	if (lineBuf != nil)
-		free(lineBuf);
-	return err;
+    NuFreeDataSource(pDataSource);
+    if (lineBuf != nil)
+        free(lineBuf);
+    return err;
 }
 
 /*
@@ -508,19 +508,19 @@ bail:
 static NuError
 CloseFunc(ExerciserState* pState, int argc, char** argv)
 {
-	NuError err;
+    NuError err;
 
-	(void) pState, (void) argc, (void) argv;	/* shut up, gcc */
-	assert(ExerciserState_GetNuArchive(pState) != nil);
-	assert(argc == 1);
+    (void) pState, (void) argc, (void) argv;    /* shut up, gcc */
+    assert(ExerciserState_GetNuArchive(pState) != nil);
+    assert(argc == 1);
 
-	err = NuClose(ExerciserState_GetNuArchive(pState));
-	if (err == kNuErrNone) {
-		ExerciserState_SetNuArchive(pState, nil);
-		ExerciserState_SetArchivePath(pState, nil);
-	}
+    err = NuClose(ExerciserState_GetNuArchive(pState));
+    if (err == kNuErrNone) {
+        ExerciserState_SetNuArchive(pState, nil);
+        ExerciserState_SetArchivePath(pState, nil);
+    }
 
-	return err;
+    return err;
 }
 
 /*
@@ -529,18 +529,18 @@ CloseFunc(ExerciserState* pState, int argc, char** argv)
 static NuError
 DeleteFunc(ExerciserState* pState, int argc, char** argv)
 {
-	NuError err;
+    NuError err;
 
-	(void) pState, (void) argc, (void) argv;	/* shut up, gcc */
-	assert(ExerciserState_GetNuArchive(pState) != nil);
-	assert(argc == 1);
+    (void) pState, (void) argc, (void) argv;    /* shut up, gcc */
+    assert(ExerciserState_GetNuArchive(pState) != nil);
+    assert(argc == 1);
 
-	err = NuSetSelectionFilter(ExerciserState_GetNuArchive(pState),
-			SelectionFilter);
-	if (err != kNuErrNone)
-		return err;
+    err = NuSetSelectionFilter(ExerciserState_GetNuArchive(pState),
+            SelectionFilter);
+    if (err != kNuErrNone)
+        return err;
 
-	return NuDelete(ExerciserState_GetNuArchive(pState));
+    return NuDelete(ExerciserState_GetNuArchive(pState));
 }
 
 /*
@@ -549,12 +549,12 @@ DeleteFunc(ExerciserState* pState, int argc, char** argv)
 static NuError
 DeleteRecordFunc(ExerciserState* pState, int argc, char** argv)
 {
-	(void) pState, (void) argc, (void) argv;	/* shut up, gcc */
-	assert(ExerciserState_GetNuArchive(pState) != nil);
-	assert(argc == 2);
+    (void) pState, (void) argc, (void) argv;    /* shut up, gcc */
+    assert(ExerciserState_GetNuArchive(pState) != nil);
+    assert(argc == 2);
 
-	return NuDeleteRecord(ExerciserState_GetNuArchive(pState),
-			strtol(argv[1], nil, 0));
+    return NuDeleteRecord(ExerciserState_GetNuArchive(pState),
+            strtol(argv[1], nil, 0));
 }
 
 /*
@@ -563,12 +563,12 @@ DeleteRecordFunc(ExerciserState* pState, int argc, char** argv)
 static NuError
 DeleteThreadFunc(ExerciserState* pState, int argc, char** argv)
 {
-	(void) pState, (void) argc, (void) argv;	/* shut up, gcc */
-	assert(ExerciserState_GetNuArchive(pState) != nil);
-	assert(argc == 2);
+    (void) pState, (void) argc, (void) argv;    /* shut up, gcc */
+    assert(ExerciserState_GetNuArchive(pState) != nil);
+    assert(argc == 2);
 
-	return NuDeleteThread(ExerciserState_GetNuArchive(pState),
-			strtol(argv[1], nil, 0));
+    return NuDeleteThread(ExerciserState_GetNuArchive(pState),
+            strtol(argv[1], nil, 0));
 }
 
 /*
@@ -577,18 +577,18 @@ DeleteThreadFunc(ExerciserState* pState, int argc, char** argv)
 static NuError
 ExtractFunc(ExerciserState* pState, int argc, char** argv)
 {
-	NuError err;
+    NuError err;
 
-	(void) pState, (void) argc, (void) argv;	/* shut up, gcc */
-	assert(ExerciserState_GetNuArchive(pState) != nil);
-	assert(argc == 1);
+    (void) pState, (void) argc, (void) argv;    /* shut up, gcc */
+    assert(ExerciserState_GetNuArchive(pState) != nil);
+    assert(argc == 1);
 
-	err = NuSetSelectionFilter(ExerciserState_GetNuArchive(pState),
-			SelectionFilter);
-	if (err != kNuErrNone)
-		return err;
+    err = NuSetSelectionFilter(ExerciserState_GetNuArchive(pState),
+            SelectionFilter);
+    if (err != kNuErrNone)
+        return err;
 
-	return NuExtract(ExerciserState_GetNuArchive(pState));
+    return NuExtract(ExerciserState_GetNuArchive(pState));
 }
 
 /*
@@ -597,12 +597,12 @@ ExtractFunc(ExerciserState* pState, int argc, char** argv)
 static NuError
 ExtractRecordFunc(ExerciserState* pState, int argc, char** argv)
 {
-	(void) pState, (void) argc, (void) argv;	/* shut up, gcc */
-	assert(ExerciserState_GetNuArchive(pState) != nil);
-	assert(argc == 2);
+    (void) pState, (void) argc, (void) argv;    /* shut up, gcc */
+    assert(ExerciserState_GetNuArchive(pState) != nil);
+    assert(argc == 2);
 
-	return NuExtractRecord(ExerciserState_GetNuArchive(pState),
-				strtol(argv[1], nil, 0));
+    return NuExtractRecord(ExerciserState_GetNuArchive(pState),
+                strtol(argv[1], nil, 0));
 }
 
 /*
@@ -611,27 +611,27 @@ ExtractRecordFunc(ExerciserState* pState, int argc, char** argv)
 static NuError
 ExtractThreadFunc(ExerciserState* pState, int argc, char** argv)
 {
-	NuError err;
-	NuDataSink* pDataSink = nil;
+    NuError err;
+    NuDataSink* pDataSink = nil;
 
-	(void) pState, (void) argc, (void) argv;	/* shut up, gcc */
-	assert(ExerciserState_GetNuArchive(pState) != nil);
-	assert(argc == 3);
+    (void) pState, (void) argc, (void) argv;    /* shut up, gcc */
+    assert(ExerciserState_GetNuArchive(pState) != nil);
+    assert(argc == 3);
 
-	err = NuCreateDataSinkForFile(true, kNuConvertOff, argv[2], kFssep,
-			&pDataSink);
-	if (err != kNuErrNone) {
-		fprintf(stderr, "Exerciser: data sink create failed\n");
-		goto bail;
-	}
+    err = NuCreateDataSinkForFile(true, kNuConvertOff, argv[2], kFssep,
+            &pDataSink);
+    if (err != kNuErrNone) {
+        fprintf(stderr, "Exerciser: data sink create failed\n");
+        goto bail;
+    }
 
-	err = NuExtractThread(ExerciserState_GetNuArchive(pState),
-			strtol(argv[1], nil, 0), pDataSink);
-	/* fall through with err */
+    err = NuExtractThread(ExerciserState_GetNuArchive(pState),
+            strtol(argv[1], nil, 0), pDataSink);
+    /* fall through with err */
 
 bail:
-	NuFreeDataSink(pDataSink);
-	return err;
+    NuFreeDataSink(pDataSink);
+    return err;
 }
 
 /*
@@ -640,17 +640,17 @@ bail:
 static NuError
 FlushFunc(ExerciserState* pState, int argc, char** argv)
 {
-	NuError err;
-	long flushStatus;
+    NuError err;
+    long flushStatus;
 
-	(void) pState, (void) argc, (void) argv;	/* shut up, gcc */
-	assert(ExerciserState_GetNuArchive(pState) != nil);
-	assert(argc == 1);
+    (void) pState, (void) argc, (void) argv;    /* shut up, gcc */
+    assert(ExerciserState_GetNuArchive(pState) != nil);
+    assert(argc == 1);
 
-	err = NuFlush(ExerciserState_GetNuArchive(pState), &flushStatus);
-	if (err != kNuErrNone)
-		printf("Exerciser: flush failed, status flags=0x%04lx\n", flushStatus);
-	return err;
+    err = NuFlush(ExerciserState_GetNuArchive(pState), &flushStatus);
+    if (err != kNuErrNone)
+        printf("Exerciser: flush failed, status flags=0x%04lx\n", flushStatus);
+    return err;
 }
 
 /*
@@ -662,18 +662,18 @@ FlushFunc(ExerciserState* pState, int argc, char** argv)
 static NuError
 GetValueFunc(ExerciserState* pState, int argc, char** argv)
 {
-	NuError err;
-	NuValue value;
+    NuError err;
+    NuValue value;
 
-	(void) pState, (void) argc, (void) argv;	/* shut up, gcc */
-	assert(ExerciserState_GetNuArchive(pState) != nil);
-	assert(argc == 2);
+    (void) pState, (void) argc, (void) argv;    /* shut up, gcc */
+    assert(ExerciserState_GetNuArchive(pState) != nil);
+    assert(argc == 2);
 
-	err = NuGetValue(ExerciserState_GetNuArchive(pState),
-			(NuValueID) strtol(argv[1], nil, 0), &value);
-	if (err == kNuErrNone)
-		printf("  --> %ld\n", value);
-	return err;
+    err = NuGetValue(ExerciserState_GetNuArchive(pState),
+            (NuValueID) strtol(argv[1], nil, 0), &value);
+    if (err == kNuErrNone)
+        printf("  --> %ld\n", value);
+    return err;
 }
 
 /*
@@ -682,21 +682,21 @@ GetValueFunc(ExerciserState* pState, int argc, char** argv)
 static NuError
 GetMasterHeaderFunc(ExerciserState* pState, int argc, char** argv)
 {
-	NuError err;
-	const NuMasterHeader* pMasterHeader;
+    NuError err;
+    const NuMasterHeader* pMasterHeader;
 
-	(void) pState, (void) argc, (void) argv;	/* shut up, gcc */
-	assert(ExerciserState_GetNuArchive(pState) != nil);
-	assert(argc == 1);
+    (void) pState, (void) argc, (void) argv;    /* shut up, gcc */
+    assert(ExerciserState_GetNuArchive(pState) != nil);
+    assert(argc == 1);
 
-	err = NuGetMasterHeader(ExerciserState_GetNuArchive(pState),
-			&pMasterHeader);
-	if (err == kNuErrNone) {
-		printf("Exerciser: success (version=%u, totalRecords=%lu, EOF=%lu)\n",
-			pMasterHeader->mhMasterVersion, pMasterHeader->mhTotalRecords,
-			pMasterHeader->mhMasterEOF);
-	}
-	return err;
+    err = NuGetMasterHeader(ExerciserState_GetNuArchive(pState),
+            &pMasterHeader);
+    if (err == kNuErrNone) {
+        printf("Exerciser: success (version=%u, totalRecords=%lu, EOF=%lu)\n",
+            pMasterHeader->mhMasterVersion, pMasterHeader->mhTotalRecords,
+            pMasterHeader->mhMasterEOF);
+    }
+    return err;
 }
 
 /*
@@ -705,28 +705,28 @@ GetMasterHeaderFunc(ExerciserState* pState, int argc, char** argv)
 static NuError
 GetRecordFunc(ExerciserState* pState, int argc, char** argv)
 {
-	NuError err;
-	const NuRecord* pRecord;
+    NuError err;
+    const NuRecord* pRecord;
 
-	(void) pState, (void) argc, (void) argv;    /* shut up, gcc */
-	assert(ExerciserState_GetNuArchive(pState) != nil);
-	assert(argc == 2);
+    (void) pState, (void) argc, (void) argv;    /* shut up, gcc */
+    assert(ExerciserState_GetNuArchive(pState) != nil);
+    assert(argc == 2);
 
-	err = NuGetRecord(ExerciserState_GetNuArchive(pState),
-			strtol(argv[1], nil, 0), &pRecord);
-	if (err == kNuErrNone) {
-		printf("Exerciser: success, call returned:\n");
-		printf("\tfileSysID   : %d\n", pRecord->recFileSysID);
-		printf("\tfileSysInfo : 0x%04x ('%c')\n", pRecord->recFileSysInfo,
-			NuGetSepFromSysInfo(pRecord->recFileSysInfo));
-		printf("\taccess      : 0x%02lx\n", pRecord->recAccess);
-		printf("\tfileType    : 0x%04lx\n", pRecord->recFileType);
-		printf("\textraType   : 0x%04lx\n", pRecord->recExtraType);
-		printf("\tcreateWhen  : ...\n");
-		printf("\tmodWhen     : ...\n");		/* too lazy */
-		printf("\tarchiveWhen : ...\n");
-	}
-	return err;
+    err = NuGetRecord(ExerciserState_GetNuArchive(pState),
+            strtol(argv[1], nil, 0), &pRecord);
+    if (err == kNuErrNone) {
+        printf("Exerciser: success, call returned:\n");
+        printf("\tfileSysID   : %d\n", pRecord->recFileSysID);
+        printf("\tfileSysInfo : 0x%04x ('%c')\n", pRecord->recFileSysInfo,
+            NuGetSepFromSysInfo(pRecord->recFileSysInfo));
+        printf("\taccess      : 0x%02lx\n", pRecord->recAccess);
+        printf("\tfileType    : 0x%04lx\n", pRecord->recFileType);
+        printf("\textraType   : 0x%04lx\n", pRecord->recExtraType);
+        printf("\tcreateWhen  : ...\n");
+        printf("\tmodWhen     : ...\n");        /* too lazy */
+        printf("\tarchiveWhen : ...\n");
+    }
+    return err;
 }
 
 /*
@@ -735,18 +735,18 @@ GetRecordFunc(ExerciserState* pState, int argc, char** argv)
 static NuError
 GetRecordIdxByNameFunc(ExerciserState* pState, int argc, char** argv)
 {
-	NuError err;
-	NuRecordIdx recIdx;
+    NuError err;
+    NuRecordIdx recIdx;
 
-	(void) pState, (void) argc, (void) argv;	/* shut up, gcc */
-	assert(ExerciserState_GetNuArchive(pState) != nil);
-	assert(argc == 2);
+    (void) pState, (void) argc, (void) argv;    /* shut up, gcc */
+    assert(ExerciserState_GetNuArchive(pState) != nil);
+    assert(argc == 2);
 
-	err = NuGetRecordIdxByName(ExerciserState_GetNuArchive(pState),
-			argv[1], &recIdx);
-	if (err == kNuErrNone)
-		printf("Exerciser: success, returned recordIdx=%ld\n", recIdx);
-	return err;
+    err = NuGetRecordIdxByName(ExerciserState_GetNuArchive(pState),
+            argv[1], &recIdx);
+    if (err == kNuErrNone)
+        printf("Exerciser: success, returned recordIdx=%ld\n", recIdx);
+    return err;
 }
 
 /*
@@ -755,18 +755,18 @@ GetRecordIdxByNameFunc(ExerciserState* pState, int argc, char** argv)
 static NuError
 GetRecordIdxByPositionFunc(ExerciserState* pState, int argc, char** argv)
 {
-	NuError err;
-	NuRecordIdx recIdx;
+    NuError err;
+    NuRecordIdx recIdx;
 
-	(void) pState, (void) argc, (void) argv;	/* shut up, gcc */
-	assert(ExerciserState_GetNuArchive(pState) != nil);
-	assert(argc == 2);
+    (void) pState, (void) argc, (void) argv;    /* shut up, gcc */
+    assert(ExerciserState_GetNuArchive(pState) != nil);
+    assert(argc == 2);
 
-	err = NuGetRecordIdxByPosition(ExerciserState_GetNuArchive(pState),
-			strtol(argv[1], nil, 0), &recIdx);
-	if (err == kNuErrNone)
-		printf("Exerciser: success, returned recordIdx=%ld\n", recIdx);
-	return err;
+    err = NuGetRecordIdxByPosition(ExerciserState_GetNuArchive(pState),
+            strtol(argv[1], nil, 0), &recIdx);
+    if (err == kNuErrNone)
+        printf("Exerciser: success, returned recordIdx=%ld\n", recIdx);
+    return err;
 }
 
 /*
@@ -775,19 +775,19 @@ GetRecordIdxByPositionFunc(ExerciserState* pState, int argc, char** argv)
 static NuError
 OpenCreateReadWriteFunc(ExerciserState* pState, int argc, char** argv)
 {
-	NuError err;
-	NuArchive* pArchive;
+    NuError err;
+    NuArchive* pArchive;
 
-	assert(ExerciserState_GetNuArchive(pState) == nil);
-	assert(argc == 2);
+    assert(ExerciserState_GetNuArchive(pState) == nil);
+    assert(argc == 2);
 
-	err = NuOpenRW(argv[1], kTempFile, kNuOpenCreat|kNuOpenExcl, &pArchive);
-	if (err == kNuErrNone) {
-		ExerciserState_SetNuArchive(pState, pArchive);
-		ExerciserState_SetArchivePath(pState, argv[1]);
-	}
+    err = NuOpenRW(argv[1], kTempFile, kNuOpenCreat|kNuOpenExcl, &pArchive);
+    if (err == kNuErrNone) {
+        ExerciserState_SetNuArchive(pState, pArchive);
+        ExerciserState_SetArchivePath(pState, argv[1]);
+    }
 
-	return err;
+    return err;
 }
 
 /*
@@ -796,19 +796,19 @@ OpenCreateReadWriteFunc(ExerciserState* pState, int argc, char** argv)
 static NuError
 OpenReadOnlyFunc(ExerciserState* pState, int argc, char** argv)
 {
-	NuError err;
-	NuArchive* pArchive;
+    NuError err;
+    NuArchive* pArchive;
 
-	assert(ExerciserState_GetNuArchive(pState) == nil);
-	assert(argc == 2);
+    assert(ExerciserState_GetNuArchive(pState) == nil);
+    assert(argc == 2);
 
-	err = NuOpenRO(argv[1], &pArchive);
-	if (err == kNuErrNone) {
-		ExerciserState_SetNuArchive(pState, pArchive);
-		ExerciserState_SetArchivePath(pState, argv[1]);
-	}
+    err = NuOpenRO(argv[1], &pArchive);
+    if (err == kNuErrNone) {
+        ExerciserState_SetNuArchive(pState, pArchive);
+        ExerciserState_SetArchivePath(pState, argv[1]);
+    }
 
-	return err;
+    return err;
 }
 
 /*
@@ -817,29 +817,29 @@ OpenReadOnlyFunc(ExerciserState* pState, int argc, char** argv)
 static NuError
 OpenStreamingReadOnlyFunc(ExerciserState* pState, int argc, char** argv)
 {
-	NuError err;
-	NuArchive* pArchive;
-	FILE* fp = nil;
+    NuError err;
+    NuArchive* pArchive;
+    FILE* fp = nil;
 
-	assert(ExerciserState_GetNuArchive(pState) == nil);
-	assert(argc == 2);
+    assert(ExerciserState_GetNuArchive(pState) == nil);
+    assert(argc == 2);
 
-	if ((fp = fopen(argv[1], kNuFileOpenReadOnly)) == nil) {
-		err = errno ? (NuError)errno : kNuErrGeneric;
-		fprintf(stderr, "Exerciser: unable to open '%s'\n", argv[1]);
-	} else {
-		err = NuStreamOpenRO(fp, &pArchive);
-		if (err == kNuErrNone) {
-			ExerciserState_SetNuArchive(pState, pArchive);
-			ExerciserState_SetArchivePath(pState, argv[1]);
-			fp = nil;
-		}
-	}
+    if ((fp = fopen(argv[1], kNuFileOpenReadOnly)) == nil) {
+        err = errno ? (NuError)errno : kNuErrGeneric;
+        fprintf(stderr, "Exerciser: unable to open '%s'\n", argv[1]);
+    } else {
+        err = NuStreamOpenRO(fp, &pArchive);
+        if (err == kNuErrNone) {
+            ExerciserState_SetNuArchive(pState, pArchive);
+            ExerciserState_SetArchivePath(pState, argv[1]);
+            fp = nil;
+        }
+    }
 
-	if (fp != nil)
-		fclose(fp);
+    if (fp != nil)
+        fclose(fp);
 
-	return err;
+    return err;
 }
 
 /*
@@ -848,19 +848,19 @@ OpenStreamingReadOnlyFunc(ExerciserState* pState, int argc, char** argv)
 static NuError
 OpenReadWriteFunc(ExerciserState* pState, int argc, char** argv)
 {
-	NuError err;
-	NuArchive* pArchive;
+    NuError err;
+    NuArchive* pArchive;
 
-	assert(ExerciserState_GetNuArchive(pState) == nil);
-	assert(argc == 2);
+    assert(ExerciserState_GetNuArchive(pState) == nil);
+    assert(argc == 2);
 
-	err = NuOpenRW(argv[1], kTempFile, 0, &pArchive);
-	if (err == kNuErrNone) {
-		ExerciserState_SetNuArchive(pState, pArchive);
-		ExerciserState_SetArchivePath(pState, argv[1]);
-	}
+    err = NuOpenRW(argv[1], kTempFile, 0, &pArchive);
+    if (err == kNuErrNone) {
+        ExerciserState_SetNuArchive(pState, pArchive);
+        ExerciserState_SetArchivePath(pState, argv[1]);
+    }
 
-	return err;
+    return err;
 }
 
 /*
@@ -869,11 +869,11 @@ OpenReadWriteFunc(ExerciserState* pState, int argc, char** argv)
 static NuError
 PrintFunc(ExerciserState* pState, int argc, char** argv)
 {
-	(void) pState, (void) argc, (void) argv;	/* shut up, gcc */
-	assert(ExerciserState_GetNuArchive(pState) != nil);
-	assert(argc == 1);
+    (void) pState, (void) argc, (void) argv;    /* shut up, gcc */
+    assert(ExerciserState_GetNuArchive(pState) != nil);
+    assert(argc == 1);
 
-	return NuContents(ExerciserState_GetNuArchive(pState), PrintEntry);
+    return NuContents(ExerciserState_GetNuArchive(pState), PrintEntry);
 }
 
 /*
@@ -882,11 +882,11 @@ PrintFunc(ExerciserState* pState, int argc, char** argv)
 static NuError
 PrintDebugFunc(ExerciserState* pState, int argc, char** argv)
 {
-	(void) pState, (void) argc, (void) argv;	/* shut up, gcc */
-	assert(ExerciserState_GetNuArchive(pState) != nil);
-	assert(argc == 1);
+    (void) pState, (void) argc, (void) argv;    /* shut up, gcc */
+    assert(ExerciserState_GetNuArchive(pState) != nil);
+    assert(argc == 1);
 
-	return NuDebugDumpArchive(ExerciserState_GetNuArchive(pState));
+    return NuDebugDumpArchive(ExerciserState_GetNuArchive(pState));
 }
 
 /*
@@ -895,12 +895,12 @@ PrintDebugFunc(ExerciserState* pState, int argc, char** argv)
 static NuError
 RenameFunc(ExerciserState* pState, int argc, char** argv)
 {
-	(void) pState, (void) argc, (void) argv;    /* shut up, gcc */
-	assert(ExerciserState_GetNuArchive(pState) != nil);
-	assert(argc == 4);
+    (void) pState, (void) argc, (void) argv;    /* shut up, gcc */
+    assert(ExerciserState_GetNuArchive(pState) != nil);
+    assert(argc == 4);
 
-	return NuRename(ExerciserState_GetNuArchive(pState),
-			strtol(argv[1], nil, 0), argv[2], argv[3][0]);
+    return NuRename(ExerciserState_GetNuArchive(pState),
+            strtol(argv[1], nil, 0), argv[2], argv[3][0]);
 }
 
 /*
@@ -911,11 +911,11 @@ RenameFunc(ExerciserState* pState, int argc, char** argv)
 static NuError
 SetErrorCallbackFunc(ExerciserState* pState, int argc, char** argv)
 {
-	(void) pState, (void) argc, (void) argv;	/* shut up, gcc */
-	assert(ExerciserState_GetNuArchive(pState) != nil);
-	assert(argc == 1);
+    (void) pState, (void) argc, (void) argv;    /* shut up, gcc */
+    assert(ExerciserState_GetNuArchive(pState) != nil);
+    assert(argc == 1);
 
-	return NuSetErrorHandler(ExerciserState_GetNuArchive(pState), ErrorHandler);
+    return NuSetErrorHandler(ExerciserState_GetNuArchive(pState), ErrorHandler);
 }
 
 /*
@@ -926,12 +926,12 @@ SetErrorCallbackFunc(ExerciserState* pState, int argc, char** argv)
 static NuError
 SetValueFunc(ExerciserState* pState, int argc, char** argv)
 {
-	(void) pState, (void) argc, (void) argv;	/* shut up, gcc */
-	assert(ExerciserState_GetNuArchive(pState) != nil);
-	assert(argc == 3);
+    (void) pState, (void) argc, (void) argv;    /* shut up, gcc */
+    assert(ExerciserState_GetNuArchive(pState) != nil);
+    assert(argc == 3);
 
-	return NuSetValue(ExerciserState_GetNuArchive(pState),
-			(NuValueID) strtol(argv[1], nil, 0), strtol(argv[2], nil, 0));
+    return NuSetValue(ExerciserState_GetNuArchive(pState),
+            (NuValueID) strtol(argv[1], nil, 0), strtol(argv[2], nil, 0));
 }
 
 /*
@@ -945,25 +945,25 @@ SetValueFunc(ExerciserState* pState, int argc, char** argv)
 static NuError
 SetRecordAttrFunc(ExerciserState* pState, int argc, char** argv)
 {
-	NuError err;
-	const NuRecord* pRecord;
-	NuRecordAttr recordAttr;
+    NuError err;
+    const NuRecord* pRecord;
+    NuRecordAttr recordAttr;
 
-	(void) pState, (void) argc, (void) argv;    /* shut up, gcc */
-	assert(ExerciserState_GetNuArchive(pState) != nil);
-	assert(argc == 4);
+    (void) pState, (void) argc, (void) argv;    /* shut up, gcc */
+    assert(ExerciserState_GetNuArchive(pState) != nil);
+    assert(argc == 4);
 
-	err = NuGetRecord(ExerciserState_GetNuArchive(pState),
-			strtol(argv[1], nil, 0), &pRecord);
-	if (err != kNuErrNone)
-		return err;
-	printf("Exerciser: NuGetRecord succeeded, calling NuSetRecordAttr\n");
-	NuRecordCopyAttr(&recordAttr, pRecord);
-	recordAttr.fileType = strtol(argv[2], nil, 0);
-	recordAttr.extraType = strtol(argv[3], nil, 0);
-	/*recordAttr.fileSysInfo = ':';*/
-	return NuSetRecordAttr(ExerciserState_GetNuArchive(pState),
-			strtol(argv[1], nil, 0), &recordAttr);
+    err = NuGetRecord(ExerciserState_GetNuArchive(pState),
+            strtol(argv[1], nil, 0), &pRecord);
+    if (err != kNuErrNone)
+        return err;
+    printf("Exerciser: NuGetRecord succeeded, calling NuSetRecordAttr\n");
+    NuRecordCopyAttr(&recordAttr, pRecord);
+    recordAttr.fileType = strtol(argv[2], nil, 0);
+    recordAttr.extraType = strtol(argv[3], nil, 0);
+    /*recordAttr.fileSysInfo = ':';*/
+    return NuSetRecordAttr(ExerciserState_GetNuArchive(pState),
+            strtol(argv[1], nil, 0), &recordAttr);
 }
 
 /*
@@ -972,11 +972,11 @@ SetRecordAttrFunc(ExerciserState* pState, int argc, char** argv)
 static NuError
 TestFunc(ExerciserState* pState, int argc, char** argv)
 {
-	(void) pState, (void) argc, (void) argv;	/* shut up, gcc */
-	assert(ExerciserState_GetNuArchive(pState) != nil);
-	assert(argc == 1);
+    (void) pState, (void) argc, (void) argv;    /* shut up, gcc */
+    assert(ExerciserState_GetNuArchive(pState) != nil);
+    assert(argc == 1);
 
-	return NuTest(ExerciserState_GetNuArchive(pState));
+    return NuTest(ExerciserState_GetNuArchive(pState));
 }
 
 /*
@@ -985,43 +985,43 @@ TestFunc(ExerciserState* pState, int argc, char** argv)
 static NuError
 UpdatePresizedThreadFunc(ExerciserState* pState, int argc, char** argv)
 {
-	NuError err;
-	NuDataSource* pDataSource = nil;
-	char* lineBuf = nil;
-	long ourLen, maxLen;
+    NuError err;
+    NuDataSource* pDataSource = nil;
+    char* lineBuf = nil;
+    long ourLen, maxLen;
 
-	(void) pState, (void) argc, (void) argv;    /* shut up, gcc */
-	assert(ExerciserState_GetNuArchive(pState) != nil);
-	assert(argc == 2);
+    (void) pState, (void) argc, (void) argv;    /* shut up, gcc */
+    assert(ExerciserState_GetNuArchive(pState) != nil);
+    assert(argc == 2);
 
-	lineBuf = (char*)malloc(kNiceLineLen);
-	assert(lineBuf != nil);
-	err = GetLine("Enter data for thread", lineBuf, kNiceLineLen);
-	if (err != kNuErrNone)
-		goto bail;
+    lineBuf = (char*)malloc(kNiceLineLen);
+    assert(lineBuf != nil);
+    err = GetLine("Enter data for thread", lineBuf, kNiceLineLen);
+    if (err != kNuErrNone)
+        goto bail;
 
-	ourLen = strlen(lineBuf);
+    ourLen = strlen(lineBuf);
 
-	/* use "ourLen" for both buffer len and data len */
-	err = NuCreateDataSourceForBuffer(kNuThreadFormatUncompressed,
-			true, ourLen, (unsigned char*)lineBuf, 0, ourLen, &pDataSource);
-	if (err != kNuErrNone) {
-		fprintf(stderr, "Exerciser: data source create failed (err=%d)\n",
-			err);
-		goto bail;
-	}
-	lineBuf = nil;	/* now owned by the library */
+    /* use "ourLen" for both buffer len and data len */
+    err = NuCreateDataSourceForBuffer(kNuThreadFormatUncompressed,
+            true, ourLen, (unsigned char*)lineBuf, 0, ourLen, &pDataSource);
+    if (err != kNuErrNone) {
+        fprintf(stderr, "Exerciser: data source create failed (err=%d)\n",
+            err);
+        goto bail;
+    }
+    lineBuf = nil;  /* now owned by the library */
 
-	err = NuUpdatePresizedThread(ExerciserState_GetNuArchive(pState),
-			strtol(argv[1], nil, 0), pDataSource, &maxLen);
-	if (err == kNuErrNone)
-		printf("Exerciser: success; function returned maxLen=%ld\n", maxLen);
+    err = NuUpdatePresizedThread(ExerciserState_GetNuArchive(pState),
+            strtol(argv[1], nil, 0), pDataSource, &maxLen);
+    if (err == kNuErrNone)
+        printf("Exerciser: success; function returned maxLen=%ld\n", maxLen);
 
 bail:
-	NuFreeDataSource(pDataSource);
-	if (lineBuf != nil)
-		free(lineBuf);
-	return err;
+    NuFreeDataSource(pDataSource);
+    if (lineBuf != nil)
+        free(lineBuf);
+    return err;
 }
 
 
@@ -1030,91 +1030,91 @@ bail:
  */
 
 /* flags for the CommandTable */
-#define kFlagArchiveReq			(1L)		/* must have archive open */
-#define kFlagNoArchiveReq		(1L<<1)		/* must NOT have archive open */
+#define kFlagArchiveReq         (1L)        /* must have archive open */
+#define kFlagNoArchiveReq       (1L<<1)     /* must NOT have archive open */
 
 /* command set */
 static const struct {
-	const char*		commandStr;
-	CommandFunc		func;
-	int				expectedArgCount;
-	const char*		argumentList;
-	unsigned long	flags;
-	const char*		description;
+    const char*     commandStr;
+    CommandFunc     func;
+    int             expectedArgCount;
+    const char*     argumentList;
+    unsigned long   flags;
+    const char*     description;
 } gCommandTable[] = {
-	{ "--- exerciser commands ---", HelpFunc, 0, "", 0,
-		"" },
-	{ "?", HelpFunc, 0, "", 0,
-		"Show help" },
-	{ "h", HelpFunc, 0, "", 0,
-		"Show help" },
-	{ "q", QuitFunc, 0, "", 0,
-		"Quit program (will abort un-flushed changes)" },
+    { "--- exerciser commands ---", HelpFunc, 0, "", 0,
+        "" },
+    { "?", HelpFunc, 0, "", 0,
+        "Show help" },
+    { "h", HelpFunc, 0, "", 0,
+        "Show help" },
+    { "q", QuitFunc, 0, "", 0,
+        "Quit program (will abort un-flushed changes)" },
 
-	{ "--- archive commands ---", HelpFunc, 0, "", 0,
-		"" },
+    { "--- archive commands ---", HelpFunc, 0, "", 0,
+        "" },
 
-	{ "ab", AbortFunc, 0, "", kFlagArchiveReq,
-		"Abort current changes" },
-	{ "af", AddFileFunc, 1, "filename", kFlagArchiveReq,
-		"Add file" },
-	{ "ar", AddRecordFunc, 1, "storageName", kFlagArchiveReq,
-		"Add record" },
-	{ "at", AddThreadFunc, 2, "recordIdx threadID", kFlagArchiveReq,
-		"Add thread to record" },
-	{ "cl", CloseFunc, 0, "", kFlagArchiveReq,
-		"Close archive after flushing any changes" },
-	{ "d", DeleteFunc, 0, "", kFlagArchiveReq,
-		"Delete all records" },
-	{ "dr", DeleteRecordFunc, 1, "recordIdx", kFlagArchiveReq,
-		"Delete record" },
-	{ "dt", DeleteThreadFunc, 1, "threadIdx", kFlagArchiveReq,
-		"Delete thread" },
-	{ "e", ExtractFunc, 0, "", kFlagArchiveReq,
-		"Extract all files" },
-	{ "er", ExtractRecordFunc, 1, "recordIdx", kFlagArchiveReq,
-		"Extract record" },
-	{ "et", ExtractThreadFunc, 2, "threadIdx filename", kFlagArchiveReq,
-		"Extract thread" },
-	{ "fl", FlushFunc, 0, "", kFlagArchiveReq,
-		"Flush changes" },
-	{ "gev", GetValueFunc, 1, "ident", kFlagArchiveReq,
-		"Get value" },
-	{ "gmh", GetMasterHeaderFunc, 0, "", kFlagArchiveReq,
-		"Get master header" },
-	{ "gr", GetRecordFunc, 1, "recordIdx", kFlagArchiveReq,
-		"Get record" },
-	{ "grin", GetRecordIdxByNameFunc, 1, "name", kFlagArchiveReq,
-		"Get recordIdx by name" },
-	{ "grip", GetRecordIdxByPositionFunc, 1, "position", kFlagArchiveReq,
-		"Get recordIdx by position" },
-	{ "ocrw", OpenCreateReadWriteFunc, 1, "filename", kFlagNoArchiveReq,
-		"Open/create archive read-write" },
-	{ "oro", OpenReadOnlyFunc, 1, "filename", kFlagNoArchiveReq,
-		"Open archive read-only" },
-	{ "ors", OpenStreamingReadOnlyFunc, 1, "filename", kFlagNoArchiveReq,
-		"Open archive streaming read-only" },
-	{ "orw", OpenReadWriteFunc, 1, "filename", kFlagNoArchiveReq,
-		"Open archive read-write" },
-	{ "p", PrintFunc, 0, "", kFlagArchiveReq,
-		"Print archive contents" },
-	{ "pd", PrintDebugFunc, 0, "", kFlagArchiveReq,
-		"Print debugging output (if available)" },
-	{ "re", RenameFunc, 3, "recordIdx name sep", kFlagArchiveReq,
-		"Rename record" },
-	{ "sec", SetErrorCallbackFunc, 0, "", kFlagArchiveReq,
-		"Set error callback" },
-	{ "sev", SetValueFunc, 2, "ident value", kFlagArchiveReq,
-		"Set value" },
-	{ "sra", SetRecordAttrFunc, 3, "recordIdx type aux", kFlagArchiveReq,
-		"Set record attributes" },
-	{ "t", TestFunc, 0, "", kFlagArchiveReq,
-		"Test archive" },
-	{ "upt", UpdatePresizedThreadFunc, 1, "threadIdx", kFlagArchiveReq,
-		"Update pre-sized thread" },
+    { "ab", AbortFunc, 0, "", kFlagArchiveReq,
+        "Abort current changes" },
+    { "af", AddFileFunc, 1, "filename", kFlagArchiveReq,
+        "Add file" },
+    { "ar", AddRecordFunc, 1, "storageName", kFlagArchiveReq,
+        "Add record" },
+    { "at", AddThreadFunc, 2, "recordIdx threadID", kFlagArchiveReq,
+        "Add thread to record" },
+    { "cl", CloseFunc, 0, "", kFlagArchiveReq,
+        "Close archive after flushing any changes" },
+    { "d", DeleteFunc, 0, "", kFlagArchiveReq,
+        "Delete all records" },
+    { "dr", DeleteRecordFunc, 1, "recordIdx", kFlagArchiveReq,
+        "Delete record" },
+    { "dt", DeleteThreadFunc, 1, "threadIdx", kFlagArchiveReq,
+        "Delete thread" },
+    { "e", ExtractFunc, 0, "", kFlagArchiveReq,
+        "Extract all files" },
+    { "er", ExtractRecordFunc, 1, "recordIdx", kFlagArchiveReq,
+        "Extract record" },
+    { "et", ExtractThreadFunc, 2, "threadIdx filename", kFlagArchiveReq,
+        "Extract thread" },
+    { "fl", FlushFunc, 0, "", kFlagArchiveReq,
+        "Flush changes" },
+    { "gev", GetValueFunc, 1, "ident", kFlagArchiveReq,
+        "Get value" },
+    { "gmh", GetMasterHeaderFunc, 0, "", kFlagArchiveReq,
+        "Get master header" },
+    { "gr", GetRecordFunc, 1, "recordIdx", kFlagArchiveReq,
+        "Get record" },
+    { "grin", GetRecordIdxByNameFunc, 1, "name", kFlagArchiveReq,
+        "Get recordIdx by name" },
+    { "grip", GetRecordIdxByPositionFunc, 1, "position", kFlagArchiveReq,
+        "Get recordIdx by position" },
+    { "ocrw", OpenCreateReadWriteFunc, 1, "filename", kFlagNoArchiveReq,
+        "Open/create archive read-write" },
+    { "oro", OpenReadOnlyFunc, 1, "filename", kFlagNoArchiveReq,
+        "Open archive read-only" },
+    { "ors", OpenStreamingReadOnlyFunc, 1, "filename", kFlagNoArchiveReq,
+        "Open archive streaming read-only" },
+    { "orw", OpenReadWriteFunc, 1, "filename", kFlagNoArchiveReq,
+        "Open archive read-write" },
+    { "p", PrintFunc, 0, "", kFlagArchiveReq,
+        "Print archive contents" },
+    { "pd", PrintDebugFunc, 0, "", kFlagArchiveReq,
+        "Print debugging output (if available)" },
+    { "re", RenameFunc, 3, "recordIdx name sep", kFlagArchiveReq,
+        "Rename record" },
+    { "sec", SetErrorCallbackFunc, 0, "", kFlagArchiveReq,
+        "Set error callback" },
+    { "sev", SetValueFunc, 2, "ident value", kFlagArchiveReq,
+        "Set value" },
+    { "sra", SetRecordAttrFunc, 3, "recordIdx type aux", kFlagArchiveReq,
+        "Set record attributes" },
+    { "t", TestFunc, 0, "", kFlagArchiveReq,
+        "Test archive" },
+    { "upt", UpdatePresizedThreadFunc, 1, "threadIdx", kFlagArchiveReq,
+        "Update pre-sized thread" },
 };
 
-#define kMaxArgs	4
+#define kMaxArgs    4
 
 /*
  * Display a summary of available commands.
@@ -1122,25 +1122,25 @@ static const struct {
 static NuError
 HelpFunc(ExerciserState* pState, int argc, char** argv)
 {
-	int i;
+    int i;
 
-	(void) pState, (void) argc, (void) argv;	/* shut up, gcc */
+    (void) pState, (void) argc, (void) argv;    /* shut up, gcc */
 
-	printf("\nAvailable commands:\n");
-	for (i = 0; i < (int)NELEM(gCommandTable); i++) {
-		printf("  %-4s %-21s %s\n",
-			gCommandTable[i].commandStr,
-			gCommandTable[i].argumentList,
-			gCommandTable[i].description);
-	}
+    printf("\nAvailable commands:\n");
+    for (i = 0; i < (int)NELEM(gCommandTable); i++) {
+        printf("  %-4s %-21s %s\n",
+            gCommandTable[i].commandStr,
+            gCommandTable[i].argumentList,
+            gCommandTable[i].description);
+    }
 
-	return kNuErrNone;
+    return kNuErrNone;
 }
 
 
 /*
  * ===========================================================================
- *		Control
+ *      Control
  * ===========================================================================
  */
 
@@ -1154,89 +1154,89 @@ static const char* kWhitespace = " \t\n";
  */
 static NuError
 ParseLine(char* lineBuf, ExerciserState* pState, CommandFunc* pFunc, int* pArgc,
-	char*** pArgv)
+    char*** pArgv)
 {
-	NuError err = kNuErrSyntax;
-	char* command;
-	char* cp;
-	int i;
+    NuError err = kNuErrSyntax;
+    char* command;
+    char* cp;
+    int i;
 
-	/*
-	 * Parse the strings.
-	 */
+    /*
+     * Parse the strings.
+     */
 
-	command = strtok(lineBuf, kWhitespace);
-	if (command == nil) {
-		/* no command; the user probably just hit "enter" on a blank line */
-		*pFunc = NothingFunc;
-		*pArgc = 0;
-		*pArgv = nil;
-		err = kNuErrNone;
-		goto bail;
-	}
+    command = strtok(lineBuf, kWhitespace);
+    if (command == nil) {
+        /* no command; the user probably just hit "enter" on a blank line */
+        *pFunc = NothingFunc;
+        *pArgc = 0;
+        *pArgv = nil;
+        err = kNuErrNone;
+        goto bail;
+    }
 
-	/* no real need to be flexible; add 1 for command and one for nil */
-	*pArgv = (char**) malloc(sizeof(char*) * (kMaxArgs+2));
-	(*pArgv)[0] = command;
-	*pArgc = 1;
+    /* no real need to be flexible; add 1 for command and one for nil */
+    *pArgv = (char**) malloc(sizeof(char*) * (kMaxArgs+2));
+    (*pArgv)[0] = command;
+    *pArgc = 1;
 
-	cp = strtok(nil, kWhitespace);
-	while (cp != nil) {
-		if (*pArgc >= kMaxArgs+1) {
-			printf("ERROR: too many arguments\n");
-			goto bail;
-		}
-		(*pArgv)[*pArgc] = cp;
-		(*pArgc)++;
+    cp = strtok(nil, kWhitespace);
+    while (cp != nil) {
+        if (*pArgc >= kMaxArgs+1) {
+            printf("ERROR: too many arguments\n");
+            goto bail;
+        }
+        (*pArgv)[*pArgc] = cp;
+        (*pArgc)++;
 
-		cp = strtok(nil, kWhitespace);
-	}
-	assert(*pArgc < kMaxArgs+2);
-	(*pArgv)[*pArgc] = nil;
+        cp = strtok(nil, kWhitespace);
+    }
+    assert(*pArgc < kMaxArgs+2);
+    (*pArgv)[*pArgc] = nil;
 
-	/*
-	 * Look up the command.
-	 */
-	for (i = 0; i < (int)NELEM(gCommandTable); i++) {
-		if (strcmp(command, gCommandTable[i].commandStr) == 0)
-			break;
-	}
-	if (i == NELEM(gCommandTable)) {
-		printf("ERROR: unrecognized command\n");
-		goto bail;
-	}
+    /*
+     * Look up the command.
+     */
+    for (i = 0; i < (int)NELEM(gCommandTable); i++) {
+        if (strcmp(command, gCommandTable[i].commandStr) == 0)
+            break;
+    }
+    if (i == NELEM(gCommandTable)) {
+        printf("ERROR: unrecognized command\n");
+        goto bail;
+    }
 
-	*pFunc = gCommandTable[i].func;
+    *pFunc = gCommandTable[i].func;
 
-	/*
-	 * Check arguments and flags.
-	 */
-	if (*pArgc -1 != gCommandTable[i].expectedArgCount) {
-		printf("ERROR: expected %d args, found %d\n",
-			gCommandTable[i].expectedArgCount, *pArgc -1);
-		goto bail;
-	}
+    /*
+     * Check arguments and flags.
+     */
+    if (*pArgc -1 != gCommandTable[i].expectedArgCount) {
+        printf("ERROR: expected %d args, found %d\n",
+            gCommandTable[i].expectedArgCount, *pArgc -1);
+        goto bail;
+    }
 
-	if (gCommandTable[i].flags & kFlagArchiveReq) {
-		if (ExerciserState_GetNuArchive(pState) == nil) {
-			printf("ERROR: must have an archive open\n");
-			goto bail;
-		}
-	}
-	if (gCommandTable[i].flags & kFlagNoArchiveReq) {
-		if (ExerciserState_GetNuArchive(pState) != nil) {
-			printf("ERROR: an archive is already open\n");
-			goto bail;
-		}
-	}
+    if (gCommandTable[i].flags & kFlagArchiveReq) {
+        if (ExerciserState_GetNuArchive(pState) == nil) {
+            printf("ERROR: must have an archive open\n");
+            goto bail;
+        }
+    }
+    if (gCommandTable[i].flags & kFlagNoArchiveReq) {
+        if (ExerciserState_GetNuArchive(pState) != nil) {
+            printf("ERROR: an archive is already open\n");
+            goto bail;
+        }
+    }
 
-	/*
-	 * Looks good!
-	 */
-	err = kNuErrNone;
+    /*
+     * Looks good!
+     */
+    err = kNuErrNone;
 
 bail:
-	return err;
+    return err;
 }
 
 
@@ -1247,66 +1247,66 @@ bail:
 static NuError
 CommandLoop(void)
 {
-	NuError err = kNuErrNone;
-	ExerciserState* pState = ExerciserState_New();
-	CommandFunc func;
-	char lineBuf[128];
-	int argc;
-	char** argv = nil;
+    NuError err = kNuErrNone;
+    ExerciserState* pState = ExerciserState_New();
+    CommandFunc func;
+    char lineBuf[128];
+    int argc;
+    char** argv = nil;
 
-	while (1) {
-		printf("\nEnter command (%s)> ", ExerciserState_GetArchiveFile(pState));
-		fflush(stdout);
+    while (1) {
+        printf("\nEnter command (%s)> ", ExerciserState_GetArchiveFile(pState));
+        fflush(stdout);
 
-		if (fgets(lineBuf, sizeof(lineBuf), stdin) == nil) {
-			printf("\n");
-			break;
-		}
+        if (fgets(lineBuf, sizeof(lineBuf), stdin) == nil) {
+            printf("\n");
+            break;
+        }
 
-		if (argv != nil) {
-			free(argv);
-			argv = nil;
-		}
+        if (argv != nil) {
+            free(argv);
+            argv = nil;
+        }
 
-		func = nil;	/* sanity check */
+        func = nil; /* sanity check */
 
-		err = ParseLine(lineBuf, pState, &func, &argc, &argv);
-		if (err != kNuErrNone)
-			continue;
+        err = ParseLine(lineBuf, pState, &func, &argc, &argv);
+        if (err != kNuErrNone)
+            continue;
 
-		assert(func != nil);
-		if (func == QuitFunc)
-			break;
+        assert(func != nil);
+        if (func == QuitFunc)
+            break;
 
-		err = (*func)(pState, argc, argv);
+        err = (*func)(pState, argc, argv);
 
-		if (err < 0)
-			printf("Exerciser: received error %d (%s)\n", err, NuStrError(err));
-		else if (err > 0)
-			printf("Exerciser: received error %d\n", err);
+        if (err < 0)
+            printf("Exerciser: received error %d (%s)\n", err, NuStrError(err));
+        else if (err > 0)
+            printf("Exerciser: received error %d\n", err);
 
-		if (argv != nil) {
-			free(argv);
-			argv = nil;
-		}
-	}
+        if (argv != nil) {
+            free(argv);
+            argv = nil;
+        }
+    }
 
-	if (ExerciserState_GetNuArchive(pState) != nil) {
-		/* ought to query the archive before saying something like this... */
-		printf("Exerciser: aborting any un-flushed changes in archive %s\n",
-			ExerciserState_GetArchivePath(pState));
-		(void) NuAbort(ExerciserState_GetNuArchive(pState));
-		err = NuClose(ExerciserState_GetNuArchive(pState));
-		if (err != kNuErrNone)
-			printf("Exerciser: got error %d closing archive\n", err);
-		ExerciserState_SetNuArchive(pState, nil);
-	}
+    if (ExerciserState_GetNuArchive(pState) != nil) {
+        /* ought to query the archive before saying something like this... */
+        printf("Exerciser: aborting any un-flushed changes in archive %s\n",
+            ExerciserState_GetArchivePath(pState));
+        (void) NuAbort(ExerciserState_GetNuArchive(pState));
+        err = NuClose(ExerciserState_GetNuArchive(pState));
+        if (err != kNuErrNone)
+            printf("Exerciser: got error %d closing archive\n", err);
+        ExerciserState_SetNuArchive(pState, nil);
+    }
 
-	if (pState != nil)
-		free(pState);
-	if (argv != nil)
-		free(argv);
-	return kNuErrNone;
+    if (pState != nil)
+        free(pState);
+    if (argv != nil)
+        free(argv);
+    return kNuErrNone;
 }
 
 
@@ -1318,43 +1318,43 @@ CommandLoop(void)
 int
 main(void)
 {
-	NuError result;
-	long majorVersion, minorVersion, bugVersion;
-	const char* nufxLibDate;
-	const char* nufxLibFlags;
+    NuError result;
+    long majorVersion, minorVersion, bugVersion;
+    const char* nufxLibDate;
+    const char* nufxLibFlags;
 
-	(void) NuGetVersion(&majorVersion, &minorVersion, &bugVersion,
-			&nufxLibDate, &nufxLibFlags);
-	printf("NufxLib exerciser, linked with NufxLib v%ld.%ld.%ld [%s]\n\n",
-		majorVersion, minorVersion, bugVersion, nufxLibFlags);
+    (void) NuGetVersion(&majorVersion, &minorVersion, &bugVersion,
+            &nufxLibDate, &nufxLibFlags);
+    printf("NufxLib exerciser, linked with NufxLib v%ld.%ld.%ld [%s]\n\n",
+        majorVersion, minorVersion, bugVersion, nufxLibFlags);
 
-	/* stuff useful when debugging lots */
-	if (unlink(kTempFile) == 0)
-		fprintf(stderr, "NOTE: whacked exer-temp\n");
-	if (unlink("new.shk") == 0)
-		fprintf(stderr, "NOTE: whacked new.shk\n");
+    /* stuff useful when debugging lots */
+    if (unlink(kTempFile) == 0)
+        fprintf(stderr, "NOTE: whacked exer-temp\n");
+    if (unlink("new.shk") == 0)
+        fprintf(stderr, "NOTE: whacked new.shk\n");
 
 #if defined(HAS_MALLOC_CHECK_) && !defined(USE_DMALLOC)
-	/*
-	 * This is really nice to have on Linux and any other system that
-	 * uses the GNU libc/malloc stuff.  It slows things down, but it
-	 * tells you when you do something dumb with malloc/realloc/free.
-	 * (Solaris 2.7 has a similar feature that is enabled by setting the
-	 * environment variable LD_PRELOAD to include watchmalloc.so.  Other
-	 * OSs and 3rd-party malloc packages may have similar features.)
-	 *
-	 * This environment variable must be set when the program is launched.
-	 * Tweaking the environment within the program has no effect.
-	 */
-	{
-		char* debugSet = getenv("MALLOC_CHECK_");
-		if (debugSet == nil)
-			printf("WARNING: MALLOC_CHECK_ not enabled\n\n");
-	}
+    /*
+     * This is really nice to have on Linux and any other system that
+     * uses the GNU libc/malloc stuff.  It slows things down, but it
+     * tells you when you do something dumb with malloc/realloc/free.
+     * (Solaris 2.7 has a similar feature that is enabled by setting the
+     * environment variable LD_PRELOAD to include watchmalloc.so.  Other
+     * OSs and 3rd-party malloc packages may have similar features.)
+     *
+     * This environment variable must be set when the program is launched.
+     * Tweaking the environment within the program has no effect.
+     */
+    {
+        char* debugSet = getenv("MALLOC_CHECK_");
+        if (debugSet == nil)
+            printf("WARNING: MALLOC_CHECK_ not enabled\n\n");
+    }
 #endif
 
-	result = CommandLoop();
+    result = CommandLoop();
 
-	exit(result != kNuErrNone);
+    exit(result != kNuErrNone);
 }
 

@@ -21,15 +21,15 @@
 #include "Common.h"
 
 
-#define false	0
-#define true	(!false)
+#define false   0
+#define true    (!false)
 
-#define kHappySize	2408
+#define kHappySize  2408
 
 
 /*
  * ===========================================================================
- *		ArchiveRecord
+ *      ArchiveRecord
  * ===========================================================================
  */
 
@@ -37,13 +37,13 @@
  * Track an archive record.
  */
 typedef struct ArchiveRecord {
-	char*			filename;
-	NuRecordIdx		recordIdx;
+    char*           filename;
+    NuRecordIdx     recordIdx;
 
-	long			numThreads;
-	NuThread*		pThreads;
+    long            numThreads;
+    NuThread*       pThreads;
 
-	struct ArchiveRecord*	pNext;
+    struct ArchiveRecord*   pNext;
 } ArchiveRecord;
 
 
@@ -53,24 +53,24 @@ typedef struct ArchiveRecord {
 ArchiveRecord*
 ArchiveRecord_New(const NuRecord* pRecord)
 {
-	ArchiveRecord* pArcRec = nil;
+    ArchiveRecord* pArcRec = nil;
 
-	pArcRec = malloc(sizeof(*pArcRec));
-	if (pArcRec == nil)
-		return nil;
+    pArcRec = malloc(sizeof(*pArcRec));
+    if (pArcRec == nil)
+        return nil;
 
-	if (pRecord->filename == nil)
-		pArcRec->filename = strdup("<unknown>");
-	else
-		pArcRec->filename = strdup((char*)pRecord->filename);
+    if (pRecord->filename == nil)
+        pArcRec->filename = strdup("<unknown>");
+    else
+        pArcRec->filename = strdup((char*)pRecord->filename);
 
-	pArcRec->recordIdx = pRecord->recordIdx;
-	pArcRec->numThreads = NuRecordGetNumThreads(pRecord);
-	(void) NuRecordCopyThreads(pRecord, &pArcRec->pThreads);
+    pArcRec->recordIdx = pRecord->recordIdx;
+    pArcRec->numThreads = NuRecordGetNumThreads(pRecord);
+    (void) NuRecordCopyThreads(pRecord, &pArcRec->pThreads);
 
-	pArcRec->pNext = nil;
+    pArcRec->pNext = nil;
 
-	return pArcRec;
+    return pArcRec;
 }
 
 /*
@@ -79,14 +79,14 @@ ArchiveRecord_New(const NuRecord* pRecord)
 void
 ArchiveRecord_Free(ArchiveRecord* pArcRec)
 {
-	if (pArcRec == nil)
-		return;
+    if (pArcRec == nil)
+        return;
 
-	if (pArcRec->filename != nil)
-		free(pArcRec->filename);
-	if (pArcRec->pThreads != nil)
-		free(pArcRec->pThreads);
-	free(pArcRec);
+    if (pArcRec->filename != nil)
+        free(pArcRec->filename);
+    if (pArcRec->pThreads != nil)
+        free(pArcRec->pThreads);
+    free(pArcRec);
 }
 
 /*
@@ -95,61 +95,61 @@ ArchiveRecord_Free(ArchiveRecord* pArcRec)
 const NuThread*
 ArchiveRecord_FindThreadByID(const ArchiveRecord* pArcRec, NuThreadID threadID)
 {
-	const NuThread* pThread;
-	int i;
+    const NuThread* pThread;
+    int i;
 
-	for (i = 0; i < pArcRec->numThreads; i++) {
-		pThread = NuThreadGetByIdx(pArcRec->pThreads, i);
-		if (NuGetThreadID(pThread) == threadID)
-			return pThread;
-	}
+    for (i = 0; i < pArcRec->numThreads; i++) {
+        pThread = NuThreadGetByIdx(pArcRec->pThreads, i);
+        if (NuGetThreadID(pThread) == threadID)
+            return pThread;
+    }
 
-	return nil;
+    return nil;
 }
 
 
 const char*
 ArchiveRecord_GetFilename(const ArchiveRecord* pArcRec)
 {
-	return pArcRec->filename;
+    return pArcRec->filename;
 }
 
 NuRecordIdx
 ArchiveRecord_GetRecordIdx(const ArchiveRecord* pArcRec)
 {
-	return pArcRec->recordIdx;
+    return pArcRec->recordIdx;
 }
 
 long
 ArchiveRecord_GetNumThreads(const ArchiveRecord* pArcRec)
 {
-	return pArcRec->numThreads;
+    return pArcRec->numThreads;
 }
 
 const NuThread*
 ArchiveRecord_GetThread(const ArchiveRecord* pArcRec, int idx)
 {
-	if (idx < 0 || idx >= pArcRec->numThreads)
-		return nil;
-	return NuThreadGetByIdx(pArcRec->pThreads, idx);
+    if (idx < 0 || idx >= pArcRec->numThreads)
+        return nil;
+    return NuThreadGetByIdx(pArcRec->pThreads, idx);
 }
 
 void
 ArchiveRecord_SetNext(ArchiveRecord* pArcRec, ArchiveRecord* pNextRec)
 {
-	pArcRec->pNext = pNextRec;
+    pArcRec->pNext = pNextRec;
 }
 
 ArchiveRecord*
 ArchiveRecord_GetNext(const ArchiveRecord* pArcRec)
 {
-	return pArcRec->pNext;
+    return pArcRec->pNext;
 }
 
 
 /*
  * ===========================================================================
- *		ArchiveData
+ *      ArchiveData
  * ===========================================================================
  */
 
@@ -157,50 +157,50 @@ ArchiveRecord_GetNext(const ArchiveRecord* pArcRec)
  * A collection of records.
  */
 typedef struct ArchiveData {
-	long			numRecords;
-	ArchiveRecord*	pRecordHead;
-	ArchiveRecord*	pRecordTail;
+    long            numRecords;
+    ArchiveRecord*  pRecordHead;
+    ArchiveRecord*  pRecordTail;
 } ArchiveData;
 
 
 ArchiveData*
 ArchiveData_New(void)
 {
-	ArchiveData* pArcData;
+    ArchiveData* pArcData;
 
-	pArcData = malloc(sizeof(*pArcData));
-	if (pArcData == nil)
-		return nil;
+    pArcData = malloc(sizeof(*pArcData));
+    if (pArcData == nil)
+        return nil;
 
-	pArcData->numRecords = 0;
-	pArcData->pRecordHead = pArcData->pRecordTail = nil;
+    pArcData->numRecords = 0;
+    pArcData->pRecordHead = pArcData->pRecordTail = nil;
 
-	return pArcData;
+    return pArcData;
 }
 
 void
 ArchiveData_Free(ArchiveData* pArcData)
 {
-	ArchiveRecord* pNext;
+    ArchiveRecord* pNext;
 
-	if (pArcData == nil)
-		return;
+    if (pArcData == nil)
+        return;
 
-	printf("*** Deleting %ld records!\n", pArcData->numRecords);
-	while (pArcData->pRecordHead != nil) {
-		pNext = ArchiveRecord_GetNext(pArcData->pRecordHead);
-		ArchiveRecord_Free(pArcData->pRecordHead);
-		pArcData->pRecordHead = pNext;
-	}
+    printf("*** Deleting %ld records!\n", pArcData->numRecords);
+    while (pArcData->pRecordHead != nil) {
+        pNext = ArchiveRecord_GetNext(pArcData->pRecordHead);
+        ArchiveRecord_Free(pArcData->pRecordHead);
+        pArcData->pRecordHead = pNext;
+    }
 
-	free(pArcData);
+    free(pArcData);
 }
 
 
 ArchiveRecord*
 ArchiveData_GetRecordHead(const ArchiveData* pArcData)
 {
-	return pArcData->pRecordHead;
+    return pArcData->pRecordHead;
 }
 
 
@@ -208,52 +208,52 @@ ArchiveData_GetRecordHead(const ArchiveData* pArcData)
 void
 ArchiveData_AddRecord(ArchiveData* pArcData, ArchiveRecord* pRecord)
 {
-	assert(pRecord != nil);
-	assert((pArcData->pRecordHead == nil && pArcData->pRecordTail == nil) ||
-		   (pArcData->pRecordHead != nil && pArcData->pRecordTail != nil));
+    assert(pRecord != nil);
+    assert((pArcData->pRecordHead == nil && pArcData->pRecordTail == nil) ||
+           (pArcData->pRecordHead != nil && pArcData->pRecordTail != nil));
 
-	if (pArcData->pRecordHead == nil) {
-		/* first */
-		pArcData->pRecordHead = pArcData->pRecordTail = pRecord;
-	} else {
-		/* not first, add to end */
-		ArchiveRecord_SetNext(pArcData->pRecordTail, pRecord);
-		pArcData->pRecordTail = pRecord;
-	}
+    if (pArcData->pRecordHead == nil) {
+        /* first */
+        pArcData->pRecordHead = pArcData->pRecordTail = pRecord;
+    } else {
+        /* not first, add to end */
+        ArchiveRecord_SetNext(pArcData->pRecordTail, pRecord);
+        pArcData->pRecordTail = pRecord;
+    }
 
-	pArcData->numRecords++;
+    pArcData->numRecords++;
 }
 
 /* dump the contents of the ArchiveData to stdout */
 void
 ArchiveData_DumpContents(const ArchiveData* pArcData)
 {
-	ArchiveRecord* pArcRec;
+    ArchiveRecord* pArcRec;
 
-	pArcRec = pArcData->pRecordHead;
-	while (pArcRec != nil) {
-		const NuThread* pThread;
-		int i, count;
+    pArcRec = pArcData->pRecordHead;
+    while (pArcRec != nil) {
+        const NuThread* pThread;
+        int i, count;
 
-		printf("%5ld '%s'\n",
-			ArchiveRecord_GetRecordIdx(pArcRec),
-			ArchiveRecord_GetFilename(pArcRec));
+        printf("%5ld '%s'\n",
+            ArchiveRecord_GetRecordIdx(pArcRec),
+            ArchiveRecord_GetFilename(pArcRec));
 
-		count = ArchiveRecord_GetNumThreads(pArcRec);
-		for (i = 0; i < count; i++) {
-			pThread = ArchiveRecord_GetThread(pArcRec, i);
-			printf("    %5ld 0x%04x 0x%04x\n", pThread->threadIdx,
-				pThread->thThreadClass, pThread->thThreadKind);
-		}
+        count = ArchiveRecord_GetNumThreads(pArcRec);
+        for (i = 0; i < count; i++) {
+            pThread = ArchiveRecord_GetThread(pArcRec, i);
+            printf("    %5ld 0x%04x 0x%04x\n", pThread->threadIdx,
+                pThread->thThreadClass, pThread->thThreadKind);
+        }
 
-		pArcRec = ArchiveRecord_GetNext(pArcRec);
-	}
+        pArcRec = ArchiveRecord_GetNext(pArcRec);
+    }
 }
 
 
 /*
  * ===========================================================================
- *		Main stuff
+ *      Main stuff
  * ===========================================================================
  */
 
@@ -263,19 +263,19 @@ ArchiveData_DumpContents(const ArchiveData* pArcData)
 NuResult
 GatherContents(NuArchive* pArchive, void* vpRecord)
 {
-	NuRecord* pRecord = (NuRecord*) vpRecord;
-	ArchiveData* pArchiveData = nil;
-	ArchiveRecord* pArchiveRecord = ArchiveRecord_New(pRecord);
+    NuRecord* pRecord = (NuRecord*) vpRecord;
+    ArchiveData* pArchiveData = nil;
+    ArchiveRecord* pArchiveRecord = ArchiveRecord_New(pRecord);
 
-	NuGetExtraData(pArchive, (void**)&pArchiveData);
-	assert(pArchiveData != nil);
+    NuGetExtraData(pArchive, (void**)&pArchiveData);
+    assert(pArchiveData != nil);
 
-	printf("*** Filename = '%s'\n",
-		pRecord->filename == nil ? "<unknown>":(const char*)pRecord->filename);
+    printf("*** Filename = '%s'\n",
+        pRecord->filename == nil ? "<unknown>":(const char*)pRecord->filename);
 
-	ArchiveData_AddRecord(pArchiveData, pArchiveRecord);
+    ArchiveData_AddRecord(pArchiveData, pArchiveRecord);
 
-	return kNuOK;
+    return kNuOK;
 }
 
 
@@ -284,28 +284,28 @@ GatherContents(NuArchive* pArchive, void* vpRecord)
  */
 NuError
 ReadAllFilenameThreads(NuArchive* pArchive, ArchiveData* pArchiveData,
-	NuDataSink* pDataSink)
+    NuDataSink* pDataSink)
 {
-	NuError err = kNuErrNone;
-	ArchiveRecord* pArchiveRecord;
-	const NuThread* pThread;
+    NuError err = kNuErrNone;
+    ArchiveRecord* pArchiveRecord;
+    const NuThread* pThread;
 
-	pArchiveRecord = ArchiveData_GetRecordHead(pArchiveData);
-	while (pArchiveRecord != nil) {
-		pThread = ArchiveRecord_FindThreadByID(pArchiveRecord,
-					kNuThreadIDFilename);
-		if (pThread != nil) {
-			err = NuExtractThread(pArchive, pThread->threadIdx, pDataSink);
-			if (err != kNuErrNone) {
-				fprintf(stderr, "*** Extract failed (%d)\n", err);
-				goto bail;
-			}
-		}
-		pArchiveRecord = ArchiveRecord_GetNext(pArchiveRecord);
-	}
+    pArchiveRecord = ArchiveData_GetRecordHead(pArchiveData);
+    while (pArchiveRecord != nil) {
+        pThread = ArchiveRecord_FindThreadByID(pArchiveRecord,
+                    kNuThreadIDFilename);
+        if (pThread != nil) {
+            err = NuExtractThread(pArchive, pThread->threadIdx, pDataSink);
+            if (err != kNuErrNone) {
+                fprintf(stderr, "*** Extract failed (%d)\n", err);
+                goto bail;
+            }
+        }
+        pArchiveRecord = ArchiveRecord_GetNext(pArchiveRecord);
+    }
 
 bail:
-	return err;
+    return err;
 }
 
 
@@ -313,96 +313,96 @@ bail:
 NuError
 ExtractToFile(NuArchive* pArchive, ArchiveData* pArchiveData)
 {
-	NuError err;
-	NuDataSink* pDataSink = nil;
+    NuError err;
+    NuDataSink* pDataSink = nil;
 
-	err = NuCreateDataSinkForFile(true, kNuConvertOff, "out.file", PATH_SEP,
-			&pDataSink);
-	if (err != kNuErrNone)
-		goto bail;
+    err = NuCreateDataSinkForFile(true, kNuConvertOff, "out.file", PATH_SEP,
+            &pDataSink);
+    if (err != kNuErrNone)
+        goto bail;
 
-	err = NuSetValue(pArchive, kNuValueHandleExisting, kNuAlwaysOverwrite);
-	if (err != kNuErrNone)
-		goto bail;
+    err = NuSetValue(pArchive, kNuValueHandleExisting, kNuAlwaysOverwrite);
+    if (err != kNuErrNone)
+        goto bail;
 
-	err = ReadAllFilenameThreads(pArchive, pArchiveData, pDataSink);
-	if (err != kNuErrNone)
-		goto bail;
+    err = ReadAllFilenameThreads(pArchive, pArchiveData, pDataSink);
+    if (err != kNuErrNone)
+        goto bail;
 
 bail:
-	(void) NuFreeDataSink(pDataSink);
-	if (err == kNuErrNone)
-		printf("*** File write complete\n");
-	return err;
+    (void) NuFreeDataSink(pDataSink);
+    if (err == kNuErrNone)
+        printf("*** File write complete\n");
+    return err;
 }
 
 /* extract every filename thread into a FILE*, appending */
 NuError
 ExtractToFP(NuArchive* pArchive, ArchiveData* pArchiveData)
 {
-	NuError err;
-	FILE* fp = nil;
-	NuDataSink* pDataSink = nil;
+    NuError err;
+    FILE* fp = nil;
+    NuDataSink* pDataSink = nil;
 
-	if ((fp = fopen("out.fp", kNuFileOpenWriteTrunc)) == nil)
-		return kNuErrFileOpen;
+    if ((fp = fopen("out.fp", kNuFileOpenWriteTrunc)) == nil)
+        return kNuErrFileOpen;
 
-	err = NuCreateDataSinkForFP(true, kNuConvertOff, fp, &pDataSink);
-	if (err != kNuErrNone)
-		goto bail;
+    err = NuCreateDataSinkForFP(true, kNuConvertOff, fp, &pDataSink);
+    if (err != kNuErrNone)
+        goto bail;
 
-	err = ReadAllFilenameThreads(pArchive, pArchiveData, pDataSink);
-	if (err != kNuErrNone)
-		goto bail;
+    err = ReadAllFilenameThreads(pArchive, pArchiveData, pDataSink);
+    if (err != kNuErrNone)
+        goto bail;
 
 bail:
-	(void) NuFreeDataSink(pDataSink);
-	if (fp != nil)
-		fclose(fp);
-	if (err == kNuErrNone)
-		printf("*** FP write complete\n");
-	return err;
+    (void) NuFreeDataSink(pDataSink);
+    if (fp != nil)
+        fclose(fp);
+    if (err == kNuErrNone)
+        printf("*** FP write complete\n");
+    return err;
 }
 
 /* extract every filename thread into a buffer, advancing as we go */
 NuError
 ExtractToBuffer(NuArchive* pArchive, ArchiveData* pArchiveData)
 {
-	NuError err;
-	unsigned char buffer[kHappySize];
-	NuDataSink* pDataSink = nil;
-	unsigned long count;
+    NuError err;
+    unsigned char buffer[kHappySize];
+    NuDataSink* pDataSink = nil;
+    unsigned long count;
 
-	err = NuCreateDataSinkForBuffer(true, kNuConvertOff, buffer, kHappySize,
-			&pDataSink);
-	if (err != kNuErrNone)
-		goto bail;
+    err = NuCreateDataSinkForBuffer(true, kNuConvertOff, buffer, kHappySize,
+            &pDataSink);
+    if (err != kNuErrNone)
+        goto bail;
 
-	err = ReadAllFilenameThreads(pArchive, pArchiveData, pDataSink);
-	if (err != kNuErrNone) {
-		if (err == kNuErrBufferOverrun)
-			fprintf(stderr, "*** Hey, buffer wasn't big enough!\n");
-		goto bail;
-	}
+    err = ReadAllFilenameThreads(pArchive, pArchiveData, pDataSink);
+    if (err != kNuErrNone) {
+        if (err == kNuErrBufferOverrun)
+            fprintf(stderr, "*** Hey, buffer wasn't big enough!\n");
+        goto bail;
+    }
 
-	/* write the buffer to a file */
-	(void) NuDataSinkGetOutCount(pDataSink, &count);
-	if (count > 0) {
-		FILE* fp;
-		if ((fp = fopen("out.buf", kNuFileOpenWriteTrunc)) != nil) {
+    /* write the buffer to a file */
+    (void) NuDataSinkGetOutCount(pDataSink, &count);
+    if (count > 0) {
+        FILE* fp;
+        if ((fp = fopen("out.buf", kNuFileOpenWriteTrunc)) != nil) {
 
-			printf("*** Writing %ld bytes\n", count);
-			if (fwrite(buffer, count, 1, fp) != 1)
-				err = kNuErrFileWrite;
-			fclose(fp);
-		}
-	} else {
-		printf("*** No data found!\n");
-	}
+            printf("*** Writing %ld bytes\n", count);
+            if (fwrite(buffer, count, 1, fp) != 1)
+                err = kNuErrFileWrite;
+            fclose(fp);
+        }
+    } else {
+        printf("*** No data found!\n");
+    }
 
 bail:
-	(void) NuFreeDataSink(pDataSink);
-	return err;
+    (void) NuFreeDataSink(pDataSink);
+    return err;
 }
 
 
@@ -412,52 +412,52 @@ bail:
 int
 DoFileStuff(const char* filename)
 {
-	NuError err;
-	NuArchive* pArchive = nil;
-	NuMasterHeader* pMasterHeader = nil;
-	ArchiveData* pArchiveData = ArchiveData_New();
+    NuError err;
+    NuArchive* pArchive = nil;
+    NuMasterHeader* pMasterHeader = nil;
+    ArchiveData* pArchiveData = ArchiveData_New();
 
-	err = NuOpenRO(filename, &pArchive);
-	if (err != kNuErrNone)
-		goto bail;
+    err = NuOpenRO(filename, &pArchive);
+    if (err != kNuErrNone)
+        goto bail;
 
-	NuSetExtraData(pArchive, pArchiveData);
+    NuSetExtraData(pArchive, pArchiveData);
 
-	printf("*** Gathering contents!\n");
-	err = NuContents(pArchive, GatherContents);
-	if (err != kNuErrNone)
-		goto bail;
+    printf("*** Gathering contents!\n");
+    err = NuContents(pArchive, GatherContents);
+    if (err != kNuErrNone)
+        goto bail;
 
-	printf("*** Dumping contents!\n");
-	ArchiveData_DumpContents(pArchiveData);
+    printf("*** Dumping contents!\n");
+    ArchiveData_DumpContents(pArchiveData);
 
-	err = ExtractToFile(pArchive, pArchiveData);
-	if (err != kNuErrNone)
-		goto bail;
-	err = ExtractToFP(pArchive, pArchiveData);
-	if (err != kNuErrNone)
-		goto bail;
-	err = ExtractToBuffer(pArchive, pArchiveData);
-	if (err != kNuErrNone)
-		goto bail;
+    err = ExtractToFile(pArchive, pArchiveData);
+    if (err != kNuErrNone)
+        goto bail;
+    err = ExtractToFP(pArchive, pArchiveData);
+    if (err != kNuErrNone)
+        goto bail;
+    err = ExtractToBuffer(pArchive, pArchiveData);
+    if (err != kNuErrNone)
+        goto bail;
 
 bail:
-	if (err != kNuErrNone)
-		fprintf(stderr, "*** ERROR: got error %d\n", err);
+    if (err != kNuErrNone)
+        fprintf(stderr, "*** ERROR: got error %d\n", err);
 
-	if (pArchive != nil) {
-		NuError err2 = NuClose(pArchive);
-		if (err == kNuErrNone && err2 != kNuErrNone)
-			err = err2;
-	}
+    if (pArchive != nil) {
+        NuError err2 = NuClose(pArchive);
+        if (err == kNuErrNone && err2 != kNuErrNone)
+            err = err2;
+    }
 
-	if (pMasterHeader != nil)
-		free(pMasterHeader);
+    if (pMasterHeader != nil)
+        free(pMasterHeader);
 
-	if (pArchiveData != nil)
-		free(pArchiveData);
+    if (pArchiveData != nil)
+        free(pArchiveData);
 
-	return err;
+    return err;
 }
 
 
@@ -467,28 +467,28 @@ bail:
 int
 main(int argc, char** argv)
 {
-	long major, minor, bug;
-	const char* pBuildDate;
-	FILE* infp;
-	int cc;
+    long major, minor, bug;
+    const char* pBuildDate;
+    FILE* infp;
+    int cc;
 
-	(void) NuGetVersion(&major, &minor, &bug, &pBuildDate, nil);
-	printf("Using NuFX lib %ld.%ld.%ld built on or after %s\n",
-		major, minor, bug, pBuildDate);
+    (void) NuGetVersion(&major, &minor, &bug, &pBuildDate, nil);
+    printf("Using NuFX lib %ld.%ld.%ld built on or after %s\n",
+        major, minor, bug, pBuildDate);
 
-	if (argc == 2) {
-		infp = fopen(argv[1], kNuFileOpenReadOnly);
-		if (infp == nil) {
-			perror("fopen failed");
-			exit(1);
-		}
-	} else {
-		fprintf(stderr, "ERROR: you have to specify a filename\n");
-		exit(2);
-	}
+    if (argc == 2) {
+        infp = fopen(argv[1], kNuFileOpenReadOnly);
+        if (infp == nil) {
+            perror("fopen failed");
+            exit(1);
+        }
+    } else {
+        fprintf(stderr, "ERROR: you have to specify a filename\n");
+        exit(2);
+    }
 
-	cc = DoFileStuff(argv[1]);
+    cc = DoFileStuff(argv[1]);
 
-	exit(cc != 0);
+    exit(cc != 0);
 }
 
