@@ -1,3 +1,5 @@
+2000/05/22	***** v1.0.1 shipped (no changes - version follows nufxlib) *****
+
 2000/05/18	***** v1.0.0 shipped *****
 
 2000/05/18	fadden
