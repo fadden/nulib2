@@ -1575,8 +1575,14 @@ Nu_StreamExtract(NuArchive* pArchive)
          * If we're trying to be compatible with ShrinkIt, and the record
          * had nothing in it but comments and filenames, then we need to
          * create a zero-byte data file.
+         *
+         * [ I'm going to make this a non-Mimic feature, so I can turn
+         *   MimicSHK off and still extract zero-byte files from GSHK
+         *   archives.  We should perhaps consider a separate "bug
+         *   workaround" flag to control this.  Note there's similar
+         *   code in Nu_ExtractRecordByPtr, below. ]
          */
-        if (pArchive->valMimicSHK && !hasInterestingThread) {
+        if (/*pArchive->valMimicSHK &&*/ !hasInterestingThread) {
             err = Nu_FakeZeroExtract(pArchive, &tmpRecord);
             BailError(err);
         }
@@ -1701,7 +1707,7 @@ Nu_ExtractRecordByPtr(NuArchive* pArchive, NuRecord* pRecord)
      * had nothing in it but comments and filenames, then we need to
      * create a zero-byte data file.
      */
-    if (pArchive->valMimicSHK && !hasInterestingThread) {
+    if (/*pArchive->valMimicSHK &&*/ !hasInterestingThread) {
         err = Nu_FakeZeroExtract(pArchive, pRecord);
         BailError(err);
     }
