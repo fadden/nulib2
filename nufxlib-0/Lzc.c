@@ -20,7 +20,7 @@
 
 #ifdef ENABLE_LZC
 
-#define DEBUG_LZC
+/*#define DEBUG_LZC*/
 
 /*
  * Selected definitions from compress.h.

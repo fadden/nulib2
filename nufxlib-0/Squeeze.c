@@ -776,7 +776,7 @@ Nu_CompressHuffmanSQ(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
         numNodes = 0;
     else
         numNodes = sqState.treeHead - (kNuSQNumVals - 1);
-    err = Nu_SQWriteShort(fp, numNodes);
+    err = Nu_SQWriteShort(fp, (short) numNodes);
     BailError(err);
     compressedLen += 2;
 
@@ -787,9 +787,9 @@ Nu_CompressHuffmanSQ(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
         r = sqState.node[i].rchild;
         l = l < kNuSQNumVals ? -(l + 1) : sqState.treeHead - l;
         r = r < kNuSQNumVals ? -(r + 1) : sqState.treeHead - r;
-        err = Nu_SQWriteShort(fp, l);
+        err = Nu_SQWriteShort(fp, (short) l);
         BailError(err);
-        err = Nu_SQWriteShort(fp, r);
+        err = Nu_SQWriteShort(fp, (short) r);
         BailError(err);
         compressedLen += 4;
 

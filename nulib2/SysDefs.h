@@ -64,6 +64,7 @@
 # endif
 
 # include <io.h>
+# include <direct.h>
 # define FOPEN_WANTS_B
 # define HAVE_CHSIZE
 # define snprintf _snprintf

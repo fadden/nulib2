@@ -136,6 +136,11 @@ bail:
  * You could, of course, create a single record with a data thread and
  * a disk image thread, but it's a fair bet ShrinkIt would ignore one
  * or the other.
+ *
+ * NOTE: we don't currently work around the GSHK zero-length file bug.
+ * Such records, which have a filename thread but no data threads at all,
+ * will be categorized as "unknown".  We could detect the situation and
+ * correct it, but we might as well flag it in a user-visible way.
  */
 static NuError
 AnalyzeRecord(const NuRecord* pRecord, enum RecordKind* pRecordKind,

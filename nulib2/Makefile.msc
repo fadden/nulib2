@@ -6,6 +6,11 @@
 # in "..\nufxlib-$(VERSION)".
 #
 # To build without debugging info, use "nmake nodebug=1".
+# To link with libz, use "nmake libz=1".
+# To build with libbz2, use "nmake libbz2=1".
+#
+# For libz/libbz2, you need to have the appropriate library either
+# in this directory or in a standard location that the linker can find.
 #
 
 # Windows magic
@@ -16,8 +21,8 @@ VERSION=0
 NUFXSRCDIR = ..\nufxlib-$(VERSION)
 
 # object files
-OBJS1 = Add.obj ArcUtils.obj Delete.obj Extract.obj Filename.obj List.obj
-OBJS2 = Main.obj MiscStuff.obj MiscUtils.obj State.obj SysUtils.obj
+OBJS1 = Add.obj ArcUtils.obj Binary2.obj Delete.obj Extract.obj Filename.obj
+OBJS2 = List.obj Main.obj MiscStuff.obj MiscUtils.obj State.obj SysUtils.obj
 OBJS = $(OBJS1) $(OBJS2)
 
 !ifdef NODEBUG
@@ -30,6 +35,13 @@ LIB_FLAGS = /nodefaultlib:libc.lib /nologo libcd.lib setargv.obj
 !endif
 
 BUILD_FLAGS = /W3 /GX /D "WIN32" /D "_CONSOLE" /I "$(NUFXSRCDIR)"
+
+!ifdef LIBZ
+LIB_FLAGS = zlib.lib $(LIB_FLAGS)
+!endif
+!ifdef LIBBZ2
+LIB_FLAGS = libbz2.lib $(LIB_FLAGS)
+!endif
 
 # how to compile sources
 .c.obj:
@@ -49,6 +61,7 @@ clean:
 
 Add.obj: Add.c NuLib2.h $(NUFXSRCDIR)\NufxLib.h SysDefs.h State.h MiscStuff.h
 ArcUtils.obj: ArcUtils.c NuLib2.h $(NUFXSRCDIR)\NufxLib.h SysDefs.h State.h MiscStuff.h
+Binary2.obj: Binary2.c NuLib2.h $(NUFXSRCDIR)\NufxLib.h SysDefs.h State.h MiscStuff.h
 Delete.obj: Delete.c NuLib2.h $(NUFXSRCDIR)\NufxLib.h SysDefs.h State.h MiscStuff.h
 Extract.obj: Extract.c NuLib2.h $(NUFXSRCDIR)\NufxLib.h SysDefs.h State.h MiscStuff.h
 Filename.obj: Filename.c NuLib2.h $(NUFXSRCDIR)\NufxLib.h SysDefs.h State.h MiscStuff.h

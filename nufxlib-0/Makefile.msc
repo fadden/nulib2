@@ -5,6 +5,11 @@
 # Run with "nmake /f Makefile.msc".
 #
 # To build without debugging info, use "nmake nodebug=1".
+# To build with libz, use "nmake libz=1".
+# To build with libbz2, use "nmake libbz2=1".
+#
+# For libz/libbz2, you need to have the appropriate header file(s) either
+# in this directory or in a standard location that the compiler can find.
 #
 
 # Windows magic
@@ -12,10 +17,11 @@ TARGETOS = BOTH
 !include <ntwin32.mak>
 
 # object files
-OBJS1 = Archive.obj ArchiveIO.obj Compress.obj Crc16.obj Debug.obj Deferred.obj
-OBJS2 = Entry.obj Expand.obj FileIO.obj Funnel.obj Lzw.obj MiscStuff.obj
-OBJS3 = MiscUtils.obj Record.obj SourceSink.obj Thread.obj Value.obj Version.obj
-OBJS = $(OBJS1) $(OBJS2) $(OBJS3)
+OBJS1 = Archive.obj ArchiveIO.obj Bzip2.obj Compress.obj Crc16.obj Debug.obj
+OBJS2 = Deferred.obj Deflate.obj Entry.obj Expand.obj FileIO.obj Funnel.obj
+OBJS3 = Lzc.obj Lzw.obj MiscStuff.obj MiscUtils.obj Record.obj SourceSink.obj
+OBJS4 = Squeeze.obj Thread.obj Value.obj Version.obj
+OBJS = $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4)
 
 !ifdef NODEBUG
 #OPT = $(cdebug) /D NDEBUG /ML
@@ -25,6 +31,13 @@ OPT = $(cdebug) /MLd
 !endif
 
 BUILD_FLAGS = /W3 /GX /D "WIN32"
+
+!ifdef LIBZ
+BUILD_FLAGS = $(BUILD_FLAGS) /D "ENABLE_DEFLATE"
+!endif
+!ifdef LIBBZ2
+BUILD_FLAGS = $(BUILD_FLAGS) /D "ENABLE_BZIP2"
+!endif
 
 # how to compile sources
 .c.obj:
@@ -38,6 +51,12 @@ all: $(PRODUCT) samples
 samples::
 	@echo -
 	@echo - Change to the samples directory and run $(MAKE) there.
+!ifdef LIBZ
+	@echo - Remember to specify libz=1
+!endif
+!ifdef LIBBZ
+	@echo - Remember to specify libbz2=1
+!endif
 	@echo -
 
 # this isn't great, but it'll have to do
@@ -48,6 +67,7 @@ Version.c: Version.c.in
 	@echo -
 
 nufxlib.lib: $(OBJS)
+	if exist $(PRODUCT) del $(PRODUCT)
 	$(link) -lib /out:$(PRODUCT) $(OBJS) /nologo
 
 clean::
@@ -56,19 +76,23 @@ clean::
 
 Archive.obj: Archive.c NufxLibPriv.h NufxLib.h MiscStuff.h SysDefs.h
 ArchiveIO.obj: ArchiveIO.c NufxLibPriv.h NufxLib.h MiscStuff.h SysDefs.h
+Bzip2.obj: Bzip2.c NufxLibPriv.h NufxLib.h MiscStuff.h SysDefs.h
 Compress.obj: Compress.c NufxLibPriv.h NufxLib.h MiscStuff.h SysDefs.h
 Crc16.obj: Crc16.c NufxLibPriv.h NufxLib.h MiscStuff.h SysDefs.h
 Debug.obj: Debug.c NufxLibPriv.h NufxLib.h MiscStuff.h SysDefs.h
 Deferred.obj: Deferred.c NufxLibPriv.h NufxLib.h MiscStuff.h SysDefs.h
+Deflate.obj: Deflate.c NufxLibPriv.h NufxLib.h MiscStuff.h SysDefs.h
 Entry.obj: Entry.c NufxLibPriv.h NufxLib.h MiscStuff.h SysDefs.h
 Expand.obj: Expand.c NufxLibPriv.h NufxLib.h MiscStuff.h SysDefs.h
 FileIO.obj: FileIO.c NufxLibPriv.h NufxLib.h MiscStuff.h SysDefs.h
 Funnel.obj: Funnel.c NufxLibPriv.h NufxLib.h MiscStuff.h SysDefs.h
+Lzc.obj: Lzc.c NufxLibPriv.h NufxLib.h MiscStuff.h SysDefs.h
 Lzw.obj: Lzw.c NufxLibPriv.h NufxLib.h MiscStuff.h SysDefs.h
 MiscStuff.obj: MiscStuff.c NufxLibPriv.h NufxLib.h MiscStuff.h SysDefs.h
 MiscUtils.obj: MiscUtils.c NufxLibPriv.h NufxLib.h MiscStuff.h SysDefs.h
 Record.obj: Record.c NufxLibPriv.h NufxLib.h MiscStuff.h SysDefs.h
 SourceSink.obj: SourceSink.c NufxLibPriv.h NufxLib.h MiscStuff.h SysDefs.h
+Squeeze.obj: Squeeze.c NufxLibPriv.h NufxLib.h MiscStuff.h SysDefs.h
 Thread.obj: Thread.c NufxLibPriv.h NufxLib.h MiscStuff.h SysDefs.h
 Value.obj: Value.c NufxLibPriv.h NufxLib.h MiscStuff.h SysDefs.h
 Version.obj: Version.c NufxLibPriv.h NufxLib.h MiscStuff.h SysDefs.h

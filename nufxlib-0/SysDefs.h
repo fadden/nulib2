@@ -61,6 +61,11 @@
 #  define ulong unsigned long
 #  define inline /*Visual C++6.0 can't inline ".c" files*/
 #  define mode_t int
+#  define ENABLE_SQ
+#  define ENABLE_LZW
+#  define ENABLE_LZC
+/*#  define ENABLE_DEFLATE*/
+/*#  define ENABLE_BZIP2*/
 # endif
 
 # include <io.h>
@@ -114,9 +119,10 @@
 # endif
 #endif
 
-#ifdef MAC
-# define HAS_RESOURCE_FORKS
-#endif
+/* resource forks on UFS filesystem under Mac OS X are a kluge */
+/*#ifdef MAC*/
+/*# define HAS_RESOURCE_FORKS*/
+/*#endif*/
 
 #ifdef __ORCAC__
 # define HAS_RESOURCE_FORKS

@@ -6,6 +6,11 @@
 # in "..".
 #
 # To build without debugging info, use "nmake nodebug=1".
+# To build with libz, use "nmake libz=1".
+# To build with libbz2, use "nmake libbz2=1".
+#
+# For libz/libbz2, you need to have the appropriate library either
+# in this directory or in a standard location that the linker can find.
 #
 
 # Windows magic
@@ -25,6 +30,13 @@ LIB_FLAGS = /nodefaultlib:libc.lib /nologo libcd.lib setargv.obj
 !endif
 
 BUILD_FLAGS = /W3 /GX /D "WIN32" /D "_CONSOLE" /I "$(NUFXSRCDIR)"
+
+!ifdef LIBZ
+LIB_FLAGS = zlib.lib $(LIB_FLAGS)
+!endif
+!ifdef LIBBZ2
+LIB_FLAGS = libbz2.lib $(LIB_FLAGS)
+!endif
 
 # how to compile sources
 .c.obj:

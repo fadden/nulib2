@@ -531,6 +531,60 @@ bail:
 }
 
 
+
+/*
+ * Can't count on having getopt on non-UNIX platforms, so just use this
+ * quick version instead.  May not work exactly like getopt(), but it
+ * does everything we need here.
+ */
+int myoptind = 0;
+char* myoptarg = nil;
+const char* curchar = nil;
+int skipnext = false;
+
+int
+mygetopt(int argc, char** argv, const char* optstr)
+{
+    if (!myoptind) {
+        myoptind = 1;
+        if (argc <= 1)
+            return EOF;
+        curchar = argv[myoptind];
+        if (*curchar != '-')
+            return EOF;
+    }
+
+    curchar++;
+    if (*curchar == '\0') {
+        myoptind++;
+        if (skipnext)
+            myoptind++;
+        if (myoptind >= argc)
+            return EOF;
+        curchar = argv[myoptind];
+        if (*curchar != '-')
+            return EOF;
+        curchar++;
+    }
+
+    while (*optstr != '\0') {
+        if (*optstr == *curchar) {
+            /*printf("MATCHED '%c'\n", *optstr);*/
+            if (*(optstr+1) == ':') {
+                skipnext = true;
+                myoptarg = argv[myoptind+1];
+                /*printf("ATTACHED '%s'\n", myoptarg);*/
+            }
+            return *curchar;
+        }
+
+        optstr++;
+    }
+
+    fprintf(stderr, "Unrecognized option '%c'\n", *curchar);
+    return *curchar;
+}
+
 /*
  * Print usage info.
  */
@@ -555,8 +609,6 @@ Usage(const char* argv0)
 int
 main(int argc, char** argv)
 {
-    extern char* optarg;
-    extern int optind;
     NuValue compressMethod = kNuCompressLZW2;
     long major, minor, bug;
     const char* pBuildDate;
@@ -570,7 +622,7 @@ main(int argc, char** argv)
         major, minor, bug, pBuildDate);
 
     errorFlag = false;
-    while ((ic = getopt(argc, argv, "crfatm:")) != EOF) {
+    while ((ic = mygetopt(argc, argv, "crfatm:")) != EOF) {
         switch (ic) {
         case 'c':   flags |= kFlagCopyOnly;         break;
         case 'r':   flags |= kFlagReverseThreads;   break;
@@ -592,7 +644,7 @@ main(int argc, char** argv)
                     { "deflate", kNuCompressDeflate, kNuFeatureCompressDeflate},
                     { "bzip2",   kNuCompressBzip2,   kNuFeatureCompressBzip2 },
                 };
-                char* methodStr = optarg;
+                char* methodStr = myoptarg;
                 int i;
 
                 for (i = 0; i < NELEM(methods); i++) {
@@ -621,12 +673,12 @@ main(int argc, char** argv)
         }
     }
 
-    if (errorFlag || argc != optind+2) {
+    if (errorFlag || argc != myoptind+2) {
         Usage(argv[0]);
         exit(2);
     }
 
-    cc = LaunderArchive(argv[optind], argv[optind+1], compressMethod, flags);
+    cc = LaunderArchive(argv[myoptind], argv[myoptind+1], compressMethod,flags);
 
     if (cc == 0)
         printf("Success!\n");

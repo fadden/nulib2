@@ -33,7 +33,7 @@ Nu_bzalloc(void* opaque, int items, int size)
 static void
 Nu_bzfree(void* opaque, void* address)
 {
-    return Nu_Free(opaque, address);
+    Nu_Free(opaque, address);
 }
 
 

@@ -33,7 +33,7 @@ Nu_zalloc(voidpf opaque, uInt items, uInt size)
 static void
 Nu_zfree(voidpf opaque, voidpf address)
 {
-    return Nu_Free(opaque, address);
+    Nu_Free(opaque, address);
 }
 
 
