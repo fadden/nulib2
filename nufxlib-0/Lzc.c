@@ -5,7 +5,9 @@
  * terms of the GNU Library General Public License, see the file COPYING.LIB.
  *
  * This is the LZW implementation found in the UNIX "compress" command,
- * sometimes referred to as "LZC".
+ * sometimes referred to as "LZC".  GS/ShrinkIt v1.1 can unpack threads
+ * in LZC format, P8 ShrinkIt cannot.  The only other application that
+ * is known to create LZC threads is the original NuLib.
  *
  * There's a lot of junk in here for the sake of smaller systems (e.g. MSDOS)
  * and pre-ANSI compilers.  For the most part it has been left unchanged.
@@ -1055,7 +1057,7 @@ Nu_LZC_decompress(LZCState* pLzcState, ulong compressedLen)
  */
 NuError
 Nu_ExpandLZC(NuArchive* pArchive, const NuRecord* pRecord,
-    const NuThread* pThread, FILE* infp, NuFunnel* pFunnel, ushort* pThreadCrc)
+    const NuThread* pThread, FILE* infp, NuFunnel* pFunnel, ushort* pCrc)
 {
     NuError err = kNuErrNone;
     LZCState lzcState;
@@ -1065,19 +1067,16 @@ Nu_ExpandLZC(NuArchive* pArchive, const NuRecord* pRecord,
     lzcState.infp = infp;
     lzcState.pFunnel = pFunnel;
 
-    if (pThreadCrc == nil) {
+    if (pCrc == nil) {
         lzcState.doCalcCRC = false;
     } else {
         lzcState.doCalcCRC = true;
-        lzcState.crc = *pThreadCrc;
+        lzcState.crc = *pCrc;
     }
 
     Nu_LZC_decompress(&lzcState, pThread->thCompThreadEOF);
     err = lzcState.exit_stat;
     DBUG(("+++ LZC_decompress returned with %d\n", err));
-
-    if (err == kNuErrNone)
-        err = Nu_FunnelFlush(pArchive, pFunnel);
 
 #if (SPLIT_HT)
     free_array(CODE,lzcState.ht[1], 0);
@@ -1094,8 +1093,8 @@ Nu_ExpandLZC(NuArchive* pArchive, const NuRecord* pRecord,
 #endif
     free_array(char,lzcState.sfx, 256);
 
-    if (pThreadCrc != nil)
-        *pThreadCrc = lzcState.crc;
+    if (pCrc != nil)
+        *pCrc = lzcState.crc;
     return err;
 }
 

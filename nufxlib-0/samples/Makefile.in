@@ -22,7 +22,7 @@ CFLAGS		= @BUILD_FLAGS@ -I. -I.. @DEFS@
 ALL_SRCS	= Exerciser.c Launder.c ImgConv.c TestBasic.c TestExtract.c \
 			  TestSimple.c
 
-NUFXLIB		= -L.. -lnufx @DMALLOC@
+NUFXLIB		= -L.. -lnufx
 
 PRODUCTS	= exerciser imgconv launder test-basic test-extract test-simple
 
@@ -47,22 +47,22 @@ all: $(PRODUCTS)
 #	@$(MAKE) PURIFY_BUILD=1
 
 exerciser: Exerciser.o $(LIB_PRODUCT)
-	$(PURIFY) $(QUANTIFY) $(CC) -o $@ Exerciser.o $(NUFXLIB)
+	$(PURIFY) $(QUANTIFY) $(CC) -o $@ Exerciser.o $(NUFXLIB) @LIBS@
 
 imgconv: ImgConv.o $(LIB_PRODUCT)
-	$(PURIFY) $(QUANTIFY) $(CC) -o $@ ImgConv.o $(NUFXLIB)
+	$(PURIFY) $(QUANTIFY) $(CC) -o $@ ImgConv.o $(NUFXLIB) @LIBS@
 
 launder: Launder.o $(LIB_PRODUCT)
-	$(PURIFY) $(QUANTIFY) $(CC) -o $@ Launder.o $(NUFXLIB)
+	$(PURIFY) $(QUANTIFY) $(CC) -o $@ Launder.o $(NUFXLIB) @LIBS@
 
 test-basic: TestBasic.o $(LIB_PRODUCT)
-	$(PURIFY) $(QUANTIFY) $(CC) -o $@ TestBasic.o $(NUFXLIB)
+	$(PURIFY) $(QUANTIFY) $(CC) -o $@ TestBasic.o $(NUFXLIB) @LIBS@
 
 test-simple: TestSimple.o $(LIB_PRODUCT)
-	$(PURIFY) $(QUANTIFY) $(CC) -o $@ TestSimple.o $(NUFXLIB)
+	$(PURIFY) $(QUANTIFY) $(CC) -o $@ TestSimple.o $(NUFXLIB) @LIBS@
 
 test-extract: TestExtract.o $(LIB_PRODUCT)
-	$(PURIFY) $(QUANTIFY) $(CC) -o $@ TestExtract.o $(NUFXLIB)
+	$(PURIFY) $(QUANTIFY) $(CC) -o $@ TestExtract.o $(NUFXLIB) @LIBS@
 
 tags::
 	ctags --totals -R ../*

@@ -173,13 +173,25 @@ Nu_ExpandStream(NuArchive* pArchive, const NuRecord* pRecord,
     case kNuThreadFormatLZC16:
         err = Nu_ExpandLZC(pArchive, pRecord, pThread, infp, pFunnel, pCalcCrc);
         break;
+    case kNuThreadFormatDeflate:
+        #ifdef HAVE_LIBZ
+        err = Nu_ExpandDeflate(pArchive, pRecord, pThread, infp, pFunnel,
+                pCalcCrc);
+        #else
+        err = kNuErrBadFormat;
+        Nu_ReportError(NU_BLOB, kNuErrNone,
+            "deflate compression not supported");
+        #endif
+        break;
     default:
         err = kNuErrBadFormat;
         Nu_ReportError(NU_BLOB, err,
             "format %u unknown", pThread->thThreadFormat);
         break;
     }
+    BailError(err);
 
+    err = Nu_FunnelFlush(pArchive, pFunnel);
     BailError(err);
 
     /*

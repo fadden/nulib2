@@ -571,6 +571,12 @@ NuThreadMod* Nu_ThreadMod_FindByThreadIdx(const NuRecord* pRecord,
     NuThreadIdx threadIdx);
 NuError Nu_Flush(NuArchive* pArchive, long* pStatusFlags);
 
+/* Deflate.c */
+NuError Nu_CompressDeflate(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
+    ulong srcLen, ulong* pDstLen, ushort* pCrc);
+NuError Nu_ExpandDeflate(NuArchive* pArchive, const NuRecord* pRecord,
+    const NuThread* pThread, FILE* infp, NuFunnel* pFunnel, ushort* pCrc);
+
 /* Expand.c */
 NuError Nu_ExpandStream(NuArchive* pArchive, const NuRecord* pRecord,
     const NuThread* pThread, FILE* infp, NuFunnel* pFunnel);
@@ -637,7 +643,7 @@ NuError Nu_CompressLZC12(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
 NuError Nu_CompressLZC16(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
     ulong srcLen, ulong* pDstLen, ushort* pCrc);
 NuError Nu_ExpandLZC(NuArchive* pArchive, const NuRecord* pRecord,
-    const NuThread* pThread, FILE* infp, NuFunnel* pFunnel, ushort* pThreadCrc);
+    const NuThread* pThread, FILE* infp, NuFunnel* pFunnel, ushort* pCrc);
 
 /* Lzw.c */
 NuError Nu_CompressLZW1(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,

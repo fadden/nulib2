@@ -32,6 +32,7 @@ static const char* gThreadFormatNames[] = {
     "dynamic LZW/2",
     "12-bit LZC",
     "16-bit LZC",
+    "deflate"
 };
 
 /* days of the week */

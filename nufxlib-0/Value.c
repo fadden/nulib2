@@ -88,7 +88,7 @@ Nu_SetValue(NuArchive* pArchive, NuValueID ident, NuValue value)
         pArchive->valConvertExtractedEOL = value;
         break;
     case kNuValueDataCompression:
-        if (value < kNuCompressNone || value > kNuCompressLZC16) {
+        if (value < kNuCompressNone || value > kNuCompressDeflate) {
             Nu_ReportError(NU_BLOB, err,
                 "Invalid kNuValueDataCompression value %ld\n", value);
             goto bail;
@@ -210,6 +210,12 @@ Nu_ConvertCompressValToFormat(NuArchive* pArchive, NuValue compValue)
     case kNuCompressSQ:     threadFormat = kNuThreadFormatHuffmanSQ;    break;
     case kNuCompressLZC12:  threadFormat = kNuThreadFormatLZC12;        break;
     case kNuCompressLZC16:  threadFormat = kNuThreadFormatLZC16;        break;
+    #ifdef HAVE_LIBZ
+    case kNuCompressDeflate: threadFormat = kNuThreadFormatDeflate;     break;
+    #else
+    case kNuCompressDeflate: threadFormat = kNuThreadFormatDeflate;
+                            unsup = true;                               break;
+    #endif
     default:
         Assert(false);
         Nu_ReportError(NU_BLOB, kNuErrInvalidArg,

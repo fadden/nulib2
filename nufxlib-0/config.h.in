@@ -120,6 +120,9 @@
 /* Define if VSNPRINTF is declared in stdio.h.  */
 #undef VSNPRINTF_DECLARED
 
+/* Define if you have libz.a or libz.so */
+#undef HAVE_LIBZ
+
 /* Define if we want to use the dmalloc library (--enable-dmalloc).  */
 #undef USE_DMALLOC
 

@@ -532,10 +532,8 @@ Nu_SQComputeHuffTree(SQState* pSqState)
         int* pWeight;
 
         err = Nu_SQGetcRLE(pSqState, &sym);
-        if (err != kNuErrNone) {
-            NuArchive* pArchive = pSqState->pArchive;
-            BailError(err);
-        }
+        if (err != kNuErrNone)
+            goto bail;
 
         Assert(sym >= 0 && sym <= kNuSQEOFToken);
         pWeight = &pSqState->node[(unsigned)sym].weight;
@@ -682,7 +680,7 @@ bail:
 }
 
 /*
- * Compress in "SQ" format, from "pStraw" to "fp".
+ * Compress "srcLen" bytes into SQ format, from "pStraw" to "fp".
  *
  * This requires two passes through the input.
  */
@@ -897,7 +895,7 @@ Nu_USQReadShort(USQState* pUsqState, short* pShort)
  */
 NuError
 Nu_ExpandHuffmanSQ(NuArchive* pArchive, const NuRecord* pRecord,
-    const NuThread* pThread, FILE* infp, NuFunnel* pFunnel, ushort* pThreadCrc)
+    const NuThread* pThread, FILE* infp, NuFunnel* pFunnel, ushort* pCrc)
 {
     NuError err = kNuErrNone;
     USQState usqState;
@@ -1071,8 +1069,8 @@ Nu_ExpandHuffmanSQ(NuArchive* pArchive, const NuRecord* pRecord,
                 val = 2;
             }
             while (--val) {
-                if (pThreadCrc != nil)
-                    *pThreadCrc = Nu_CalcCRC16(*pThreadCrc, &lastc, 1);
+                if (pCrc != nil)
+                    *pCrc = Nu_CalcCRC16(*pCrc, &lastc, 1);
                 err = Nu_FunnelWrite(pArchive, pFunnel, &lastc, 1);
                 #ifdef FULL_SQ_HEADER
                 checksum += lastc;
@@ -1086,8 +1084,8 @@ Nu_ExpandHuffmanSQ(NuArchive* pArchive, const NuRecord* pRecord,
                 inrep = true;
             } else {
                 lastc = val;
-                if (pThreadCrc != nil)
-                    *pThreadCrc = Nu_CalcCRC16(*pThreadCrc, &lastc, 1);
+                if (pCrc != nil)
+                    *pCrc = Nu_CalcCRC16(*pCrc, &lastc, 1);
                 err = Nu_FunnelWrite(pArchive, pFunnel, &lastc, 1);
                 #ifdef FULL_SQ_HEADER
                 checksum += lastc;
@@ -1131,9 +1129,6 @@ Nu_ExpandHuffmanSQ(NuArchive* pArchive, const NuRecord* pRecord,
     }
 
 bail:
-    if (err == kNuErrNone)
-        err = Nu_FunnelFlush(pArchive, pFunnel);
-
     return err;
 }
 

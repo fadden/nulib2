@@ -135,6 +135,10 @@ typedef struct LZWCompressState {
 
 /*
  * Allocate some "reusable" state for LZW compression.
+ *
+ * The only thing that really needs to be retained across calls is
+ * the hash function.  This way we don't have to re-create it for
+ * every file, or store it statically in the binary.
  */
 static NuError
 Nu_AllocLZWCompressState(NuArchive* pArchive)
@@ -1596,9 +1600,6 @@ Nu_ExpandLZW(NuArchive* pArchive, const NuRecord* pRecord,
     }
 
 bail:
-    if (err == kNuErrNone)
-        err = Nu_FunnelFlush(pArchive, pFunnel);
-
     return err;
 }
 

@@ -203,6 +203,12 @@ Nu_CompressToArchive(NuArchive* pArchive, NuDataSource* pDataSource,
             err = Nu_CompressLZC16(pArchive, pStraw, dstFp, srcLen, &dstLen,
                     &threadCrc);
             break;
+        #ifdef HAVE_LIBZ
+        case kNuThreadFormatDeflate:
+            err = Nu_CompressDeflate(pArchive, pStraw, dstFp, srcLen, &dstLen,
+                    &threadCrc);
+            break;
+        #endif
         default:
             /* should've been blocked in Value.c */
             Assert(0);
@@ -239,7 +245,14 @@ Nu_CompressToArchive(NuArchive* pArchive, NuDataSource* pDataSource,
                     &dstLen, &threadCrc);
             BailError(err);
 
-            /* [can set "&threadCrc" above to nil to speed things up] */
+            /*
+             * This holds so long as the previous attempt at compressing
+             * computed a CRC on the entire file (i.e. didn't stop early
+             * when it noticed the output was larger than the input).  If
+             * this is always the case, then we can change "&threadCrc"
+             * a few lines back to "nil" and avoid re-computing the CRC.
+             * If this is not always the case, remove this assert.
+             */
             Assert(threadCrc == pThread->thThreadCRC);
 
             pThread->thThreadEOF = srcLen;

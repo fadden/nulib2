@@ -10,11 +10,14 @@ AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 AC_PROG_RANLIB
 
-dnl Checks for libraries.
-
 dnl Checks for header files.
 AC_CHECK_HEADERS(fcntl.h malloc.h stdlib.h sys/stat.h sys/time.h sys/types.h \
     sys/utime.h unistd.h utime.h)
+
+dnl Check for zlib.  Make sure it comes with zlib.h.
+LIBS=""
+AC_CHECK_LIB(z, deflate,
+    AC_CHECK_HEADER(zlib.h, AC_DEFINE(HAVE_LIBZ) LIBS="$LIBS -lz"))
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -130,7 +133,7 @@ AC_MSG_RESULT($nufxlib_cv_sprintf_returns_int)
 DMALLOC=
 AC_ARG_ENABLE(dmalloc, [  --enable-dmalloc: do dmalloc stuff], \
     [ echo "--- enabling dmalloc"; \
-    DMALLOC="-L/usr/local/lib -ldmalloc"; AC_DEFINE(USE_DMALLOC) ])
+    LIBS="$LIBS -L/usr/local/lib -ldmalloc"; AC_DEFINE(USE_DMALLOC) ])
 AC_SUBST(DMALLOC)
 
 AC_OUTPUT(Makefile samples/Makefile)

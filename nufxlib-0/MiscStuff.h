@@ -9,7 +9,7 @@
 #ifndef __MiscStuff__
 #define __MiscStuff__
 
-#define VALGRIND        /* assume we're using it */
+#define VALGRIND        /* let's just assume we're using it */
 
 #include "SysDefs.h"
 
