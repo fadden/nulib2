@@ -8,8 +8,11 @@
 # To build without debugging info, use "nmake nodebug=1".
 # To build with libz, use "nmake libz=1".
 # To build with libbz2, use "nmake libbz2=1".
-# If you're linking against nufxlib as a DLL, add "DLL=1", and don't
-#   specify libz or libbz2.
+# If you're linking against nufxlib as a DLL, you don't need to specify
+#   libraries.  You probably need to specify DLL=1 and the same setting
+#   of the NODEBUG flag as you used when building the DLL.  If you don't,
+#   "test-extract" will fail in the fwrite() call in Nu_FWrite, because
+#   the non-debug /MD libc does something peculiar with FILE*.
 #
 # For libz/libbz2, you need to have the appropriate library either
 # in this directory or in a standard location that the linker can find.
@@ -23,7 +26,7 @@ NUFXSRCDIR = ..
 LIB_PRODUCT = $(NUFXSRCDIR)\nufxlib.lib
 
 !ifdef DLL
-### build against the DLL
+### build using the same libc as the DLL
 !ifdef NODEBUG
 OPT = /D NUFXLIB_DLL /MD /Ogityb2
 LIB_FLAGS = /nodefaultlib:libcd.lib /nologo setargv.obj
@@ -31,8 +34,8 @@ LIB_FLAGS = /nodefaultlib:libcd.lib /nologo setargv.obj
 OPT = /D NUFXLIB_DLL /D DEBUG_MSGS /MDd /Od
 LIB_FLAGS = /nodefaultlib:libc.lib /nologo setargv.obj
 !endif
-
 !else
+
 ### build against static lib
 !ifdef NODEBUG
 OPT = /ML /Ogityb2
@@ -44,6 +47,7 @@ LIB_FLAGS = /nodefaultlib:libc.lib /nologo libcd.lib setargv.obj
 !endif
 
 BUILD_FLAGS = /W3 /GX /D "WIN32" /D "_CONSOLE" /I "$(NUFXSRCDIR)"
+!MESSAGE Using OPT = $(OPT)
 
 !ifdef LIBZ
 LIB_FLAGS = zlib.lib $(LIB_FLAGS)
