@@ -760,7 +760,7 @@ Nu_RecordSet_ReplaceRecord(NuArchive* pArchive, NuRecordSet* pBadSet,
 
         if (pSiblingRecord == nil) {
             /* looks like "pBadRecord" wasn't part of "pBadSet" after all */
-            assert(0);
+            Assert(0);
             err = kNuErrInternal;
             goto bail;
         }
@@ -2057,7 +2057,7 @@ Nu_HandleAddDuplicateRecord(NuArchive* pArchive, NuRecordSet* pRecordSet,
         /* fall through to record deletion */
         break;
     default:
-        assert(0);
+        Assert(0);
         err = kNuErrInternal;
         goto bail;
     }

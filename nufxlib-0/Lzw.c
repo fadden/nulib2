@@ -93,7 +93,7 @@
 /*
  * Mask of bits, from 0 to 8.
  */
-static const int gBitMask[] = {
+static const int gNuBitMask[] = {
     0x00, 0x01, 0x03, 0x07, 0x0f, 0x1f, 0x3f, 0x7f, 0xff
 };
 
@@ -295,7 +295,7 @@ Nu_LZWPutCode(uchar** pOutBuf, ulong prefixCode, int codeBits, int* pAtBit)
     /*DBUG_LZW(("### PUT: prefixCode=0x%04lx, codeBits=%d, atBit=%d\n",
         prefixCode, codeBits, atBit));*/
 
-    Assert(atBit >= 0 && atBit < sizeof(gBitMask));
+    Assert(atBit >= 0 && atBit < sizeof(gNuBitMask));
 
     if (atBit) {
         /* align the prefix code with the existing byte */
@@ -303,7 +303,7 @@ Nu_LZWPutCode(uchar** pOutBuf, ulong prefixCode, int codeBits, int* pAtBit)
 
         /* merge it with the buffer contents (if necessary) and write lo bits */
         outBuf--;
-        *outBuf = (uchar)((*outBuf & gBitMask[atBit]) | prefixCode);
+        *outBuf = (uchar)((*outBuf & gNuBitMask[atBit]) | prefixCode);
         outBuf++;
     } else {
         /* nothing to merge with; write lo byte at next posn and advance */
@@ -807,13 +807,13 @@ Nu_CompressLZW2(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
 /*
  * Static tables useful for bit manipulation.
  */
-static const uint gMaskTable[17] = {
+static const uint gNuMaskTable[17] = {
     0x0000, 0x01ff, 0x03ff, 0x03ff,  0x07ff, 0x07ff, 0x07ff, 0x07ff,
     0x0fff, 0x0fff, 0x0fff, 0x0fff,  0x0fff, 0x0fff, 0x0fff, 0x0fff,
     0x0fff
 };
 /* convert high byte of "entry" into a bit width */
-static const uint gBitWidth[17] = {
+static const uint gNuBitWidth[17] = {
     8,9,10,10,11,11,11,11,12,12,12,12,12,12,12,12,12
 };
 
@@ -931,7 +931,7 @@ Nu_LZWGetCode(const uchar** pInBuf, uint entry, int* pAtBit, uint* pLastByte)
 
     numBits = (entry +1) >> 8;      /* bit-width of next code */
     startBit = *pAtBit;
-    lastBit = startBit + gBitWidth[numBits];
+    lastBit = startBit + gNuBitWidth[numBits];
 
     /*
      * We need one or two bytes from the input.  These have to be shifted
@@ -956,13 +956,13 @@ Nu_LZWGetCode(const uchar** pInBuf, uint entry, int* pAtBit, uint* pLastByte)
     *pAtBit = lastBit & 0x07;
 
     /*printf("| EX: value=$%06lx mask=$%04x return=$%03lx\n",
-        value,gMaskTable[numBits], (value >> startBit) & gMaskTable[numBits]);*/
+        value,gNuMaskTable[numBits], (value >> startBit) & gNuMaskTable[numBits]);*/
 
     /*DBUG_LZW(("### getcode 0x%04lx\n",
-        (value >> startBit) & gMaskTable[numBits]));*/
+        (value >> startBit) & gNuMaskTable[numBits]));*/
 
     /* I believe ANSI allows shifting by zero bits, so don't test "!startBit" */
-    return (value >> startBit) & gMaskTable[numBits];
+    return (value >> startBit) & gNuMaskTable[numBits];
 }
 
 

@@ -728,7 +728,7 @@ Nu_HandleAddThreadMods(NuArchive* pArchive, NuRecord* pRecord,
             /* if we're adding filename threads, stop after first one */
             /* [shouldn't be able to happen... we only allow one filename!] */
             if (doKeepFirstOnly && foundOne) {
-                assert(0);      /* can this happen?? */
+                Assert(0);      /* can this happen?? */
                 continue;
             }
             foundOne = true;

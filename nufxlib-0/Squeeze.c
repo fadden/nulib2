@@ -122,7 +122,7 @@ Nu_SQGetcCRC(SQState* pSqState, int* pSym)
     NuError err;
     uchar c;
 
-    if (!pSqState->uncompRemaining--) {
+    if (!pSqState->uncompRemaining) {
         *pSym = kNuSQEOFToken;
         return kNuErrNone;
     }
@@ -136,6 +136,7 @@ Nu_SQGetcCRC(SQState* pSqState, int* pSym)
             pSqState->crc = Nu_CalcCRC16(pSqState->crc, &c, 1);
         }
         *pSym = c;
+		pSqState->uncompRemaining--;
     }
 
     return err;

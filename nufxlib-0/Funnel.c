@@ -794,8 +794,8 @@ bail:
 NuError
 Nu_StrawRewind(NuArchive* pArchive, NuStraw* pStraw)
 {
-    assert(pStraw != nil);
-    assert(pStraw->pDataSource != nil);
+    Assert(pStraw != nil);
+    Assert(pStraw->pDataSource != nil);
 
     pStraw->lastProgress = 0;
     pStraw->lastDisplayed = 0;
