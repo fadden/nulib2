@@ -23,6 +23,8 @@
 /* make our one-line comments this big */
 #define kDefaultCommentLen  200
 
+/* for use with FormatDateShort() */
+#define kDateOutputLen    64
 
 /*
  * Function prototypes.
@@ -39,6 +41,13 @@ NuError OpenArchiveReadOnly(NulibState* pState);
 NuError OpenArchiveReadWrite(NulibState* pState);
 const NuThread* GetThread(const NuRecord* pRecord, ulong idx);
 Boolean IsRecordReadOnly(const NuRecord* pRecord);
+
+/* Binary2.c */
+NuError BNYDoExtract(NulibState* pState);
+NuError BNYDoTest(NulibState* pState);
+NuError BNYDoListShort(NulibState* pState);
+NuError BNYDoListVerbose(NulibState* pState);
+NuError BNYDoListDebug(NulibState* pState);
 
 /* Delete.c */
 NuError DoDelete(NulibState* pState);
@@ -63,6 +72,7 @@ const char* FindExtension(NulibState* pState, const char* pathname);
 NuError DoListShort(NulibState* pState);
 NuError DoListVerbose(NulibState* pState);
 NuError DoListDebug(NulibState* pState);
+char* FormatDateShort(const NuDateTime* pDateTime, char* buffer);
 
 /* Main.c */
 extern const char* gProgName;
@@ -93,5 +103,7 @@ NuError NormalizeDirectoryName(NulibState* pState, const char* srcp,
 char* MakeTempArchiveName(NulibState* pState);
 NuError AddFile(NulibState* pState, NuArchive* pArchive,
     const char* pathname);
+NuError Mkdir(const char* dir);
+NuError TestFileExistence(const char* fileName, Boolean* pIsDir);
 
 #endif /*__Nulib2__*/

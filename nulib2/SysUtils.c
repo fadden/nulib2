@@ -78,7 +78,7 @@ UNIXNormalizeFileName(NulibState* pState, const char* srcp, long srcLen,
     char* dstp = *pDstp;
 
     while (srcLen--) {      /* don't go until null found! */
-        assert(*srcp != '\0');
+        Assert(*srcp != '\0');
 
         if (*srcp == '%') {
             /* change '%' to "%%" */
@@ -101,7 +101,7 @@ UNIXNormalizeFileName(NulibState* pState, const char* srcp, long srcLen,
     }
 
     *dstp = '\0';       /* end the string, but don't advance past the null */
-    assert(*pDstp - dstp <= dstLen);    /* make sure we didn't overflow */
+    Assert(*pDstp - dstp <= dstLen);    /* make sure we didn't overflow */
     *pDstp = dstp;
 
     return kNuErrNone;
@@ -157,7 +157,7 @@ Win32NormalizeFileName(NulibState* pState, const char* srcp, long srcLen,
 
 
     while (srcLen--) {      /* don't go until null found! */
-        assert(*srcp != '\0');
+        Assert(*srcp != '\0');
 
         if (*srcp == '%') {
             /* change '%' to "%%" */
@@ -180,7 +180,7 @@ Win32NormalizeFileName(NulibState* pState, const char* srcp, long srcLen,
     }
 
     *dstp = '\0';       /* end the string, but don't advance past the null */
-    assert(*pDstp - dstp <= dstLen);    /* make sure we didn't overflow */
+    Assert(*pDstp - dstp <= dstLen);    /* make sure we didn't overflow */
     *pDstp = dstp;
 
     return kNuErrNone;
@@ -203,12 +203,12 @@ NormalizeFileName(NulibState* pState, const char* srcp, long srcLen,
 {
     NuError err;
 
-    assert(srcp != nil);
-    assert(srcLen > 0);
-    assert(dstLen > srcLen);
-    assert(pDstp != nil);
-    assert(*pDstp != nil);
-    assert(fssep > ' ' && fssep < 0x7f);
+    Assert(srcp != nil);
+    Assert(srcLen > 0);
+    Assert(dstLen > srcLen);
+    Assert(pDstp != nil);
+    Assert(*pDstp != nil);
+    Assert(fssep > ' ' && fssep < 0x7f);
 
 #if defined(UNIX_LIKE)
     err = UNIXNormalizeFileName(pState, srcp, srcLen, fssep, pDstp, dstLen);
@@ -255,9 +255,9 @@ MakeTempArchiveName(NulibState* pState)
     long len;
 
     archivePathname = NState_GetArchiveFilename(pState);
-    assert(archivePathname != nil);
+    Assert(archivePathname != nil);
     fssep = NState_GetSystemPathSeparator(pState);
-    assert(fssep != 0);
+    Assert(fssep != 0);
 
     /* we'll get confused if the archive pathname looks like "/foo/bar/" */
     len = strlen(archivePathname);
@@ -338,10 +338,10 @@ CheckFileStatus(const char* pathname, struct stat* psb, Boolean* pExists,
     NuError err = kNuErrNone;
     int cc;
 
-    assert(pathname != nil);
-    assert(pExists != nil);
-    assert(pIsReadable != nil);
-    assert(pIsDir != nil);
+    Assert(pathname != nil);
+    Assert(pExists != nil);
+    Assert(pIsReadable != nil);
+    Assert(pIsDir != nil);
 
     *pExists = true;
     *pIsReadable = true;
@@ -411,14 +411,14 @@ SetFileDetails(NulibState* pState, const char* pathname, struct stat* psb,
     char slashDotDotSlash[5] = "_.._";
     time_t now;
 
-    assert(pState != nil);
-    assert(pathname != nil);
-    assert(pDetails != nil);
+    Assert(pState != nil);
+    Assert(pathname != nil);
+    Assert(pDetails != nil);
 
     /* set up the pathname buffer; note pDetails->storageName is const */
     NState_SetTempPathnameLen(pState, strlen(pathname) +1);
     livePathStr = NState_GetTempPathnameBuf(pState);
-    assert(livePathStr != nil);
+    Assert(livePathStr != nil);
     strcpy(livePathStr, pathname);
 
     /* init to defaults */
@@ -485,7 +485,7 @@ SetFileDetails(NulibState* pState, const char* pathname, struct stat* psb,
     /*
      * Check for other unpleasantness, such as a leading fssep.
      */
-    assert(NState_GetSystemPathSeparator(pState) != '\0');
+    Assert(NState_GetSystemPathSeparator(pState) != '\0');
     while (livePathStr[0] == NState_GetSystemPathSeparator(pState)) {
         /* slide it down, len is strlen +1 (for null) -1 (dropping first char)*/
         memmove(livePathStr, livePathStr+1, strlen(livePathStr));
@@ -524,7 +524,7 @@ SetFileDetails(NulibState* pState, const char* pathname, struct stat* psb,
         char* lastFssep;
         lastFssep = strrchr(livePathStr, NState_GetSystemPathSeparator(pState));
         if (lastFssep != nil) {
-            assert(*(lastFssep+1) != '\0'); /* should already have been caught*/
+            Assert(*(lastFssep+1) != '\0'); /* should already have been caught*/
             memmove(livePathStr, lastFssep+1, strlen(lastFssep+1)+1);
         }
     }
@@ -581,7 +581,7 @@ DoAddFile(NulibState* pState, NuArchive* pArchive, const char* pathname,
         char* comment;
 
         DBUG(("Preparing comment for recordIdx=%ld\n", recordIdx));
-        assert(recordIdx != 0);
+        Assert(recordIdx != 0);
         comment = GetSimpleComment(pState, pathname, kDefaultCommentLen);
         if (comment != nil) {
             NuDataSource* pDataSource;
@@ -616,7 +616,7 @@ bail_quiet:
 }
 
 
-#if defined(UNIX_LIKE)
+#if defined(UNIX_LIKE)  /* ---- UNIX --------------------------------------- */
 static NuError UNIXAddFile(NulibState* pState, NuArchive* pArchive,
     const char* pathname);
 
@@ -635,9 +635,9 @@ UNIXAddDirectory(NulibState* pState, NuArchive* pArchive, const char* dirName)
     char fssep;
     int len;
 
-    assert(pState != nil);
-    assert(pArchive != nil);
-    assert(dirName != nil);
+    Assert(pState != nil);
+    Assert(pArchive != nil);
+    Assert(dirName != nil);
 
     DBUG(("+++ DESCEND: '%s'\n", dirName));
 
@@ -701,9 +701,9 @@ UNIXAddFile(NulibState* pState, NuArchive* pArchive, const char* pathname)
     NuFileDetails details;
     struct stat sb;
 
-    assert(pState != nil);
-    assert(pArchive != nil);
-    assert(pathname != nil);
+    Assert(pState != nil);
+    Assert(pArchive != nil);
+    Assert(pathname != nil);
 
     err = CheckFileStatus(pathname, &sb, &exists, &isReadable, &isDir);
     if (err != kNuErrNone) {
@@ -749,7 +749,7 @@ bail_quiet:
     return err;
 }
 
-#elif defined(WINDOWS_LIKE)
+#elif defined(WINDOWS_LIKE) /* ---- Windows -------------------------------- */
 
 /*
  * Directory structure and functions, based on zDIR in Info-Zip sources.
@@ -867,9 +867,9 @@ Win32AddDirectory(NulibState* pState, NuArchive* pArchive, const char* dirName)
     char fssep;
     int len;
 
-    assert(pState != nil);
-    assert(pArchive != nil);
-    assert(dirName != nil);
+    Assert(pState != nil);
+    Assert(pArchive != nil);
+    Assert(dirName != nil);
 
     DBUG(("+++ DESCEND: '%s'\n", dirName));
 
@@ -932,9 +932,9 @@ Win32AddFile(NulibState* pState, NuArchive* pArchive, const char* pathname)
     NuFileDetails details;
     struct stat sb;
 
-    assert(pState != nil);
-    assert(pArchive != nil);
-    assert(pathname != nil);
+    Assert(pState != nil);
+    Assert(pArchive != nil);
+    Assert(pathname != nil);
 
     err = CheckFileStatus(pathname, &sb, &exists, &isReadable, &isDir);
     if (err != kNuErrNone) {
@@ -980,7 +980,7 @@ bail_quiet:
     return err;
 }
 
-#else
+#else  /* ---- unknown ----------------------------------------------------- */
 # error "Port this (AddFile/AddDirectory)"
 #endif
 
@@ -1006,4 +1006,77 @@ AddFile(NulibState* pState, NuArchive* pArchive, const char* pathname)
     #error "Port this"
 #endif
 }
+
+
+/*
+ * Invoke the system-dependent directory creation function.
+ *
+ * Currently only used by Binary2.c.
+ */
+NuError
+Mkdir(const char* dir)
+{
+    NuError err = kNuErrNone;
+
+    Assert(dir != nil);
+
+#if defined(UNIX_LIKE)
+    if (mkdir(dir, S_IRWXU | S_IRGRP|S_IXGRP | S_IROTH|S_IXOTH) < 0) {
+        err = errno ? errno : kNuErrDirCreate;
+        goto bail;
+    }
+
+#elif defined(WINDOWS_LIKE)
+    if (mkdir(dir) < 0) {
+        err = errno ? errno : kNuErrDirCreate;
+        goto bail;
+    }
+
+#else
+    #error "Port this"
+#endif
+
+bail:
+    return err;
+}
+
+/*
+ * Test for the existence of a file.
+ *
+ * Currently only used by Binary2.c.
+ */
+NuError
+TestFileExistence(const char* fileName, Boolean* pIsDir)
+{
+    NuError err = kNuErrNone;
+    Assert(fileName != nil);
+    Assert(pIsDir != nil);
+
+#if defined(UNIX_LIKE) || defined(WINDOWS_LIKE)
+    {
+        struct stat sbuf;
+        int cc;
+
+        cc = stat(fileName, &sbuf);
+        if (cc) {
+            if (errno == ENOENT)
+                err = kNuErrFileNotFound;
+            else
+                err = kNuErrFileStat;
+            goto bail;
+        }
+
+        if (S_ISDIR(sbuf.st_mode))
+            *pIsDir = true;
+        else
+            *pIsDir = false;
+    }
+#else
+    #error "Port this"
+#endif
+
+bail:
+    return err;
+}
+
 

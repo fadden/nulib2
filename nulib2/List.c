@@ -35,7 +35,6 @@ static const char* gMonths[] = {
     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
 };
 
-#define kNuDateOutputLen    64
 
 
 /*
@@ -66,11 +65,11 @@ ComputePercent(ulong totalSize, ulong size)
  * Convert a NuDateTime structure into something printable.  This uses an
  * abbreviated format, with date and time but not weekday or seconds.
  *
- * The buffer passed in must hold at least kNuDateOutputLen bytes.
+ * The buffer passed in must hold at least kDateOutputLen bytes.
  *
  * Returns "buffer" for the benefit of printf() calls.
  */
-static char*
+char*
 FormatDateShort(const NuDateTime* pDateTime, char* buffer)
 {
     /* is it valid? */
@@ -108,9 +107,9 @@ ShowContentsShort(NuArchive* pArchive, void* vpRecord)
     const NuRecord* pRecord = (NuRecord*) vpRecord;
     NulibState* pState;
 
-    assert(pArchive != nil);
+    Assert(pArchive != nil);
     (void) NuGetExtraData(pArchive, (void**) &pState);
-    assert(pState != nil);
+    Assert(pState != nil);
 
     if (!IsSpecified(pState, pRecord))
         goto bail;
@@ -152,7 +151,7 @@ AnalyzeRecord(const NuRecord* pRecord, enum RecordKind* pRecordKind,
 
     for (idx = 0; idx < pRecord->recTotalThreads; idx++) {
         pThread = NuGetThread(pRecord, idx);
-        assert(pThread != nil);
+        Assert(pThread != nil);
 
         if (pThread->thThreadClass == kNuThreadClassData) {
             /* replace what's there if this might be more interesting */
@@ -193,13 +192,13 @@ ShowContentsVerbose(NuArchive* pArchive, void* vpRecord)
     ulong totalLen, totalCompLen;
     ushort format;
     NulibState* pState;
-    char date1[kNuDateOutputLen];
+    char date1[kDateOutputLen];
     char tmpbuf[16];
     int len;
 
-    assert(pArchive != nil);
+    Assert(pArchive != nil);
     (void) NuGetExtraData(pArchive, (void**) &pState);
-    assert(pState != nil);
+    Assert(pState != nil);
 
     if (!IsSpecified(pState, pRecord))
         goto bail;
@@ -235,7 +234,7 @@ ShowContentsVerbose(NuArchive* pArchive, void* vpRecord)
             pRecord->recExtraType);
         break;
     default:
-        assert(0);
+        Assert(0);
         printf("ERROR  ");
     }
 
@@ -281,13 +280,18 @@ DoListShort(NulibState* pState)
     NuError err;
     NuArchive* pArchive = nil;
 
-    assert(pState != nil);
+    Assert(pState != nil);
+
+    if (NState_GetModBinaryII(pState))
+        return BNYDoListShort(pState);
 
     err = OpenArchiveReadOnly(pState);
+    if (err == kNuErrIsBinary2)
+        return BNYDoListShort(pState);
     if (err != kNuErrNone)
         goto bail;
     pArchive = NState_GetNuArchive(pState);
-    assert(pArchive != nil);
+    Assert(pArchive != nil);
 
     err = NuContents(pArchive, ShowContentsShort);
     /* fall through with err */
@@ -308,18 +312,23 @@ DoListVerbose(NulibState* pState)
     NuError err;
     NuArchive* pArchive = nil;
     const NuMasterHeader* pHeader;
-    char date1[kNuDateOutputLen];
-    char date2[kNuDateOutputLen];
+    char date1[kDateOutputLen];
+    char date2[kDateOutputLen];
     long totalLen, totalCompLen;
     const char* cp;
 
-    assert(pState != nil);
+    Assert(pState != nil);
+
+    if (NState_GetModBinaryII(pState))
+        return BNYDoListVerbose(pState);
 
     err = OpenArchiveReadOnly(pState);
+    if (err == kNuErrIsBinary2)
+        return BNYDoListVerbose(pState);
     if (err != kNuErrNone)
         goto bail;
     pArchive = NState_GetNuArchive(pState);
-    assert(pArchive != nil);
+    Assert(pArchive != nil);
 
     /*
      * Try to get just the filename.
@@ -359,10 +368,12 @@ DoListVerbose(NulibState* pState)
         totalLen, totalCompLen,
         totalLen == 0 ? 0 : ComputePercent(totalCompLen, totalLen));
     #ifdef DEBUG_VERBOSE
-    printf(" Overhead: %ld (%d%%)\n",
-        pHeader->mhMasterEOF - totalCompLen,
-        ComputePercent(pHeader->mhMasterEOF - totalCompLen,
-            pHeader->mhMasterEOF));
+    if (!NState_GetFilespecCount(pState)) {
+        printf(" Overhead: %ld (%d%%)\n",
+            pHeader->mhMasterEOF - totalCompLen,
+            ComputePercent(pHeader->mhMasterEOF - totalCompLen,
+                pHeader->mhMasterEOF));
+    }
     #endif
 
     /*(void) NuDebugDumpArchive(pArchive);*/
@@ -386,7 +397,7 @@ NullCallback(NuArchive* pArchive, void* vpRecord)
 
 /*
  * Print very detailed output, suitable for debugging (requires that
- * debugging be enabled in nufxlib).
+ * debug messages be enabled in nufxlib).
  */
 NuError
 DoListDebug(NulibState* pState)
@@ -394,13 +405,18 @@ DoListDebug(NulibState* pState)
     NuError err;
     NuArchive* pArchive = nil;
 
-    assert(pState != nil);
+    Assert(pState != nil);
+
+    if (NState_GetModBinaryII(pState))
+        return BNYDoListDebug(pState);
 
     err = OpenArchiveReadOnly(pState);
+    if (err == kNuErrIsBinary2)
+        return BNYDoListDebug(pState);
     if (err != kNuErrNone)
         goto bail;
     pArchive = NState_GetNuArchive(pState);
-    assert(pArchive != nil);
+    Assert(pArchive != nil);
 
     /* have to do something to force the library to scan the archive */
     err = NuContents(pArchive, NullCallback);

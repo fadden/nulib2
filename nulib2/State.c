@@ -18,7 +18,7 @@ static const char* gProgramVersion = "1.1.0d1";
 NuError
 NState_Init(NulibState** ppState)
 {
-    assert(ppState != nil);
+    Assert(ppState != nil);
 
     *ppState = Calloc(sizeof(**ppState));
     if (*ppState == nil)
@@ -89,7 +89,7 @@ NState_Free(NulibState* pState)
 void
 NState_DebugDump(const NulibState* pState)
 {
-    /* this will break when the code changes, but it's just for debugging */
+    /* this table will break if the code changes, but it's just for debugging */
     static const char* kCommandNames[] = {
         "<unknown>",
         "add",
@@ -100,9 +100,10 @@ NState_DebugDump(const NulibState* pState)
         "listVerbose",
         "listDebug",
         "test",
+        "help",
     };
 
-    assert(pState != nil);
+    Assert(pState != nil);
 
     printf("NState:\n");
     printf("  programVersion: '%s'\n", pState->programVersion);
@@ -127,6 +128,8 @@ NState_DebugDump(const NulibState* pState)
         printf("    compressDeflate\n");
     if (pState->modComments)
         printf("    comments\n");
+    if (pState->modBinaryII)
+        printf("    binaryII\n");
     if (pState->modConvertText)
         printf("    convertText\n");
     if (pState->modConvertAll)
@@ -286,7 +289,7 @@ NState_SetTempPathnameLen(NulibState* pState, long len)
             newBuf = Malloc(len);
         else
             newBuf = Realloc(pState->tempPathnameBuf, len);
-        assert(newBuf != nil);
+        Assert(newBuf != nil);
         if (newBuf == nil) {
             Free(pState->tempPathnameBuf);
             pState->tempPathnameBuf = nil;
@@ -437,6 +440,18 @@ void
 NState_SetModComments(NulibState* pState, Boolean val)
 {
     pState->modComments = val;
+}
+
+Boolean
+NState_GetModBinaryII(const NulibState* pState)
+{
+    return pState->modBinaryII;
+}
+
+void
+NState_SetModBinaryII(NulibState* pState, Boolean val)
+{
+    pState->modBinaryII = val;
 }
 
 Boolean

@@ -28,7 +28,7 @@ ExtractAllRecords(NulibState* pState, NuArchive* pArchive)
     int idx, threadIdx;
 
     DBUG(("--- doing manual extract\n"));
-    assert(NState_GetCommand(pState) == kCommandExtract);   /* no "-p" here */
+    Assert(NState_GetCommand(pState) == kCommandExtract);   /* no "-p" here */
 
     err = NuGetAttr(pArchive, kNuAttrNumRecords, &numRecords);
     for (idx = 0; idx < (int) numRecords; idx++) {
@@ -57,7 +57,7 @@ ExtractAllRecords(NulibState* pState, NuArchive* pArchive)
             threadIdx++)
         {
             pThread = NuGetThread(pRecord, threadIdx);
-            assert(pThread != nil);
+            Assert(pThread != nil);
 
             if (NuGetThreadID(pThread) == kNuThreadIDComment &&
                 pThread->actualThreadEOF > 0)
@@ -93,13 +93,18 @@ DoExtract(NulibState* pState)
     NuError err;
     NuArchive* pArchive = nil;
 
-    assert(pState != nil);
+    Assert(pState != nil);
+
+    if (NState_GetModBinaryII(pState))
+        return BNYDoExtract(pState);
 
     err = OpenArchiveReadOnly(pState);
+    if (err == kNuErrIsBinary2)
+        return BNYDoExtract(pState);
     if (err != kNuErrNone)
         goto bail;
     pArchive = NState_GetNuArchive(pState);
-    assert(pArchive != nil);
+    Assert(pArchive != nil);
 
     NState_SetMatchCount(pState, 0);
 
@@ -147,13 +152,18 @@ DoTest(NulibState* pState)
     NuError err;
     NuArchive* pArchive = nil;
 
-    assert(pState != nil);
+    Assert(pState != nil);
+
+    if (NState_GetModBinaryII(pState))
+        return BNYDoTest(pState);
 
     err = OpenArchiveReadOnly(pState);
+    if (err == kNuErrIsBinary2)
+        return BNYDoTest(pState);
     if (err != kNuErrNone)
         goto bail;
     pArchive = NState_GetNuArchive(pState);
-    assert(pArchive != nil);
+    Assert(pArchive != nil);
 
     NState_SetMatchCount(pState, 0);
 

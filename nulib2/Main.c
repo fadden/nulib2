@@ -27,14 +27,15 @@ typedef struct ValidCombo {
 } ValidCombo;
 
 static const ValidCombo gValidCombos[] = {
-    { kCommandAdd,              false,  true,   "ufrj0zcke" },
+    { kCommandAdd,              false,  true,   "ekcz0jrfu" },
     { kCommandDelete,           false,  true,   "r" },
-    { kCommandExtract,          true,   false,  "ufrjclse" },
-    { kCommandExtractToPipe,    true,   false,  "rl" },
-    { kCommandListShort,        true,   false,  "" },
-    { kCommandListVerbose,      true,   false,  "" },
-    { kCommandListDebug,        true,   false,  "" },
-    { kCommandTest,             true,   false,  "r" },
+    { kCommandExtract,          true,   false,  "beslcjrfu" },
+    { kCommandExtractToPipe,    true,   false,  "blr" },
+    { kCommandListShort,        true,   false,  "br" },
+    { kCommandListVerbose,      true,   false,  "br" },
+    { kCommandListDebug,        true,   false,  "b" },
+    { kCommandTest,             true,   false,  "br" },
+    { kCommandHelp,             false,  false,  "" },
 };
 
 
@@ -156,21 +157,116 @@ Usage(const NulibState* pState)
         "  -a  add files, create arc if needed   -x  extract files\n"
         "  -t  list files (short)                -v  list files (verbose)\n"
         "  -p  extract files to pipe, no msgs    -i  test archive integrity\n"
-        "  -d  delete files from archive\n"
+        "  -d  delete files from archive         -h  extended help message\n"
         "\n"
         " modifiers:\n"
         "  -u  update files (add + keep newest)  -f  freshen (update, no add)\n"
         "  -r  recurse into subdirs              -j  junk (don't record) directory names\n"
+        "  -0  don't use compression             -c  add one-line comments\n"
     #ifdef HAVE_LIBZ
-        "  -0  don't use compression             -z  compress with gzip-style 'deflate'\n"
+        "  -z  use gzip 'deflate' compression    "
     #else
-        "  -0  don't use compression             -z  use zlib [not included]\n"
+        "  -z  use zlib [not included]           "
     #endif
-        "  -l  auto-convert text files           -ll auto-convert ALL files\n"
+    #ifdef HAVE_LIBBZ2
+                                                "-zz use bzip2 'BWT' compression\n"
+    #else
+                                                "-zz use BWT [not included]\n"
+    #endif
+        "  -l  auto-convert text files           -ll convert CR/LF on ALL files\n"
         "  -s  stomp existing files w/o asking   -k  store files as disk images\n"
         "  -e  preserve ProDOS file types        -ee preserve types and extend names\n"
-        "  -c  add one-line comments\n"
+        "  -b  force Binary II mode\n"
         );
+}
+
+
+/*
+ * Handle the "-h" command.
+ */
+NuError
+DoHelp(const NulibState* pState)
+{
+    static const struct {
+        Command cmd;
+        char letter;
+        const char* shortDescr;
+        const char* longDescr;
+    } help[] = {
+        { kCommandListVerbose, 'v', "verbose listing of archive contents",
+"  List files in the archive, blah blah blah\n"
+        },
+        { kCommandListShort, 't', "quick dump of table of contents",
+"  shortList files in the archive, blah blah blah\n"
+        },
+        { kCommandAdd, 'a', "add files, creating the archive if necessary",
+"  Add files to the archive, blah blah blah\n"
+        },
+        { kCommandDelete, 'd', "delete files from archive",
+"  Delete files from the archive, blah blah blah\n"
+        },
+        { kCommandExtract, 'x', "extract files from an archive",
+"  Extracts files, blah blah blah\n"
+        },
+        { kCommandExtractToPipe, 'p', "extract files to pipe",
+"  Extracts files to stdout, blah blah blah\n"
+        },
+        { kCommandTest, 'i', "test archive integrity",
+"  Tests files, blah blah blah\n"
+        },
+        { kCommandHelp, 'h', "show extended help",
+"  This is the extended help text\n"
+"  A full manual is available from http://www.nulib.com/.\n"
+        },
+    };
+
+    int i;
+
+
+    printf("%s",
+"\n"
+"NuLib2 is free software, distributed under terms of the GNU General\n"
+"Public License.  NuLib2 uses NufxLib, a complete library of functions\n"
+"for accessing NuFX (ShrinkIt) archives.  NufxLib is also free software,\n"
+"distributed under terms of the GNU Library General Public License (LGPL).\n"
+"Source code for both is available from http://www.nulib.com/, and copies\n"
+"of the licenses are included.\n"
+"\n"
+"This program is distributed in the hope that it will be useful,\n"
+"but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
+"MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
+"README file for more details.\n"
+    );
+
+    for (i = 0; i < NELEM(help); i++) {
+        const ValidCombo* pvc;
+        int j;
+
+        pvc = FindValidComboEntry(help[i].cmd);
+        if (pvc == nil) {
+            fprintf(stderr, "%s: internal error: couldn't find vc for %d\n",
+                gProgName, help[i].cmd);
+            continue;
+        }
+
+        printf("\nCommand \"-%c\": %s\n", help[i].letter, help[i].shortDescr);
+        printf("  Valid modifiers:");
+        for (j = strlen(pvc->modifiers) -1; j >= 0; j--) {
+            char ch = pvc->modifiers[j];
+            /* print flags, special-casing options that can be doubled */
+            if (ch == 'l' || ch == 'e' || ch == 'z')
+                printf(" -%c -%c%c", ch, ch, ch);
+            else
+                printf(" -%c", ch);
+        }
+        putchar('\n');
+
+        printf("\n%s", help[i].longDescr);
+    }
+
+    putchar('\n');
+
+    return kNuErrNone;
 }
 
 
@@ -184,8 +280,16 @@ ProcessOptions(NulibState* pState, int argc, char* const* argv)
     int idx;
 
     /*
-     * Must have at least a command letter and an archive filename.
+     * Must have at least a command letter and an archive filename, unless
+     * the command letter is 'h'.  Special-case a solitary "-h" here.
      */
+    if (argc == 2 && (tolower(argv[1][0]) == 'h' ||
+                     (argv[1][0] == '-' && tolower(argv[1][1] == 'h')) ) )
+    {
+        DoHelp(nil);
+        return -1;
+    }
+
     if (argc < 3) {
         Usage(pState);
         return -1;
@@ -228,6 +332,7 @@ ProcessOptions(NulibState* pState, int argc, char* const* argv)
             case 'g': NState_SetCommand(pState, kCommandListDebug);     break;
             case 'i': NState_SetCommand(pState, kCommandTest);          break;
             case 'd': NState_SetCommand(pState, kCommandDelete);        break;
+            case 'h': NState_SetCommand(pState, kCommandHelp);          break;
             default:
                 fprintf(stderr, "%s: Unknown command '%c'\n", gProgName, *cp);
                 goto fail;
@@ -243,16 +348,29 @@ ProcessOptions(NulibState* pState, int argc, char* const* argv)
             case 'r': NState_SetModRecurse(pState, true);               break;
             case 'j': NState_SetModJunkPaths(pState, true);             break;
             case '0': NState_SetModNoCompression(pState, true);         break;
-            case 'c': NState_SetModComments(pState, true);              break;
             case 's': NState_SetModOverwriteExisting(pState, true);     break;
             case 'k': NState_SetModAddAsDisk(pState, true);             break;
+            case 'c': NState_SetModComments(pState, true);              break;
+            case 'b': NState_SetModBinaryII(pState, true);              break;
             case 'z':
-                #ifdef HAVE_LIBZ
-                NState_SetModCompressDeflate(pState, true);
-                #else
-                fprintf(stderr, "%s: WARNING: zlib support not compiled in\n",
-                    gProgName);
-                #endif
+                if (*(cp+1) == 'z') {
+                    #ifdef HAVE_LIBBZ2
+                    NState_SetModCompressBWT(pState, true);
+                    #else
+                    fprintf(stderr,
+                        "%s: WARNING: libbzip2 support not compiled in\n",
+                        gProgName);
+                    #endif
+                    cp++;
+                } else {
+                    #ifdef HAVE_LIBZ
+                    NState_SetModCompressDeflate(pState, true);
+                    #else
+                    fprintf(stderr,
+                        "%s: WARNING: zlib support not compiled in\n",
+                        gProgName);
+                    #endif
+                }
                 break;
             case 'e':
                 if (*(cp-1) == 'e')     /* should never point at invalid */
@@ -284,9 +402,20 @@ ProcessOptions(NulibState* pState, int argc, char* const* argv)
     }
 
     /*
+     * Can't have tea and no tea at the same time.
+     */
+    if (NState_GetModNoCompression(pState) &&
+        NState_GetModCompressDeflate(pState))
+    {
+        fprintf(stderr, "%s: Can't specify both -0 and -z\n",
+            gProgName);
+        goto fail;
+    }
+
+    /*
      * See if we have an archive name.  If it's "-", see if we allow that.
      */
-    assert(idx < argc);
+    Assert(idx < argc);
     NState_SetArchiveFilename(pState, argv[idx]);
     if (IsFilenameStdin(argv[idx])) {
         if (!IsValidOnPipe(NState_GetCommand(pState))) {
@@ -307,7 +436,7 @@ ProcessOptions(NulibState* pState, int argc, char* const* argv)
         NState_SetFilespecPointer(pState, &argv[idx]);
         NState_SetFilespecCount(pState, argc - idx);
     } else {
-        assert(idx == argc);
+        Assert(idx == argc);
         if (IsFilespecRequired(NState_GetCommand(pState))) {
             fprintf(stderr, "%s: This command requires a list of files\n",
                 gProgName);
@@ -368,11 +497,14 @@ DoWork(NulibState* pState)
     case kCommandDelete:
         err = DoDelete(pState);
         break;
+    case kCommandHelp:
+        err = DoHelp(pState);
+        break;
     default:
         fprintf(stderr, "ERROR: unexpected command %d\n",
             NState_GetCommand(pState));
         err = kNuErrInternal;
-        assert(0);
+        Assert(0);
         break;
     }
 

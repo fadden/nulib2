@@ -24,7 +24,8 @@ typedef enum Command {
     kCommandListShort,
     kCommandListVerbose,
     kCommandListDebug,
-    kCommandTest
+    kCommandTest,
+    kCommandHelp
 } Command;
 
 
@@ -65,6 +66,7 @@ typedef struct NulibState {
     Boolean         modNoCompression;
     Boolean         modCompressDeflate;
     Boolean         modComments;
+    Boolean         modBinaryII;
     Boolean         modConvertText;
     Boolean         modConvertAll;
     Boolean         modOverwriteExisting;
@@ -132,6 +134,8 @@ Boolean NState_GetModCompressDeflate(const NulibState* pState);
 void NState_SetModCompressDeflate(NulibState* pState, Boolean val);
 Boolean NState_GetModComments(const NulibState* pState);
 void NState_SetModComments(NulibState* pState, Boolean val);
+Boolean NState_GetModBinaryII(const NulibState* pState);
+void NState_SetModBinaryII(NulibState* pState, Boolean val);
 Boolean NState_GetModConvertText(const NulibState* pState);
 void NState_SetModConvertText(NulibState* pState, Boolean val);
 Boolean NState_GetModConvertAll(const NulibState* pState);

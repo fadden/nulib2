@@ -34,9 +34,9 @@ OutputPathnameFilter(NuArchive* pArchive, void* vproposal)
     char* renameToStr;
     char* resultBuf;
 
-    assert(pArchive != nil);
+    Assert(pArchive != nil);
     (void) NuGetExtraData(pArchive, (void**) &pState);
-    assert(pState != nil);
+    Assert(pState != nil);
 
     /* handle extract-to-pipe */
     if (NState_GetCommand(pState) == kCommandExtractToPipe) {
@@ -58,7 +58,7 @@ OutputPathnameFilter(NuArchive* pArchive, void* vproposal)
             /* right source file, proceed with the rename */
             NState_SetTempPathnameLen(pState, strlen(renameToStr) +1);
             resultBuf = NState_GetTempPathnameBuf(pState);
-            assert(resultBuf != nil);
+            Assert(resultBuf != nil);
             strcpy(resultBuf, renameToStr);
 
             pathProposal->newPathname = resultBuf;
@@ -210,6 +210,10 @@ SpecMatchesRecord(NulibState* pState, const char* spec, const NuRecord* pRecord)
  * the file specification given on the command line.
  *
  * If no filespec was provided, then all records are "specified".
+ *
+ * We pass the entire NuRecord in because we may want to allow
+ * extraction by criteria other than name, e.g. all text files or all
+ * files archived before a certain date.
  */
 Boolean
 IsSpecified(NulibState* pState, const NuRecord* pRecord)
@@ -240,9 +244,9 @@ SelectionFilter(NuArchive* pArchive, void* vproposal)
     const NuSelectionProposal* selProposal = vproposal;
     NulibState* pState;
 
-    assert(pArchive != nil);
+    Assert(pArchive != nil);
     (void) NuGetExtraData(pArchive, (void**) &pState);
-    assert(pState != nil);
+    Assert(pState != nil);
 
     if (IsSpecified(pState, selProposal->pRecord)) {
         NState_IncMatchCount(pState);
@@ -298,9 +302,9 @@ ProgressUpdater(NuArchive* pArchive, void* vProgress)
     char nameBuf[kMaxDisplayLen+1];
     Boolean showName, eolConv;
 
-    assert(pArchive != nil);
+    Assert(pArchive != nil);
     (void) NuGetExtraData(pArchive, (void**) &pState);
-    assert(pState != nil);
+    Assert(pState != nil);
 
     if (NState_GetSuppressOutput(pState))
         return kNuOK;
@@ -367,7 +371,7 @@ ProgressUpdater(NuArchive* pArchive, void* vProgress)
         }
         break;
     default:
-        assert(0);
+        Assert(0);
         actionStr = "????";
     }
 
@@ -413,12 +417,12 @@ ProgressUpdater(NuArchive* pArchive, void* vProgress)
             PrintPercentage(pProgress->uncompressedLength,
                 pProgress->uncompressedProgress);
             if (showName)
-                printf(" %s%s %s", actionStr, eolConv ? "+" : " ", nameBuf);
+                printf(" %s%c %s", actionStr, eolConv ? '+' : ' ', nameBuf);
             else
-                printf(" %s%s", actionStr, eolConv ? "+" : " ");
+                printf(" %s%c", actionStr, eolConv ? '+' : ' ');
         }
     } else {
-        assert(0);
+        Assert(0);
         printf("????\n");
     }
 
@@ -442,13 +446,13 @@ HandleReplaceExisting(NulibState* pState, NuArchive* pArchive,
     char* renameName;
     char reply;
 
-    assert(pState != nil);
-    assert(pErrorStatus != nil);
-    assert(pErrorStatus->pathname != nil);
+    Assert(pState != nil);
+    Assert(pErrorStatus != nil);
+    Assert(pErrorStatus->pathname != nil);
 
-    assert(pErrorStatus->canOverwrite);
-    assert(pErrorStatus->canSkip);
-    assert(pErrorStatus->canAbort);
+    Assert(pErrorStatus->canOverwrite);
+    Assert(pErrorStatus->canSkip);
+    Assert(pErrorStatus->canAbort);
 
     if (NState_GetInputUnavailable(pState)) {
         putc('\n', stdout);
@@ -460,7 +464,7 @@ HandleReplaceExisting(NulibState* pState, NuArchive* pArchive,
     while (1) {
         printf("\n  Replace %s?  [y]es, [n]o, [A]ll, [N]one",
             pErrorStatus->pathname);
-        if (pErrorStatus->canRename)    /* renaming records not allowed */
+        if (pErrorStatus->canRename)    /* renaming record adds not allowed */
             printf(", [r]ename: ");
         else
             printf(": ");
@@ -529,8 +533,8 @@ HandleBadCRC(NulibState* pState, NuArchive* pArchive,
     NuResult result = kNuOK;
     char reply;
 
-    assert(pState != nil);
-    assert(pErrorStatus != nil);
+    Assert(pState != nil);
+    Assert(pErrorStatus != nil);
 
     if (NState_GetInputUnavailable(pState)) {
         putc('\n', stderr);
@@ -581,9 +585,9 @@ HandleAddNotFound(NulibState* pState, NuArchive* pArchive,
     NuResult result = kNuOK;
     char reply;
 
-    assert(pState != nil);
-    assert(pErrorStatus != nil);
-    assert(pErrorStatus->pathname != nil);
+    Assert(pState != nil);
+    Assert(pErrorStatus != nil);
+    Assert(pErrorStatus->pathname != nil);
 
     if (NState_GetInputUnavailable(pState)) {
         putc('\n', stdout);
@@ -629,9 +633,9 @@ ErrorHandler(NuArchive* pArchive, void* vErrorStatus)
     NulibState* pState;
     NuResult result;
 
-    assert(pArchive != nil);
+    Assert(pArchive != nil);
     (void) NuGetExtraData(pArchive, (void**) &pState);
-    assert(pState != nil);
+    Assert(pState != nil);
 
     /* default action is to abort the current operation */
     result = kNuAbort;
@@ -682,7 +686,7 @@ ErrorHandler(NuArchive* pArchive, void* vErrorStatus)
              * you have to "sabotage" AddFile, or remove a file from disk
              * while NuFlush is running.)
              */
-            assert(0);
+            Assert(0);
             /*result = HandleAddNotFound(pState, pArchive, pErrorStatus);*/
         }
     } else if (pErrorStatus->operation == kNuOpTest) {
@@ -752,7 +756,7 @@ IsRecordReadOnly(const NuRecord* pRecord)
 Boolean
 IsFilenameStdin(const char* archiveName)
 {
-    assert(archiveName != nil);
+    Assert(archiveName != nil);
     return (strcmp(archiveName, kStdinArchive) == 0);
 }
 
@@ -769,12 +773,14 @@ OpenArchiveReadOnly(NulibState* pState)
     NuError err;
     NuArchive* pArchive = nil;
 
-    assert(pState != nil);
+    Assert(pState != nil);
 
     if (IsFilenameStdin(NState_GetArchiveFilename(pState))) {
         err = NuStreamOpenRO(stdin, &pArchive);
         if (err != kNuErrNone) {
             ReportError(err, "unable to open stdin archive");
+            if (err == kNuErrIsBinary2)
+                err = kNuErrNotNuFX;    /* we can't seek back, so forget BNY */
             goto bail;
         }
         /*
@@ -787,8 +793,10 @@ OpenArchiveReadOnly(NulibState* pState)
     } else {
         err = NuOpenRO(NState_GetArchiveFilename(pState), &pArchive);
         if (err != kNuErrNone) {
-            ReportError(err, "unable to open '%s'",
-                NState_GetArchiveFilename(pState));
+            if (err != kNuErrIsBinary2) {
+                ReportError(err, "unable to open '%s'",
+                    NState_GetArchiveFilename(pState));
+            }
             goto bail;
         }
     }
@@ -839,7 +847,7 @@ OpenArchiveReadOnly(NulibState* pState)
     else if (strcmp(SYSTEM_DEFAULT_EOL, "\r\n") == 0)
         err = NuSetValue(pArchive, kNuValueEOL, kNuEOLCRLF);
     else {
-        assert(0);
+        Assert(0);
         err = kNuErrInternal;
         ReportError(err, "Unknown SYSTEM_DEFAULT_EOL '%s'", SYSTEM_DEFAULT_EOL);
         goto bail;
@@ -869,8 +877,8 @@ OpenArchiveReadWrite(NulibState* pState)
     NuArchive* pArchive = nil;
     char* tempName = nil;
 
-    assert(pState != nil);
-    assert(IsFilenameStdin(NState_GetArchiveFilename(pState)) == false);
+    Assert(pState != nil);
+    Assert(IsFilenameStdin(NState_GetArchiveFilename(pState)) == false);
 
     tempName = MakeTempArchiveName(pState);
     if (tempName == nil)
@@ -932,7 +940,7 @@ OpenArchiveReadWrite(NulibState* pState)
     else if (strcmp(SYSTEM_DEFAULT_EOL, "\r\n") == 0)
         err = NuSetValue(pArchive, kNuValueEOL, kNuEOLCRLF);
     else {
-        assert(0);
+        Assert(0);
         err = kNuErrInternal;
         ReportError(err, "Unknown SYSTEM_DEFAULT_EOL '%s'", SYSTEM_DEFAULT_EOL);
         goto bail;

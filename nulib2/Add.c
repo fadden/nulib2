@@ -21,14 +21,14 @@ DoAdd(NulibState* pState)
     NuArchive* pArchive = nil;
     long flushStatus;
 
-    assert(pState != nil);
+    Assert(pState != nil);
 
     err = OpenArchiveReadWrite(pState);
     if (err != kNuErrNone)
         goto bail;
 
     pArchive = NState_GetNuArchive(pState);
-    assert(pArchive != nil);
+    Assert(pArchive != nil);
 
     NState_SetMatchCount(pState, 0);
 
@@ -66,7 +66,7 @@ bail:
         }
 
         err2 = NuClose(pArchive);
-        assert(err2 == kNuErrNone);
+        Assert(err2 == kNuErrNone);
     }
     return err;
 }
@@ -86,8 +86,8 @@ AddToArchive(NulibState* pState, NuArchive* pArchive)
     ulong fileCount;
     int i;
 
-    assert(pState != nil);
-    assert(pArchive != nil);
+    Assert(pState != nil);
+    Assert(pArchive != nil);
 
     if (!NState_GetFilespecCount(pState)) {
         err = kNuErrSyntax;
