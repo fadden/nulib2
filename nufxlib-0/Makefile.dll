@@ -68,6 +68,7 @@ INTDIR=.\Release
 # Begin Custom Macros
 OutDir=.\Release
 # End Custom Macros
+MY_LIB_FLAGS = /nodefaultlib:libc.lib $(MY_LIB_FLAGS)
 
 ALL : "$(OUTDIR)\nufxlib.dll"
 
@@ -195,6 +196,7 @@ INTDIR=.\Debug
 # Begin Custom Macros
 OutDir=.\Debug
 # End Custom Macros
+MY_LIB_FLAGS = /nodefaultlib:libcd.lib $(MY_LIB_FLAGS)
 
 ALL : "$(OUTDIR)\nufxlibD.dll" "$(OUTDIR)\nufxlib.bsc"
 
