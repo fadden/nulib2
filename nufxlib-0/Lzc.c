@@ -85,7 +85,7 @@ Nu_LZC_emalloc(NuArchive* pArchive, unsigned int x, int y)
 static inline void
 Nu_LZC_efree(NuArchive* pArchive, ALLOCTYPE FAR * ptr)
 {
-    return Nu_Free(pArchive, ptr);
+    Nu_Free(pArchive, ptr);
 }
 
 /*@H************************ < COMPRESS API    > ****************************
@@ -260,7 +260,7 @@ static CONST INTCODE gNu_mc[] = {
 #endif
 #else
 #define allocx(type,ptr,size) \
-    (((ptr) = (type FAR *) Nu_LZC_emalloc(, pArchive, (unsigned int)(size),sizeof(type))) == NULLPTR(type) \
+    (((ptr) = (type FAR *) Nu_LZC_emalloc(pArchive, (unsigned int)(size),sizeof(type))) == NULLPTR(type) \
     ? NOMEM : OK \
     )
 #endif
