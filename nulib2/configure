@@ -1851,7 +1851,7 @@ if test "$host_os" = "beos"; then
     fi
 fi
 
-if test "$host_vendor" = "apple" -a ${host_os:0:7} = "darwin6"; then
+if test "$host_vendor" = "apple" -a ${host_os:0:6} = "darwin"; then
     echo "checking for Mac OS X... yes, adding -framework Carbon"
     LIBS="$LIBS -framework Carbon"
 fi
