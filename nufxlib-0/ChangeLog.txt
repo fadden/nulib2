@@ -1,3 +1,6 @@
+2002/09/27  fadden
+    - added support for 12-bit and 16-bit LZC (UNIX compress)
+
 2002/09/26  fadden
     - added support for SQueezed files (both compress and expand)
 

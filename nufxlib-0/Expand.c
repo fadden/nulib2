@@ -171,9 +171,7 @@ Nu_ExpandStream(NuArchive* pArchive, const NuRecord* pRecord,
         break;
     case kNuThreadFormatLZC12:
     case kNuThreadFormatLZC16:
-        err = kNuErrBadFormat;
-        Nu_ReportError(NU_BLOB, kNuErrNone,
-            "LZC-compressed threads not supported");
+        err = Nu_ExpandLZC(pArchive, pRecord, pThread, infp, pFunnel, pCalcCrc);
         break;
     default:
         err = kNuErrBadFormat;
@@ -190,7 +188,7 @@ Nu_ExpandStream(NuArchive* pArchive, const NuRecord* pRecord,
     if (pCalcCrc != nil) {
         if (calcCrc != pThread->thThreadCRC) {
             if (!Nu_ShouldIgnoreBadCRC(pArchive, pRecord, kNuErrBadThreadCRC)) {
-                err = kNuErrBadThreadCRC;
+                err = kNuErrBadDataCRC;
                 Nu_ReportError(NU_BLOB, err, "expected 0x%04x, got 0x%04x",
                     pThread->thThreadCRC, calcCrc);
                 goto bail;

@@ -631,13 +631,21 @@ NuError Nu_StrawRead(NuArchive* pArchive, NuStraw* pStraw, uchar* buffer,
     long len);
 NuError Nu_StrawRewind(NuArchive* pArchive, NuStraw* pStraw);
 
+/* Lzc.c */
+NuError Nu_CompressLZC12(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
+    ulong srcLen, ulong* pDstLen, ushort* pCrc);
+NuError Nu_CompressLZC16(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
+    ulong srcLen, ulong* pDstLen, ushort* pCrc);
+NuError Nu_ExpandLZC(NuArchive* pArchive, const NuRecord* pRecord,
+    const NuThread* pThread, FILE* infp, NuFunnel* pFunnel, ushort* pThreadCrc);
+
 /* Lzw.c */
 NuError Nu_CompressLZW1(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
     ulong srcLen, ulong* pDstLen, ushort* pCrc);
 NuError Nu_CompressLZW2(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
     ulong srcLen, ulong* pDstLen, ushort* pCrc);
 NuError Nu_ExpandLZW(NuArchive* pArchive, const NuRecord* pRecord,
-    const NuThread* pThread, FILE* infp, NuFunnel* pFunnel, ushort* pCrc);
+    const NuThread* pThread, FILE* infp, NuFunnel* pFunnel, ushort* pThreadCrc);
 
 /* MiscUtils.c */
 extern const char* kNufxLibName;

@@ -195,7 +195,16 @@ Nu_CompressToArchive(NuArchive* pArchive, NuDataSource* pDataSource,
             err = Nu_CompressLZW2(pArchive, pStraw, dstFp, srcLen, &dstLen,
                     &threadCrc);
             break;
+        case kNuThreadFormatLZC12:
+            err = Nu_CompressLZC12(pArchive, pStraw, dstFp, srcLen, &dstLen,
+                    &threadCrc);
+            break;
+        case kNuThreadFormatLZC16:
+            err = Nu_CompressLZC16(pArchive, pStraw, dstFp, srcLen, &dstLen,
+                    &threadCrc);
+            break;
         default:
+			/* should've been blocked in Value.c */
             Assert(0);
             err = kNuErrInternal;
             goto bail;

@@ -208,10 +208,8 @@ Nu_ConvertCompressValToFormat(NuArchive* pArchive, NuValue compValue)
     case kNuCompressLZW1:   threadFormat = kNuThreadFormatLZW1;         break;
     case kNuCompressLZW2:   threadFormat = kNuThreadFormatLZW2;         break;
     case kNuCompressSQ:     threadFormat = kNuThreadFormatHuffmanSQ;    break;
-    case kNuCompressLZC12:  threadFormat = kNuThreadFormatLZC12;
-                            unsup = true;                               break;
-    case kNuCompressLZC16:  threadFormat = kNuThreadFormatLZC16;
-                            unsup = true;                               break;
+    case kNuCompressLZC12:  threadFormat = kNuThreadFormatLZC12;		break;
+    case kNuCompressLZC16:  threadFormat = kNuThreadFormatLZC16;		break;
     default:
         Assert(false);
         Nu_ReportError(NU_BLOB, kNuErrInvalidArg,
@@ -221,7 +219,7 @@ Nu_ConvertCompressValToFormat(NuArchive* pArchive, NuValue compValue)
 
     if (unsup) {
         Nu_ReportError(NU_BLOB, kNuErrNone,
-            "Unsupported compression type 0x%04x requested (%ld)",
+            "Unsupported compression type 0x%04x requested (%ld), using none",
             threadFormat, compValue);
         return kNuThreadFormatUncompressed;
     }
