@@ -55,10 +55,16 @@ bail:
 
         if (err == kNuErrNone) {
             err = NuFlush(pArchive, &flushStatus);
-            if (err != kNuErrNone && err == kNuErrNone) {
-                ReportError(err,
-                    "Unable to flush archive changes (status=0x%04lx)",
-                    flushStatus);
+            if (err != kNuErrNone) {
+                if (flushStatus & kNuFlushSucceeded) {
+                    ReportError(err,
+                        "Changes were successfully written, but something "
+                        "failed afterward");
+                } else {
+                    ReportError(err,
+                        "Unable to flush archive changes (status=0x%04lx)",
+                        flushStatus);
+                }
                 NuAbort(pArchive);
             }
         } else {
