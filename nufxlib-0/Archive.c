@@ -93,6 +93,7 @@ Nu_NuArchiveNew(NuArchive** ppArchive)
     (*ppArchive)->valMimicSHK = false;
     (*ppArchive)->valMaskDataless = false;
 
+    (*ppArchive)->messageHandlerFunc = gNuGlobalErrorMessageHandler;
 
     return kNuErrNone;
 }
