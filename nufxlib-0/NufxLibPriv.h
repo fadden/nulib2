@@ -522,6 +522,12 @@ NuError Nu_SeekArchive(NuArchive* pArchive, FILE* fp, long offset,
     int ptrname);
 NuError Nu_RewindArchive(NuArchive* pArchive);
 
+/* Bzip2.c */
+NuError Nu_CompressBzip2(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
+    ulong srcLen, ulong* pDstLen, ushort* pCrc);
+NuError Nu_ExpandBzip2(NuArchive* pArchive, const NuRecord* pRecord,
+    const NuThread* pThread, FILE* infp, NuFunnel* pFunnel, ushort* pCrc);
+
 /* Compress.c */
 NuError Nu_CompressToArchive(NuArchive* pArchive, NuDataSource* pDataSource,
     NuThreadID threadID, NuThreadFormat sourceFormat,

@@ -1,4 +1,4 @@
-/* config.h.in.  Generated automatically from configure.in by autoheader.  */
+/* config.h.in.  */
 
 /* Define to empty if the keyword does not work.  */
 #undef const
@@ -120,9 +120,21 @@
 /* Define if VSNPRINTF is declared in stdio.h.  */
 #undef VSNPRINTF_DECLARED
 
-/* Define if you have libz.a or libz.so */
-#undef HAVE_LIBZ
+/* Define to include SQ (Huffman+RLE) compression.  */
+#undef ENABLE_SQ
 
-/* Define if we want to use the dmalloc library (--enable-dmalloc).  */
+/* Define to include LZW (ShrinkIt LZW/1 and LZW/2) compression.  */
+#undef ENABLE_LZW
+
+/* Define to include LZC (12-bit and 16-bit UNIX "compress") compression.  */
+#undef ENABLE_LZC
+
+/* Define to include deflate (zlib) compression (also need -l in Makefile).  */
+#undef ENABLE_DEFLATE
+
+/* Define to include bzip2 (libbz2) compression (also need -l in Makefile).  */
+#undef ENABLE_BZIP2
+
+/* Define if we want to use the dmalloc library (also need -l in Makefile).  */
 #undef USE_DMALLOC
 

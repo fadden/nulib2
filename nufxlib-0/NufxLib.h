@@ -104,6 +104,9 @@ typedef enum NuError {
     kNuErrDamaged       = -83,      /* original archive may have been damaged */
 
     kNuErrIsBinary2     = -90,      /* this looks like a Binary II archive */
+
+    kNuErrUnknownFeature =-100,     /* attempt to test unknown feature */
+    kNuErrUnsupFeature  = -101,     /* feature not supported */
 } NuError;
 
 /*
@@ -168,6 +171,7 @@ typedef enum NuThreadFormat {
     kNuThreadFormatLZC12        = 0x0004,
     kNuThreadFormatLZC16        = 0x0005,
     kNuThreadFormatDeflate      = 0x0006,   /* NOTE: not in NuFX standard */
+    kNuThreadFormatBzip2        = 0x0007,   /* NOTE: not in NuFX standard */
 } NuThreadFormat;
 
 
@@ -258,6 +262,7 @@ enum NuValueValue {
     kNuCompressLZC12            = 14,
     kNuCompressLZC16            = 15,
     kNuCompressDeflate          = 16,
+    kNuCompressBzip2            = 17,
 
     /* for kNuValueEOL */
     kNuEOLUnknown               = 50,
@@ -625,6 +630,20 @@ typedef struct NuErrorMessage {
 
 
 /*
+ * Options for the NuTestFeature function.
+ */
+typedef enum NuFeature {
+    kNuFeatureUnknown = 0,
+
+    kNuFeatureCompressHuffmanSQ = 1,    /* kNuThreadFormatHuffmanSQ */
+    kNuFeatureCompressLZW = 2,          /* kNuThreadFormatLZW1 and LZW2 */
+    kNuFeatureCompressLZC = 3,          /* kNuThreadFormatLZC12 and LZC16 */
+    kNuFeatureCompressDeflate = 4,      /* kNuThreadFormatDeflate */
+    kNuFeatureCompressBzip2 = 5,        /* kNuThreadFormatBzip2 */
+} NuFeature;
+
+
+/*
  * ===========================================================================
  *      Function prototypes
  * ===========================================================================
@@ -680,10 +699,6 @@ NuError NuSetExtraData(NuArchive* pArchive, void* pData);
 NuError NuGetValue(NuArchive* pArchive, NuValueID ident, NuValue* pValue);
 NuError NuSetValue(NuArchive* pArchive, NuValueID ident, NuValue value);
 NuError NuGetAttr(NuArchive* pArchive, NuAttrID ident, NuAttr* pAttr);
-NuError NuGetVersion(long* pMajorVersion, long* pMinorVersion,
-            long* pBugVersion, const char** ppBuildDate,
-            const char** ppBuildFlags);
-const char* NuStrError(NuError err);
 NuError NuDebugDumpArchive(NuArchive* pArchive);
 
 /* sources and sinks */
@@ -709,6 +724,11 @@ NuError NuFreeDataSink(NuDataSink* pDataSink);
 NuError NuDataSinkGetOutCount(NuDataSink* pDataSink, unsigned long* pOutCount);
 
 /* miscellaneous non-archive operations */
+NuError NuGetVersion(long* pMajorVersion, long* pMinorVersion,
+            long* pBugVersion, const char** ppBuildDate,
+            const char** ppBuildFlags);
+const char* NuStrError(NuError err);
+NuError NuTestFeature(NuFeature feature);
 void NuRecordCopyAttr(NuRecordAttr* pRecordAttr, const NuRecord* pRecord);
 NuError NuRecordCopyThreads(const NuRecord* pRecord, NuThread** ppThreads);
 unsigned long NuRecordGetNumThreads(const NuRecord* pRecord);

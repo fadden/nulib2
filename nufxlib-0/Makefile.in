@@ -26,14 +26,14 @@ OPT			= @CFLAGS@
 GCC_FLAGS	= -Wall -Wwrite-strings -Wstrict-prototypes -Wpointer-arith -Wshadow
 CFLAGS		= @BUILD_FLAGS@ -I. @DEFS@
 
-SRCS		= Archive.c ArchiveIO.c Compress.c Crc16.c Debug.c Deferred.c \
-			  Deflate.c Entry.c Expand.c FileIO.c Funnel.c Lzc.c Lzw.c \
-			  MiscStuff.c MiscUtils.c Record.c SourceSink.c Squeeze.c \
-			  Thread.c Value.c Version.c
-OBJS		= Archive.o ArchiveIO.o Compress.o Crc16.o Debug.o Deferred.o \
-			  Deflate.o Entry.o Expand.o FileIO.o Funnel.o Lzc.o Lzw.o \
-			  MiscStuff.o MiscUtils.o Record.o SourceSink.o Squeeze.o \
-			  Thread.o Value.o Version.o
+SRCS		= Archive.c ArchiveIO.c Bzip2.c Compress.c Crc16.c Debug.c \
+			  Deferred.c Deflate.c Entry.c Expand.c FileIO.c Funnel.c \
+			  Lzc.c Lzw.c MiscStuff.c MiscUtils.c Record.c SourceSink.c \
+			  Squeeze.c Thread.c Value.c Version.c
+OBJS		= Archive.o ArchiveIO.o Bzip2.o Compress.o Crc16.o Debug.o \
+			  Deferred.o Deflate.o Entry.o Expand.o FileIO.o Funnel.o \
+			  Lzc.o Lzw.o MiscStuff.o MiscUtils.o Record.o SourceSink.o \
+			  Squeeze.o Thread.o Value.o Version.o
 
 STATIC_PRODUCT	= libnufx.a
 SHARED_PRODUCT	= libnufx.so

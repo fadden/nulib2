@@ -16,12 +16,7 @@
  */
 #include "NufxLibPriv.h"
 
-/*
- * Because of the lack of Apple II support, I'm making this feature optional
- * at compile time.  The configure scripts will only define HAVE_LIBZ
- * if both the library and the header file can be found.
- */
-#ifdef HAVE_LIBZ
+#ifdef ENABLE_DEFLATE
 #include "zlib.h"
 
 #define kNuDeflateLevel 9       /* use maximum compression */
@@ -35,7 +30,7 @@ Nu_zalloc(voidpf opaque, uInt items, uInt size)
 {
     return Nu_Malloc(opaque, items * size);
 }
-void
+static void
 Nu_zfree(voidpf opaque, voidpf address)
 {
     return Nu_Free(opaque, address);
@@ -264,7 +259,7 @@ Nu_ExpandDeflate(NuArchive* pArchive, const NuRecord* pRecord,
             goto z_bail;
         }
 
-        /* write every time (buffer will usually be full) */
+        /* write every time there's anything (buffer will usually be full) */
         if (zstream.avail_out != kNuGenCompBufSize) {
             DBUG(("+++ writing %d bytes\n", zstream.next_out - outbuf));
             err = Nu_FunnelWrite(pArchive, pFunnel, outbuf,
@@ -301,4 +296,4 @@ bail:
     return err;
 }
 
-#endif /*HAVE_LIBZ*/
+#endif /*ENABLE_DEFLATE*/

@@ -11,6 +11,10 @@ Run the "configure" script.  Read through "INSTALL" if you haven't used
 one of these before, especially if you want to use a specific compiler
 or a particular set of compiler flags.
 
+You can disable specific compression methods with "--disable-METHOD"
+(run "sh ./configure --help" to see the possible options).  By default,
+all methods are enabled except bzip2.
+
 Run "make depend" if you have makedepend, and then type "make".  This will
 build the library and all of the programs in the "samples" directory.
 There are some useful programs in "samples", described in a README.txt

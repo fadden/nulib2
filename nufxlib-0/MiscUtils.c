@@ -15,7 +15,7 @@
 NuCallback gNuGlobalErrorMessageHandler = nil;
 
 
-const char* kNufxLibName = "nufxlib";
+static const char* kNufxLibName = "nufxlib";
 
 
 /*
@@ -33,7 +33,9 @@ Nu_StrError(NuError err)
      *
      * An easier solution, should this present a problem for someone, would
      * be to have the function return nil or "unknown error" when the
-     * error value isn't recognized.
+     * error value isn't recognized.  I'd recommend leaving it as-is for
+     * debug builds, though, as it's helpful to know *which* error is not
+     * recognized.
      */
     static char defaultMsg[32];
 
@@ -176,6 +178,11 @@ Nu_StrError(NuError err)
 
     case kNuErrIsBinary2:
         return "This is a Binary II archive";
+
+    case kNuErrUnknownFeature:
+        return "Unknown feature";
+    case kNuErrUnsupFeature:
+        return "Feature not supported";
 
     default:
         sprintf(defaultMsg, "(error=%d)", err);

@@ -18,6 +18,8 @@
  */
 #include "NufxLibPriv.h"
 
+#ifdef ENABLE_LZC
+
 #define DEBUG_LZC
 
 /*
@@ -1098,3 +1100,4 @@ Nu_ExpandLZC(NuArchive* pArchive, const NuRecord* pRecord,
     return err;
 }
 
+#endif /*ENABLE_LZC*/

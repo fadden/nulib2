@@ -183,10 +183,13 @@ Nu_CompressToArchive(NuArchive* pArchive, NuDataSource* pDataSource,
             err = Nu_CompressUncompressed(pArchive, pStraw, dstFp, srcLen,
                     &dstLen, &threadCrc);
             break;
+        #ifdef ENABLE_SQ
         case kNuThreadFormatHuffmanSQ:
             err = Nu_CompressHuffmanSQ(pArchive, pStraw, dstFp, srcLen,
                     &dstLen, &threadCrc);
             break;
+        #endif
+        #ifdef ENABLE_LZW
         case kNuThreadFormatLZW1:
             err = Nu_CompressLZW1(pArchive, pStraw, dstFp, srcLen, &dstLen,
                     &threadCrc);
@@ -195,6 +198,8 @@ Nu_CompressToArchive(NuArchive* pArchive, NuDataSource* pDataSource,
             err = Nu_CompressLZW2(pArchive, pStraw, dstFp, srcLen, &dstLen,
                     &threadCrc);
             break;
+        #endif
+        #ifdef ENABLE_LZC
         case kNuThreadFormatLZC12:
             err = Nu_CompressLZC12(pArchive, pStraw, dstFp, srcLen, &dstLen,
                     &threadCrc);
@@ -203,9 +208,16 @@ Nu_CompressToArchive(NuArchive* pArchive, NuDataSource* pDataSource,
             err = Nu_CompressLZC16(pArchive, pStraw, dstFp, srcLen, &dstLen,
                     &threadCrc);
             break;
-        #ifdef HAVE_LIBZ
+        #endif
+        #ifdef ENABLE_DEFLATE
         case kNuThreadFormatDeflate:
             err = Nu_CompressDeflate(pArchive, pStraw, dstFp, srcLen, &dstLen,
+                    &threadCrc);
+            break;
+        #endif
+        #ifdef ENABLE_BZIP2
+        case kNuThreadFormatBzip2:
+            err = Nu_CompressBzip2(pArchive, pStraw, dstFp, srcLen, &dstLen,
                     &threadCrc);
             break;
         #endif

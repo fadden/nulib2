@@ -534,12 +534,6 @@ NuGetAttr(NuArchive* pArchive, NuAttrID ident, NuAttr* pAttr)
     return err;
 }
 
-const char*
-NuStrError(NuError err)
-{
-    return Nu_StrError(err);
-}
-
 NuError
 NuDebugDumpArchive(NuArchive* pArchive)
 {
@@ -551,14 +545,6 @@ NuDebugDumpArchive(NuArchive* pArchive)
     /* function doesn't exist */
     return kNuErrGeneric;
 #endif
-}
-
-NuError
-NuGetVersion(long* pMajorVersion, long* pMinorVersion, long* pBugVersion,
-    const char** ppBuildDate, const char** ppBuildFlags)
-{
-    return Nu_GetVersion(pMajorVersion, pMinorVersion, pBugVersion,
-            ppBuildDate, ppBuildFlags);
 }
 
 
@@ -656,6 +642,59 @@ NuDataSinkGetOutCount(NuDataSink* pDataSink, ulong* pOutCount)
  *      Non-archive operations
  * ===========================================================================
  */
+
+const char*
+NuStrError(NuError err)
+{
+    return Nu_StrError(err);
+}
+
+NuError
+NuGetVersion(long* pMajorVersion, long* pMinorVersion, long* pBugVersion,
+    const char** ppBuildDate, const char** ppBuildFlags)
+{
+    return Nu_GetVersion(pMajorVersion, pMinorVersion, pBugVersion,
+            ppBuildDate, ppBuildFlags);
+}
+
+NuError
+NuTestFeature(NuFeature feature)
+{
+    NuError err = kNuErrUnsupFeature;
+
+    switch (feature) {
+    case kNuFeatureCompressHuffmanSQ:
+        #ifdef ENABLE_SQ
+        err = kNuErrNone;
+        #endif
+        break;
+    case kNuFeatureCompressLZW:
+        #ifdef ENABLE_LZW
+        err = kNuErrNone;
+        #endif
+        break;
+    case kNuFeatureCompressLZC:
+        #ifdef ENABLE_LZC
+        err = kNuErrNone;
+        #endif
+        break;
+    case kNuFeatureCompressDeflate:
+        #ifdef ENABLE_DEFLATE
+        err = kNuErrNone;
+        #endif
+        break;
+    case kNuFeatureCompressBzip2:
+        #ifdef ENABLE_BZIP2
+        err = kNuErrNone;
+        #endif
+        break;
+    default:
+        err = kNuErrUnknownFeature;
+        break;
+    }
+
+    return err;
+}
 
 void
 NuRecordCopyAttr(NuRecordAttr* pRecordAttr, const NuRecord* pRecord)

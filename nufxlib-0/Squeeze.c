@@ -32,6 +32,7 @@
  */
 #include "NufxLibPriv.h"
 
+#ifdef ENABLE_SQ
 
 /* if this is defined, create and unpack the full SQ header (debugging only) */
 /* #define FULL_SQ_HEADER */
@@ -274,7 +275,7 @@ bail:
 /*
  * Return the greater of two integers.
  */
-int
+static int
 Nu_SQMax(int a, int b)
 {
     if (a > b)
@@ -364,7 +365,7 @@ Nu_SQHeap(SQState* pSqState, int list[], int length)
  *  moving the last element over the top element and
  *  reheaping the shorter list.
  */
-void
+static void
 Nu_SQBuildTree(SQState* pSqState, int list[], int len)
 {
     int freenode;           /* next free node in tree */
@@ -421,7 +422,7 @@ Nu_SQBuildTree(SQState* pSqState, int list[], int len)
  *
  * Returns zero on success, nonzero if codes are too long.
  */
-int
+static int
 Nu_SQBuildEncTable(SQState* pSqState, int level, int root)
 {
     int l, r;
@@ -1141,3 +1142,4 @@ bail:
     return err;
 }
 
+#endif /*ENABLE_SQ*/

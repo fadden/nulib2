@@ -161,32 +161,40 @@ Nu_ExpandStream(NuArchive* pArchive, const NuRecord* pRecord,
         err = Nu_ExpandUncompressed(pArchive, pRecord, pThread, infp, pFunnel,
                 pCalcCrc);
         break;
+    #ifdef ENABLE_SQ
     case kNuThreadFormatHuffmanSQ:
         err = Nu_ExpandHuffmanSQ(pArchive, pRecord, pThread, infp, pFunnel,
                 pCalcCrc);
         break;
+    #endif
+    #ifdef ENABLE_LZW
     case kNuThreadFormatLZW1:
     case kNuThreadFormatLZW2:
         err = Nu_ExpandLZW(pArchive, pRecord, pThread, infp, pFunnel, pCalcCrc);
         break;
+    #endif
+    #ifdef ENABLE_LZC
     case kNuThreadFormatLZC12:
     case kNuThreadFormatLZC16:
         err = Nu_ExpandLZC(pArchive, pRecord, pThread, infp, pFunnel, pCalcCrc);
         break;
+    #endif
+    #ifdef ENABLE_DEFLATE
     case kNuThreadFormatDeflate:
-        #ifdef HAVE_LIBZ
         err = Nu_ExpandDeflate(pArchive, pRecord, pThread, infp, pFunnel,
                 pCalcCrc);
-        #else
-        err = kNuErrBadFormat;
-        Nu_ReportError(NU_BLOB, kNuErrNone,
-            "deflate compression not supported");
-        #endif
         break;
+    #endif
+    #ifdef ENABLE_BZIP2
+    case kNuThreadFormatBzip2:
+        err = Nu_ExpandBzip2(pArchive, pRecord, pThread, infp, pFunnel,
+                pCalcCrc);
+        break;
+    #endif
     default:
         err = kNuErrBadFormat;
         Nu_ReportError(NU_BLOB, err,
-            "format %u unknown", pThread->thThreadFormat);
+            "compression format %u not supported", pThread->thThreadFormat);
         break;
     }
     BailError(err);

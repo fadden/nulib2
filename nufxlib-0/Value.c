@@ -74,7 +74,7 @@ Nu_SetValue(NuArchive* pArchive, NuValueID ident, NuValue value)
     case kNuValueAllowDuplicates:
         if (value != true && value != false) {
             Nu_ReportError(NU_BLOB, err,
-                "Invalid kNuValueAllowDuplicates value %ld\n", value);
+                "Invalid kNuValueAllowDuplicates value %ld", value);
             goto bail;
         }
         pArchive->valAllowDuplicates = value;
@@ -82,15 +82,15 @@ Nu_SetValue(NuArchive* pArchive, NuValueID ident, NuValue value)
     case kNuValueConvertExtractedEOL:
         if (value < kNuConvertOff || value > kNuConvertAuto) {
             Nu_ReportError(NU_BLOB, err,
-                "Invalid kNuValueConvertExtractedEOL value %ld\n", value);
+                "Invalid kNuValueConvertExtractedEOL value %ld", value);
             goto bail;
         }
         pArchive->valConvertExtractedEOL = value;
         break;
     case kNuValueDataCompression:
-        if (value < kNuCompressNone || value > kNuCompressDeflate) {
+        if (value < kNuCompressNone || value > kNuCompressBzip2) {
             Nu_ReportError(NU_BLOB, err,
-                "Invalid kNuValueDataCompression value %ld\n", value);
+                "Invalid kNuValueDataCompression value %ld", value);
             goto bail;
         }
         pArchive->valDataCompression = value;
@@ -98,7 +98,7 @@ Nu_SetValue(NuArchive* pArchive, NuValueID ident, NuValue value)
     case kNuValueDiscardWrapper:
         if (value != true && value != false) {
             Nu_ReportError(NU_BLOB, err,
-                "Invalid kNuValueDiscardWrapper value %ld\n", value);
+                "Invalid kNuValueDiscardWrapper value %ld", value);
             goto bail;
         }
         pArchive->valDiscardWrapper = value;
@@ -106,7 +106,7 @@ Nu_SetValue(NuArchive* pArchive, NuValueID ident, NuValue value)
     case kNuValueEOL:
         if (value < kNuEOLUnknown || value > kNuEOLCRLF) {
             Nu_ReportError(NU_BLOB, err,
-                "Invalid kNuValueEOL value %ld\n", value);
+                "Invalid kNuValueEOL value %ld", value);
             goto bail;
         }
         pArchive->valEOL = value;
@@ -114,7 +114,7 @@ Nu_SetValue(NuArchive* pArchive, NuValueID ident, NuValue value)
     case kNuValueHandleExisting:
         if (value < kNuMaybeOverwrite || value > kNuMustOverwrite) {
             Nu_ReportError(NU_BLOB, err,
-                "Invalid kNuValueHandleExisting value %ld\n", value);
+                "Invalid kNuValueHandleExisting value %ld", value);
             goto bail;
         }
         pArchive->valHandleExisting = value;
@@ -122,7 +122,7 @@ Nu_SetValue(NuArchive* pArchive, NuValueID ident, NuValue value)
     case kNuValueIgnoreCRC:
         if (value != true && value != false) {
             Nu_ReportError(NU_BLOB, err,
-                "Invalid kNuValueIgnoreCRC value %ld\n", value);
+                "Invalid kNuValueIgnoreCRC value %ld", value);
             goto bail;
         }
         pArchive->valIgnoreCRC = value;
@@ -130,7 +130,7 @@ Nu_SetValue(NuArchive* pArchive, NuValueID ident, NuValue value)
     case kNuValueMimicSHK:
         if (value != true && value != false) {
             Nu_ReportError(NU_BLOB, err,
-                "Invalid kNuValueMimicSHK value %ld\n", value);
+                "Invalid kNuValueMimicSHK value %ld", value);
             goto bail;
         }
         pArchive->valMimicSHK = value;
@@ -138,7 +138,7 @@ Nu_SetValue(NuArchive* pArchive, NuValueID ident, NuValue value)
     case kNuValueModifyOrig:
         if (value != true && value != false) {
             Nu_ReportError(NU_BLOB, err,
-                "Invalid kNuValueModifyOrig value %ld\n", value);
+                "Invalid kNuValueModifyOrig value %ld", value);
             goto bail;
         }
         pArchive->valModifyOrig = value;
@@ -146,7 +146,7 @@ Nu_SetValue(NuArchive* pArchive, NuValueID ident, NuValue value)
     case kNuValueOnlyUpdateOlder:
         if (value != true && value != false) {
             Nu_ReportError(NU_BLOB, err,
-                "Invalid kNuValueOnlyUpdateOlder value %ld\n", value);
+                "Invalid kNuValueOnlyUpdateOlder value %ld", value);
             goto bail;
         }
         pArchive->valOnlyUpdateOlder = value;
@@ -205,27 +205,58 @@ Nu_ConvertCompressValToFormat(NuArchive* pArchive, NuValue compValue)
 
     switch (compValue) {
     case kNuCompressNone:   threadFormat = kNuThreadFormatUncompressed; break;
+
+    #ifdef ENABLE_SQ
+    case kNuCompressSQ:     threadFormat = kNuThreadFormatHuffmanSQ;    break;
+    #else
+    case kNuCompressSQ:     threadFormat = kNuThreadFormatHuffmanSQ;
+                            unsup = true;                               break;
+    #endif
+
+    #ifdef ENABLE_LZW
     case kNuCompressLZW1:   threadFormat = kNuThreadFormatLZW1;         break;
     case kNuCompressLZW2:   threadFormat = kNuThreadFormatLZW2;         break;
-    case kNuCompressSQ:     threadFormat = kNuThreadFormatHuffmanSQ;    break;
+    #else
+    case kNuCompressLZW1:   threadFormat = kNuThreadFormatLZW1;
+                            unsup = true;                               break;
+    case kNuCompressLZW2:   threadFormat = kNuThreadFormatLZW2;
+                            unsup = true;                               break;
+    #endif
+
+    #ifdef ENABLE_LZC
     case kNuCompressLZC12:  threadFormat = kNuThreadFormatLZC12;        break;
     case kNuCompressLZC16:  threadFormat = kNuThreadFormatLZC16;        break;
-    #ifdef HAVE_LIBZ
+    #else
+    case kNuCompressLZC12:  threadFormat = kNuThreadFormatLZC12;
+                            unsup = true;                               break;
+    case kNuCompressLZC16:  threadFormat = kNuThreadFormatLZC16;
+                            unsup = true;                               break;
+    #endif
+
+    #ifdef ENABLE_DEFLATE
     case kNuCompressDeflate: threadFormat = kNuThreadFormatDeflate;     break;
     #else
     case kNuCompressDeflate: threadFormat = kNuThreadFormatDeflate;
                             unsup = true;                               break;
     #endif
+
+    #ifdef ENABLE_BZIP2
+    case kNuCompressBzip2:  threadFormat = kNuThreadFormatBzip2;        break;
+    #else
+    case kNuCompressBzip2:  threadFormat = kNuThreadFormatBzip2;
+                            unsup = true;                               break;
+    #endif
+
     default:
-        Assert(false);
         Nu_ReportError(NU_BLOB, kNuErrInvalidArg,
             "Unknown compress value %ld", compValue);
+        Assert(false);
         return kNuThreadFormatUncompressed;
     }
 
     if (unsup) {
         Nu_ReportError(NU_BLOB, kNuErrNone,
-            "Unsupported compression type 0x%04x requested (%ld), using none",
+            "Unsupported compression type 0x%04x requested (%ld), not compressing",
             threadFormat, compValue);
         return kNuThreadFormatUncompressed;
     }

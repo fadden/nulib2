@@ -30,6 +30,8 @@
  */
 #include "NufxLibPriv.h"
 
+#ifdef ENABLE_LZW
+
 /* the LZW algorithms operate on 4K chunks */
 #define kNuLZWBlockSize     4096
 
@@ -1604,3 +1606,4 @@ bail:
     return err;
 }
 
+#endif /*ENABLE_LZW*/

@@ -79,7 +79,11 @@ Nu_NuArchiveNew(NuArchive** ppArchive)
      */
     (*ppArchive)->valAllowDuplicates = false;
     (*ppArchive)->valConvertExtractedEOL = kNuConvertOff;
+    #ifdef ENABLE_LZW
     (*ppArchive)->valDataCompression = kNuCompressLZW2;
+    #else
+    (*ppArchive)->valDataCompression = kNuCompressNone;
+    #endif
     (*ppArchive)->valDiscardWrapper = false;
     (*ppArchive)->valEOL = kNuEOLLF;    /* non-UNIX apps must override */
     (*ppArchive)->valHandleExisting = kNuMaybeOverwrite;
