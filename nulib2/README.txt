@@ -1,4 +1,4 @@
-NuLib2 README, updated 2002/10/11
+NuLib2 README, updated 2003/03/18
 http://www.nulib.com/
 
 
@@ -19,14 +19,14 @@ Run the "configure" script.  Read through "INSTALL" if you haven't used
 one of these before, especially if you want to use a specific compiler
 or a particular set of compiler flags.
 
-If you have diabled deflate or enabled bzip2 support in libnufx.a, you
+If you have disabled deflate or enabled bzip2 support in libnufx.a, you
 will need to provide the same --enable-METHOD or --disable-METHOD flag
 to configure here.  If you're using shared libraries then the link
-dependencies are taken care of and you don't need to worry.
+dependencies are taken care of and you don't need to do anything.
 
 Run "make depend" if you have makedepend, and then type "make".
 This should leave you with an executable called "nulib2".  If you like,
-"make install" will put things into your install directory, usually
+"make install" will copy files into your install directory, usually
 /usr/local/bin/ and /usr/local/man/.  You can change this by using
 "./configure --prefix=directory".
 
@@ -69,8 +69,8 @@ to build with debugging info, or
     nmake -f makefile.msc nodebug=1
 to build optimized.
 
-See the notes in Makefile.msc for building with zlib, libbz2, and against
-NufxLib as a DLL.
+See the notes in Makefile.msc for building with zlib, libbz2, and when
+NufxLib is in a DLL.
 
 
 Other Notes
@@ -105,12 +105,10 @@ vs Win32 NuLib2):
    in them, e.g. "nulib2 v foo.shk > out.orig" and
    "nulib2 v new.shk > out.new".
  - Edit both of the "out" files with vi.  Do a global search-and-replace
-   to change '/' to ':' in out.new (:%s/\//:/g) so the filename separator
-   doesn't mess up the comparison.
- - Do a global search-and-replace in both files to set the file dates
-   to be the same.  I used ":%s/..-...-.. ..:../01-Jan-00 00:00/".  This
-   is necessary because, like ShrinkIt, NuLib displays the date on which
-   the files were archived, not when they were last modified.
+   in both files to set the file dates to be the same.  I used
+   ":%s/..-...-.. ..:../01-Jan-00 00:00/".  This is necessary because,
+   like ShrinkIt, NuLib displays the date on which the files were archived,
+   not when they were last modified.
  - Sort both files, with ":%!sort".  This is necessary because you
    added the files with '*' up above, so the NuLib2-created archive
    has the top-level files alphabetized.

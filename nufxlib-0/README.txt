@@ -1,4 +1,4 @@
-NufxLib README, updated 2002/10/11
+NufxLib README, updated 2003/03/18
 http://www.nulib.com/
 
 See "COPYING-LIB" for distribution restrictions.
@@ -41,10 +41,9 @@ for @CFLAGS@ is "-g -O2".
 -DDEBUG_VERBOSE
   (Implicitly sets DEBUG_MSGS.)  Spray lots of debugging output.
 
-If you want to do benchmarks, use "-O2 -DNDEBUG".  For pre-v1.0 sources,
-setting -DNDEBUG is otherwise discouraged.  The recommended configuration
-is "-g -O2 -DDEBUG_MSGS", so that verbose debug output is available when
-errors occur.
+If you want to do benchmarks, use "-O2 -DNDEBUG".  The recommended
+configuration during testing is "-g -O2 -DDEBUG_MSGS", so that verbose
+debug output is available when errors occur.
 
 The flags are stuffed into Version.c, so the application program can
 examine and display the flags that were used to build the library.
@@ -105,7 +104,7 @@ define it by default.)
 Legalese
 ========
 
-NufxLib, a NuFX archive manipulation library
+NufxLib, a NuFX archive manipulation library.
 Copyright (C) 2000-2002 by Andy McFadden, All Rights Reserved.
 
 This library is free software; you can redistribute it and/or
