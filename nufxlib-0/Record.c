@@ -349,6 +349,7 @@ Nu_RecordSet_FreeAllRecords(NuArchive* pArchive, NuRecordSet* pRecordSet)
 
     if (!pRecordSet->loaded) {
         Assert(pRecordSet->nuRecordHead == nil);
+        Assert(pRecordSet->nuRecordTail == nil);
         Assert(pRecordSet->numRecords == 0);
         return kNuErrNone;
     }
@@ -545,19 +546,29 @@ Nu_RecordSet_MoveAllRecords(NuArchive* pArchive, NuRecordSet* pDstSet,
         return kNuErrNone;
     #endif
 
-    if (pDstSet->nuRecordHead == nil) {
-        /* empty dst list */
-        pDstSet->nuRecordHead = pSrcSet->nuRecordHead;
-        pDstSet->nuRecordTail = pSrcSet->nuRecordTail;
-        pDstSet->numRecords = pSrcSet->numRecords;
-        pDstSet->loaded = true;
+    /* move records over */
+    if (Nu_RecordSet_GetNumRecords(pSrcSet)) {
+        Assert(pSrcSet->nuRecordHead != nil);
+        Assert(pSrcSet->nuRecordTail != nil);
+        if (pDstSet->nuRecordHead == nil) {
+            /* empty dst list */
+            Assert(pDstSet->nuRecordTail == nil);
+            pDstSet->nuRecordHead = pSrcSet->nuRecordHead;
+            pDstSet->nuRecordTail = pSrcSet->nuRecordTail;
+            pDstSet->numRecords = pSrcSet->numRecords;
+            pDstSet->loaded = true;
+        } else {
+            /* append to dst list */
+            Assert(pDstSet->loaded);
+            Assert(pDstSet->nuRecordTail != nil);
+            pDstSet->nuRecordTail->pNext = pSrcSet->nuRecordHead;
+            pDstSet->nuRecordTail = pSrcSet->nuRecordTail;
+            pDstSet->numRecords += pSrcSet->numRecords;
+        }
     } else {
-        /* append to dst list */
-        Assert(pDstSet->loaded);
-		Assert(pDstSet->nuRecordTail != nil);
-        pDstSet->nuRecordTail->pNext = pSrcSet->nuRecordHead;
-        pDstSet->nuRecordTail = pSrcSet->nuRecordTail;
-        pDstSet->numRecords += pSrcSet->numRecords;
+        /* no records in src set */
+        Assert(pSrcSet->nuRecordHead == nil);
+        Assert(pSrcSet->nuRecordTail == nil);
     }
 
     /* nuke all pointers in original list */

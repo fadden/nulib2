@@ -2511,6 +2511,12 @@ bail:
             *pStatusFlags |= kNuFlushReadOnly;
         }
     }
+
+    /* last-minute sanity check */
+    Assert(pArchive->origRecordSet.numRecords == 0 ||
+        (pArchive->origRecordSet.nuRecordHead != nil &&
+         pArchive->origRecordSet.nuRecordTail != nil));
+
     return err;
 }
 
