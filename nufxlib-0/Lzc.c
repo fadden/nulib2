@@ -615,7 +615,7 @@ Nu_LZC_compress(LZCState* pLzcState, ulong* pDstLen)
             return;
         }
         if (!quiet)
-            fprintf(stderr, "%s: ",ifname);
+            fprintf(stderr, "%s: ",ifname);     /*#if 0*/
         setvbuf(Xstdout,zbuf,_IOFBF,ZBUFSIZE);
     }
     #endif
@@ -962,7 +962,7 @@ Nu_LZC_decompress(LZCState* pLzcState, ulong compressedLen)
             return;
         }
         if (!quiet)
-            fprintf(stderr, "%s: ",ifname);
+            fprintf(stderr, "%s: ",ifname);     /*#if 0*/
         setvbuf(stdout,xbuf,_IOFBF,XBUFSIZE);
     }
     #endif
