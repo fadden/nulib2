@@ -22,7 +22,7 @@ ReportError(NuError err, const char* format, ...)
     const char* msg;
     va_list args;
 
-    assert(format != nil);
+    Assert(format != nil);
 
     va_start(args, format);
 

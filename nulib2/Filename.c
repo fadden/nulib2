@@ -20,7 +20,7 @@
 #define kFilenameExtDelim   '.'     /* separates extension from filename */
 #define kResourceFlag   'r'
 #define kDiskImageFlag  'i'
-#define kMaxExtLen      4       /* ".1234" */
+#define kMaxExtLen      4       /* ".123" */
 #define kResourceStr    "_rsrc_"
 
 /* must be longer then strlen(kResourceStr)... no problem there */
@@ -68,7 +68,7 @@ static const char gFileTypeNames[256][4] = {
  * preservation mode, we try to assign types to files that weren't
  * explicitly preserved, but nevertheless have a recognizeable type.
  *
- * geoff@gwlink.net points out that this really ought to be in an external
+ * geoff @ gwlink.net points out that this really ought to be in an external
  * file rather than a hard-coded table.  Ought to fix that someday.
  */
 static const struct {
@@ -127,15 +127,15 @@ AddPreservationString(NulibState* pState,
     NuThreadID threadID;
     char* cp;
 
-    assert(pState != nil);
-    assert(pPathProposal != nil);
-    assert(pathBuf != nil);
-    assert(NState_GetModPreserveType(pState));
+    Assert(pState != nil);
+    Assert(pPathProposal != nil);
+    Assert(pathBuf != nil);
+    Assert(NState_GetModPreserveType(pState));
 
     pRecord = pPathProposal->pRecord;
     pThread = pPathProposal->pThread;
-    assert(pRecord != nil);
-    assert(pThread != nil);
+    Assert(pRecord != nil);
+    Assert(pThread != nil);
 
     cp = extBuf;
 
@@ -224,7 +224,7 @@ AddPreservationString(NulibState* pState,
     /* make sure it's terminated */
     *cp = '\0';
 
-    assert(cp - extBuf <= kMaxPathGrowth);
+    Assert(cp - extBuf <= kMaxPathGrowth);
     strcat(pathBuf, extBuf);
 }
 
@@ -238,7 +238,7 @@ AddPreservationString(NulibState* pState,
  * The new pathname may be shorter (because characters were removed) or
  * longer (if we add a "#XXYYYYZ" extension or replace chars with '%' codes).
  *
- * This returns the new pathname, which is held in NState's temporary
+ * This returns the new pathname, which is held in NulibState's temporary
  * pathname buffer.
  */
 const char*
@@ -251,9 +251,9 @@ NormalizePath(NulibState* pState, NuPathnameProposal* pPathProposal)
     char* dstp;
     char localFssep;
 
-    assert(pState != nil);
-    assert(pPathProposal != nil);
-    assert(pPathProposal->pathname != nil);
+    Assert(pState != nil);
+    Assert(pPathProposal != nil);
+    Assert(pPathProposal->pathname != nil);
 
     localFssep = NState_GetSystemPathSeparator(pState);
 
@@ -265,7 +265,7 @@ NormalizePath(NulibState* pState, NuPathnameProposal* pPathProposal)
     NState_SetTempPathnameLen(pState,
         strlen(pPathProposal->pathname)*3 + kMaxPathGrowth +1);
     pathBuf = NState_GetTempPathnameBuf(pState);
-    assert(pathBuf != nil);
+    Assert(pathBuf != nil);
     if (pathBuf == nil)
         return nil;
 
@@ -316,7 +316,7 @@ NormalizePath(NulibState* pState, NuPathnameProposal* pPathProposal)
     pPathProposal->newFilenameSeparator = localFssep;
 
     /* check for overflow */
-    assert(dstp - pathBuf <=
+    Assert(dstp - pathBuf <=
                     (int)(strlen(pPathProposal->pathname) + kMaxPathGrowth));
 
     /*
@@ -326,7 +326,7 @@ NormalizePath(NulibState* pState, NuPathnameProposal* pPathProposal)
         char* lastFssep;
         lastFssep = strrchr(pathBuf, localFssep);
         if (lastFssep != nil) {
-            assert(*(lastFssep+1) != '\0'); /* should already have been caught*/
+            Assert(*(lastFssep+1) != '\0'); /* should already have been caught*/
             memmove(pathBuf, lastFssep+1, strlen(lastFssep+1)+1);
         }
     }
@@ -358,7 +358,7 @@ LookupExtension(NulibState* pState, const char* ext, ulong* pFileType,
     int i, extLen;
 
     extLen = strlen(ext);
-    assert(extLen > 0);
+    Assert(extLen > 0);
 
     /*
      * First step is to try to find it in the recognized types list.
@@ -408,10 +408,10 @@ InterpretExtension(NulibState* pState, const char* pathName, ulong* pFileType,
 {
     const char* pExt;
 
-    assert(pState != nil);
-    assert(pathName != nil);
-    assert(pFileType != nil);
-    assert(pAuxType != nil);
+    Assert(pState != nil);
+    Assert(pathName != nil);
+    Assert(pFileType != nil);
+    Assert(pAuxType != nil);
 
     pExt = FindExtension(pState, pathName);
     if (pExt != nil)
@@ -438,11 +438,11 @@ ExtractPreservationString(NulibState* pState, char* pathname, ulong* pFileType,
     char* cp;
     int digitCount;
 
-    assert(pState != nil);
-    assert(pathname != nil);
-    assert(pFileType != nil);
-    assert(pAuxType != nil);
-    assert(pThreadID != nil);
+    Assert(pState != nil);
+    Assert(pathname != nil);
+    Assert(pFileType != nil);
+    Assert(pAuxType != nil);
+    Assert(pThreadID != nil);
 
     pPreserve = strrchr(pathname, kPreserveIndic);
     if (pPreserve == nil)
@@ -460,20 +460,20 @@ ExtractPreservationString(NulibState* pState, char* pathname, ulong* pFileType,
         memcpy(numBuf, pPreserve+1, 2);
         numBuf[2] = 0;
         fileType = strtoul(numBuf, &cp, 16);
-        assert(cp == numBuf + 2);
+        Assert(cp == numBuf + 2);
 
         auxType = strtoul(pPreserve+3, &cp, 16);
-        assert(cp == pPreserve + 7);
+        Assert(cp == pPreserve + 7);
         break;
     case 16:
         /* HFS 4-byte type and 4-byte creator */
         memcpy(numBuf, pPreserve+1, 8);
         numBuf[8] = 0;
         fileType = strtoul(numBuf, &cp, 16);
-        assert(cp == numBuf + 8);
+        Assert(cp == numBuf + 8);
 
         auxType = strtoul(pPreserve+9, &cp, 16);
-        assert(cp == pPreserve + 17);
+        Assert(cp == pPreserve + 17);
         break;
     default:
         /* not valid */
@@ -561,7 +561,7 @@ DenormalizePath(NulibState* pState, char* pathBuf)
     }
 
     *dstp = '\0';
-    assert(dstp <= srcp);
+    Assert(dstp <= srcp);
 }
 
 
@@ -584,8 +584,8 @@ FilenameOnly(NulibState* pState, const char* pathname)
     const char* pSlash;
     char* tmpStr = nil;
 
-    assert(pState != nil);
-    assert(pathname != nil);
+    Assert(pState != nil);
+    Assert(pathname != nil);
 
     pSlash = strrchr(pathname, NState_GetSystemPathSeparator(pState));
     if (pSlash == nil) {
@@ -648,7 +648,7 @@ FindExtension(NulibState* pState, const char* pathname)
      * about "/foo.bar/file".
      */
     pFilename = FilenameOnly(pState, pathname);
-    assert(pFilename != nil);
+    Assert(pFilename != nil);
     pExt = strrchr(pFilename, kFilenameExtDelim);
 
     /* also check for "/blah/foo.", which doesn't count */

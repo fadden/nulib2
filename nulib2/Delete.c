@@ -21,13 +21,13 @@ DoDelete(NulibState* pState)
     NuError err;
     NuArchive* pArchive = nil;
 
-    assert(pState != nil);
+    Assert(pState != nil);
 
     err = OpenArchiveReadWrite(pState);
     if (err != kNuErrNone)
         goto bail;
     pArchive = NState_GetNuArchive(pState);
-    assert(pArchive != nil);
+    Assert(pArchive != nil);
 
     NState_SetMatchCount(pState, 0);
 

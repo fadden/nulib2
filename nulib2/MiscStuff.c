@@ -46,8 +46,8 @@ Nu_memmove(void* dst, const void* src, size_t n)
     char* dstp = (char*)dst;
 
     /* you can normally get away with this if n==0 */
-    assert(dst != NULL);
-    assert(src != NULL);
+    Assert(dst != NULL);
+    Assert(src != NULL);
 
     if (dstp == srcp || !n) {
         /* nothing to do */
