@@ -744,7 +744,7 @@ retry_name:
     }
 
 bail:
-    if (err != kNuErrNone) {
+    if (err != kNuErrNone && pProgressData != nil) {
         /* send a final progress message, indicating failure */
         if (err == kNuErrSkipped)
             pProgressData->state = kNuProgressSkipped;
@@ -825,6 +825,8 @@ Nu_ExtractThread(NuArchive* pArchive, NuThreadIdx threadIdx,
         return kNuErrUsage;
     if (threadIdx == 0 || pDataSink == nil)
         return kNuErrInvalidArg;
+    err = Nu_GetTOCIfNeeded(pArchive);
+    BailError(err);
 
     /* find the correct record and thread by index */
     err = Nu_RecordSet_FindByThreadIdx(&pArchive->origRecordSet, threadIdx,

@@ -347,7 +347,7 @@ Nu_CopyPresizedToArchive(NuArchive* pArchive, NuDataSource* pDataSource,
     pThread->thThreadCRC = 0;       /* no CRC on pre-sized stuff */
     pThread->thThreadEOF = srcLen;
     pThread->thCompThreadEOF = bufferLen;
-    pThread->actualThreadEOF = bufferLen;
+    pThread->actualThreadEOF = srcLen;
     /* nuThreadIdx and fileOffset should already be set */
 
     /*
