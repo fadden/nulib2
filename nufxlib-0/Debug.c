@@ -190,6 +190,9 @@ Nu_DebugDumpRecord(NuArchive* pArchive, const NuRecord* pRecord,
 
     Assert(pRecord != nil);
 
+    /*printf("PTR: pRecord=0x%08lx pXrefRecord=0x%08lx\n", (long) pRecord,
+        (long) pXrefRecord);*/
+
     printf("%s%s%sFilename: '%s' (idx=%lu)\n", kInd,
         isDeleted ? "[DEL] " : "",
         pXrefRecord != nil && pXrefRecord->pThreadMods != nil ? "[MOD] " : "",
@@ -258,11 +261,11 @@ Nu_DebugDumpRecord(NuArchive* pArchive, const NuRecord* pRecord,
                 Nu_DataSourceGetType(pThreadMod->entry.add.pDataSource));
             break;
         case kNuThreadModUpdate:
-            printf("%s  *-ThreadMod UPDATE %06ld\n", kInd,
+            printf("%s  *-ThreadMod UPDATE %6ld\n", kInd,
                 pThreadMod->entry.update.threadIdx);
             break;
         case kNuThreadModDelete:
-            printf("%s  *-ThreadMod DELETE %06ld\n", kInd,
+            printf("%s  *-ThreadMod DELETE %6ld\n", kInd,
                 pThreadMod->entry.delete.threadIdx);
             break;
         case kNuThreadModUnknown:
