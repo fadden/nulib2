@@ -182,22 +182,27 @@ AddPreservationString(NulibState* pState,
             pExt = nil;
         else
             pExt = FindExtension(pState, pathBuf);
-        if (pExt != nil && strlen(pExt+1) < kMaxExtLen) {
+        if (pExt != nil) {
             pExt++; /* skip past the '.' */
 
-            /* if it's strictly decimal-numeric, don't use it (.1, .2, etc) */
-            (void) strtoul(pExt, &end, 10);
-            if (*end == '\0') {
+            if (strlen(pExt) >= kMaxExtLen) {
+                /* too long, forget it */
                 pExt = nil;
             } else {
-                /* if '#' appears in it, don't use it -- it'll confuse us */
-                const char* ccp = pExt;
-                while (*ccp != '\0') {
-                    if (*ccp == '#') {
-                        pExt = nil;
-                        break;
+                /* if strictly decimal-numeric, don't use it (.1, .2, etc) */
+                (void) strtoul(pExt, &end, 10);
+                if (*end == '\0') {
+                    pExt = nil;
+                } else {
+                    /* if '#' appears in it, don't use it -- it'll confuse us */
+                    const char* ccp = pExt;
+                    while (*ccp != '\0') {
+                        if (*ccp == '#') {
+                            pExt = nil;
+                            break;
+                        }
+                        ccp++;
                     }
-                    ccp++;
                 }
             }
 
