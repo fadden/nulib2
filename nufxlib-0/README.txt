@@ -64,6 +64,19 @@ If you're using BeOS/PPC, it will also do:
     CC=cc CFLAGS='-proc 603 -opt full'
 
 
+Mac OS X
+========
+
+This works just like the UNIX version, with the exception that when you link
+against nufxlib, your project must also link against the Carbon framework.
+This can be done in ProjectBuilder by using the Add Framework option in the
+Project menu, or by adding "-framework Carbon" to the gcc command line.
+
+You'll see some warnings due to some namespace collisions between nufxlib and
+Carbon, but everything will work fine.  Carbon is used to provide support for
+file types and resource forks.
+
+
 Win32
 =====
 
@@ -105,7 +118,7 @@ Legalese
 ========
 
 NufxLib, a NuFX archive manipulation library.
-Copyright (C) 2000-2002 by Andy McFadden, All Rights Reserved.
+Copyright (C) 2000-2003 by Andy McFadden, All Rights Reserved.
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public

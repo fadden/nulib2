@@ -1,3 +1,7 @@
+2003/06/19  sheppy
+    - Added support for resource forks and file and aux types when built
+      for Mac OS X.
+
 2003/03/18  ***** v2.0.0 shipped *****
 
 2003/03/10  fadden

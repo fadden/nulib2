@@ -54,6 +54,15 @@ changed.  Running configure without arguments under BeOS is equivalent to:
 If you're using BeOS/PPC, it will also do:
 
     CC=cc CFLAGS='-proc 603 -opt full'
+    
+
+Mac OS X
+========
+
+This works just like the UNIX version.  You'll see some warnings due to some
+namespace collisions between nufxlib and Carbon, but everything will work
+fine.  The Carbon framework is used to enable support for filetypes and
+resource forks.
 
 
 Win32
@@ -131,7 +140,7 @@ Legalese
 ========
 
 NuLib2, a NuFX and Binary II archive application.
-Copyright (C) 2000-2002 by Andy McFadden, All Rights Reserved.
+Copyright (C) 2000-2003 by Andy McFadden, All Rights Reserved.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
