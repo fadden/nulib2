@@ -97,7 +97,7 @@ Nu_CompressToArchive(NuArchive* pArchive, NuDataSource* pDataSource,
     long origOffset;
     NuStraw* pStraw = nil;
     NuDataSink* pDataSink = nil;
-    ulong srcLen, dstLen;
+    ulong srcLen = 0, dstLen = 0;
     ushort threadCrc;
 
     Assert(pArchive != nil);
