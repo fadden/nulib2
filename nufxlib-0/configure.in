@@ -14,7 +14,7 @@ dnl Checks for libraries.
 
 dnl Checks for header files.
 AC_CHECK_HEADERS(fcntl.h malloc.h stdlib.h sys/stat.h sys/time.h sys/types.h \
-	sys/utime.h unistd.h utime.h)
+    sys/utime.h unistd.h utime.h)
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -30,51 +30,51 @@ AC_CHECK_TYPE(ulong, unsigned long)
 
 dnl Checks for library functions.
 AC_CHECK_FUNCS(fdopen ftruncate memmove mkdir mkstemp mktime timelocal \
-	localtime_r snprintf strcasecmp strncasecmp strtoul strerror vsnprintf)
+    localtime_r snprintf strcasecmp strncasecmp strtoul strerror vsnprintf)
 
 dnl Kent says: snprintf doesn't always have a declaration
 AC_MSG_CHECKING(if snprintf is declared)
 AC_CACHE_VAL(nufxlib_cv_snprintf_in_header, [
-	AC_EGREP_HEADER(snprintf, stdio.h,
-		[nufxlib_cv_snprintf_in_header=yes],
-		[nufxlib_cv_snprintf_in_header=no])
+    AC_EGREP_HEADER(snprintf, stdio.h,
+        [nufxlib_cv_snprintf_in_header=yes],
+        [nufxlib_cv_snprintf_in_header=no])
 ])
 if test $nufxlib_cv_snprintf_in_header = "yes"; then
-	AC_DEFINE(SNPRINTF_DECLARED)
+    AC_DEFINE(SNPRINTF_DECLARED)
 fi
 AC_MSG_RESULT($nufxlib_cv_snprintf_in_header)
 
 dnl Kent says: vsnprintf doesn't always have a declaration
 AC_MSG_CHECKING(if vsnprintf is declared)
 AC_CACHE_VAL(nufxlib_cv_vsnprintf_in_header, [
-	AC_EGREP_HEADER(vsnprintf, stdio.h,
-		[nufxlib_cv_vsnprintf_in_header=yes],
-		[nufxlib_cv_vsnprintf_in_header=no])
+    AC_EGREP_HEADER(vsnprintf, stdio.h,
+        [nufxlib_cv_vsnprintf_in_header=yes],
+        [nufxlib_cv_vsnprintf_in_header=no])
 ])
 if test $nufxlib_cv_vsnprintf_in_header = "yes"; then
-	AC_DEFINE(VSNPRINTF_DECLARED)
+    AC_DEFINE(VSNPRINTF_DECLARED)
 fi
 AC_MSG_RESULT($nufxlib_cv_vsnprintf_in_header)
 
 dnl Figure out what the build and link flags should be
 SHARE_FLAGS='-shared'
 if test "$host_cpu" = "powerpc" -a "$host_os" = "beos"; then
-	dnl BeOS/PPC, with Metrowerks compiler
-	CC=cc
-	GCC=
-	CFLAGS='-proc 603 -opt full'
-	SHARE_FLAGS='-shared -nostdlib'
-	echo "forcing CC to \"$CC\" and CFLAGS to \"$CFLAGS\""
+    dnl BeOS/PPC, with Metrowerks compiler
+    CC=cc
+    GCC=
+    CFLAGS='-proc 603 -opt full'
+    SHARE_FLAGS='-shared -nostdlib'
+    echo "forcing CC to \"$CC\" and CFLAGS to \"$CFLAGS\""
 elif test "$host_os" = "beos"; then
-	dnl BeOS/x86
-	SHARE_FLAGS='-nostartfiles -Xlinker -soname="$@"'
+    dnl BeOS/x86
+    SHARE_FLAGS='-nostartfiles -Xlinker -soname="$@"'
 fi
 
 dnl if we're using gcc, include gcc-specific warning flags
 if test -z "$GCC"; then
-	BUILD_FLAGS='$(OPT)'
+    BUILD_FLAGS='$(OPT)'
 else
-	BUILD_FLAGS='$(OPT) $(GCC_FLAGS)'
+    BUILD_FLAGS='$(OPT) $(GCC_FLAGS)'
 fi
 
 AC_SUBST(BUILD_FLAGS)
@@ -85,52 +85,52 @@ dnl BeOS doesn't like /usr/local/include, and gets feisty about it.  If libdir
 dnl and includedir are set to defaults, replace them with BeOS values.  This
 dnl might be going a little too far...
 if test "$host_os" = "beos"; then
-	if test "$prefix" = "NONE" -a \
-			"$includedir" = '${prefix}/include' -a \
-			"$libdir" = '${exec_prefix}/lib' -a \
-			"$bindir" = '${exec_prefix}/bin' -a \
-			"$mandir" = '${prefix}/man'
-	then
-		echo replacing install locations with BeOS values
-		prefix=/boot
-		includedir='${prefix}/develop/headers'
-		libdir='${exec_prefix}/home/config/lib'
-		bindir='${exec_prefix}/home/config/bin'
-		mandir='/tmp'
-		AC_SUBST(prefix)
-		AC_SUBST(includedir)
-		AC_SUBST(libdir)
-		AC_SUBST(bindir)
-		AC_SUBST(mandir)
-	fi
+    if test "$prefix" = "NONE" -a \
+            "$includedir" = '${prefix}/include' -a \
+            "$libdir" = '${exec_prefix}/lib' -a \
+            "$bindir" = '${exec_prefix}/bin' -a \
+            "$mandir" = '${prefix}/man'
+    then
+        echo replacing install locations with BeOS values
+        prefix=/boot
+        includedir='${prefix}/develop/headers'
+        libdir='${exec_prefix}/home/config/lib'
+        bindir='${exec_prefix}/home/config/bin'
+        mandir='/tmp'
+        AC_SUBST(prefix)
+        AC_SUBST(includedir)
+        AC_SUBST(libdir)
+        AC_SUBST(bindir)
+        AC_SUBST(mandir)
+    fi
 fi
 
 dnl Test to see if sprintf does something reasonable.  I'm going to assume
 dnl that vsprintf and (if available) vsnprintf return the same thing.
 AC_MSG_CHECKING(if sprintf returns int)
 AC_CACHE_VAL(nufxlib_cv_sprintf_returns_int, [
-	AC_TRY_RUN([
-		#include <stdio.h>
-		int main(void)
-		{
-			int count;
-			char buf[8];
-			count = sprintf(buf, "123");	/* should return three */
-			exit(count != 3);
-		}
-	],
-	[nufxlib_cv_sprintf_returns_int=yes], [nufxlib_cv_sprintf_returns_int=no],
-	[nufxlib_cv_sprintf_returns_int=no])
+    AC_TRY_RUN([
+        #include <stdio.h>
+        int main(void)
+        {
+            int count;
+            char buf[8];
+            count = sprintf(buf, "123");    /* should return three */
+            exit(count != 3);
+        }
+    ],
+    [nufxlib_cv_sprintf_returns_int=yes], [nufxlib_cv_sprintf_returns_int=no],
+    [nufxlib_cv_sprintf_returns_int=no])
 ])
 if test $nufxlib_cv_sprintf_returns_int = "yes"; then
-	AC_DEFINE(SPRINTF_RETURNS_INT)
+    AC_DEFINE(SPRINTF_RETURNS_INT)
 fi
 AC_MSG_RESULT($nufxlib_cv_sprintf_returns_int)
 
 DMALLOC=
 AC_ARG_ENABLE(dmalloc, [  --enable-dmalloc: do dmalloc stuff], \
-	[ echo "--- enabling dmalloc"; \
-	DMALLOC="-L/usr/local/lib -ldmalloc"; AC_DEFINE(USE_DMALLOC) ])
+    [ echo "--- enabling dmalloc"; \
+    DMALLOC="-L/usr/local/lib -ldmalloc"; AC_DEFINE(USE_DMALLOC) ])
 AC_SUBST(DMALLOC)
 
 AC_OUTPUT(Makefile samples/Makefile)

@@ -42,11 +42,11 @@ int Nu_strncasecmp(const char *s1, const char *s2, size_t n);
 
 #include <sys/types.h>
 
-#define nil		NULL		/* I can't seem to stop typing 'nil' now */
+#define nil     NULL        /* I can't seem to stop typing 'nil' now */
 
-typedef uchar	Boolean;
-#define false	(0)
-#define true	(!false)
+typedef uchar   Boolean;
+#define false   (0)
+#define true    (!false)
 
 
 /*
@@ -54,15 +54,15 @@ typedef uchar	Boolean;
  */
 
 /* compute #of elements in a static array */
-#define NELEM(x)	(sizeof(x) / sizeof((x)[0]))
+#define NELEM(x)    (sizeof(x) / sizeof((x)[0]))
 
 /* convert single hex digit char to number */
 #define HexDigit(x) ( !isxdigit((int)(x)) ? -1 : \
-			(x) <= '9' ? (x) - '0' : toupper(x) +10 - 'A' )
+            (x) <= '9' ? (x) - '0' : toupper(x) +10 - 'A' )
 
 /* convert number from 0-15 to hex digit */
-#define HexConv(x)	( ((uint)(x)) <= 15 ? \
-			( (x) <= 9 ? (x) + '0' : (x) -10 + 'A') : -1 )
+#define HexConv(x)  ( ((uint)(x)) <= 15 ? \
+            ( (x) <= 9 ? (x) + '0' : (x) -10 + 'A') : -1 )
 
 
 /*
@@ -80,29 +80,29 @@ typedef uchar	Boolean;
 
 #if defined(DEBUG_VERBOSE)
  /* quick debug printf macro */
- #define DBUG(args)				printf args
+ #define DBUG(args)             printf args
 #else
- #define DBUG(args)				((void)0)
+ #define DBUG(args)             ((void)0)
 #endif
 
 
 #if defined(NDEBUG)
- #define DebugFill(addr, len)	((void)0)
+ #define DebugFill(addr, len)   ((void)0)
 
- #define DebugAbort()			((void)0)
+ #define DebugAbort()           ((void)0)
 
 #else
  /* when debugging, fill Malloc blocks with junk, unless we're using Purify */
  #if !defined(PURIFY)
-  #define DebugFill(addr, len)	memset(addr, 0xa3, len)
+  #define DebugFill(addr, len)  memset(addr, 0xa3, len)
  #else
-  #define DebugFill(addr, len)	((void)0)
+  #define DebugFill(addr, len)  ((void)0)
  #endif
 
- #define DebugAbort()			abort()
+ #define DebugAbort()           abort()
 #endif
 
-#define kInvalidFill	(0xa3)
-#define kInvalidPtr		((void*)0xa3a3a3a3)
+#define kInvalidFill    (0xa3)
+#define kInvalidPtr     ((void*)0xa3a3a3a3)
 
 #endif /*__MiscStuff__*/

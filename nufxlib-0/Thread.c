@@ -12,7 +12,7 @@
 
 /*
  * ===========================================================================
- *		Utils
+ *      Utils
  * ===========================================================================
  */
 
@@ -29,14 +29,14 @@
 void
 Nu_StripHiIfAllSet(char* str)
 {
-	uchar* cp;
+    uchar* cp;
 
-	for (cp = (uchar*)str; *cp != '\0'; cp++)
-		if (!(*cp & 0x80))
-			return;
+    for (cp = (uchar*)str; *cp != '\0'; cp++)
+        if (!(*cp & 0x80))
+            return;
 
-	for (cp = (uchar*)str; *cp != '\0'; cp++)
-		*cp &= 0x7f;
+    for (cp = (uchar*)str; *cp != '\0'; cp++)
+        *cp &= 0x7f;
 }
 
 
@@ -47,10 +47,10 @@ Nu_StripHiIfAllSet(char* str)
 Boolean
 Nu_IsPresizedThreadID(NuThreadID threadID)
 {
-	if (threadID == kNuThreadIDFilename || threadID == kNuThreadIDComment)
-		return true;
-	else
-		return false;
+    if (threadID == kNuThreadIDFilename || threadID == kNuThreadIDComment)
+        return true;
+    else
+        return false;
 }
 
 
@@ -61,10 +61,10 @@ Nu_IsPresizedThreadID(NuThreadID threadID)
 Boolean
 Nu_IsCompressibleThreadID(NuThreadID threadID)
 {
-	if (NuThreadIDGetClass(threadID) == kNuThreadClassData)
-		return true;
-	else
-		return false;
+    if (NuThreadIDGetClass(threadID) == kNuThreadClassData)
+        return true;
+    else
+        return false;
 }
 
 
@@ -75,8 +75,8 @@ Nu_IsCompressibleThreadID(NuThreadID threadID)
 Boolean
 Nu_ThreadHasCRC(long recordVersion, NuThreadID threadID)
 {
-	return recordVersion >= 3 &&
-			NuThreadIDGetClass(threadID) == kNuThreadClassData;
+    return recordVersion >= 3 &&
+            NuThreadIDGetClass(threadID) == kNuThreadClassData;
 }
 
 
@@ -85,22 +85,22 @@ Nu_ThreadHasCRC(long recordVersion, NuThreadID threadID)
  */
 NuError
 Nu_FindThreadByIdx(const NuRecord* pRecord, NuThreadIdx thread,
-	NuThread** ppThread)
+    NuThread** ppThread)
 {
-	NuThread* pThread;
-	int idx;
+    NuThread* pThread;
+    int idx;
 
-	for (idx = 0; idx < (int)pRecord->recTotalThreads; idx++) {
-		pThread = Nu_GetThread(pRecord, idx);
-		Assert(pThread != nil);
+    for (idx = 0; idx < (int)pRecord->recTotalThreads; idx++) {
+        pThread = Nu_GetThread(pRecord, idx);
+        Assert(pThread != nil);
 
-		if (pThread->threadIdx == thread) {
-			*ppThread = pThread;
-			return kNuErrNone;
-		}
-	}
+        if (pThread->threadIdx == thread) {
+            *ppThread = pThread;
+            return kNuErrNone;
+        }
+    }
 
-	return kNuErrThreadIdxNotFound;
+    return kNuErrThreadIdxNotFound;
 }
 
 
@@ -110,22 +110,22 @@ Nu_FindThreadByIdx(const NuRecord* pRecord, NuThreadIdx thread,
  */
 NuError
 Nu_FindThreadByID(const NuRecord* pRecord, NuThreadID threadID,
-	NuThread** ppThread)
+    NuThread** ppThread)
 {
-	NuThread* pThread;
-	int idx;
+    NuThread* pThread;
+    int idx;
 
-	for (idx = 0; idx < (int)pRecord->recTotalThreads; idx++) {
-		pThread = Nu_GetThread(pRecord, idx);
-		Assert(pThread != nil);
+    for (idx = 0; idx < (int)pRecord->recTotalThreads; idx++) {
+        pThread = Nu_GetThread(pRecord, idx);
+        Assert(pThread != nil);
 
-		if (NuGetThreadID(pThread) == threadID) {
-			*ppThread = pThread;
-			return kNuErrNone;
-		}
-	}
+        if (NuGetThreadID(pThread) == threadID) {
+            *ppThread = pThread;
+            return kNuErrNone;
+        }
+    }
 
-	return kNuErrThreadIDNotFound;
+    return kNuErrThreadIDNotFound;
 }
 
 
@@ -135,16 +135,16 @@ Nu_FindThreadByID(const NuRecord* pRecord, NuThreadID threadID,
 void
 Nu_CopyThreadContents(NuThread* pDstThread, const NuThread* pSrcThread)
 {
-	Assert(pDstThread != nil);
-	Assert(pSrcThread != nil);
+    Assert(pDstThread != nil);
+    Assert(pSrcThread != nil);
 
-	memcpy(pDstThread, pSrcThread, sizeof(*pDstThread));
+    memcpy(pDstThread, pSrcThread, sizeof(*pDstThread));
 }
 
 
 /*
  * ===========================================================================
- *		Reading threads from the archive
+ *      Reading threads from the archive
  * ===========================================================================
  */
 
@@ -154,26 +154,26 @@ Nu_CopyThreadContents(NuThread* pDstThread, const NuThread* pSrcThread)
 static NuError
 Nu_ReadThreadHeader(NuArchive* pArchive, NuThread* pThread, ushort* pCrc)
 {
-	FILE* fp;
+    FILE* fp;
 
-	Assert(pArchive != nil);
-	Assert(pThread != nil);
-	Assert(pCrc != nil);
+    Assert(pArchive != nil);
+    Assert(pThread != nil);
+    Assert(pCrc != nil);
 
-	fp = pArchive->archiveFp;
+    fp = pArchive->archiveFp;
 
-	pThread->thThreadClass = Nu_ReadTwoC(pArchive, fp, pCrc);
-	pThread->thThreadFormat = Nu_ReadTwoC(pArchive, fp, pCrc);
-	pThread->thThreadKind = Nu_ReadTwoC(pArchive, fp, pCrc);
-	pThread->thThreadCRC = Nu_ReadTwoC(pArchive, fp, pCrc);
-	pThread->thThreadEOF = Nu_ReadFourC(pArchive, fp, pCrc);
-	pThread->thCompThreadEOF = Nu_ReadFourC(pArchive, fp, pCrc);
+    pThread->thThreadClass = Nu_ReadTwoC(pArchive, fp, pCrc);
+    pThread->thThreadFormat = Nu_ReadTwoC(pArchive, fp, pCrc);
+    pThread->thThreadKind = Nu_ReadTwoC(pArchive, fp, pCrc);
+    pThread->thThreadCRC = Nu_ReadTwoC(pArchive, fp, pCrc);
+    pThread->thThreadEOF = Nu_ReadFourC(pArchive, fp, pCrc);
+    pThread->thCompThreadEOF = Nu_ReadFourC(pArchive, fp, pCrc);
 
-	pThread->threadIdx = Nu_GetNextThreadIdx(pArchive);
-	pThread->actualThreadEOF = 0;	/* fix me later */
-	pThread->fileOffset = -1;		/* mark as invalid */
+    pThread->threadIdx = Nu_GetNextThreadIdx(pArchive);
+    pThread->actualThreadEOF = 0;   /* fix me later */
+    pThread->fileOffset = -1;       /* mark as invalid */
 
-	return Nu_HeaderIOFailed(pArchive, fp);
+    return Nu_HeaderIOFailed(pArchive, fp);
 }
 
 /*
@@ -186,68 +186,68 @@ Nu_ReadThreadHeader(NuArchive* pArchive, NuThread* pThread, ushort* pCrc)
 NuError
 Nu_ReadThreadHeaders(NuArchive* pArchive, NuRecord* pRecord, ushort* pCrc)
 {
-	NuError err = kNuErrNone;
-	NuThread* pThread;
-	long count;
+    NuError err = kNuErrNone;
+    NuThread* pThread;
+    long count;
 
-	Assert(pArchive != nil);
-	Assert(pRecord != nil);
-	Assert(pCrc != nil);
+    Assert(pArchive != nil);
+    Assert(pRecord != nil);
+    Assert(pCrc != nil);
 
-	if (!pRecord->recTotalThreads) {
-		/* not sure if this is reasonable, but we can handle it */
-		DBUG(("--- WEIRD: no threads in the record?\n"));
-		goto bail;
-	}
+    if (!pRecord->recTotalThreads) {
+        /* not sure if this is reasonable, but we can handle it */
+        DBUG(("--- WEIRD: no threads in the record?\n"));
+        goto bail;
+    }
 
-	pRecord->pThreads = Nu_Malloc(pArchive,
-							pRecord->recTotalThreads * sizeof(NuThread));
-	BailAlloc(pRecord->pThreads);
+    pRecord->pThreads = Nu_Malloc(pArchive,
+                            pRecord->recTotalThreads * sizeof(NuThread));
+    BailAlloc(pRecord->pThreads);
 
-	count = pRecord->recTotalThreads;
-	pThread = pRecord->pThreads;
-	while (count--) {
-		err = Nu_ReadThreadHeader(pArchive, pThread, pCrc);
-		BailError(err);
+    count = pRecord->recTotalThreads;
+    pThread = pRecord->pThreads;
+    while (count--) {
+        err = Nu_ReadThreadHeader(pArchive, pThread, pCrc);
+        BailError(err);
 
-		/*
-		 * Some versions of ShrinkIt write an invalid thThreadEOF for disks,
-		 * so we have to figure out what it's supposed to be.
-		 */
-		if (NuMakeThreadID(pThread->thThreadClass, pThread->thThreadKind) ==
-			kNuThreadIDDiskImage)
-		{
-			if (pRecord->recStorageType <= 13) {
-				/* supposed to be block size, but SHK v3.0.1 stored it wrong */
-				pThread->actualThreadEOF = pRecord->recExtraType * 512;
+        /*
+         * Some versions of ShrinkIt write an invalid thThreadEOF for disks,
+         * so we have to figure out what it's supposed to be.
+         */
+        if (NuMakeThreadID(pThread->thThreadClass, pThread->thThreadKind) ==
+            kNuThreadIDDiskImage)
+        {
+            if (pRecord->recStorageType <= 13) {
+                /* supposed to be block size, but SHK v3.0.1 stored it wrong */
+                pThread->actualThreadEOF = pRecord->recExtraType * 512;
 
-			} else if (pRecord->recStorageType == 256 &&
-					   pRecord->recExtraType == 280 &&
-					   pRecord->recFileSysID == kNuFileSysDOS33)
-			{
-				/*
-				 * Fix for less-common ShrinkIt problem: looks like an old
-				 * version of GS/ShrinkIt used 256 as the block size when
-				 * compressing DOS 3.3 images from 5.25" disks.  If that
-				 * appears to be the case here, crank up the block size.
-				 */
-				DBUG(("--- no such thing as a 70K disk image!\n"));
-				pThread->actualThreadEOF = pRecord->recExtraType * 512;
+            } else if (pRecord->recStorageType == 256 &&
+                       pRecord->recExtraType == 280 &&
+                       pRecord->recFileSysID == kNuFileSysDOS33)
+            {
+                /*
+                 * Fix for less-common ShrinkIt problem: looks like an old
+                 * version of GS/ShrinkIt used 256 as the block size when
+                 * compressing DOS 3.3 images from 5.25" disks.  If that
+                 * appears to be the case here, crank up the block size.
+                 */
+                DBUG(("--- no such thing as a 70K disk image!\n"));
+                pThread->actualThreadEOF = pRecord->recExtraType * 512;
 
-			} else {
-				pThread->actualThreadEOF =
-					pRecord->recExtraType * pRecord->recStorageType;
-			}
-		} else {
-			pThread->actualThreadEOF = pThread->thThreadEOF;
-		}
+            } else {
+                pThread->actualThreadEOF =
+                    pRecord->recExtraType * pRecord->recStorageType;
+            }
+        } else {
+            pThread->actualThreadEOF = pThread->thThreadEOF;
+        }
 
-		pThread->used = false;
-		pThread++;
-	}
+        pThread->used = false;
+        pThread++;
+    }
 
 bail:
-	return err;
+    return err;
 }
 
 
@@ -256,21 +256,21 @@ bail:
  */
 static NuError
 Nu_WriteThreadHeader(NuArchive* pArchive, const NuThread* pThread, FILE* fp,
-	ushort* pCrc)
+    ushort* pCrc)
 {
-	Assert(pArchive != nil);
-	Assert(pThread != nil);
-	Assert(fp != nil);
-	Assert(pCrc != nil);
+    Assert(pArchive != nil);
+    Assert(pThread != nil);
+    Assert(fp != nil);
+    Assert(pCrc != nil);
 
-	Nu_WriteTwoC(pArchive, fp, pThread->thThreadClass, pCrc);
-	Nu_WriteTwoC(pArchive, fp, (ushort)pThread->thThreadFormat, pCrc);
-	Nu_WriteTwoC(pArchive, fp, pThread->thThreadKind, pCrc);
-	Nu_WriteTwoC(pArchive, fp, pThread->thThreadCRC, pCrc);
-	Nu_WriteFourC(pArchive, fp, pThread->thThreadEOF, pCrc);
-	Nu_WriteFourC(pArchive, fp, pThread->thCompThreadEOF, pCrc);
+    Nu_WriteTwoC(pArchive, fp, pThread->thThreadClass, pCrc);
+    Nu_WriteTwoC(pArchive, fp, (ushort)pThread->thThreadFormat, pCrc);
+    Nu_WriteTwoC(pArchive, fp, pThread->thThreadKind, pCrc);
+    Nu_WriteTwoC(pArchive, fp, pThread->thThreadCRC, pCrc);
+    Nu_WriteFourC(pArchive, fp, pThread->thThreadEOF, pCrc);
+    Nu_WriteFourC(pArchive, fp, pThread->thCompThreadEOF, pCrc);
 
-	return Nu_HeaderIOFailed(pArchive, fp);
+    return Nu_HeaderIOFailed(pArchive, fp);
 }
 
 /*
@@ -278,22 +278,22 @@ Nu_WriteThreadHeader(NuArchive* pArchive, const NuThread* pThread, FILE* fp,
  */
 NuError
 Nu_WriteThreadHeaders(NuArchive* pArchive, NuRecord* pRecord, FILE* fp,
-	ushort* pCrc)
+    ushort* pCrc)
 {
-	NuError err = kNuErrNone;
-	NuThread* pThread;
-	int idx;
+    NuError err = kNuErrNone;
+    NuThread* pThread;
+    int idx;
 
-	for (idx = 0; idx < (int)pRecord->recTotalThreads; idx++) {
-		pThread = Nu_GetThread(pRecord, idx);
-		Assert(pThread != nil);
+    for (idx = 0; idx < (int)pRecord->recTotalThreads; idx++) {
+        pThread = Nu_GetThread(pRecord, idx);
+        Assert(pThread != nil);
 
-		err = Nu_WriteThreadHeader(pArchive, pThread, fp, pCrc);
-		BailError(err);
-	}
+        err = Nu_WriteThreadHeader(pArchive, pThread, fp, pCrc);
+        BailError(err);
+    }
 
 bail:
-	return err;
+    return err;
 }
 
 
@@ -308,30 +308,30 @@ bail:
 NuError
 Nu_ComputeThreadData(NuArchive* pArchive, NuRecord* pRecord)
 {
-	NuThread* pThread;
-	long fileOffset, count;
+    NuThread* pThread;
+    long fileOffset, count;
 
-	Assert(pArchive != nil);
-	Assert(pRecord != nil);
+    Assert(pArchive != nil);
+    Assert(pRecord != nil);
 
-	/*pRecord->totalLength = 0;*/
-	pRecord->totalCompLength = 0;
+    /*pRecord->totalLength = 0;*/
+    pRecord->totalCompLength = 0;
 
-	fileOffset = pArchive->currentOffset;
+    fileOffset = pArchive->currentOffset;
 
-	count = pRecord->recTotalThreads;
-	pThread = pRecord->pThreads;
-	while (count--) {
-		pThread->fileOffset = fileOffset;
+    count = pRecord->recTotalThreads;
+    pThread = pRecord->pThreads;
+    while (count--) {
+        pThread->fileOffset = fileOffset;
 
-		/*pRecord->totalLength += pThread->thThreadEOF;*/
-		pRecord->totalCompLength += pThread->thCompThreadEOF;
-		fileOffset += pThread->thCompThreadEOF;
+        /*pRecord->totalLength += pThread->thThreadEOF;*/
+        pRecord->totalCompLength += pThread->thCompThreadEOF;
+        fileOffset += pThread->thCompThreadEOF;
 
-		pThread++;
-	}
+        pThread++;
+    }
 
-	return kNuErrNone;
+    return kNuErrNone;
 }
 
 
@@ -349,80 +349,80 @@ Nu_ComputeThreadData(NuArchive* pArchive, NuRecord* pRecord)
 NuError
 Nu_ScanThreads(NuArchive* pArchive, NuRecord* pRecord, long numThreads)
 {
-	NuError err = kNuErrNone;
-	NuThread* pThread;
-	FILE* fp;
+    NuError err = kNuErrNone;
+    NuThread* pThread;
+    FILE* fp;
 
-	Assert(pArchive != nil);
-	Assert(pRecord != nil);
+    Assert(pArchive != nil);
+    Assert(pRecord != nil);
 
-	fp = pArchive->archiveFp;
+    fp = pArchive->archiveFp;
 
-	Assert(numThreads <= (long)pRecord->recTotalThreads);
+    Assert(numThreads <= (long)pRecord->recTotalThreads);
 
-	pThread = pRecord->pThreads;
-	while (numThreads--) {
-		if (pRecord->threadFilename == nil &&
-			NuMakeThreadID(pThread->thThreadClass, pThread->thThreadKind) ==
-				kNuThreadIDFilename)
-		{
-			/* it's the first filename thread, read the whole thing */
-			if (pThread->thCompThreadEOF > kNuReasonableFilenameLen) {
-				err = kNuErrBadRecord;
-				Nu_ReportError(NU_BLOB, err, "Bad thread filename len (%lu)",
-					pThread->thCompThreadEOF);
-				goto bail;
-			}
-			pRecord->threadFilename = Nu_Malloc(pArchive,
-										pThread->thCompThreadEOF +1);
-			BailAlloc(pRecord->threadFilename);
+    pThread = pRecord->pThreads;
+    while (numThreads--) {
+        if (pRecord->threadFilename == nil &&
+            NuMakeThreadID(pThread->thThreadClass, pThread->thThreadKind) ==
+                kNuThreadIDFilename)
+        {
+            /* it's the first filename thread, read the whole thing */
+            if (pThread->thCompThreadEOF > kNuReasonableFilenameLen) {
+                err = kNuErrBadRecord;
+                Nu_ReportError(NU_BLOB, err, "Bad thread filename len (%lu)",
+                    pThread->thCompThreadEOF);
+                goto bail;
+            }
+            pRecord->threadFilename = Nu_Malloc(pArchive,
+                                        pThread->thCompThreadEOF +1);
+            BailAlloc(pRecord->threadFilename);
 
-			/* note there is no CRC on a filename thread */
-			(void) Nu_ReadBytes(pArchive, fp, pRecord->threadFilename,
-					pThread->thCompThreadEOF);
-			if ((err = Nu_HeaderIOFailed(pArchive, fp)) != kNuErrNone) {
-				Nu_ReportError(NU_BLOB, err, "Failed reading filename thread");
-				goto bail;
-			}
+            /* note there is no CRC on a filename thread */
+            (void) Nu_ReadBytes(pArchive, fp, pRecord->threadFilename,
+                    pThread->thCompThreadEOF);
+            if ((err = Nu_HeaderIOFailed(pArchive, fp)) != kNuErrNone) {
+                Nu_ReportError(NU_BLOB, err, "Failed reading filename thread");
+                goto bail;
+            }
 
-			/* null-terminate on the actual len, not the buffer len */
-			pRecord->threadFilename[pThread->thThreadEOF] = '\0';
+            /* null-terminate on the actual len, not the buffer len */
+            pRecord->threadFilename[pThread->thThreadEOF] = '\0';
 
-			Nu_StripHiIfAllSet(pRecord->threadFilename);
+            Nu_StripHiIfAllSet(pRecord->threadFilename);
 
-			/* prefer this one over the record one, but only one should exist */
-			if (pRecord->filename != nil) {
-				DBUG(("--- HEY: got record filename and thread filename\n"));
-			}
-			pRecord->filename = pRecord->threadFilename;
+            /* prefer this one over the record one, but only one should exist */
+            if (pRecord->filename != nil) {
+                DBUG(("--- HEY: got record filename and thread filename\n"));
+            }
+            pRecord->filename = pRecord->threadFilename;
 
-		} else {
-			/* not a filename (or not first filename), skip past it */
-			err = Nu_SeekArchive(pArchive, pArchive->archiveFp,
-					pThread->thCompThreadEOF, SEEK_CUR);
-			BailError(err);
-		}
+        } else {
+            /* not a filename (or not first filename), skip past it */
+            err = Nu_SeekArchive(pArchive, pArchive->archiveFp,
+                    pThread->thCompThreadEOF, SEEK_CUR);
+            BailError(err);
+        }
 
-		pThread++;
-	}
+        pThread++;
+    }
 
-	/*
-	 * Should've had one by now.  Supposedly, older versions of ShrinkIt
-	 * wouldn't prompt for a disk image name on DOS 3.3 volumes, so you'd
-	 * end up with a disk image that had no name attached.  This will tend
-	 * to confuse things, so we go ahead and give it a name.
-	 */
-	if (pRecord->filename == nil)
-		pRecord->filename = kNuDefaultRecordName;
+    /*
+     * Should've had one by now.  Supposedly, older versions of ShrinkIt
+     * wouldn't prompt for a disk image name on DOS 3.3 volumes, so you'd
+     * end up with a disk image that had no name attached.  This will tend
+     * to confuse things, so we go ahead and give it a name.
+     */
+    if (pRecord->filename == nil)
+        pRecord->filename = kNuDefaultRecordName;
 
-	pArchive->currentOffset += pRecord->totalCompLength;
+    pArchive->currentOffset += pRecord->totalCompLength;
 
-	if (!Nu_IsStreaming(pArchive)) {
-		Assert(pArchive->currentOffset == ftell(pArchive->archiveFp));
-	}
+    if (!Nu_IsStreaming(pArchive)) {
+        Assert(pArchive->currentOffset == ftell(pArchive->archiveFp));
+    }
 
 bail:
-	return err;
+    return err;
 }
 
 
@@ -433,23 +433,23 @@ bail:
  */
 NuError
 Nu_SkipThread(NuArchive* pArchive, const NuRecord* pRecord,
-	const NuThread* pThread)
+    const NuThread* pThread)
 {
-	NuError err;
+    NuError err;
 
-	if (!Nu_IsStreaming(pArchive))		/* for debugging */
-		return kNuErrNone;				/* for debugging */
-	Assert(Nu_IsStreaming(pArchive));
+    if (!Nu_IsStreaming(pArchive))      /* for debugging */
+        return kNuErrNone;              /* for debugging */
+    Assert(Nu_IsStreaming(pArchive));
 
-	err = Nu_SeekArchive(pArchive, pArchive->archiveFp,
-			pThread->thCompThreadEOF, SEEK_CUR);
-	return err;
+    err = Nu_SeekArchive(pArchive, pArchive->archiveFp,
+            pThread->thCompThreadEOF, SEEK_CUR);
+    return err;
 }
 
 
 /*
  * ===========================================================================
- *		Extract
+ *      Extract
  * ===========================================================================
  */
 
@@ -461,43 +461,43 @@ Nu_SkipThread(NuArchive* pArchive, const NuRecord* pRecord,
  */
 static NuError
 Nu_ExtractThreadToDataSink(NuArchive* pArchive, const NuRecord* pRecord,
-	const NuThread* pThread, NuProgressData* pProgress, NuDataSink* pDataSink)
+    const NuThread* pThread, NuProgressData* pProgress, NuDataSink* pDataSink)
 {
-	NuError err;
-	NuFunnel* pFunnel = nil;
+    NuError err;
+    NuFunnel* pFunnel = nil;
 
-	/* if it's not a stream, seek to the appropriate spot in the file */
-	if (!Nu_IsStreaming(pArchive)) {
-		err = Nu_SeekArchive(pArchive, pArchive->archiveFp,
-				pThread->fileOffset, SEEK_SET);
-		if (err != kNuErrNone) {
-			Nu_ReportError(NU_BLOB, err, "Unable to seek input to %ld",
-				pThread->fileOffset);
-			goto bail;
-		}
-	}
+    /* if it's not a stream, seek to the appropriate spot in the file */
+    if (!Nu_IsStreaming(pArchive)) {
+        err = Nu_SeekArchive(pArchive, pArchive->archiveFp,
+                pThread->fileOffset, SEEK_SET);
+        if (err != kNuErrNone) {
+            Nu_ReportError(NU_BLOB, err, "Unable to seek input to %ld",
+                pThread->fileOffset);
+            goto bail;
+        }
+    }
 
-	/*
-	 * Set up an output funnel to write to.
-	 */
-	err = Nu_FunnelNew(pArchive, pDataSink, Nu_DataSinkGetConvertEOL(pDataSink),
-			pArchive->valEOL, pProgress, &pFunnel);
-	BailError(err);
+    /*
+     * Set up an output funnel to write to.
+     */
+    err = Nu_FunnelNew(pArchive, pDataSink, Nu_DataSinkGetConvertEOL(pDataSink),
+            pArchive->valEOL, pProgress, &pFunnel);
+    BailError(err);
 
-	/*
-	 * Write it.
-	 */
-	err = Nu_ExpandStream(pArchive, pRecord, pThread, pArchive->archiveFp,
-			pFunnel);
-	if (err != kNuErrNone) {
-		if (err != kNuErrSkipped && err != kNuErrAborted)
-			Nu_ReportError(NU_BLOB, err, "ExpandStream failed");
-		goto bail;
-	}
+    /*
+     * Write it.
+     */
+    err = Nu_ExpandStream(pArchive, pRecord, pThread, pArchive->archiveFp,
+            pFunnel);
+    if (err != kNuErrNone) {
+        if (err != kNuErrSkipped && err != kNuErrAborted)
+            Nu_ReportError(NU_BLOB, err, "ExpandStream failed");
+        goto bail;
+    }
 
 bail:
-	(void) Nu_FunnelFree(pArchive, pFunnel);
-	return err;
+    (void) Nu_FunnelFree(pArchive, pFunnel);
+    return err;
 }
 
 
@@ -515,204 +515,204 @@ bail:
  */
 static NuError
 Nu_ExtractThreadCommon(NuArchive* pArchive, const NuRecord* pRecord,
-	const NuThread* pThread, NuDataSink* pDataSink)
+    const NuThread* pThread, NuDataSink* pDataSink)
 {
-	NuError err = kNuErrNone;
-	NuSelectionProposal selProposal;
-	NuPathnameProposal pathProposal;
-	NuProgressData progressData;
-	NuProgressData* pProgressData;
-	NuDataSink* pOrigDataSink;
-	char* newPathStorage = nil;
-	const char* newPathname;
-	NuResult result;
-	uchar newFssep;
-	Boolean doFreeSink = false;
+    NuError err = kNuErrNone;
+    NuSelectionProposal selProposal;
+    NuPathnameProposal pathProposal;
+    NuProgressData progressData;
+    NuProgressData* pProgressData;
+    NuDataSink* pOrigDataSink;
+    char* newPathStorage = nil;
+    const char* newPathname;
+    NuResult result;
+    uchar newFssep;
+    Boolean doFreeSink = false;
 
-	Assert(pRecord != nil);
-	Assert(pThread != nil);
-	Assert(pDataSink != nil);
+    Assert(pRecord != nil);
+    Assert(pThread != nil);
+    Assert(pDataSink != nil);
 
-	memset(&progressData, 0, sizeof(progressData));
-	pProgressData = nil;
+    memset(&progressData, 0, sizeof(progressData));
+    pProgressData = nil;
 
-	/*
-	 * If we're just trying to verify the archive contents, create a
-	 * data sink that goes nowhere at all.
-	 */
-	if (pArchive->testMode) {
-		err = Nu_DataSinkVoid_New(
-				Nu_DataSinkGetDoExpand(pDataSink),
-				Nu_DataSinkGetConvertEOL(pDataSink),
-				&pDataSink);
-		BailError(err);
-		doFreeSink = true;
-	}
+    /*
+     * If we're just trying to verify the archive contents, create a
+     * data sink that goes nowhere at all.
+     */
+    if (pArchive->testMode) {
+        err = Nu_DataSinkVoid_New(
+                Nu_DataSinkGetDoExpand(pDataSink),
+                Nu_DataSinkGetConvertEOL(pDataSink),
+                &pDataSink);
+        BailError(err);
+        doFreeSink = true;
+    }
 
-	pOrigDataSink = pDataSink;	/* save a copy for the "retry" loop */
+    pOrigDataSink = pDataSink;  /* save a copy for the "retry" loop */
 
-	/*
-	 * Decide if we want to extract this thread.  This is mostly for
-	 * use by the "bulk" extract, not the per-thread extract, but it
-	 * still applies if they so desire.
-	 */
-	if (pArchive->selectionFilterFunc != nil) {
-		selProposal.pRecord = pRecord;
-		selProposal.pThread = pThread;
-		result = (*pArchive->selectionFilterFunc)(pArchive, &selProposal);
+    /*
+     * Decide if we want to extract this thread.  This is mostly for
+     * use by the "bulk" extract, not the per-thread extract, but it
+     * still applies if they so desire.
+     */
+    if (pArchive->selectionFilterFunc != nil) {
+        selProposal.pRecord = pRecord;
+        selProposal.pThread = pThread;
+        result = (*pArchive->selectionFilterFunc)(pArchive, &selProposal);
 
-		if (result == kNuSkip)
-			return Nu_SkipThread(pArchive, pRecord, pThread);
-		if (result == kNuAbort) {
-			err = kNuErrAborted;
-			goto bail;
-		}
-	}
+        if (result == kNuSkip)
+            return Nu_SkipThread(pArchive, pRecord, pThread);
+        if (result == kNuAbort) {
+            err = kNuErrAborted;
+            goto bail;
+        }
+    }
 
-	newPathname = nil;
-	newFssep = 0;
+    newPathname = nil;
+    newFssep = 0;
 
 retry_name:
-	if (Nu_DataSinkGetType(pDataSink) == kNuDataSinkToFile) {
-		/*
-		 * We're extracting.  Figure out the name of the file to write it to.
-		 * If they want to use the sleazy FILE* back door, create a new
-		 * data sink and use that instead.
-		 *
-		 * Start by resetting everything to defaults, in case this isn't
-		 * our first time through the "rename" loop.
-		 */
-		newPathname = Nu_DataSinkFile_GetPathname(pDataSink);
-		newFssep = Nu_DataSinkFile_GetFssep(pDataSink);
-		pDataSink = pOrigDataSink;
+    if (Nu_DataSinkGetType(pDataSink) == kNuDataSinkToFile) {
+        /*
+         * We're extracting.  Figure out the name of the file to write it to.
+         * If they want to use the sleazy FILE* back door, create a new
+         * data sink and use that instead.
+         *
+         * Start by resetting everything to defaults, in case this isn't
+         * our first time through the "rename" loop.
+         */
+        newPathname = Nu_DataSinkFile_GetPathname(pDataSink);
+        newFssep = Nu_DataSinkFile_GetFssep(pDataSink);
+        pDataSink = pOrigDataSink;
 
-		/* if they don't have a pathname func defined, we just use default */
-		if (pArchive->outputPathnameFunc != nil) {
-			pathProposal.pathname = pRecord->filename;
-			pathProposal.filenameSeparator =
-								NuGetSepFromSysInfo(pRecord->recFileSysInfo);
-			pathProposal.pRecord = pRecord;
-			pathProposal.pThread = pThread;
-			pathProposal.newPathname = nil;
-			pathProposal.newFilenameSeparator = '\0';
-			/*pathProposal.newStorage = (NuThreadID)-1;*/
-			pathProposal.newDataSink = nil;
+        /* if they don't have a pathname func defined, we just use default */
+        if (pArchive->outputPathnameFunc != nil) {
+            pathProposal.pathname = pRecord->filename;
+            pathProposal.filenameSeparator =
+                                NuGetSepFromSysInfo(pRecord->recFileSysInfo);
+            pathProposal.pRecord = pRecord;
+            pathProposal.pThread = pThread;
+            pathProposal.newPathname = nil;
+            pathProposal.newFilenameSeparator = '\0';
+            /*pathProposal.newStorage = (NuThreadID)-1;*/
+            pathProposal.newDataSink = nil;
 
-			result = (*pArchive->outputPathnameFunc)(pArchive, &pathProposal);
+            result = (*pArchive->outputPathnameFunc)(pArchive, &pathProposal);
 
-			if (result == kNuSkip)
-				return Nu_SkipThread(pArchive, pRecord, pThread);
-			if (result == kNuAbort) {
-				err = kNuErrAborted;
-				goto bail;
-			}
+            if (result == kNuSkip)
+                return Nu_SkipThread(pArchive, pRecord, pThread);
+            if (result == kNuAbort) {
+                err = kNuErrAborted;
+                goto bail;
+            }
 
-			/* we don't own this string, so make a copy */
-			if (pathProposal.newPathname != nil) {
-				newPathStorage = strdup(pathProposal.newPathname);
-				newPathname = newPathStorage;
-			} else
-				newPathname = nil;
-			if (pathProposal.newFilenameSeparator != '\0')
-				newFssep = pathProposal.newFilenameSeparator;
+            /* we don't own this string, so make a copy */
+            if (pathProposal.newPathname != nil) {
+                newPathStorage = strdup(pathProposal.newPathname);
+                newPathname = newPathStorage;
+            } else
+                newPathname = nil;
+            if (pathProposal.newFilenameSeparator != '\0')
+                newFssep = pathProposal.newFilenameSeparator;
 
-			/* if they want to send this somewhere else, let them */
-			if (pathProposal.newDataSink != nil)
-				pDataSink = pathProposal.newDataSink;
-		}
+            /* if they want to send this somewhere else, let them */
+            if (pathProposal.newDataSink != nil)
+                pDataSink = pathProposal.newDataSink;
+        }
 
-		/* at least one of these must be set */
-		Assert(!(newPathname == nil && pathProposal.newDataSink == nil));
-	}
+        /* at least one of these must be set */
+        Assert(!(newPathname == nil && pathProposal.newDataSink == nil));
+    }
 
-	/*
-	 * Prepare the progress data if this is a data thread.
-	 */
-	if (newPathname == nil) {
-		/* using a data sink; get the pathname out of the record */
-		newPathname = pRecord->filename;
-		newFssep = NuGetSepFromSysInfo(pRecord->recFileSysInfo);
-	}
-	if (pThread->thThreadClass == kNuThreadClassData) {
-		pProgressData = &progressData;
-		err = Nu_ProgressDataInit_Expand(pArchive, pProgressData, pRecord,
-				newPathname, newFssep, Nu_DataSinkGetConvertEOL(pOrigDataSink));
-		BailError(err);
+    /*
+     * Prepare the progress data if this is a data thread.
+     */
+    if (newPathname == nil) {
+        /* using a data sink; get the pathname out of the record */
+        newPathname = pRecord->filename;
+        newFssep = NuGetSepFromSysInfo(pRecord->recFileSysInfo);
+    }
+    if (pThread->thThreadClass == kNuThreadClassData) {
+        pProgressData = &progressData;
+        err = Nu_ProgressDataInit_Expand(pArchive, pProgressData, pRecord,
+                newPathname, newFssep, Nu_DataSinkGetConvertEOL(pOrigDataSink));
+        BailError(err);
 
-		/* send initial progress so they see the right name if "open" fails */
-		pProgressData->state = kNuProgressOpening;
-		err = Nu_SendInitialProgress(pArchive, pProgressData);
-		BailError(err);
-	}
+        /* send initial progress so they see the right name if "open" fails */
+        pProgressData->state = kNuProgressOpening;
+        err = Nu_SendInitialProgress(pArchive, pProgressData);
+        BailError(err);
+    }
 
-	if (Nu_DataSinkGetType(pDataSink) == kNuDataSinkToFile) {
-		/*
-		 * We're extracting to a file.  Open it, creating it if necessary and
-		 * allowed.
-		 */
-		FILE* fileFp = nil;
+    if (Nu_DataSinkGetType(pDataSink) == kNuDataSinkToFile) {
+        /*
+         * We're extracting to a file.  Open it, creating it if necessary and
+         * allowed.
+         */
+        FILE* fileFp = nil;
 
-		err = Nu_OpenOutputFile(pArchive, pRecord, pThread, newPathname,
-				newFssep, &fileFp);
-		if (err == kNuErrRename) {
-			/* they want to rename; the OutputPathname callback handles this */
-			Nu_Free(pArchive, newPathStorage);
-			newPathStorage = nil;
-			/* reset these just to be careful */
-			newPathname = nil;
-			fileFp = nil;
-			goto retry_name;
-		} else if (err != kNuErrNone) {
-			goto bail;
-		}
+        err = Nu_OpenOutputFile(pArchive, pRecord, pThread, newPathname,
+                newFssep, &fileFp);
+        if (err == kNuErrRename) {
+            /* they want to rename; the OutputPathname callback handles this */
+            Nu_Free(pArchive, newPathStorage);
+            newPathStorage = nil;
+            /* reset these just to be careful */
+            newPathname = nil;
+            fileFp = nil;
+            goto retry_name;
+        } else if (err != kNuErrNone) {
+            goto bail;
+        }
 
-		Assert(fileFp != nil);
-		(void) Nu_DataSinkFile_SetFP(pDataSink, fileFp);
+        Assert(fileFp != nil);
+        (void) Nu_DataSinkFile_SetFP(pDataSink, fileFp);
 
-		DBUG(("+++ EXTRACTING 0x%08lx from '%s' at offset %0ld to '%s'\n",
-			NuMakeThreadID(pThread->thThreadClass, pThread->thThreadKind),
-			pRecord->filename, pThread->fileOffset, newPathname));
-	} else {
-		DBUG(("+++ EXTRACTING 0x%08lx from '%s' at offset %0ld to sink\n",
-			NuMakeThreadID(pThread->thThreadClass, pThread->thThreadKind),
-			pRecord->filename, pThread->fileOffset));
-	}
+        DBUG(("+++ EXTRACTING 0x%08lx from '%s' at offset %0ld to '%s'\n",
+            NuMakeThreadID(pThread->thThreadClass, pThread->thThreadKind),
+            pRecord->filename, pThread->fileOffset, newPathname));
+    } else {
+        DBUG(("+++ EXTRACTING 0x%08lx from '%s' at offset %0ld to sink\n",
+            NuMakeThreadID(pThread->thThreadClass, pThread->thThreadKind),
+            pRecord->filename, pThread->fileOffset));
+    }
 
-	/* extract to the file */
-	err = Nu_ExtractThreadToDataSink(pArchive, pRecord, pThread,
-			pProgressData, pDataSink);
-	BailError(err);
+    /* extract to the file */
+    err = Nu_ExtractThreadToDataSink(pArchive, pRecord, pThread,
+            pProgressData, pDataSink);
+    BailError(err);
 
-	if (Nu_DataSinkGetType(pDataSink) == kNuDataSinkToFile) {
-		/*
-		 * Close the file, adjusting the modification date and access
-		 * permissions as appropriate.
-		 */
-		err = Nu_CloseOutputFile(pArchive, pRecord,
-				Nu_DataSinkFile_GetFP(pDataSink), newPathname);
-		Nu_DataSinkFile_SetFP(pDataSink, nil);
-		BailError(err);
-	}
+    if (Nu_DataSinkGetType(pDataSink) == kNuDataSinkToFile) {
+        /*
+         * Close the file, adjusting the modification date and access
+         * permissions as appropriate.
+         */
+        err = Nu_CloseOutputFile(pArchive, pRecord,
+                Nu_DataSinkFile_GetFP(pDataSink), newPathname);
+        Nu_DataSinkFile_SetFP(pDataSink, nil);
+        BailError(err);
+    }
 
 bail:
-	if (err != kNuErrNone) {
-		/* send a final progress message, indicating failure */
-		if (err == kNuErrSkipped)
-			pProgressData->state = kNuProgressSkipped;
-		else
-			pProgressData->state = kNuProgressFailed;
-		(void) Nu_SendInitialProgress(pArchive, pProgressData);
-	}
+    if (err != kNuErrNone) {
+        /* send a final progress message, indicating failure */
+        if (err == kNuErrSkipped)
+            pProgressData->state = kNuProgressSkipped;
+        else
+            pProgressData->state = kNuProgressFailed;
+        (void) Nu_SendInitialProgress(pArchive, pProgressData);
+    }
 
-	/* if this was an ordinary file, and it's still open, close it */
-	if (Nu_DataSinkGetType(pDataSink) == kNuDataSinkToFile)
-		Nu_DataSinkFile_Close(pDataSink);
+    /* if this was an ordinary file, and it's still open, close it */
+    if (Nu_DataSinkGetType(pDataSink) == kNuDataSinkToFile)
+        Nu_DataSinkFile_Close(pDataSink);
 
-	Nu_Free(pArchive, newPathStorage);
+    Nu_Free(pArchive, newPathStorage);
 
-	if (doFreeSink)
-		Nu_DataSinkFree(pDataSink);
-	return err;
+    if (doFreeSink)
+        Nu_DataSinkFree(pDataSink);
+    return err;
 }
 
 /*
@@ -722,33 +722,33 @@ bail:
  */
 NuError
 Nu_ExtractThreadBulk(NuArchive* pArchive, const NuRecord* pRecord,
-	const NuThread* pThread)
+    const NuThread* pThread)
 {
-	NuError err;
-	NuDataSink* pDataSink = nil;
+    NuError err;
+    NuDataSink* pDataSink = nil;
 
-	/*
-	 * Create a file data sink for the file.  We use whatever EOL conversion
-	 * is set as the default for the entire archive.  (If you want to
-	 * specify your own EOL conversion for each individual file, you will
-	 * need to extract them individually, creating a data sink for each.)
-	 */
-	err = Nu_DataSinkFile_New(true, pArchive->valConvertExtractedEOL,
-			pRecord->filename, NuGetSepFromSysInfo(pRecord->recFileSysInfo),
-			&pDataSink);
-	BailError(err);
+    /*
+     * Create a file data sink for the file.  We use whatever EOL conversion
+     * is set as the default for the entire archive.  (If you want to
+     * specify your own EOL conversion for each individual file, you will
+     * need to extract them individually, creating a data sink for each.)
+     */
+    err = Nu_DataSinkFile_New(true, pArchive->valConvertExtractedEOL,
+            pRecord->filename, NuGetSepFromSysInfo(pRecord->recFileSysInfo),
+            &pDataSink);
+    BailError(err);
 
-	err = Nu_ExtractThreadCommon(pArchive, pRecord, pThread, pDataSink);
-	BailError(err);
+    err = Nu_ExtractThreadCommon(pArchive, pRecord, pThread, pDataSink);
+    BailError(err);
 
 bail:
-	if (pDataSink != nil) {
-		NuError err2 = Nu_DataSinkFree(pDataSink);
-		if (err == kNuErrNone)
-			err = err2;
-	}
+    if (pDataSink != nil) {
+        NuError err2 = Nu_DataSinkFree(pDataSink);
+        if (err == kNuErrNone)
+            err = err2;
+    }
 
-	return err;
+    return err;
 }
 
 
@@ -757,35 +757,35 @@ bail:
  */
 NuError
 Nu_ExtractThread(NuArchive* pArchive, NuThreadIdx threadIdx,
-	NuDataSink* pDataSink)
+    NuDataSink* pDataSink)
 {
-	NuError err;
-	NuRecord* pRecord;
-	NuThread* pThread;
+    NuError err;
+    NuRecord* pRecord;
+    NuThread* pThread;
 
-	if (Nu_IsStreaming(pArchive))
-		return kNuErrUsage;
-	if (threadIdx == 0 || pDataSink == nil)
-		return kNuErrInvalidArg;
+    if (Nu_IsStreaming(pArchive))
+        return kNuErrUsage;
+    if (threadIdx == 0 || pDataSink == nil)
+        return kNuErrInvalidArg;
 
-	/* find the correct record and thread by index */
-	err = Nu_RecordSet_FindByThreadIdx(&pArchive->origRecordSet, threadIdx,
-			&pRecord, &pThread);
-	BailError(err);
-	Assert(pRecord != nil);
+    /* find the correct record and thread by index */
+    err = Nu_RecordSet_FindByThreadIdx(&pArchive->origRecordSet, threadIdx,
+            &pRecord, &pThread);
+    BailError(err);
+    Assert(pRecord != nil);
 
-	/* extract away */
-	err = Nu_ExtractThreadCommon(pArchive, pRecord, pThread, pDataSink);
-	BailError(err);
+    /* extract away */
+    err = Nu_ExtractThreadCommon(pArchive, pRecord, pThread, pDataSink);
+    BailError(err);
 
 bail:
-	return err;
+    return err;
 }
 
 
 /*
  * ===========================================================================
- *		Add/update/delete
+ *      Add/update/delete
  * ===========================================================================
  */
 
@@ -800,54 +800,54 @@ bail:
  */
 static NuError
 Nu_FindNoFutureThread(NuArchive* pArchive, const NuRecord* pRecord,
-	NuThreadID threadID)
+    NuThreadID threadID)
 {
-	NuError err = kNuErrNone;
-	const NuThread* pThread;
-	const NuThreadMod* pThreadMod;
-	int idx;
+    NuError err = kNuErrNone;
+    const NuThread* pThread;
+    const NuThreadMod* pThreadMod;
+    int idx;
 
-	/*
-	 * Start by scanning the existing threads (if any).
-	 */
-	for (idx = 0; idx < (int)pRecord->recTotalThreads; idx++) {
-		pThread = Nu_GetThread(pRecord, idx);
-		Assert(pThread != nil);
+    /*
+     * Start by scanning the existing threads (if any).
+     */
+    for (idx = 0; idx < (int)pRecord->recTotalThreads; idx++) {
+        pThread = Nu_GetThread(pRecord, idx);
+        Assert(pThread != nil);
 
-		if (NuGetThreadID(pThread) == threadID) {
-			/* found a match, see if it has been deleted */
-			pThreadMod = Nu_ThreadMod_FindByThreadIdx(pRecord,
-							pThread->threadIdx);
-			if (pThreadMod != nil &&
-				pThreadMod->entry.kind == kNuThreadModDelete)
-			{
-				/* it's deleted, ignore it */
-				continue;
-			}
-			DBUG(("--- found existing thread matching 0x%08lx\n", threadID));
-			err = kNuErrThreadAdd;
-			goto bail;
-		}
-	}
+        if (NuGetThreadID(pThread) == threadID) {
+            /* found a match, see if it has been deleted */
+            pThreadMod = Nu_ThreadMod_FindByThreadIdx(pRecord,
+                            pThread->threadIdx);
+            if (pThreadMod != nil &&
+                pThreadMod->entry.kind == kNuThreadModDelete)
+            {
+                /* it's deleted, ignore it */
+                continue;
+            }
+            DBUG(("--- found existing thread matching 0x%08lx\n", threadID));
+            err = kNuErrThreadAdd;
+            goto bail;
+        }
+    }
 
-	/*
-	 * Now look for "add" threadMods with a matching threadID.
-	 */
-	pThreadMod = pRecord->pThreadMods;
-	while (pThreadMod != nil) {
-		if (pThreadMod->entry.kind == kNuThreadModAdd &&
-			pThreadMod->entry.add.threadID == threadID)
-		{
-			DBUG(("--- found 'add' threadMod matching 0x%08lx\n", threadID));
-			err = kNuErrThreadAdd;
-			goto bail;
-		}
+    /*
+     * Now look for "add" threadMods with a matching threadID.
+     */
+    pThreadMod = pRecord->pThreadMods;
+    while (pThreadMod != nil) {
+        if (pThreadMod->entry.kind == kNuThreadModAdd &&
+            pThreadMod->entry.add.threadID == threadID)
+        {
+            DBUG(("--- found 'add' threadMod matching 0x%08lx\n", threadID));
+            err = kNuErrThreadAdd;
+            goto bail;
+        }
 
-		pThreadMod = pThreadMod->pNext;
-	}
+        pThreadMod = pThreadMod->pNext;
+    }
 
 bail:
-	return err;
+    return err;
 }
 
 /*
@@ -855,54 +855,54 @@ bail:
  */
 static NuError
 Nu_FindNoFutureThreadClass(NuArchive* pArchive, const NuRecord* pRecord,
-	long threadClass)
+    long threadClass)
 {
-	NuError err = kNuErrNone;
-	const NuThread* pThread;
-	const NuThreadMod* pThreadMod;
-	int idx;
+    NuError err = kNuErrNone;
+    const NuThread* pThread;
+    const NuThreadMod* pThreadMod;
+    int idx;
 
-	/*
-	 * Start by scanning the existing threads (if any).
-	 */
-	for (idx = 0; idx < (int)pRecord->recTotalThreads; idx++) {
-		pThread = Nu_GetThread(pRecord, idx);
-		Assert(pThread != nil);
+    /*
+     * Start by scanning the existing threads (if any).
+     */
+    for (idx = 0; idx < (int)pRecord->recTotalThreads; idx++) {
+        pThread = Nu_GetThread(pRecord, idx);
+        Assert(pThread != nil);
 
-		if (pThread->thThreadClass == threadClass) {
-			/* found a match, see if it has been deleted */
-			pThreadMod = Nu_ThreadMod_FindByThreadIdx(pRecord,
-							pThread->threadIdx);
-			if (pThreadMod != nil &&
-				pThreadMod->entry.kind == kNuThreadModDelete)
-			{
-				/* it's deleted, ignore it */
-				continue;
-			}
-			DBUG(("--- Found existing thread matching 0x%04lx\n", threadClass));
-			err = kNuErrThreadAdd;
-			goto bail;
-		}
-	}
+        if (pThread->thThreadClass == threadClass) {
+            /* found a match, see if it has been deleted */
+            pThreadMod = Nu_ThreadMod_FindByThreadIdx(pRecord,
+                            pThread->threadIdx);
+            if (pThreadMod != nil &&
+                pThreadMod->entry.kind == kNuThreadModDelete)
+            {
+                /* it's deleted, ignore it */
+                continue;
+            }
+            DBUG(("--- Found existing thread matching 0x%04lx\n", threadClass));
+            err = kNuErrThreadAdd;
+            goto bail;
+        }
+    }
 
-	/*
-	 * Now look for "add" threadMods with a matching threadClass.
-	 */
-	pThreadMod = pRecord->pThreadMods;
-	while (pThreadMod != nil) {
-		if (pThreadMod->entry.kind == kNuThreadModAdd &&
-			NuThreadIDGetClass(pThreadMod->entry.add.threadID) == threadClass)
-		{
-			DBUG(("--- Found 'add' threadMod matching 0x%04lx\n", threadClass));
-			err = kNuErrThreadAdd;
-			goto bail;
-		}
+    /*
+     * Now look for "add" threadMods with a matching threadClass.
+     */
+    pThreadMod = pRecord->pThreadMods;
+    while (pThreadMod != nil) {
+        if (pThreadMod->entry.kind == kNuThreadModAdd &&
+            NuThreadIDGetClass(pThreadMod->entry.add.threadID) == threadClass)
+        {
+            DBUG(("--- Found 'add' threadMod matching 0x%04lx\n", threadClass));
+            err = kNuErrThreadAdd;
+            goto bail;
+        }
 
-		pThreadMod = pThreadMod->pNext;
-	}
+        pThreadMod = pThreadMod->pNext;
+    }
 
 bail:
-	return err;
+    return err;
 }
 
 
@@ -916,37 +916,37 @@ bail:
  */
 static NuError
 Nu_FindThreadForWriteByIdx(NuArchive* pArchive, NuThreadIdx threadIdx,
-	NuRecord** ppFoundRecord, NuThread** ppFoundThread)
+    NuRecord** ppFoundRecord, NuThread** ppFoundThread)
 {
-	NuError err;
+    NuError err;
 
-	if (Nu_RecordSet_GetLoaded(&pArchive->copyRecordSet)) {
-		err = Nu_RecordSet_FindByThreadIdx(&pArchive->copyRecordSet, threadIdx,
-				ppFoundRecord, ppFoundThread);
-	} else {
-		Assert(Nu_RecordSet_GetLoaded(&pArchive->origRecordSet));
-		err = Nu_RecordSet_FindByThreadIdx(&pArchive->origRecordSet, threadIdx,
-				ppFoundRecord, ppFoundThread);
-		*ppFoundThread = nil;		/* can't delete from here, wipe ptr */
-	}
-	BailError(err);
+    if (Nu_RecordSet_GetLoaded(&pArchive->copyRecordSet)) {
+        err = Nu_RecordSet_FindByThreadIdx(&pArchive->copyRecordSet, threadIdx,
+                ppFoundRecord, ppFoundThread);
+    } else {
+        Assert(Nu_RecordSet_GetLoaded(&pArchive->origRecordSet));
+        err = Nu_RecordSet_FindByThreadIdx(&pArchive->origRecordSet, threadIdx,
+                ppFoundRecord, ppFoundThread);
+        *ppFoundThread = nil;       /* can't delete from here, wipe ptr */
+    }
+    BailError(err);
 
-	/*
-	 * The thread exists.  If we were looking in the "orig" set, we have
-	 * to create a "copy" set, and delete it from that.
-	 */
-	if (*ppFoundThread == nil) {
-		err = Nu_RecordSet_Clone(pArchive, &pArchive->copyRecordSet,
-				&pArchive->origRecordSet);
-		BailError(err);
-		err = Nu_RecordSet_FindByThreadIdx(&pArchive->copyRecordSet, threadIdx,
-				ppFoundRecord, ppFoundThread);
-		Assert(err == kNuErrNone && *ppFoundThread != nil);	/* must succeed */
-		BailError(err);
-	}
+    /*
+     * The thread exists.  If we were looking in the "orig" set, we have
+     * to create a "copy" set, and delete it from that.
+     */
+    if (*ppFoundThread == nil) {
+        err = Nu_RecordSet_Clone(pArchive, &pArchive->copyRecordSet,
+                &pArchive->origRecordSet);
+        BailError(err);
+        err = Nu_RecordSet_FindByThreadIdx(&pArchive->copyRecordSet, threadIdx,
+                ppFoundRecord, ppFoundThread);
+        Assert(err == kNuErrNone && *ppFoundThread != nil); /* must succeed */
+        BailError(err);
+    }
 
 bail:
-	return err;
+    return err;
 }
 
 /*
@@ -957,50 +957,50 @@ bail:
  */
 NuError
 Nu_OkayToAddThread(NuArchive* pArchive, const NuRecord* pRecord,
-	NuThreadID threadID)
+    NuThreadID threadID)
 {
-	NuError err = kNuErrNone;
+    NuError err = kNuErrNone;
 
-	/*
-	 * Check for class conflicts (can't mix data and control threads).
-	 */
-	if (NuThreadIDGetClass(threadID) == kNuThreadClassData) {
-		err = Nu_FindNoFutureThreadClass(pArchive, pRecord,
-				kNuThreadClassControl);
-		BailError(err);
-	} else if (NuThreadIDGetClass(threadID) == kNuThreadClassControl) {
-		err = Nu_FindNoFutureThreadClass(pArchive, pRecord,
-				kNuThreadClassData);
-		BailError(err);
-	}
+    /*
+     * Check for class conflicts (can't mix data and control threads).
+     */
+    if (NuThreadIDGetClass(threadID) == kNuThreadClassData) {
+        err = Nu_FindNoFutureThreadClass(pArchive, pRecord,
+                kNuThreadClassControl);
+        BailError(err);
+    } else if (NuThreadIDGetClass(threadID) == kNuThreadClassControl) {
+        err = Nu_FindNoFutureThreadClass(pArchive, pRecord,
+                kNuThreadClassData);
+        BailError(err);
+    }
 
-	/*
-	 * Check for specific type conflicts.
-	 */
-	if (threadID == kNuThreadIDDataFork) {
-		err = Nu_FindNoFutureThread(pArchive, pRecord, kNuThreadIDDataFork);
-		BailError(err);
-		err = Nu_FindNoFutureThread(pArchive, pRecord, kNuThreadIDDiskImage);
-		BailError(err);
-	} else if (threadID == kNuThreadIDRsrcFork) {
-		err = Nu_FindNoFutureThread(pArchive, pRecord, kNuThreadIDRsrcFork);
-		BailError(err);
-		err = Nu_FindNoFutureThread(pArchive, pRecord, kNuThreadIDDiskImage);
-		BailError(err);
-	} else if (threadID == kNuThreadIDDiskImage) {
-		err = Nu_FindNoFutureThread(pArchive, pRecord, kNuThreadIDDataFork);
-		BailError(err);
-		err = Nu_FindNoFutureThread(pArchive, pRecord, kNuThreadIDRsrcFork);
-		BailError(err);
-		err = Nu_FindNoFutureThread(pArchive, pRecord, kNuThreadIDDiskImage);
-		BailError(err);
-	} else if (threadID == kNuThreadIDFilename) {
-		err = Nu_FindNoFutureThread(pArchive, pRecord, kNuThreadIDFilename);
-		BailError(err);
-	}
+    /*
+     * Check for specific type conflicts.
+     */
+    if (threadID == kNuThreadIDDataFork) {
+        err = Nu_FindNoFutureThread(pArchive, pRecord, kNuThreadIDDataFork);
+        BailError(err);
+        err = Nu_FindNoFutureThread(pArchive, pRecord, kNuThreadIDDiskImage);
+        BailError(err);
+    } else if (threadID == kNuThreadIDRsrcFork) {
+        err = Nu_FindNoFutureThread(pArchive, pRecord, kNuThreadIDRsrcFork);
+        BailError(err);
+        err = Nu_FindNoFutureThread(pArchive, pRecord, kNuThreadIDDiskImage);
+        BailError(err);
+    } else if (threadID == kNuThreadIDDiskImage) {
+        err = Nu_FindNoFutureThread(pArchive, pRecord, kNuThreadIDDataFork);
+        BailError(err);
+        err = Nu_FindNoFutureThread(pArchive, pRecord, kNuThreadIDRsrcFork);
+        BailError(err);
+        err = Nu_FindNoFutureThread(pArchive, pRecord, kNuThreadIDDiskImage);
+        BailError(err);
+    } else if (threadID == kNuThreadIDFilename) {
+        err = Nu_FindNoFutureThread(pArchive, pRecord, kNuThreadIDFilename);
+        BailError(err);
+    }
 
 bail:
-	return err;
+    return err;
 }
 
 
@@ -1022,85 +1022,85 @@ bail:
  */
 NuError
 Nu_AddThread(NuArchive* pArchive, NuRecordIdx recIdx, NuThreadID threadID,
-	NuDataSource* pDataSource, NuThreadIdx* pThreadIdx)
+    NuDataSource* pDataSource, NuThreadIdx* pThreadIdx)
 {
-	NuError err;
-	NuRecord* pRecord;
-	NuThreadMod* pThreadMod = nil;
-	NuThreadFormat threadFormat;
+    NuError err;
+    NuRecord* pRecord;
+    NuThreadMod* pThreadMod = nil;
+    NuThreadFormat threadFormat;
 
-	/* okay for pThreadIdx to be nil */
-	if (recIdx == 0 || pDataSource == nil)
-		return kNuErrInvalidArg;
+    /* okay for pThreadIdx to be nil */
+    if (recIdx == 0 || pDataSource == nil)
+        return kNuErrInvalidArg;
 
-	if (Nu_IsReadOnly(pArchive))
-		return kNuErrArchiveRO;
-	err = Nu_GetTOCIfNeeded(pArchive);
-	BailError(err);
+    if (Nu_IsReadOnly(pArchive))
+        return kNuErrArchiveRO;
+    err = Nu_GetTOCIfNeeded(pArchive);
+    BailError(err);
 
-	/*
-	 * Find the record.  If it doesn't exist in the copy set, check to
-	 * see if it's in the "new" set.
-	 */
-	err = Nu_FindRecordForWriteByIdx(pArchive, recIdx, &pRecord);
-	if (err == kNuErrRecIdxNotFound &&
-		Nu_RecordSet_GetLoaded(&pArchive->newRecordSet))
-	{
-		err = Nu_RecordSet_FindByIdx(&pArchive->newRecordSet, recIdx, &pRecord);
-	}
-	BailError(err);
-	Assert(pRecord != nil);
+    /*
+     * Find the record.  If it doesn't exist in the copy set, check to
+     * see if it's in the "new" set.
+     */
+    err = Nu_FindRecordForWriteByIdx(pArchive, recIdx, &pRecord);
+    if (err == kNuErrRecIdxNotFound &&
+        Nu_RecordSet_GetLoaded(&pArchive->newRecordSet))
+    {
+        err = Nu_RecordSet_FindByIdx(&pArchive->newRecordSet, recIdx, &pRecord);
+    }
+    BailError(err);
+    Assert(pRecord != nil);
 
-	/*
-	 * Do some tests, looking for specific types of threads that conflict
-	 * with what we're trying to add.
-	 */
-	err = Nu_OkayToAddThread(pArchive, pRecord, threadID);
-	BailError(err);
+    /*
+     * Do some tests, looking for specific types of threads that conflict
+     * with what we're trying to add.
+     */
+    err = Nu_OkayToAddThread(pArchive, pRecord, threadID);
+    BailError(err);
 
-	/*
-	 * Decide if we want to compress the data from this source.  If the
-	 * data is already compressed (as indicated by the data source) or
-	 * this type of thread isn't compressible (e.g. it's a filename), then
-	 * we don't compress it.  Otherwise, we use whatever compression mode
-	 * is currently configured.
-	 */
-	if (Nu_DataSourceGetThreadFormat(pDataSource) == kNuThreadFormatUncompressed &&
-		Nu_IsCompressibleThreadID(threadID))
-	{
-		threadFormat = Nu_ConvertCompressValToFormat(pArchive,
-						pArchive->valDataCompression);
-	} else {
-		threadFormat = kNuThreadFormatUncompressed;
-	}
-	DBUG(("--- using threadFormat = %d\n", threadFormat));
+    /*
+     * Decide if we want to compress the data from this source.  If the
+     * data is already compressed (as indicated by the data source) or
+     * this type of thread isn't compressible (e.g. it's a filename), then
+     * we don't compress it.  Otherwise, we use whatever compression mode
+     * is currently configured.
+     */
+    if (Nu_DataSourceGetThreadFormat(pDataSource) == kNuThreadFormatUncompressed &&
+        Nu_IsCompressibleThreadID(threadID))
+    {
+        threadFormat = Nu_ConvertCompressValToFormat(pArchive,
+                        pArchive->valDataCompression);
+    } else {
+        threadFormat = kNuThreadFormatUncompressed;
+    }
+    DBUG(("--- using threadFormat = %d\n", threadFormat));
 
-	/* create a new ThreadMod */
-	err = Nu_ThreadModAdd_New(pArchive, threadID, threadFormat, pDataSource,
-			&pThreadMod);
-	BailError(err);
-	Assert(pThreadMod != nil);
+    /* create a new ThreadMod */
+    err = Nu_ThreadModAdd_New(pArchive, threadID, threadFormat, pDataSource,
+            &pThreadMod);
+    BailError(err);
+    Assert(pThreadMod != nil);
 
-	/* add the thread mod to the record */
-	Nu_RecordAddThreadMod(pRecord, pThreadMod);
-	if (pThreadIdx != nil)
-		*pThreadIdx = pThreadMod->entry.add.threadIdx;
-	pThreadMod = nil;	/* successful, don't free */
+    /* add the thread mod to the record */
+    Nu_RecordAddThreadMod(pRecord, pThreadMod);
+    if (pThreadIdx != nil)
+        *pThreadIdx = pThreadMod->entry.add.threadIdx;
+    pThreadMod = nil;   /* successful, don't free */
 
-	/*
-	 * If we've got a header filename and we're adding a filename thread,
-	 * we don't want to write the record header name when we reconstruct
-	 * the record.
-	 */
-	if (threadID == kNuThreadIDFilename && pRecord->recFilenameLength) {
-		DBUG(("+++ gonna drop the filename\n"));
-		pRecord->dropRecFilename = true;
-	}
+    /*
+     * If we've got a header filename and we're adding a filename thread,
+     * we don't want to write the record header name when we reconstruct
+     * the record.
+     */
+    if (threadID == kNuThreadIDFilename && pRecord->recFilenameLength) {
+        DBUG(("+++ gonna drop the filename\n"));
+        pRecord->dropRecFilename = true;
+    }
 
 bail:
-	if (pThreadMod != nil)
-		Nu_ThreadModFree(pArchive, pThreadMod);
-	return err;
+    if (pThreadMod != nil)
+        Nu_ThreadModFree(pArchive, pThreadMod);
+    return err;
 }
 
 
@@ -1117,120 +1117,120 @@ bail:
  */
 NuError
 Nu_UpdatePresizedThread(NuArchive* pArchive, NuThreadIdx threadIdx,
-	NuDataSource* pDataSource, long* pMaxLen)
+    NuDataSource* pDataSource, long* pMaxLen)
 {
-	NuError err;
-	NuThreadMod* pThreadMod = nil;
-	NuRecord* pFoundRecord;
-	NuThread* pFoundThread;
+    NuError err;
+    NuThreadMod* pThreadMod = nil;
+    NuRecord* pFoundRecord;
+    NuThread* pFoundThread;
 
-	if (pDataSource == nil) {
-		err = kNuErrInvalidArg;
-		goto bail;
-	}
+    if (pDataSource == nil) {
+        err = kNuErrInvalidArg;
+        goto bail;
+    }
 
-	/* presized threads always contain uncompressed data */
-	if (Nu_DataSourceGetThreadFormat(pDataSource) !=
-		kNuThreadFormatUncompressed)
-	{
-		err = kNuErrBadFormat;
-		Nu_ReportError(NU_BLOB, err,
-			"presized threads can't hold compressed data");
-		goto bail;
-	}
+    /* presized threads always contain uncompressed data */
+    if (Nu_DataSourceGetThreadFormat(pDataSource) !=
+        kNuThreadFormatUncompressed)
+    {
+        err = kNuErrBadFormat;
+        Nu_ReportError(NU_BLOB, err,
+            "presized threads can't hold compressed data");
+        goto bail;
+    }
 
-	if (Nu_IsReadOnly(pArchive))
-		return kNuErrArchiveRO;
-	err = Nu_GetTOCIfNeeded(pArchive);
-	BailError(err);
+    if (Nu_IsReadOnly(pArchive))
+        return kNuErrArchiveRO;
+    err = Nu_GetTOCIfNeeded(pArchive);
+    BailError(err);
 
-	/*
-	 * Find the thread in the "copy" set.  (If there isn't a copy set,
-	 * make one.)
-	 */
-	err = Nu_FindThreadForWriteByIdx(pArchive, threadIdx, &pFoundRecord,
-			&pFoundThread);
-	BailError(err);
+    /*
+     * Find the thread in the "copy" set.  (If there isn't a copy set,
+     * make one.)
+     */
+    err = Nu_FindThreadForWriteByIdx(pArchive, threadIdx, &pFoundRecord,
+            &pFoundThread);
+    BailError(err);
 
-	if (!Nu_IsPresizedThreadID(NuGetThreadID(pFoundThread)) ||
-		!(pFoundThread->thCompThreadEOF >= pFoundThread->thThreadEOF))
-	{
-		err = kNuErrNotPreSized;
-		Nu_ReportError(NU_BLOB, err, "invalid thread for update");
-		goto bail;
-	}
+    if (!Nu_IsPresizedThreadID(NuGetThreadID(pFoundThread)) ||
+        !(pFoundThread->thCompThreadEOF >= pFoundThread->thThreadEOF))
+    {
+        err = kNuErrNotPreSized;
+        Nu_ReportError(NU_BLOB, err, "invalid thread for update");
+        goto bail;
+    }
 
-	if (pMaxLen != nil)
-		*pMaxLen = pFoundThread->thCompThreadEOF;
+    if (pMaxLen != nil)
+        *pMaxLen = pFoundThread->thCompThreadEOF;
 
-	/*
-	 * Check to see if somebody is trying to delete this, or has already
-	 * updated it.
-	 */
-	if (Nu_ThreadMod_FindByThreadIdx(pFoundRecord, threadIdx) != nil) {
-		DBUG(("--- Tried to modify a deleted or modified thread\n"));
-		err = kNuErrModThreadChange;
-		goto bail;
-	}
+    /*
+     * Check to see if somebody is trying to delete this, or has already
+     * updated it.
+     */
+    if (Nu_ThreadMod_FindByThreadIdx(pFoundRecord, threadIdx) != nil) {
+        DBUG(("--- Tried to modify a deleted or modified thread\n"));
+        err = kNuErrModThreadChange;
+        goto bail;
+    }
 
-	/*
-	 * Verify that "otherLen" in the data source is less than or equal
-	 * to our len, if we can.  If the data source is a file on disk,
-	 * we're not really supposed to look at it until we flush.  We
-	 * could sneak a peek right now, which would prevent us from aborting
-	 * the entire operation when it turns out the file won't fit, but
-	 * that violates our semantics (and besides, the application really
-	 * should've done that already).
-	 *
-	 * If the data source is from a file, we just assume it'll fit and
-	 * let the chips fall where they may later on.
-	 */
-	if (Nu_DataSourceGetType(pDataSource) != kNuDataSourceFromFile) {
-		if (pFoundThread->thCompThreadEOF <
-			Nu_DataSourceGetOtherLen(pDataSource))
-		{
-			err = kNuErrPreSizeOverflow;
-			Nu_ReportError(NU_BLOB, err, "can't put %ld bytes into %ld",
-				Nu_DataSourceGetOtherLen(pDataSource),
-				pFoundThread->thCompThreadEOF);
-			goto bail;
-		}
+    /*
+     * Verify that "otherLen" in the data source is less than or equal
+     * to our len, if we can.  If the data source is a file on disk,
+     * we're not really supposed to look at it until we flush.  We
+     * could sneak a peek right now, which would prevent us from aborting
+     * the entire operation when it turns out the file won't fit, but
+     * that violates our semantics (and besides, the application really
+     * should've done that already).
+     *
+     * If the data source is from a file, we just assume it'll fit and
+     * let the chips fall where they may later on.
+     */
+    if (Nu_DataSourceGetType(pDataSource) != kNuDataSourceFromFile) {
+        if (pFoundThread->thCompThreadEOF <
+            Nu_DataSourceGetOtherLen(pDataSource))
+        {
+            err = kNuErrPreSizeOverflow;
+            Nu_ReportError(NU_BLOB, err, "can't put %ld bytes into %ld",
+                Nu_DataSourceGetOtherLen(pDataSource),
+                pFoundThread->thCompThreadEOF);
+            goto bail;
+        }
 
-		/* check for zero-length and excessively long filenames */
-		if (NuGetThreadID(pFoundThread) == kNuThreadIDFilename &&
-			(Nu_DataSourceGetOtherLen(pDataSource) == 0 ||
-			 Nu_DataSourceGetOtherLen(pDataSource) > kNuReasonableFilenameLen))
-		{
-			err = kNuErrInvalidFilename;
-			Nu_ReportError(NU_BLOB, err, "invalid filename (%ld bytes)",
-				Nu_DataSourceGetOtherLen(pDataSource));
-			goto bail;
-		}
-	}
+        /* check for zero-length and excessively long filenames */
+        if (NuGetThreadID(pFoundThread) == kNuThreadIDFilename &&
+            (Nu_DataSourceGetOtherLen(pDataSource) == 0 ||
+             Nu_DataSourceGetOtherLen(pDataSource) > kNuReasonableFilenameLen))
+        {
+            err = kNuErrInvalidFilename;
+            Nu_ReportError(NU_BLOB, err, "invalid filename (%ld bytes)",
+                Nu_DataSourceGetOtherLen(pDataSource));
+            goto bail;
+        }
+    }
 
-	/*
-	 * Looks like it'll fit, and it's the right kind of data.  Create
-	 * an "update" threadMod.  Note this copies the data source.
-	 */
-	Assert(pFoundThread->thThreadFormat == kNuThreadFormatUncompressed);
-	err = Nu_ThreadModUpdate_New(pArchive, threadIdx, pDataSource, &pThreadMod);
-	BailError(err);
-	Assert(pThreadMod != nil);
+    /*
+     * Looks like it'll fit, and it's the right kind of data.  Create
+     * an "update" threadMod.  Note this copies the data source.
+     */
+    Assert(pFoundThread->thThreadFormat == kNuThreadFormatUncompressed);
+    err = Nu_ThreadModUpdate_New(pArchive, threadIdx, pDataSource, &pThreadMod);
+    BailError(err);
+    Assert(pThreadMod != nil);
 
-	/* add the thread mod to the record */
-	Nu_RecordAddThreadMod(pFoundRecord, pThreadMod);
+    /* add the thread mod to the record */
+    Nu_RecordAddThreadMod(pFoundRecord, pThreadMod);
 
-	/*
-	 * NOTE: changes to filename threads will be picked up later and
-	 * incorporated into the record's threadFilename.  We don't worry
-	 * about the record header filename, because we might be doing an
-	 * update-in-place and that prevents us from removing the filename
-	 * (doing so would change the size of the archive).  No need to
-	 * do any filename-specific changes here.
-	 */
+    /*
+     * NOTE: changes to filename threads will be picked up later and
+     * incorporated into the record's threadFilename.  We don't worry
+     * about the record header filename, because we might be doing an
+     * update-in-place and that prevents us from removing the filename
+     * (doing so would change the size of the archive).  No need to
+     * do any filename-specific changes here.
+     */
 
 bail:
-	return err;
+    return err;
 }
 
 /*
@@ -1246,46 +1246,46 @@ bail:
 NuError
 Nu_DeleteThread(NuArchive* pArchive, NuThreadIdx threadIdx)
 {
-	NuError err;
-	NuThreadMod* pThreadMod = nil;
-	NuRecord* pFoundRecord;
-	NuThread* pFoundThread;
+    NuError err;
+    NuThreadMod* pThreadMod = nil;
+    NuRecord* pFoundRecord;
+    NuThread* pFoundThread;
 
-	if (Nu_IsReadOnly(pArchive))
-		return kNuErrArchiveRO;
-	err = Nu_GetTOCIfNeeded(pArchive);
-	BailError(err);
+    if (Nu_IsReadOnly(pArchive))
+        return kNuErrArchiveRO;
+    err = Nu_GetTOCIfNeeded(pArchive);
+    BailError(err);
 
-	/*
-	 * Find the thread in the "copy" set.  (If there isn't a copy set,
-	 * make one.)
-	 */
-	err = Nu_FindThreadForWriteByIdx(pArchive, threadIdx, &pFoundRecord,
-			&pFoundThread);
-	BailError(err);
+    /*
+     * Find the thread in the "copy" set.  (If there isn't a copy set,
+     * make one.)
+     */
+    err = Nu_FindThreadForWriteByIdx(pArchive, threadIdx, &pFoundRecord,
+            &pFoundThread);
+    BailError(err);
 
-	/*
-	 * Deletion of modified threads (updates or previous deletes) isn't
-	 * allowed.  Deletion of threads from deleted records can't happen,
-	 * because deleted records are completely removed from the "copy" set.
-	 */
-	if (Nu_ThreadMod_FindByThreadIdx(pFoundRecord, threadIdx) != nil) {
-		DBUG(("--- Tried to delete a deleted or modified thread\n"));
-		err = kNuErrModThreadChange;
-		goto bail;
-	}
+    /*
+     * Deletion of modified threads (updates or previous deletes) isn't
+     * allowed.  Deletion of threads from deleted records can't happen,
+     * because deleted records are completely removed from the "copy" set.
+     */
+    if (Nu_ThreadMod_FindByThreadIdx(pFoundRecord, threadIdx) != nil) {
+        DBUG(("--- Tried to delete a deleted or modified thread\n"));
+        err = kNuErrModThreadChange;
+        goto bail;
+    }
 
-	/*
-	 * Looks good.  Add a new "delete" ThreadMod to the list.
-	 */
-	err = Nu_ThreadModDelete_New(pArchive, threadIdx,
-				NuGetThreadID(pFoundThread), &pThreadMod);
-	BailError(err);
-	Nu_RecordAddThreadMod(pFoundRecord, pThreadMod);
-	pThreadMod = nil;	/* successful, don't free */
+    /*
+     * Looks good.  Add a new "delete" ThreadMod to the list.
+     */
+    err = Nu_ThreadModDelete_New(pArchive, threadIdx,
+                NuGetThreadID(pFoundThread), &pThreadMod);
+    BailError(err);
+    Nu_RecordAddThreadMod(pFoundRecord, pThreadMod);
+    pThreadMod = nil;   /* successful, don't free */
 
 bail:
-	Nu_ThreadModFree(pArchive, pThreadMod);
-	return err;
+    Nu_ThreadModFree(pArchive, pThreadMod);
+    return err;
 }
 

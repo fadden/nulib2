@@ -30,19 +30,19 @@
 #include "NufxLibPriv.h"
 
 /* the LZW algorithms operate on 4K chunks */
-#define kNuLZWBlockSize		4096
+#define kNuLZWBlockSize     4096
 
 /* a little padding to avoid mysterious crashes on bad data */
-#define kNuSafetyPadding	64
+#define kNuSafetyPadding    64
 
-#define kNuLZWClearCode		0x0100
-#define kNuLZWFirstCode		0x0101
+#define kNuLZWClearCode     0x0100
+#define kNuLZWFirstCode     0x0101
 
 
 /* sometimes we want to get *really* verbose rather late in a large archive */
 #ifdef DEBUG_LZW
   static Boolean gNuDebugVerbose = true;
-  #define DBUG_LZW(x)	{ if (gNuDebugVerbose) { DBUG(x); } }
+  #define DBUG_LZW(x)   { if (gNuDebugVerbose) { DBUG(x); } }
 #else
   #define DBUG_LZW ((void)0)
 #endif
@@ -50,7 +50,7 @@
 
 /*
  * ===========================================================================
- *		Compression
+ *      Compression
  * ===========================================================================
  */
 
@@ -58,11 +58,11 @@
  * We use a hash function borrowed from UNIX compress, which is described
  * in the v4.3 sources as:
  *
- *	Algorithm:  use open addressing double hashing (no chaining) on the
- *	prefix code / next character combination.  We do a variant of Knuth's
- *	algorithm D (vol. 3, sec. 6.4) along with G. Knott's relatively-prime
- *	secondary probe.  Here, the modular division first probe is gives way
- *	to a faster exclusive-or manipulation.
+ *  Algorithm:  use open addressing double hashing (no chaining) on the
+ *  prefix code / next character combination.  We do a variant of Knuth's
+ *  algorithm D (vol. 3, sec. 6.4) along with G. Knott's relatively-prime
+ *  secondary probe.  Here, the modular division first probe is gives way
+ *  to a faster exclusive-or manipulation.
  *
  * The function used to generate it is:
  *
@@ -81,23 +81,23 @@
  * occupancy.
  */
 
-#define kNuLZWHashSize			5119	/* must be prime */
-#define kNuLZWEntryUnused		0		/* indicates an unused hash entry */
-#define kNuLZWHashFuncTblSize	256		/* one entry per char value */
-#define kNuLZWDefaultVol		0xfe	/* use this as volume number */
-#define kNuLZWHashDelta			0x120	/* used in secondary hashing */
-#define kNuLZWMinCode			kNuLZWClearCode	/* smallest 12-bit LZW code */
-#define kNuLZWMaxCode			0x0fff	/* largest 12-bit LZW code */
-#define kNuLZW2StopCode			0x0ffd	/* LZW/2 stops here */
+#define kNuLZWHashSize          5119    /* must be prime */
+#define kNuLZWEntryUnused       0       /* indicates an unused hash entry */
+#define kNuLZWHashFuncTblSize   256     /* one entry per char value */
+#define kNuLZWDefaultVol        0xfe    /* use this as volume number */
+#define kNuLZWHashDelta         0x120   /* used in secondary hashing */
+#define kNuLZWMinCode           kNuLZWClearCode /* smallest 12-bit LZW code */
+#define kNuLZWMaxCode           0x0fff  /* largest 12-bit LZW code */
+#define kNuLZW2StopCode         0x0ffd  /* LZW/2 stops here */
 
 /*
  * Mask of bits, from 0 to 8.
  */
 static const int gBitMask[] = {
-	0x00, 0x01, 0x03, 0x07, 0x0f, 0x1f, 0x3f, 0x7f, 0xff
+    0x00, 0x01, 0x03, 0x07, 0x0f, 0x1f, 0x3f, 0x7f, 0xff
 };
 
-#define kNuRLEDefaultEscape		0xdb	/* ShrinkIt standard */
+#define kNuRLEDefaultEscape     0xdb    /* ShrinkIt standard */
 
 /*
  * This holds all of the "big" dynamic state, plus a few things that I
@@ -111,25 +111,25 @@ static const int gBitMask[] = {
  * guessing "ushort" is better overall.
  */
 typedef struct LZWCompressState {
-	NuArchive* 		pArchive;
+    NuArchive*      pArchive;
 
-	ushort			entry[kNuLZWHashSize];				/* uint or ushort */
-	ushort 			prefix[kNuLZWMaxCode+1];			/* uint or ushort */
-	uchar			suffix[kNuLZWMaxCode+1];
+    ushort          entry[kNuLZWHashSize];              /* uint or ushort */
+    ushort          prefix[kNuLZWMaxCode+1];            /* uint or ushort */
+    uchar           suffix[kNuLZWMaxCode+1];
 
-	ushort			hashFunc[kNuLZWHashFuncTblSize];	/* uint or ushort */
+    ushort          hashFunc[kNuLZWHashFuncTblSize];    /* uint or ushort */
 
-	uchar			inputBuf[kNuLZWBlockSize];		/* 4K of raw input */
-	uchar			rleBuf[kNuLZWBlockSize*2 + kNuSafetyPadding];
-	uchar			lzwBuf[(kNuLZWBlockSize * 3) / 2 + kNuSafetyPadding];
+    uchar           inputBuf[kNuLZWBlockSize];      /* 4K of raw input */
+    uchar           rleBuf[kNuLZWBlockSize*2 + kNuSafetyPadding];
+    uchar           lzwBuf[(kNuLZWBlockSize * 3) / 2 + kNuSafetyPadding];
 
-	ushort			chunkCrc;					/* CRC for LZW/1 */
+    ushort          chunkCrc;                   /* CRC for LZW/1 */
 
-	/* LZW/2 state variables */
-	int				nextFree;
-	int				codeBits;
-	int				highCode;
-	Boolean			initialClear;
+    /* LZW/2 state variables */
+    int             nextFree;
+    int             codeBits;
+    int             highCode;
+    Boolean         initialClear;
 } LZWCompressState;
 
 
@@ -139,30 +139,30 @@ typedef struct LZWCompressState {
 static NuError
 Nu_AllocLZWCompressState(NuArchive* pArchive)
 {
-	NuError err;
-	LZWCompressState* lzwState;
-	int ic;
+    NuError err;
+    LZWCompressState* lzwState;
+    int ic;
 
-	Assert(pArchive != nil);
-	Assert(pArchive->lzwCompressState == nil);
+    Assert(pArchive != nil);
+    Assert(pArchive->lzwCompressState == nil);
 
-	/* allocate the general-purpose compression buffer, if needed */
-	err = Nu_AllocCompressionBufferIFN(pArchive);
-	if (err != kNuErrNone)
-		return err;
+    /* allocate the general-purpose compression buffer, if needed */
+    err = Nu_AllocCompressionBufferIFN(pArchive);
+    if (err != kNuErrNone)
+        return err;
 
-	pArchive->lzwCompressState = Nu_Malloc(pArchive, sizeof(LZWCompressState));
-	if (pArchive->lzwCompressState == nil)
-		return kNuErrMalloc;
+    pArchive->lzwCompressState = Nu_Malloc(pArchive, sizeof(LZWCompressState));
+    if (pArchive->lzwCompressState == nil)
+        return kNuErrMalloc;
 
-	/*
-	 * The "hashFunc" table only needs to be set up once.
-	 */
-	lzwState = pArchive->lzwCompressState;
-	for (ic = 256; --ic >= 0; )
-		lzwState->hashFunc[ic] = (((ic & 0x7) << 7) ^ ic) << 2;
+    /*
+     * The "hashFunc" table only needs to be set up once.
+     */
+    lzwState = pArchive->lzwCompressState;
+    for (ic = 256; --ic >= 0; )
+        lzwState->hashFunc[ic] = (((ic & 0x7) << 7) ^ ic) << 2;
 
-	return kNuErrNone;
+    return kNuErrNone;
 }
 
 
@@ -184,64 +184,64 @@ Nu_AllocLZWCompressState(NuArchive* pArchive)
 static NuError
 Nu_CompressBlockRLE(LZWCompressState* lzwState, int* pRLESize)
 {
-	const uchar* inPtr = lzwState->inputBuf;
-	const uchar* endPtr = inPtr + kNuLZWBlockSize;
-	uchar* outPtr = lzwState->rleBuf;
-	uchar matchChar;
-	int matchCount;
+    const uchar* inPtr = lzwState->inputBuf;
+    const uchar* endPtr = inPtr + kNuLZWBlockSize;
+    uchar* outPtr = lzwState->rleBuf;
+    uchar matchChar;
+    int matchCount;
 
-	while (inPtr < endPtr) {
-		matchChar = *inPtr;
-		matchCount = 1;
+    while (inPtr < endPtr) {
+        matchChar = *inPtr;
+        matchCount = 1;
 
-		/* count up the matching chars */
-		while (*++inPtr == matchChar && inPtr < endPtr)
-			matchCount++;
+        /* count up the matching chars */
+        while (*++inPtr == matchChar && inPtr < endPtr)
+            matchCount++;
 
-		if (matchCount > 3) {
-			if (matchCount > 256) {
-				/* rare case - really long match */
-				while (matchCount > 256) {
-					*outPtr++ = kNuRLEDefaultEscape;
-					*outPtr++ = matchChar;
-					*outPtr++ = 255;
-					matchCount -= 256;
-				}
+        if (matchCount > 3) {
+            if (matchCount > 256) {
+                /* rare case - really long match */
+                while (matchCount > 256) {
+                    *outPtr++ = kNuRLEDefaultEscape;
+                    *outPtr++ = matchChar;
+                    *outPtr++ = 255;
+                    matchCount -= 256;
+                }
 
-				/* take care of the odd bits -- which might not form a run! */
-				if (matchCount > 3) {
-					*outPtr++ = kNuRLEDefaultEscape;
-					*outPtr++ = matchChar;
-					*outPtr++ = matchCount -1;
-				} else {
-					while (matchCount--)
-						*outPtr++ = matchChar;
-				}
+                /* take care of the odd bits -- which might not form a run! */
+                if (matchCount > 3) {
+                    *outPtr++ = kNuRLEDefaultEscape;
+                    *outPtr++ = matchChar;
+                    *outPtr++ = matchCount -1;
+                } else {
+                    while (matchCount--)
+                        *outPtr++ = matchChar;
+                }
 
-			} else {
-				/* common case */
-				*outPtr++ = kNuRLEDefaultEscape;
-				*outPtr++ = matchChar;
-				*outPtr++ = matchCount -1;
-			}
+            } else {
+                /* common case */
+                *outPtr++ = kNuRLEDefaultEscape;
+                *outPtr++ = matchChar;
+                *outPtr++ = matchCount -1;
+            }
 
-		} else {
-			if (matchChar == kNuRLEDefaultEscape) {
-				/* encode 1-3 0xDBs */
-				*outPtr++ = kNuRLEDefaultEscape;
-				*outPtr++ = kNuRLEDefaultEscape;
-				*outPtr++ = matchCount -1;
-			} else {
-				while (matchCount--)
-					*outPtr++ = matchChar;
-			}
-		}
-	}
+        } else {
+            if (matchChar == kNuRLEDefaultEscape) {
+                /* encode 1-3 0xDBs */
+                *outPtr++ = kNuRLEDefaultEscape;
+                *outPtr++ = kNuRLEDefaultEscape;
+                *outPtr++ = matchCount -1;
+            } else {
+                while (matchCount--)
+                    *outPtr++ = matchChar;
+            }
+        }
+    }
 
-	*pRLESize = outPtr - lzwState->rleBuf;
-	Assert(*pRLESize > 0 && *pRLESize < sizeof(lzwState->rleBuf));
+    *pRLESize = outPtr - lzwState->rleBuf;
+    Assert(*pRLESize > 0 && *pRLESize < sizeof(lzwState->rleBuf));
 
-	return kNuErrNone;
+    return kNuErrNone;
 }
 
 
@@ -251,19 +251,19 @@ Nu_CompressBlockRLE(LZWCompressState* lzwState, int* pRLESize)
 static void
 Nu_ClearLZWTable(LZWCompressState* lzwState)
 {
-	Assert(lzwState != nil);
+    Assert(lzwState != nil);
 
-	/*DBUG_LZW(("### clear table\n"));*/
+    /*DBUG_LZW(("### clear table\n"));*/
 
-	/* reset table entries */
-	Assert(kNuLZWEntryUnused == 0);		/* make sure this is okay */
-	memset(lzwState->entry, 0, sizeof(lzwState->entry));
+    /* reset table entries */
+    Assert(kNuLZWEntryUnused == 0);     /* make sure this is okay */
+    memset(lzwState->entry, 0, sizeof(lzwState->entry));
 
-	/* reset state variables */
-	lzwState->nextFree = kNuLZWFirstCode;
-	lzwState->codeBits = 9;
-	lzwState->highCode = ~(~0 << lzwState->codeBits);	/* a/k/a 0x01ff */
-	lzwState->initialClear = false;
+    /* reset state variables */
+    lzwState->nextFree = kNuLZWFirstCode;
+    lzwState->codeBits = 9;
+    lzwState->highCode = ~(~0 << lzwState->codeBits);   /* a/k/a 0x01ff */
+    lzwState->initialClear = false;
 }
 
 
@@ -289,37 +289,37 @@ Nu_ClearLZWTable(LZWCompressState* lzwState)
 static inline void
 Nu_LZWPutCode(uchar** pOutBuf, ulong prefixCode, int codeBits, int* pAtBit)
 {
-	int atBit = *pAtBit;
-	uchar* outBuf = *pOutBuf;
+    int atBit = *pAtBit;
+    uchar* outBuf = *pOutBuf;
 
-	/*DBUG_LZW(("### PUT: prefixCode=0x%04lx, codeBits=%d, atBit=%d\n",
-		prefixCode, codeBits, atBit));*/
+    /*DBUG_LZW(("### PUT: prefixCode=0x%04lx, codeBits=%d, atBit=%d\n",
+        prefixCode, codeBits, atBit));*/
 
-	Assert(atBit >= 0 && atBit < sizeof(gBitMask));
+    Assert(atBit >= 0 && atBit < sizeof(gBitMask));
 
-	if (atBit) {
-		/* align the prefix code with the existing byte */
-		prefixCode <<= atBit;
+    if (atBit) {
+        /* align the prefix code with the existing byte */
+        prefixCode <<= atBit;
 
-		/* merge it with the buffer contents (if necessary) and write lo bits */
-		outBuf--;
-		*outBuf = (uchar)((*outBuf & gBitMask[atBit]) | prefixCode);
-		outBuf++;
-	} else {
-		/* nothing to merge with; write lo byte at next posn and advance */
-		*outBuf++ = (uchar)prefixCode;
-	}
+        /* merge it with the buffer contents (if necessary) and write lo bits */
+        outBuf--;
+        *outBuf = (uchar)((*outBuf & gBitMask[atBit]) | prefixCode);
+        outBuf++;
+    } else {
+        /* nothing to merge with; write lo byte at next posn and advance */
+        *outBuf++ = (uchar)prefixCode;
+    }
 
-	/* codes are at least 9 bits, so we know we have to write one more */
-	*outBuf++ = (uchar)(prefixCode >> 8);
+    /* codes are at least 9 bits, so we know we have to write one more */
+    *outBuf++ = (uchar)(prefixCode >> 8);
 
-	/* in some cases, we may have to write yet another */
-	atBit += codeBits;
-	if (atBit > 16)
-		*outBuf++ = (uchar)(prefixCode >> 16);
-	
-	*pAtBit = atBit & 0x07;
-	*pOutBuf = outBuf;
+    /* in some cases, we may have to write yet another */
+    atBit += codeBits;
+    if (atBit > 16)
+        *outBuf++ = (uchar)(prefixCode >> 16);
+    
+    *pAtBit = atBit & 0x07;
+    *pOutBuf = outBuf;
 }
 
 
@@ -345,196 +345,196 @@ Nu_LZWPutCode(uchar** pOutBuf, ulong prefixCode, int codeBits, int* pAtBit)
  */
 static NuError
 Nu_CompressLZWBlock(LZWCompressState* lzwState, const uchar* inputBuf,
-	int inputCount, int* pOutputCount)
+    int inputCount, int* pOutputCount)
 {
-	int nextFree, ic, atBit, codeBits;
-	int hash, hashDelta;
-	int prefixCode, code, highCode;
-	const uchar* inputEnd = inputBuf + inputCount;
-	/* local copies of lzwState members, for speed */
-	const ushort* pHashFunc = lzwState->hashFunc;
-	ushort* pEntry = lzwState->entry;
-	ushort* pPrefix = lzwState->prefix;
-	uchar* pSuffix = lzwState->suffix;
-	uchar* outBuf = lzwState->lzwBuf;
+    int nextFree, ic, atBit, codeBits;
+    int hash, hashDelta;
+    int prefixCode, code, highCode;
+    const uchar* inputEnd = inputBuf + inputCount;
+    /* local copies of lzwState members, for speed */
+    const ushort* pHashFunc = lzwState->hashFunc;
+    ushort* pEntry = lzwState->entry;
+    ushort* pPrefix = lzwState->prefix;
+    uchar* pSuffix = lzwState->suffix;
+    uchar* outBuf = lzwState->lzwBuf;
 
-	Assert(lzwState != nil);
-	Assert(inputBuf != nil);
-	Assert(inputCount > 0 && inputCount <= kNuLZWBlockSize);
-	/* make sure nobody has been messing with the types */
-	Assert(sizeof(pHashFunc[0]) == sizeof(lzwState->hashFunc[0]));
-	Assert(sizeof(pEntry[0]) == sizeof(lzwState->entry[0]));
-	Assert(sizeof(pPrefix[0]) == sizeof(lzwState->prefix[0]));
-	Assert(sizeof(pSuffix[0]) == sizeof(lzwState->suffix[0]));
+    Assert(lzwState != nil);
+    Assert(inputBuf != nil);
+    Assert(inputCount > 0 && inputCount <= kNuLZWBlockSize);
+    /* make sure nobody has been messing with the types */
+    Assert(sizeof(pHashFunc[0]) == sizeof(lzwState->hashFunc[0]));
+    Assert(sizeof(pEntry[0]) == sizeof(lzwState->entry[0]));
+    Assert(sizeof(pPrefix[0]) == sizeof(lzwState->prefix[0]));
+    Assert(sizeof(pSuffix[0]) == sizeof(lzwState->suffix[0]));
 
-	/*DBUG_LZW(("### START LZW (nextFree=0x%04x)\n", lzwState->nextFree));*/
+    /*DBUG_LZW(("### START LZW (nextFree=0x%04x)\n", lzwState->nextFree));*/
 
-	atBit = 0;
+    atBit = 0;
 
-	if (lzwState->initialClear) {
-		/*DBUG_LZW(("### initialClear set\n"));*/
-		codeBits = lzwState->codeBits;
-		Nu_LZWPutCode(&outBuf, kNuLZWClearCode, codeBits, &atBit);
-		Nu_ClearLZWTable(lzwState);
-	}
+    if (lzwState->initialClear) {
+        /*DBUG_LZW(("### initialClear set\n"));*/
+        codeBits = lzwState->codeBits;
+        Nu_LZWPutCode(&outBuf, kNuLZWClearCode, codeBits, &atBit);
+        Nu_ClearLZWTable(lzwState);
+    }
 
   table_cleared:
-	/* recover our state (or get newly-cleared state) */
-	nextFree = lzwState->nextFree;
-	codeBits = lzwState->codeBits;
-	highCode = lzwState->highCode;
+    /* recover our state (or get newly-cleared state) */
+    nextFree = lzwState->nextFree;
+    codeBits = lzwState->codeBits;
+    highCode = lzwState->highCode;
 
-	prefixCode = *inputBuf++;
+    prefixCode = *inputBuf++;
 
-	/*DBUG_LZW(("### fchar=0x%02x\n", prefixCode));*/
+    /*DBUG_LZW(("### fchar=0x%02x\n", prefixCode));*/
 
-	while (inputBuf < inputEnd) {
-		ic = *inputBuf++;
-		/*DBUG_LZW(("### char=0x%02x\n", ic));*/
+    while (inputBuf < inputEnd) {
+        ic = *inputBuf++;
+        /*DBUG_LZW(("### char=0x%02x\n", ic));*/
 
-		hash = prefixCode ^ pHashFunc[ic];
-		code = pEntry[hash];
+        hash = prefixCode ^ pHashFunc[ic];
+        code = pEntry[hash];
 
-		if (code != kNuLZWEntryUnused) {
-			/* something is here, either our prefix or a hash collision */
-			if (pSuffix[code] != ic || pPrefix[code] != prefixCode) {
-				/* we've collided; do the secondary probe */
-				hashDelta = (kNuLZWHashDelta - ic) << 2;
-				do {
-					/* rehash and keep looking */
-					Assert(code >= kNuLZWMinCode && code <= kNuLZWMaxCode);
-					if (hash >= hashDelta)
-						hash -= hashDelta;
-					else
-						hash += kNuLZWHashSize - hashDelta;
-					Assert(hash >= 0 && hash < kNuLZWHashSize);
+        if (code != kNuLZWEntryUnused) {
+            /* something is here, either our prefix or a hash collision */
+            if (pSuffix[code] != ic || pPrefix[code] != prefixCode) {
+                /* we've collided; do the secondary probe */
+                hashDelta = (kNuLZWHashDelta - ic) << 2;
+                do {
+                    /* rehash and keep looking */
+                    Assert(code >= kNuLZWMinCode && code <= kNuLZWMaxCode);
+                    if (hash >= hashDelta)
+                        hash -= hashDelta;
+                    else
+                        hash += kNuLZWHashSize - hashDelta;
+                    Assert(hash >= 0 && hash < kNuLZWHashSize);
 
-					if ((code = pEntry[hash]) == kNuLZWEntryUnused)
-						goto new_code;
-				} while (pSuffix[code] != ic || pPrefix[code] != prefixCode);
-			}
+                    if ((code = pEntry[hash]) == kNuLZWEntryUnused)
+                        goto new_code;
+                } while (pSuffix[code] != ic || pPrefix[code] != prefixCode);
+            }
 
-			/* else we found a matching string, and can keep searching */
-			prefixCode = code;
+            /* else we found a matching string, and can keep searching */
+            prefixCode = code;
 
-		} else {
-			/* found an empty entry, add the prefix+suffix to the table */
+        } else {
+            /* found an empty entry, add the prefix+suffix to the table */
   new_code:
-			Nu_LZWPutCode(&outBuf, prefixCode, codeBits, &atBit);
-			Assert(outBuf < lzwState->lzwBuf + sizeof(lzwState->lzwBuf));
-			/*DBUG_LZW(("### outBuf now at +%d\n",outBuf - lzwState->lzwBuf));*/
+            Nu_LZWPutCode(&outBuf, prefixCode, codeBits, &atBit);
+            Assert(outBuf < lzwState->lzwBuf + sizeof(lzwState->lzwBuf));
+            /*DBUG_LZW(("### outBuf now at +%d\n",outBuf - lzwState->lzwBuf));*/
 
-			code = nextFree;
-			Assert(hash < kNuLZWHashSize);
-			Assert(code >= kNuLZWMinCode);
-			Assert(code <= kNuLZWMaxCode);
+            code = nextFree;
+            Assert(hash < kNuLZWHashSize);
+            Assert(code >= kNuLZWMinCode);
+            Assert(code <= kNuLZWMaxCode);
 
-			/*
-			 * GSHK accepts 0x0ffd, and then sends the table clear
-			 * immediately.  We could improve on GSHK's compression slightly
-			 * by using the entire table, but I want to generate the exact
-			 * same output as GSHK.  (The decoder believes the table clear
-			 * is entry 0xffe, so we've got one more coming, and possibly
-			 * two if we tweak getcode slightly.)
-			 *
-			 * Experiments show that switching to 0xffe increases the size
-			 * of files that don't compress well, and decreases the size
-			 * of files that do.  In both cases, the difference in size
-			 * is very small.
-			 */
-			Assert(code <= kNuLZW2StopCode);
-			/*if (code <= kNuLZW2StopCode) {*/
-			/*DBUG_LZW(("###  added new code 0x%04x prefix=0x%04x ch=0x%02x\n",
-				code, prefixCode, ic));*/
+            /*
+             * GSHK accepts 0x0ffd, and then sends the table clear
+             * immediately.  We could improve on GSHK's compression slightly
+             * by using the entire table, but I want to generate the exact
+             * same output as GSHK.  (The decoder believes the table clear
+             * is entry 0xffe, so we've got one more coming, and possibly
+             * two if we tweak getcode slightly.)
+             *
+             * Experiments show that switching to 0xffe increases the size
+             * of files that don't compress well, and decreases the size
+             * of files that do.  In both cases, the difference in size
+             * is very small.
+             */
+            Assert(code <= kNuLZW2StopCode);
+            /*if (code <= kNuLZW2StopCode) {*/
+            /*DBUG_LZW(("###  added new code 0x%04x prefix=0x%04x ch=0x%02x\n",
+                code, prefixCode, ic));*/
 
-			pEntry[hash] = code;
-			pPrefix[code] = prefixCode;
-			pSuffix[code] = ic;
+            pEntry[hash] = code;
+            pPrefix[code] = prefixCode;
+            pSuffix[code] = ic;
 
-			/*
-			 * Check and see if it's time to increase the code size (note
-			 * we flip earlier than LZC by one here).
-			 */
-			if (code >= highCode) {
-				highCode += code +1;
-				codeBits++;
-			}
+            /*
+             * Check and see if it's time to increase the code size (note
+             * we flip earlier than LZC by one here).
+             */
+            if (code >= highCode) {
+                highCode += code +1;
+                codeBits++;
+            }
 
-			nextFree++;
+            nextFree++;
 
-			/*}*/
+            /*}*/
 
-			prefixCode = ic;
+            prefixCode = ic;
 
-			/* if the table is full, clear it (only for LZW/2) */
-			if (code == kNuLZW2StopCode) {
-				/* output last code */
-				Nu_LZWPutCode(&outBuf, prefixCode, codeBits, &atBit);
+            /* if the table is full, clear it (only for LZW/2) */
+            if (code == kNuLZW2StopCode) {
+                /* output last code */
+                Nu_LZWPutCode(&outBuf, prefixCode, codeBits, &atBit);
 
-				if (inputBuf < inputEnd) {
-					/* still have data, keep going */
-					Nu_LZWPutCode(&outBuf, kNuLZWClearCode, codeBits, &atBit);
-					Nu_ClearLZWTable(lzwState);
-					goto table_cleared;
-				} else {
-					/* no more input, hold table clear for next block */
-					DBUG(("--- RARE: block-end clear\n"));
-					lzwState->initialClear = true;
-					goto table_clear_finish;
-				}
-			}
+                if (inputBuf < inputEnd) {
+                    /* still have data, keep going */
+                    Nu_LZWPutCode(&outBuf, kNuLZWClearCode, codeBits, &atBit);
+                    Nu_ClearLZWTable(lzwState);
+                    goto table_cleared;
+                } else {
+                    /* no more input, hold table clear for next block */
+                    DBUG(("--- RARE: block-end clear\n"));
+                    lzwState->initialClear = true;
+                    goto table_clear_finish;
+                }
+            }
 
-			Assert(nextFree <= kNuLZW2StopCode);
-		}
-	}
+            Assert(nextFree <= kNuLZW2StopCode);
+        }
+    }
 
-	/*
-	 * Output the last code.  Since there's no following character, we don't
-	 * need to add an entry to the table... whatever we've found is already
-	 * in there.
-	 */
-	Nu_LZWPutCode(&outBuf, prefixCode, codeBits, &atBit);
+    /*
+     * Output the last code.  Since there's no following character, we don't
+     * need to add an entry to the table... whatever we've found is already
+     * in there.
+     */
+    Nu_LZWPutCode(&outBuf, prefixCode, codeBits, &atBit);
 
-	/*
-	 * Update the counters so LZW/2 has continuity.
-	 */
-	Assert(nextFree <= kNuLZW2StopCode);
-	if (nextFree >= highCode) {
-		highCode += nextFree +1;
-		codeBits++;
-	}
-	nextFree++;		/* make room for the code we just wrote */
+    /*
+     * Update the counters so LZW/2 has continuity.
+     */
+    Assert(nextFree <= kNuLZW2StopCode);
+    if (nextFree >= highCode) {
+        highCode += nextFree +1;
+        codeBits++;
+    }
+    nextFree++;     /* make room for the code we just wrote */
 
-	if (nextFree > kNuLZW2StopCode) {
-		/*
-		 * The code we just wrote, which was part of a longer string already
-		 * in the tree, took the last entry in the table.  We need to clear
-		 * the table, but we can't do it in this block.  We will have to
-		 * emit a table clear as the very first thing in the next block.
-		 */
-		DBUG(("--- RARE: block-end inter clear\n"));
-		lzwState->initialClear = true;
-	}
+    if (nextFree > kNuLZW2StopCode) {
+        /*
+         * The code we just wrote, which was part of a longer string already
+         * in the tree, took the last entry in the table.  We need to clear
+         * the table, but we can't do it in this block.  We will have to
+         * emit a table clear as the very first thing in the next block.
+         */
+        DBUG(("--- RARE: block-end inter clear\n"));
+        lzwState->initialClear = true;
+    }
   table_clear_finish:
 
-	/* save state for next pass through */
-	lzwState->nextFree = nextFree;
-	lzwState->codeBits = codeBits;
-	lzwState->highCode = highCode;
+    /* save state for next pass through */
+    lzwState->nextFree = nextFree;
+    lzwState->codeBits = codeBits;
+    lzwState->highCode = highCode;
 
-	Assert(inputBuf == inputEnd);
+    Assert(inputBuf == inputEnd);
 
-	*pOutputCount = outBuf - lzwState->lzwBuf;
+    *pOutputCount = outBuf - lzwState->lzwBuf;
 
-	/*
-	if (*pOutputCount < inputCount) {
-		DBUG_LZW(("### compressed from %d to %d\n", inputCount, *pOutputCount));
-	} else {
-		DBUG_LZW(("### NO compression (%d to %d)\n", inputCount,*pOutputCount));
-	}
-	*/
+    /*
+    if (*pOutputCount < inputCount) {
+        DBUG_LZW(("### compressed from %d to %d\n", inputCount, *pOutputCount));
+    } else {
+        DBUG_LZW(("### NO compression (%d to %d)\n", inputCount,*pOutputCount));
+    }
+    */
 
-	return kNuErrNone;
+    return kNuErrNone;
 }
 
 /*
@@ -547,230 +547,230 @@ Nu_CompressLZWBlock(LZWCompressState* lzwState, const uchar* inputBuf,
  */
 static NuError
 Nu_CompressLZW(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
-	ulong srcLen, ulong* pDstLen, ushort* pThreadCrc, Boolean isType2)
+    ulong srcLen, ulong* pDstLen, ushort* pThreadCrc, Boolean isType2)
 {
-	NuError err = kNuErrNone;
-	LZWCompressState* lzwState;
-	long initialOffset;
-	const uchar* lzwInputBuf;
-	uint blockSize, rleSize, lzwSize;
-	long compressedLen;
-	Boolean keepLzw;
+    NuError err = kNuErrNone;
+    LZWCompressState* lzwState;
+    long initialOffset;
+    const uchar* lzwInputBuf;
+    uint blockSize, rleSize, lzwSize;
+    long compressedLen;
+    Boolean keepLzw;
 
-	Assert(pArchive != nil);
-	Assert(pStraw != nil);
-	Assert(fp != nil);
-	Assert(srcLen > 0);
-	Assert(pDstLen != nil);
-	Assert(pThreadCrc != nil);
-	Assert(isType2 == true || isType2 == false);
+    Assert(pArchive != nil);
+    Assert(pStraw != nil);
+    Assert(fp != nil);
+    Assert(srcLen > 0);
+    Assert(pDstLen != nil);
+    Assert(pThreadCrc != nil);
+    Assert(isType2 == true || isType2 == false);
 
-	/*
-	 * Do some initialization and set-up.
-	 */
-	if (pArchive->lzwCompressState == nil) {
-		err = Nu_AllocLZWCompressState(pArchive);
-		BailError(err);
-	}
-	Assert(pArchive->lzwCompressState != nil);
-	Assert(pArchive->compBuf != nil);
+    /*
+     * Do some initialization and set-up.
+     */
+    if (pArchive->lzwCompressState == nil) {
+        err = Nu_AllocLZWCompressState(pArchive);
+        BailError(err);
+    }
+    Assert(pArchive->lzwCompressState != nil);
+    Assert(pArchive->compBuf != nil);
 
-	lzwState = pArchive->lzwCompressState;
-	lzwState->pArchive = pArchive;
-	compressedLen = 0;
+    lzwState = pArchive->lzwCompressState;
+    lzwState->pArchive = pArchive;
+    compressedLen = 0;
 
-	/*
-	 * And now for something ugly: for LZW/1 we have to compute the CRC
-	 * twice.  Old versions of ShrinkIt used LZW/1 and put the CRC in
-	 * the compressed block while newer versions used LZW/2 and put the
-	 * CRC in the thread header.  We're using LZW/1 with the newer record
-	 * format, so we need two CRCs.  For some odd reason Andy N. decided
-	 * to use 0xffff as the initial value for the thread one, so we can't
-	 * just store the same thing in two places.
-	 *
-	 * Of course, this also means that an LZW/2 chunk stored in an old
-	 * pre-v3 record wouldn't have a CRC at all...
-	 *
-	 * LZW/1 is included here for completeness.  I can't think of a reason
-	 * why you'd want to use it, really.
-	 */
-	lzwState->chunkCrc = kNuInitialChunkCRC;		/* 0x0000 */
+    /*
+     * And now for something ugly: for LZW/1 we have to compute the CRC
+     * twice.  Old versions of ShrinkIt used LZW/1 and put the CRC in
+     * the compressed block while newer versions used LZW/2 and put the
+     * CRC in the thread header.  We're using LZW/1 with the newer record
+     * format, so we need two CRCs.  For some odd reason Andy N. decided
+     * to use 0xffff as the initial value for the thread one, so we can't
+     * just store the same thing in two places.
+     *
+     * Of course, this also means that an LZW/2 chunk stored in an old
+     * pre-v3 record wouldn't have a CRC at all...
+     *
+     * LZW/1 is included here for completeness.  I can't think of a reason
+     * why you'd want to use it, really.
+     */
+    lzwState->chunkCrc = kNuInitialChunkCRC;        /* 0x0000 */
 
-	/*
-	 * An LZW/1 file starts off with a CRC of the data, which means we
-	 * have to compress the whole thing, then seek back afterward and
-	 * write the value.  This annoyance went away in LZW/2.
-	 */
-	err = Nu_FTell(fp, &initialOffset);
-	BailError(err);
+    /*
+     * An LZW/1 file starts off with a CRC of the data, which means we
+     * have to compress the whole thing, then seek back afterward and
+     * write the value.  This annoyance went away in LZW/2.
+     */
+    err = Nu_FTell(fp, &initialOffset);
+    BailError(err);
 
-	if (!isType2) {
-		putc(0, fp);		/* leave space for CRC */
-		putc(0, fp);
-		compressedLen += 2;
-	}
-	putc(kNuLZWDefaultVol, fp);
-	putc(kNuRLEDefaultEscape, fp);
-	compressedLen += 2;
+    if (!isType2) {
+        putc(0, fp);        /* leave space for CRC */
+        putc(0, fp);
+        compressedLen += 2;
+    }
+    putc(kNuLZWDefaultVol, fp);
+    putc(kNuRLEDefaultEscape, fp);
+    compressedLen += 2;
 
-	if (isType2)
-		Nu_ClearLZWTable(lzwState);
+    if (isType2)
+        Nu_ClearLZWTable(lzwState);
 
-	while (srcLen) {
-		/*
-		 * Fill up the input buffer.
-		 */
-		blockSize = (srcLen > kNuLZWBlockSize) ? kNuLZWBlockSize : srcLen;
+    while (srcLen) {
+        /*
+         * Fill up the input buffer.
+         */
+        blockSize = (srcLen > kNuLZWBlockSize) ? kNuLZWBlockSize : srcLen;
 
-		err = Nu_StrawRead(pArchive, pStraw, lzwState->inputBuf, blockSize);
-		if (err != kNuErrNone) {
-			Nu_ReportError(NU_BLOB, err, "compression read failed");
-			goto bail;
-		}
+        err = Nu_StrawRead(pArchive, pStraw, lzwState->inputBuf, blockSize);
+        if (err != kNuErrNone) {
+            Nu_ReportError(NU_BLOB, err, "compression read failed");
+            goto bail;
+        }
 
-		/*
-		 * ShrinkIt was originally just going to be a 5.25" disk compressor,
-		 * so the compression functions were organized around 4K blocks (the
-		 * size of one track on a 5.25" disk).  The block passed into the
-		 * RLE function is always 4K, so we zero out any extra space.
-		 */
-		if (blockSize < kNuLZWBlockSize) {
-			memset(lzwState->inputBuf + blockSize, 0,
-				kNuLZWBlockSize - blockSize);
-		}
+        /*
+         * ShrinkIt was originally just going to be a 5.25" disk compressor,
+         * so the compression functions were organized around 4K blocks (the
+         * size of one track on a 5.25" disk).  The block passed into the
+         * RLE function is always 4K, so we zero out any extra space.
+         */
+        if (blockSize < kNuLZWBlockSize) {
+            memset(lzwState->inputBuf + blockSize, 0,
+                kNuLZWBlockSize - blockSize);
+        }
 
-		/*
-		 * Compute the CRC.  For LZW/1 this is on the entire 4K block, for
-		 * LZW/2 this is on just the "real" data.
-		 */
-		if (isType2) {
-			*pThreadCrc = Nu_CalcCRC16(*pThreadCrc,
-				lzwState->inputBuf, blockSize);
-		} else {
-			*pThreadCrc = Nu_CalcCRC16(*pThreadCrc,
-				lzwState->inputBuf, kNuLZWBlockSize);
-			lzwState->chunkCrc = Nu_CalcCRC16(lzwState->chunkCrc,
-				lzwState->inputBuf, kNuLZWBlockSize);
-		}
+        /*
+         * Compute the CRC.  For LZW/1 this is on the entire 4K block, for
+         * LZW/2 this is on just the "real" data.
+         */
+        if (isType2) {
+            *pThreadCrc = Nu_CalcCRC16(*pThreadCrc,
+                lzwState->inputBuf, blockSize);
+        } else {
+            *pThreadCrc = Nu_CalcCRC16(*pThreadCrc,
+                lzwState->inputBuf, kNuLZWBlockSize);
+            lzwState->chunkCrc = Nu_CalcCRC16(lzwState->chunkCrc,
+                lzwState->inputBuf, kNuLZWBlockSize);
+        }
 
-		/*
-		 * Try to compress with RLE, from inputBuf to rleBuf.
-		 */
-		err = Nu_CompressBlockRLE(lzwState, (int*) &rleSize);
-		BailError(err);
+        /*
+         * Try to compress with RLE, from inputBuf to rleBuf.
+         */
+        err = Nu_CompressBlockRLE(lzwState, (int*) &rleSize);
+        BailError(err);
 
-		if (rleSize < kNuLZWBlockSize) {
-			lzwInputBuf = lzwState->rleBuf;
-		} else {
-			lzwInputBuf = lzwState->inputBuf;
-			rleSize = kNuLZWBlockSize;
-		}
+        if (rleSize < kNuLZWBlockSize) {
+            lzwInputBuf = lzwState->rleBuf;
+        } else {
+            lzwInputBuf = lzwState->inputBuf;
+            rleSize = kNuLZWBlockSize;
+        }
 
-		/*
-		 * Compress with LZW, into lzwBuf.
-		 */
-		if (!isType2)
-			Nu_ClearLZWTable(lzwState);
-		err = Nu_CompressLZWBlock(lzwState, lzwInputBuf, rleSize,
-				(int*) &lzwSize);
-		BailError(err);
+        /*
+         * Compress with LZW, into lzwBuf.
+         */
+        if (!isType2)
+            Nu_ClearLZWTable(lzwState);
+        err = Nu_CompressLZWBlock(lzwState, lzwInputBuf, rleSize,
+                (int*) &lzwSize);
+        BailError(err);
 
-		/* decide if we want to keep it, bearing in mind the LZW/2 header */
-		if (pArchive->valMimicSHK) {
-			/* GSHK doesn't factor in header -- and *sometimes* uses "<=" !! */
-			keepLzw = (lzwSize < rleSize);
-		} else {
-			if (isType2)
-				keepLzw = (lzwSize +2 < rleSize);
-			else
-				keepLzw = (lzwSize < rleSize);
-		}
+        /* decide if we want to keep it, bearing in mind the LZW/2 header */
+        if (pArchive->valMimicSHK) {
+            /* GSHK doesn't factor in header -- and *sometimes* uses "<=" !! */
+            keepLzw = (lzwSize < rleSize);
+        } else {
+            if (isType2)
+                keepLzw = (lzwSize +2 < rleSize);
+            else
+                keepLzw = (lzwSize < rleSize);
+        }
 
-		/*
-		 * Write the compressed (or not) chunk.
-		 */
-		if (keepLzw) {
-			/*
-			 * LZW succeeded.
-			 */
-			if (isType2)
-				rleSize |= 0x8000;		/* for LZW/2, set "LZW used" flag */
+        /*
+         * Write the compressed (or not) chunk.
+         */
+        if (keepLzw) {
+            /*
+             * LZW succeeded.
+             */
+            if (isType2)
+                rleSize |= 0x8000;      /* for LZW/2, set "LZW used" flag */
 
-			putc(rleSize & 0xff, fp);	/* size after RLE */
-			putc(rleSize >> 8, fp);
-			compressedLen += 2;
+            putc(rleSize & 0xff, fp);   /* size after RLE */
+            putc(rleSize >> 8, fp);
+            compressedLen += 2;
 
-			if (isType2) {
-				/* write compressed LZW len (+4 for header bytes) */
-				putc((lzwSize+4) & 0xff, fp);
-				putc((lzwSize+4) >> 8, fp);
-				compressedLen += 2;
-			} else {
-				/* set LZW/1 "LZW used" flag */
-				putc(1, fp);
-				compressedLen++;
-			}
-		
-			/* write data from LZW buffer */
-			err = Nu_FWrite(fp, lzwState->lzwBuf, lzwSize);
-			BailError(err);
-			compressedLen += lzwSize;
-		} else {
-			/*
-			 * LZW failed.
-			 */
-			putc(rleSize & 0xff, fp);	/* size after RLE */
-			putc(rleSize >> 8, fp);
-			compressedLen += 2;
+            if (isType2) {
+                /* write compressed LZW len (+4 for header bytes) */
+                putc((lzwSize+4) & 0xff, fp);
+                putc((lzwSize+4) >> 8, fp);
+                compressedLen += 2;
+            } else {
+                /* set LZW/1 "LZW used" flag */
+                putc(1, fp);
+                compressedLen++;
+            }
+        
+            /* write data from LZW buffer */
+            err = Nu_FWrite(fp, lzwState->lzwBuf, lzwSize);
+            BailError(err);
+            compressedLen += lzwSize;
+        } else {
+            /*
+             * LZW failed.
+             */
+            putc(rleSize & 0xff, fp);   /* size after RLE */
+            putc(rleSize >> 8, fp);
+            compressedLen += 2;
 
-			if (isType2) {
-				/* clear LZW/2 table; we can't use it next time */
-				Nu_ClearLZWTable(lzwState);
-			} else {
-				/* set LZW/1 "LZW not used" flag */
-				putc(0, fp);
-				compressedLen++;
-			}
+            if (isType2) {
+                /* clear LZW/2 table; we can't use it next time */
+                Nu_ClearLZWTable(lzwState);
+            } else {
+                /* set LZW/1 "LZW not used" flag */
+                putc(0, fp);
+                compressedLen++;
+            }
 
-			/* write data from RLE or plain-input buffer */
-			err = Nu_FWrite(fp, lzwInputBuf, rleSize);
-			BailError(err);
-			compressedLen += rleSize;
-		}
+            /* write data from RLE or plain-input buffer */
+            err = Nu_FWrite(fp, lzwInputBuf, rleSize);
+            BailError(err);
+            compressedLen += rleSize;
+        }
 
 
-		/*
-		 * Update the counter and continue.
-		 */
-		srcLen -= blockSize;
-	}
+        /*
+         * Update the counter and continue.
+         */
+        srcLen -= blockSize;
+    }
 
-	/*
-	 * For LZW/1, go back and write the CRC.
-	 */
-	if (!isType2) {
-		long curOffset;
+    /*
+     * For LZW/1, go back and write the CRC.
+     */
+    if (!isType2) {
+        long curOffset;
 
-		err = Nu_FTell(fp, &curOffset);
-		BailError(err);
-		err = Nu_FSeek(fp, initialOffset, SEEK_SET);
-		BailError(err);
-		putc(lzwState->chunkCrc & 0xff, fp);
-		putc(lzwState->chunkCrc >> 8, fp);
-		err = Nu_FSeek(fp, curOffset, SEEK_SET);
-		BailError(err);
-	}
+        err = Nu_FTell(fp, &curOffset);
+        BailError(err);
+        err = Nu_FSeek(fp, initialOffset, SEEK_SET);
+        BailError(err);
+        putc(lzwState->chunkCrc & 0xff, fp);
+        putc(lzwState->chunkCrc >> 8, fp);
+        err = Nu_FSeek(fp, curOffset, SEEK_SET);
+        BailError(err);
+    }
 
-	/* P8SHK and GSHK add an extra byte to LZW-compressed threads */
-	if (pArchive->valMimicSHK) {
-		putc(0, fp);
-		compressedLen++;
-	}
+    /* P8SHK and GSHK add an extra byte to LZW-compressed threads */
+    if (pArchive->valMimicSHK) {
+        putc(0, fp);
+        compressedLen++;
+    }
 
-	*pDstLen = compressedLen;
+    *pDstLen = compressedLen;
 
 bail:
-	return err;
+    return err;
 }
 
 /*
@@ -778,9 +778,9 @@ bail:
  */
 NuError
 Nu_CompressLZW1(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
-	ulong srcLen, ulong* pDstLen, ushort* pCrc)
+    ulong srcLen, ulong* pDstLen, ushort* pCrc)
 {
-	return Nu_CompressLZW(pArchive, pStraw, fp, srcLen, pDstLen, pCrc, false);
+    return Nu_CompressLZW(pArchive, pStraw, fp, srcLen, pDstLen, pCrc, false);
 }
 
 /*
@@ -788,40 +788,40 @@ Nu_CompressLZW1(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
  */
 NuError
 Nu_CompressLZW2(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
-	ulong srcLen, ulong* pDstLen, ushort* pCrc)
+    ulong srcLen, ulong* pDstLen, ushort* pCrc)
 {
-	return Nu_CompressLZW(pArchive, pStraw, fp, srcLen, pDstLen, pCrc, true);
+    return Nu_CompressLZW(pArchive, pStraw, fp, srcLen, pDstLen, pCrc, true);
 }
 
 
 /*
  * ===========================================================================
- *		Expansion
+ *      Expansion
  * ===========================================================================
  */
 
 /* if we don't have at least this much data, we try to read more */
 /* (the "+3" is for the chunk header bytes) */
-#define kNuLZWDesiredChunk	(kNuLZWBlockSize + 3)
+#define kNuLZWDesiredChunk  (kNuLZWBlockSize + 3)
 
 /*
  * Static tables useful for bit manipulation.
  */
 static const uint gMaskTable[17] = {
-	0x0000, 0x01ff, 0x03ff, 0x03ff,  0x07ff, 0x07ff, 0x07ff, 0x07ff,
-	0x0fff, 0x0fff, 0x0fff, 0x0fff,  0x0fff, 0x0fff, 0x0fff, 0x0fff,
-	0x0fff
+    0x0000, 0x01ff, 0x03ff, 0x03ff,  0x07ff, 0x07ff, 0x07ff, 0x07ff,
+    0x0fff, 0x0fff, 0x0fff, 0x0fff,  0x0fff, 0x0fff, 0x0fff, 0x0fff,
+    0x0fff
 };
 /* convert high byte of "entry" into a bit width */
 static const uint gBitWidth[17] = {
-	8,9,10,10,11,11,11,11,12,12,12,12,12,12,12,12,12
+    8,9,10,10,11,11,11,11,12,12,12,12,12,12,12,12,12
 };
 
 
 /* entry in the trie */
 typedef struct TableEntry {
-	uchar			ch;
-	uint			prefix;
+    uchar           ch;
+    uint            prefix;
 } TableEntry;
 
 /*
@@ -830,28 +830,28 @@ typedef struct TableEntry {
  * an open archive, and re-used.
  */
 typedef struct LZWExpandState {
-	NuArchive* 		pArchive;
+    NuArchive*      pArchive;
 
-	TableEntry		trie[4096-256];		/* holds from 9 bits to 12 bits */
-	uchar			stack[kNuLZWBlockSize];
+    TableEntry      trie[4096-256];     /* holds from 9 bits to 12 bits */
+    uchar           stack[kNuLZWBlockSize];
 
-	uint			entry;				/* 16-bit index into table */
-	uint			oldcode;			/* carryover state for LZW/2 */
-	uint			incode;				/* carryover state for LZW/2 */
-	uint			finalc;				/* carryover state for LZW/2 */
-	Boolean			resetFix;			/* work around an LZW/2 bug */
+    uint            entry;              /* 16-bit index into table */
+    uint            oldcode;            /* carryover state for LZW/2 */
+    uint            incode;             /* carryover state for LZW/2 */
+    uint            finalc;             /* carryover state for LZW/2 */
+    Boolean         resetFix;           /* work around an LZW/2 bug */
 
-	ushort			chunkCrc;			/* CRC we calculate for LZW/1 */
-	ushort			fileCrc;			/* CRC stored with file */
+    ushort          chunkCrc;           /* CRC we calculate for LZW/1 */
+    ushort          fileCrc;            /* CRC stored with file */
 
-	uchar			diskVol;			/* disk volume # */
-	uchar			rleEscape;			/* RLE escape char, usually 0xdb */
+    uchar           diskVol;            /* disk volume # */
+    uchar           rleEscape;          /* RLE escape char, usually 0xdb */
 
-	ulong			dataInBuffer;		/* #of bytes in compBuf */
-	uchar*			dataPtr;			/* current data offset */
+    ulong           dataInBuffer;       /* #of bytes in compBuf */
+    uchar*          dataPtr;            /* current data offset */
 
-	uchar			lzwOutBuf[kNuLZWBlockSize + kNuSafetyPadding];
-	uchar			rleOutBuf[kNuLZWBlockSize + kNuSafetyPadding];
+    uchar           lzwOutBuf[kNuLZWBlockSize + kNuSafetyPadding];
+    uchar           rleOutBuf[kNuLZWBlockSize + kNuSafetyPadding];
 } LZWExpandState;
 
 
@@ -861,51 +861,51 @@ typedef struct LZWExpandState {
 static NuError
 Nu_AllocLZWExpandState(NuArchive* pArchive)
 {
-	NuError err;
+    NuError err;
 
-	Assert(pArchive != nil);
-	Assert(pArchive->lzwExpandState == nil);
+    Assert(pArchive != nil);
+    Assert(pArchive->lzwExpandState == nil);
 
-	/* allocate the general-purpose compression buffer, if needed */
-	err = Nu_AllocCompressionBufferIFN(pArchive);
-	if (err != kNuErrNone)
-		return err;
+    /* allocate the general-purpose compression buffer, if needed */
+    err = Nu_AllocCompressionBufferIFN(pArchive);
+    if (err != kNuErrNone)
+        return err;
 
-	pArchive->lzwExpandState = Nu_Malloc(pArchive, sizeof(LZWExpandState));
-	if (pArchive->lzwExpandState == nil)
-		return kNuErrMalloc;
-	return kNuErrNone;
+    pArchive->lzwExpandState = Nu_Malloc(pArchive, sizeof(LZWExpandState));
+    if (pArchive->lzwExpandState == nil)
+        return kNuErrMalloc;
+    return kNuErrNone;
 }
 
 
 #ifdef NDEBUG
-# define Nu_LZWPush(uch)	( *stackPtr++ = (uch) )
-# define Nu_LZWPop()		( *(--stackPtr) )
+# define Nu_LZWPush(uch)    ( *stackPtr++ = (uch) )
+# define Nu_LZWPop()        ( *(--stackPtr) )
 # define Nu_LZWStackEmpty() ( stackPtr == lzwState->stack )
 
 #else
-# define Nu_LZWPush(uch)	\
-			( Nu_LZWPushCheck(uch, lzwState, stackPtr), *stackPtr++ = (uch) )
-# define Nu_LZWPop()		\
-			( Nu_LZWPopCheck(lzwState, stackPtr), *(--stackPtr) )
-# define Nu_LZWStackEmpty()	( stackPtr == lzwState->stack )
+# define Nu_LZWPush(uch)    \
+            ( Nu_LZWPushCheck(uch, lzwState, stackPtr), *stackPtr++ = (uch) )
+# define Nu_LZWPop()        \
+            ( Nu_LZWPopCheck(lzwState, stackPtr), *(--stackPtr) )
+# define Nu_LZWStackEmpty() ( stackPtr == lzwState->stack )
 
 static inline void
 Nu_LZWPushCheck(uchar uch, const LZWExpandState* lzwState,const uchar* stackPtr)
 {
-	if (stackPtr >= lzwState->stack + sizeof(lzwState->stack)) {
-		Nu_ReportError(lzwState->NU_BLOB, kNuErrBadData, "stack overflow");
-		abort();
-	}
+    if (stackPtr >= lzwState->stack + sizeof(lzwState->stack)) {
+        Nu_ReportError(lzwState->NU_BLOB, kNuErrBadData, "stack overflow");
+        abort();
+    }
 }
 
 static inline void
 Nu_LZWPopCheck(const LZWExpandState* lzwState, const uchar* stackPtr)
 {
-	if (stackPtr == lzwState->stack) {
-		Nu_ReportError(lzwState->NU_BLOB, kNuErrBadData, "stack underflow");
-		abort();
-	}
+    if (stackPtr == lzwState->stack) {
+        Nu_ReportError(lzwState->NU_BLOB, kNuErrBadData, "stack underflow");
+        abort();
+    }
 }
 
 #endif
@@ -924,45 +924,45 @@ Nu_LZWPopCheck(const LZWExpandState* lzwState, const uchar* stackPtr)
 static inline uint
 Nu_LZWGetCode(const uchar** pInBuf, uint entry, int* pAtBit, uint* pLastByte)
 {
-	uint numBits, startBit, lastBit;
-	ulong value;
+    uint numBits, startBit, lastBit;
+    ulong value;
 
-	Assert(sizeof(uint) >= 2);
+    Assert(sizeof(uint) >= 2);
 
-	numBits = (entry +1) >> 8;		/* bit-width of next code */
-	startBit = *pAtBit;
-	lastBit = startBit + gBitWidth[numBits];
+    numBits = (entry +1) >> 8;      /* bit-width of next code */
+    startBit = *pAtBit;
+    lastBit = startBit + gBitWidth[numBits];
 
-	/*
-	 * We need one or two bytes from the input.  These have to be shifted
-	 * around and merged with the bits we already have (if any).
-	 */
-	if (!startBit)
-		value = *(*pInBuf)++;
-	else
-		value = *pLastByte;
+    /*
+     * We need one or two bytes from the input.  These have to be shifted
+     * around and merged with the bits we already have (if any).
+     */
+    if (!startBit)
+        value = *(*pInBuf)++;
+    else
+        value = *pLastByte;
 
-	if (lastBit > 16) {
-		/* need two more bytes */
-		value |= *(*pInBuf)++ << 8;
-		*pLastByte = *(*pInBuf)++;
-		value |= (ulong) *pLastByte << 16;
-	} else {
-		/* only need one more byte */
-		*pLastByte = *(*pInBuf)++;
-		value |= *pLastByte << 8;
-	}
+    if (lastBit > 16) {
+        /* need two more bytes */
+        value |= *(*pInBuf)++ << 8;
+        *pLastByte = *(*pInBuf)++;
+        value |= (ulong) *pLastByte << 16;
+    } else {
+        /* only need one more byte */
+        *pLastByte = *(*pInBuf)++;
+        value |= *pLastByte << 8;
+    }
 
-	*pAtBit = lastBit & 0x07;
+    *pAtBit = lastBit & 0x07;
 
-	/*printf("| EX: value=$%06lx mask=$%04x return=$%03lx\n",
-		value,gMaskTable[numBits], (value >> startBit) & gMaskTable[numBits]);*/
+    /*printf("| EX: value=$%06lx mask=$%04x return=$%03lx\n",
+        value,gMaskTable[numBits], (value >> startBit) & gMaskTable[numBits]);*/
 
-	/*DBUG_LZW(("### getcode 0x%04lx\n",
-		(value >> startBit) & gMaskTable[numBits]));*/
+    /*DBUG_LZW(("### getcode 0x%04lx\n",
+        (value >> startBit) & gMaskTable[numBits]));*/
 
-	/* I believe ANSI allows shifting by zero bits, so don't test "!startBit" */
-	return (value >> startBit) & gMaskTable[numBits];
+    /* I believe ANSI allows shifting by zero bits, so don't test "!startBit" */
+    return (value >> startBit) & gMaskTable[numBits];
 }
 
 
@@ -974,84 +974,84 @@ Nu_LZWGetCode(const uchar** pInBuf, uint entry, int* pAtBit, uint* pLastByte)
 static NuError
 Nu_ExpandLZW1(LZWExpandState* lzwState, uint expectedLen)
 {
-	NuError err = kNuErrNone;
-	TableEntry* tablePtr;
-	int atBit;
-	uint entry, oldcode, incode, ptr;
-	uint lastByte, finalc;
-	const uchar* inbuf;
-	uchar* outbuf;
-	uchar* outbufend;
-	uchar* stackPtr;
+    NuError err = kNuErrNone;
+    TableEntry* tablePtr;
+    int atBit;
+    uint entry, oldcode, incode, ptr;
+    uint lastByte, finalc;
+    const uchar* inbuf;
+    uchar* outbuf;
+    uchar* outbufend;
+    uchar* stackPtr;
 
-	Assert(lzwState != nil);
-	Assert(expectedLen > 0 && expectedLen <= kNuLZWBlockSize);
+    Assert(lzwState != nil);
+    Assert(expectedLen > 0 && expectedLen <= kNuLZWBlockSize);
 
-	inbuf = lzwState->dataPtr;
-	outbuf = lzwState->lzwOutBuf;
-	outbufend = outbuf + expectedLen;
-	tablePtr = lzwState->trie - 256;	/* don't store 256 empties */
-	stackPtr = lzwState->stack;
+    inbuf = lzwState->dataPtr;
+    outbuf = lzwState->lzwOutBuf;
+    outbufend = outbuf + expectedLen;
+    tablePtr = lzwState->trie - 256;    /* don't store 256 empties */
+    stackPtr = lzwState->stack;
 
-	atBit = 0;
-	lastByte = 0;
+    atBit = 0;
+    lastByte = 0;
 
-	entry = kNuLZWFirstCode;	/* 0x101 */
-	finalc = oldcode = incode = Nu_LZWGetCode(&inbuf, entry, &atBit, &lastByte);
-	*outbuf++ = incode;
-	Assert(incode <= 0xff);
-	if (incode > 0xff) {
-		err = kNuErrBadData;
-		Nu_ReportError(lzwState->NU_BLOB, err, "invalid initial LZW symbol");
-		goto bail;
-	}
+    entry = kNuLZWFirstCode;    /* 0x101 */
+    finalc = oldcode = incode = Nu_LZWGetCode(&inbuf, entry, &atBit, &lastByte);
+    *outbuf++ = incode;
+    Assert(incode <= 0xff);
+    if (incode > 0xff) {
+        err = kNuErrBadData;
+        Nu_ReportError(lzwState->NU_BLOB, err, "invalid initial LZW symbol");
+        goto bail;
+    }
 
-	while (outbuf < outbufend) {
-		incode = ptr = Nu_LZWGetCode(&inbuf, entry, &atBit, &lastByte);
+    while (outbuf < outbufend) {
+        incode = ptr = Nu_LZWGetCode(&inbuf, entry, &atBit, &lastByte);
 
-		/* handle KwKwK case */
-		if (ptr >= entry) {
-			Nu_LZWPush((uchar)finalc);
-			ptr = oldcode;
-		}
+        /* handle KwKwK case */
+        if (ptr >= entry) {
+            Nu_LZWPush((uchar)finalc);
+            ptr = oldcode;
+        }
 
-		/* fill the stack by chasing up the trie */
-		while (ptr > 0xff) {
-			Nu_LZWPush(tablePtr[ptr].ch);
-			ptr = tablePtr[ptr].prefix;
-			Assert(ptr < 4096);
-		}
+        /* fill the stack by chasing up the trie */
+        while (ptr > 0xff) {
+            Nu_LZWPush(tablePtr[ptr].ch);
+            ptr = tablePtr[ptr].prefix;
+            Assert(ptr < 4096);
+        }
 
-		/* done chasing up, now dump the stack, starting with ptr */
-		finalc = ptr;
-		*outbuf++ = ptr;
-		/*printf("PUT 0x%02x\n", *(outbuf-1));*/
-		while (!Nu_LZWStackEmpty()) {
-			*outbuf++ = Nu_LZWPop();
-			/*printf("POP/PUT 0x%02x\n", *(outbuf-1));*/
-		}
+        /* done chasing up, now dump the stack, starting with ptr */
+        finalc = ptr;
+        *outbuf++ = ptr;
+        /*printf("PUT 0x%02x\n", *(outbuf-1));*/
+        while (!Nu_LZWStackEmpty()) {
+            *outbuf++ = Nu_LZWPop();
+            /*printf("POP/PUT 0x%02x\n", *(outbuf-1));*/
+        }
 
-		/* add the new prefix to the trie -- last string plus new char */
-		Assert(finalc <= 0xff);
-		tablePtr[entry].ch = finalc;
-		tablePtr[entry].prefix = oldcode;
-		entry++;
-		oldcode = incode;
-	}
+        /* add the new prefix to the trie -- last string plus new char */
+        Assert(finalc <= 0xff);
+        tablePtr[entry].ch = finalc;
+        tablePtr[entry].prefix = oldcode;
+        entry++;
+        oldcode = incode;
+    }
 
 bail:
-	if (outbuf != outbufend) {
-		err = kNuErrBadData;
-		Nu_ReportError(lzwState->NU_BLOB, err, "LZW expansion failed");
-		return err;
-	}
+    if (outbuf != outbufend) {
+        err = kNuErrBadData;
+        Nu_ReportError(lzwState->NU_BLOB, err, "LZW expansion failed");
+        return err;
+    }
 
-	/* adjust input buffer */
-	lzwState->dataInBuffer -= (inbuf - lzwState->dataPtr);
-	Assert(lzwState->dataInBuffer < 32767*65536);
-	lzwState->dataPtr = (uchar*)inbuf;
+    /* adjust input buffer */
+    lzwState->dataInBuffer -= (inbuf - lzwState->dataPtr);
+    Assert(lzwState->dataInBuffer < 32767*65536);
+    lzwState->dataPtr = (uchar*)inbuf;
 
-	return err;
+    return err;
 }
 
 /*
@@ -1063,138 +1063,138 @@ bail:
  */
 static NuError
 Nu_ExpandLZW2(LZWExpandState* lzwState, uint expectedLen,
-	uint expectedInputUsed)
+    uint expectedInputUsed)
 {
-	NuError err = kNuErrNone;
-	TableEntry* tablePtr;
-	int atBit;
-	uint entry, oldcode, incode, ptr;
-	uint lastByte, finalc;
-	const uchar* inbuf;
-	const uchar* inbufend;
-	uchar* outbuf;
-	uchar* outbufend;
-	uchar* stackPtr;
+    NuError err = kNuErrNone;
+    TableEntry* tablePtr;
+    int atBit;
+    uint entry, oldcode, incode, ptr;
+    uint lastByte, finalc;
+    const uchar* inbuf;
+    const uchar* inbufend;
+    uchar* outbuf;
+    uchar* outbufend;
+    uchar* stackPtr;
 
-	/*DBUG_LZW(("### LZW/2 block start (compIn=%d, rleOut=%d, entry=0x%04x)\n",
-		expectedInputUsed, expectedLen, lzwState->entry));*/
-	Assert(lzwState != nil);
-	Assert(expectedLen > 0 && expectedLen <= kNuLZWBlockSize);
+    /*DBUG_LZW(("### LZW/2 block start (compIn=%d, rleOut=%d, entry=0x%04x)\n",
+        expectedInputUsed, expectedLen, lzwState->entry));*/
+    Assert(lzwState != nil);
+    Assert(expectedLen > 0 && expectedLen <= kNuLZWBlockSize);
 
-	inbuf = lzwState->dataPtr;
-	inbufend = lzwState->dataPtr + expectedInputUsed;
-	outbuf = lzwState->lzwOutBuf;
-	outbufend = outbuf + expectedLen;
-	entry = lzwState->entry;
-	tablePtr = lzwState->trie - 256;	/* don't store 256 empties */
-	stackPtr = lzwState->stack;
+    inbuf = lzwState->dataPtr;
+    inbufend = lzwState->dataPtr + expectedInputUsed;
+    outbuf = lzwState->lzwOutBuf;
+    outbufend = outbuf + expectedLen;
+    entry = lzwState->entry;
+    tablePtr = lzwState->trie - 256;    /* don't store 256 empties */
+    stackPtr = lzwState->stack;
 
-	atBit = 0;
-	lastByte = 0;
+    atBit = 0;
+    lastByte = 0;
 
-	/*
-	 * If the table isn't empty, initialize from the saved state and
-	 * jump straight into the main loop.
-	 *
-	 * There's a funny situation that arises when a table clear is the
-	 * second-to-last code in the previous chunk.  After we see the
-	 * table clear, we get the next code and use it to initialize "oldcode"
-	 * and "incode" -- but we don't advance "entry" yet.  The way that
-	 * ShrinkIt originally worked, the next time we came through we'd
-	 * see what we thought was an empty table and we'd reinitialize.  So
-	 * we use "resetFix" to keep track of this situation.
-	 */
-	if (entry != kNuLZWFirstCode || lzwState->resetFix) {
-		/* table not empty */
-		oldcode = lzwState->oldcode;
-		incode = lzwState->incode;
-		finalc = lzwState->finalc;
-		lzwState->resetFix = false;
-		goto main_loop;
-	}
+    /*
+     * If the table isn't empty, initialize from the saved state and
+     * jump straight into the main loop.
+     *
+     * There's a funny situation that arises when a table clear is the
+     * second-to-last code in the previous chunk.  After we see the
+     * table clear, we get the next code and use it to initialize "oldcode"
+     * and "incode" -- but we don't advance "entry" yet.  The way that
+     * ShrinkIt originally worked, the next time we came through we'd
+     * see what we thought was an empty table and we'd reinitialize.  So
+     * we use "resetFix" to keep track of this situation.
+     */
+    if (entry != kNuLZWFirstCode || lzwState->resetFix) {
+        /* table not empty */
+        oldcode = lzwState->oldcode;
+        incode = lzwState->incode;
+        finalc = lzwState->finalc;
+        lzwState->resetFix = false;
+        goto main_loop;
+    }
 
 clear_table:
-	/* table is either empty or was just explicitly cleared; reset */
-	entry = kNuLZWFirstCode;	/* 0x0101 */
-	if (outbuf == outbufend) {
-		/* block must've ended on a table clear */
-		DBUG(("--- RARE: ending clear\n"));
-		/* reset values, mostly to quiet gcc's "used before init" warnings */
-		oldcode = incode = finalc = 0;
-		goto main_loop;	/* the while condition will fall through */
-	}
-	finalc = oldcode = incode = Nu_LZWGetCode(&inbuf, entry, &atBit, &lastByte);
-	*outbuf++ = incode;
-	/*printf("PUT 0x%02x\n", *(outbuf-1));*/
-	if (incode > 0xff) {
-		err = kNuErrBadData;
-		Nu_ReportError(lzwState->NU_BLOB, err, "invalid initial LZW symbol");
-		goto bail;
-	}
+    /* table is either empty or was just explicitly cleared; reset */
+    entry = kNuLZWFirstCode;    /* 0x0101 */
+    if (outbuf == outbufend) {
+        /* block must've ended on a table clear */
+        DBUG(("--- RARE: ending clear\n"));
+        /* reset values, mostly to quiet gcc's "used before init" warnings */
+        oldcode = incode = finalc = 0;
+        goto main_loop; /* the while condition will fall through */
+    }
+    finalc = oldcode = incode = Nu_LZWGetCode(&inbuf, entry, &atBit, &lastByte);
+    *outbuf++ = incode;
+    /*printf("PUT 0x%02x\n", *(outbuf-1));*/
+    if (incode > 0xff) {
+        err = kNuErrBadData;
+        Nu_ReportError(lzwState->NU_BLOB, err, "invalid initial LZW symbol");
+        goto bail;
+    }
 
-	if (outbuf == outbufend) {
-		/* if we're out of data, raise the "reset fix" flag */
-		DBUG(("--- RARE: resetFix!\n"));
-		lzwState->resetFix = true;
-		/* fall through; the while condition will let us slip past */
-	}
+    if (outbuf == outbufend) {
+        /* if we're out of data, raise the "reset fix" flag */
+        DBUG(("--- RARE: resetFix!\n"));
+        lzwState->resetFix = true;
+        /* fall through; the while condition will let us slip past */
+    }
 
 main_loop:
-	while (outbuf < outbufend) {
-		incode = ptr = Nu_LZWGetCode(&inbuf, entry, &atBit, &lastByte);
-		/*DBUG_LZW(("### read incode=0x%04x\n", incode));*/
-		if (incode == kNuLZWClearCode)		/* table clear - 0x0100 */
-			goto clear_table;
+    while (outbuf < outbufend) {
+        incode = ptr = Nu_LZWGetCode(&inbuf, entry, &atBit, &lastByte);
+        /*DBUG_LZW(("### read incode=0x%04x\n", incode));*/
+        if (incode == kNuLZWClearCode)      /* table clear - 0x0100 */
+            goto clear_table;
 
-		/* handle KwKwK case */
-		if (ptr >= entry) {
-			Nu_LZWPush((uchar)finalc);
-			ptr = oldcode;
-		}
+        /* handle KwKwK case */
+        if (ptr >= entry) {
+            Nu_LZWPush((uchar)finalc);
+            ptr = oldcode;
+        }
 
-		/* fill the stack by chasing up the trie */
-		while (ptr > 0xff) {
-			Nu_LZWPush(tablePtr[ptr].ch);
-			ptr = tablePtr[ptr].prefix;
-			Assert(ptr < 4096);
-		}
+        /* fill the stack by chasing up the trie */
+        while (ptr > 0xff) {
+            Nu_LZWPush(tablePtr[ptr].ch);
+            ptr = tablePtr[ptr].prefix;
+            Assert(ptr < 4096);
+        }
 
-		/* done chasing up, now dump the stack, starting with ptr */
-		finalc = ptr;
-		*outbuf++ = ptr;
-		/*printf("PUT 0x%02x\n", *(outbuf-1));*/
-		while (!Nu_LZWStackEmpty()) {
-			*outbuf++ = Nu_LZWPop();
-			/*printf("POP/PUT 0x%02x\n", *(outbuf-1));*/
-		}
+        /* done chasing up, now dump the stack, starting with ptr */
+        finalc = ptr;
+        *outbuf++ = ptr;
+        /*printf("PUT 0x%02x\n", *(outbuf-1));*/
+        while (!Nu_LZWStackEmpty()) {
+            *outbuf++ = Nu_LZWPop();
+            /*printf("POP/PUT 0x%02x\n", *(outbuf-1));*/
+        }
 
-		/* add the new prefix to the trie -- last string plus new char */
-		/*DBUG_LZW(("###  entry 0x%04x gets prefix=0x%04x and ch=0x%02x\n",
-			entry, oldcode, finalc));*/
-		Assert(finalc <= 0xff);
-		tablePtr[entry].ch = finalc;
-		tablePtr[entry].prefix = oldcode;
-		entry++;
-		oldcode = incode;
-	}
+        /* add the new prefix to the trie -- last string plus new char */
+        /*DBUG_LZW(("###  entry 0x%04x gets prefix=0x%04x and ch=0x%02x\n",
+            entry, oldcode, finalc));*/
+        Assert(finalc <= 0xff);
+        tablePtr[entry].ch = finalc;
+        tablePtr[entry].prefix = oldcode;
+        entry++;
+        oldcode = incode;
+    }
 
 bail:
-	/*DBUG_LZW(("### end of block\n"));*/
-	Assert(inbuf == inbufend);
-	Assert(outbuf == outbufend);
+    /*DBUG_LZW(("### end of block\n"));*/
+    Assert(inbuf == inbufend);
+    Assert(outbuf == outbufend);
 
-	/* adjust input buffer */
-	lzwState->dataInBuffer -= (inbuf - lzwState->dataPtr);
-	Assert(lzwState->dataInBuffer < 32767*65536);
-	lzwState->dataPtr = (uchar*)inbuf;
+    /* adjust input buffer */
+    lzwState->dataInBuffer -= (inbuf - lzwState->dataPtr);
+    Assert(lzwState->dataInBuffer < 32767*65536);
+    lzwState->dataPtr = (uchar*)inbuf;
 
-	/* save off local copies of stuff */
-	lzwState->entry = entry;
-	lzwState->oldcode = oldcode;
-	lzwState->incode = incode;
-	lzwState->finalc = finalc;
+    /* save off local copies of stuff */
+    lzwState->entry = entry;
+    lzwState->oldcode = oldcode;
+    lzwState->incode = incode;
+    lzwState->finalc = finalc;
 
-	return err;
+    return err;
 }
 
 
@@ -1203,47 +1203,47 @@ bail:
  */
 static NuError
 Nu_ExpandRLE(LZWExpandState* lzwState, const uchar* inbuf,
-	uint expectedInputUsed)
+    uint expectedInputUsed)
 {
-	NuError err = kNuErrNone;
-	uchar *outbuf;
-	uchar *outbufend;
-	const uchar *inbufend;
-	uchar uch, rleEscape;
-	int count;
+    NuError err = kNuErrNone;
+    uchar *outbuf;
+    uchar *outbufend;
+    const uchar *inbufend;
+    uchar uch, rleEscape;
+    int count;
 
-	outbuf = lzwState->rleOutBuf;
-	outbufend = outbuf + kNuLZWBlockSize;
-	inbufend = inbuf + expectedInputUsed;
-	rleEscape = lzwState->rleEscape;
+    outbuf = lzwState->rleOutBuf;
+    outbufend = outbuf + kNuLZWBlockSize;
+    inbufend = inbuf + expectedInputUsed;
+    rleEscape = lzwState->rleEscape;
 
-	while (outbuf < outbufend) {
-		uch = *inbuf++;
-		if (uch == rleEscape) {
-			uch = *inbuf++;
-			count = *inbuf++;
-			while (count-- >= 0)
-				*outbuf++ = uch;
-		} else {
-			*outbuf++ = uch;
-		}
-	}
+    while (outbuf < outbufend) {
+        uch = *inbuf++;
+        if (uch == rleEscape) {
+            uch = *inbuf++;
+            count = *inbuf++;
+            while (count-- >= 0)
+                *outbuf++ = uch;
+        } else {
+            *outbuf++ = uch;
+        }
+    }
 
-	if (outbuf != outbufend) {
-		err = kNuErrBadData;
-		Nu_ReportError(lzwState->NU_BLOB, err,
-			"RLE output glitch (off by %d)", (int)(outbufend-outbuf));
-		goto bail;
-	}
-	if (inbuf != inbufend) {
-		err = kNuErrBadData;
-		Nu_ReportError(lzwState->NU_BLOB, err,
-			"RLE input glitch (off by %d)", (int)(inbufend-inbuf));
-		goto bail;
-	}
+    if (outbuf != outbufend) {
+        err = kNuErrBadData;
+        Nu_ReportError(lzwState->NU_BLOB, err,
+            "RLE output glitch (off by %d)", (int)(outbufend-outbuf));
+        goto bail;
+    }
+    if (inbuf != inbufend) {
+        err = kNuErrBadData;
+        Nu_ReportError(lzwState->NU_BLOB, err,
+            "RLE input glitch (off by %d)", (int)(inbufend-inbuf));
+        goto bail;
+    }
 
 bail:
-	return err;
+    return err;
 }
 
 
@@ -1253,9 +1253,9 @@ bail:
 static inline uchar
 Nu_GetHeaderByte(LZWExpandState* lzwState)
 {
-	lzwState->dataInBuffer--;
-	Assert(lzwState->dataInBuffer > 0);
-	return *lzwState->dataPtr++;
+    lzwState->dataInBuffer--;
+    Assert(lzwState->dataInBuffer > 0);
+    return *lzwState->dataPtr++;
 }
 
 /*
@@ -1270,330 +1270,330 @@ Nu_GetHeaderByte(LZWExpandState* lzwState)
  */
 NuError
 Nu_ExpandLZW(NuArchive* pArchive, const NuRecord* pRecord,
-	const NuThread* pThread, FILE* infp, NuFunnel* pFunnel, ushort* pThreadCrc)
+    const NuThread* pThread, FILE* infp, NuFunnel* pFunnel, ushort* pThreadCrc)
 {
-	NuError err = kNuErrNone;
-	Boolean isType2;
-	LZWExpandState* lzwState;
-	ulong compRemaining, uncompRemaining, minSize;
+    NuError err = kNuErrNone;
+    Boolean isType2;
+    LZWExpandState* lzwState;
+    ulong compRemaining, uncompRemaining, minSize;
 
-	Assert(pArchive != nil);
-	Assert(pThread != nil);
-	Assert(infp != nil);
-	Assert(pFunnel != nil);
+    Assert(pArchive != nil);
+    Assert(pThread != nil);
+    Assert(infp != nil);
+    Assert(pFunnel != nil);
 
-	/*
-	 * Do some initialization and set-up.
-	 */
-	if (pArchive->lzwExpandState == nil) {
-		err = Nu_AllocLZWExpandState(pArchive);
-		BailError(err);
-	}
-	Assert(pArchive->lzwExpandState != nil);
-	Assert(pArchive->compBuf != nil);
+    /*
+     * Do some initialization and set-up.
+     */
+    if (pArchive->lzwExpandState == nil) {
+        err = Nu_AllocLZWExpandState(pArchive);
+        BailError(err);
+    }
+    Assert(pArchive->lzwExpandState != nil);
+    Assert(pArchive->compBuf != nil);
 
-	lzwState = pArchive->lzwExpandState;
-	lzwState->pArchive = pArchive;
+    lzwState = pArchive->lzwExpandState;
+    lzwState->pArchive = pArchive;
 
-	if (pThread->thThreadFormat == kNuThreadFormatLZW1) {
-		isType2 = false;
-		minSize = 7;	/* crc-lo,crc-hi,vol,rle-delim,len-lo,len-hi,lzw-used */
-		lzwState->chunkCrc = kNuInitialChunkCRC;		/* 0x0000 */
-	} else if (pThread->thThreadFormat == kNuThreadFormatLZW2) {
-		isType2 = true;
-		minSize = 4;	/* vol,rle-delim,len-lo,len-hi */
-	} else {
-		err = kNuErrBadFormat;
-		goto bail;
-	}
+    if (pThread->thThreadFormat == kNuThreadFormatLZW1) {
+        isType2 = false;
+        minSize = 7;    /* crc-lo,crc-hi,vol,rle-delim,len-lo,len-hi,lzw-used */
+        lzwState->chunkCrc = kNuInitialChunkCRC;        /* 0x0000 */
+    } else if (pThread->thThreadFormat == kNuThreadFormatLZW2) {
+        isType2 = true;
+        minSize = 4;    /* vol,rle-delim,len-lo,len-hi */
+    } else {
+        err = kNuErrBadFormat;
+        goto bail;
+    }
 
-	uncompRemaining = pThread->actualThreadEOF;
-	compRemaining = pThread->thCompThreadEOF;
-	if (compRemaining < minSize) {
-		err = kNuErrBadData;
-		Nu_ReportError(NU_BLOB, err, "thread too short to be valid LZW");
-		goto bail;
-	}
-	if (compRemaining && !uncompRemaining) {
-		err = kNuErrBadData;
-		Nu_ReportError(NU_BLOB, err,
-			"compressed data but no uncompressed data??");
-		goto bail;
-	}
+    uncompRemaining = pThread->actualThreadEOF;
+    compRemaining = pThread->thCompThreadEOF;
+    if (compRemaining < minSize) {
+        err = kNuErrBadData;
+        Nu_ReportError(NU_BLOB, err, "thread too short to be valid LZW");
+        goto bail;
+    }
+    if (compRemaining && !uncompRemaining) {
+        err = kNuErrBadData;
+        Nu_ReportError(NU_BLOB, err,
+            "compressed data but no uncompressed data??");
+        goto bail;
+    }
 
-	/*
-	 * Read the LZW header out of the data stream.
-	 */
-	if (!isType2) {
-		lzwState->fileCrc = getc(infp);
-		lzwState->fileCrc |= getc(infp) << 8;
-		compRemaining -= 2;
-	}
-	lzwState->diskVol = getc(infp);		/* disk volume #; not really used */
-	lzwState->rleEscape = getc(infp);	/* RLE escape char for this thread */
-	compRemaining -= 2;
+    /*
+     * Read the LZW header out of the data stream.
+     */
+    if (!isType2) {
+        lzwState->fileCrc = getc(infp);
+        lzwState->fileCrc |= getc(infp) << 8;
+        compRemaining -= 2;
+    }
+    lzwState->diskVol = getc(infp);     /* disk volume #; not really used */
+    lzwState->rleEscape = getc(infp);   /* RLE escape char for this thread */
+    compRemaining -= 2;
 
-	lzwState->dataInBuffer = 0;
-	lzwState->dataPtr = nil;
+    lzwState->dataInBuffer = 0;
+    lzwState->dataPtr = nil;
 
-	/* reset pointers */
-	lzwState->entry = kNuLZWFirstCode;	/* 0x0101 */
-	lzwState->resetFix = false;
+    /* reset pointers */
+    lzwState->entry = kNuLZWFirstCode;  /* 0x0101 */
+    lzwState->resetFix = false;
 
-	/*DBUG_LZW(("### LZW%d block, vol=0x%02x, rleEsc=0x%02x\n",
-		isType2 +1, lzwState->diskVol, lzwState->rleEscape));*/
+    /*DBUG_LZW(("### LZW%d block, vol=0x%02x, rleEsc=0x%02x\n",
+        isType2 +1, lzwState->diskVol, lzwState->rleEscape));*/
 
-	/*
-	 * Read large blocks of the source file into compBuf, taking care not
-	 * to read past the end of the thread data.
-	 *
-	 * The motivation for doing it this way rather than just reading the
-	 * next compressed chunk are (1) compBuf is considerably larger than
-	 * stdio BUFSIZ on most systems, and (2) for LZW/1 we don't know the
-	 * size of the compressed data anyway.
-	 *
-	 * We need to ensure that we have at least one full compressed chunk
-	 * in the buffer.  Since the compressor will refuse to store the
-	 * compressed data if it grows, we know that we need 4K plus the
-	 * chunk header.
-	 *
-	 * Once we have what looks like a full chunk, invoke the LZW decoder.
-	 */
-	while (uncompRemaining) {
-		Boolean rleUsed;
-		Boolean lzwUsed;
-		ulong getSize;
-		uint rleLen;		/* length after RLE; 4096 if no RLE */
-		uint lzwLen = 0;	/* type 2 only */
-		uint writeLen, inCount;
-		const uchar* writeBuf;
+    /*
+     * Read large blocks of the source file into compBuf, taking care not
+     * to read past the end of the thread data.
+     *
+     * The motivation for doing it this way rather than just reading the
+     * next compressed chunk are (1) compBuf is considerably larger than
+     * stdio BUFSIZ on most systems, and (2) for LZW/1 we don't know the
+     * size of the compressed data anyway.
+     *
+     * We need to ensure that we have at least one full compressed chunk
+     * in the buffer.  Since the compressor will refuse to store the
+     * compressed data if it grows, we know that we need 4K plus the
+     * chunk header.
+     *
+     * Once we have what looks like a full chunk, invoke the LZW decoder.
+     */
+    while (uncompRemaining) {
+        Boolean rleUsed;
+        Boolean lzwUsed;
+        ulong getSize;
+        uint rleLen;        /* length after RLE; 4096 if no RLE */
+        uint lzwLen = 0;    /* type 2 only */
+        uint writeLen, inCount;
+        const uchar* writeBuf;
 
-		/* if we're low, and there's more data available, read more */
-		if (lzwState->dataInBuffer < kNuLZWDesiredChunk && compRemaining) {
-			/*
-			 * First thing we do is slide the old data to the start of
-			 * the buffer.
-			 */
-			if (lzwState->dataInBuffer) {
-				Assert(lzwState->dataPtr != nil);
-				Assert(pArchive->compBuf != lzwState->dataPtr);
-				memmove(pArchive->compBuf, lzwState->dataPtr,
-					lzwState->dataInBuffer);
-			}
-			lzwState->dataPtr = pArchive->compBuf;
+        /* if we're low, and there's more data available, read more */
+        if (lzwState->dataInBuffer < kNuLZWDesiredChunk && compRemaining) {
+            /*
+             * First thing we do is slide the old data to the start of
+             * the buffer.
+             */
+            if (lzwState->dataInBuffer) {
+                Assert(lzwState->dataPtr != nil);
+                Assert(pArchive->compBuf != lzwState->dataPtr);
+                memmove(pArchive->compBuf, lzwState->dataPtr,
+                    lzwState->dataInBuffer);
+            }
+            lzwState->dataPtr = pArchive->compBuf;
 
-			/*
-			 * Next we read as much as we can.
-			 */
-			if (kNuGenCompBufSize - lzwState->dataInBuffer < compRemaining)
-				getSize = kNuGenCompBufSize - lzwState->dataInBuffer;
-			else
-				getSize = compRemaining;
+            /*
+             * Next we read as much as we can.
+             */
+            if (kNuGenCompBufSize - lzwState->dataInBuffer < compRemaining)
+                getSize = kNuGenCompBufSize - lzwState->dataInBuffer;
+            else
+                getSize = compRemaining;
 
-			/*printf("+++ READING %ld\n", getSize);*/
-			err = Nu_FRead(infp, lzwState->dataPtr + lzwState->dataInBuffer,
-					getSize);
-			if (err != kNuErrNone)
-			{
-				Nu_ReportError(NU_BLOB, err,
-					"failed reading compressed data (%ld bytes)", getSize);
-				goto bail;
-			}
-			lzwState->dataInBuffer += getSize;
-			compRemaining -= getSize;
+            /*printf("+++ READING %ld\n", getSize);*/
+            err = Nu_FRead(infp, lzwState->dataPtr + lzwState->dataInBuffer,
+                    getSize);
+            if (err != kNuErrNone)
+            {
+                Nu_ReportError(NU_BLOB, err,
+                    "failed reading compressed data (%ld bytes)", getSize);
+                goto bail;
+            }
+            lzwState->dataInBuffer += getSize;
+            compRemaining -= getSize;
 
-			Assert(compRemaining < 32767*65536);
-			Assert(lzwState->dataInBuffer <= kNuGenCompBufSize);
-		}
-		Assert(lzwState->dataInBuffer);
+            Assert(compRemaining < 32767*65536);
+            Assert(lzwState->dataInBuffer <= kNuGenCompBufSize);
+        }
+        Assert(lzwState->dataInBuffer);
 
-		/*
-		 * Read the LZW block header.
-		 */
-		if (isType2) {
-			rleLen = Nu_GetHeaderByte(lzwState);
-			rleLen |= Nu_GetHeaderByte(lzwState) << 8;
-			lzwUsed = rleLen & 0x8000 ? true : false;
-			rleLen &= 0x1fff;
-			rleUsed = (rleLen != kNuLZWBlockSize);
+        /*
+         * Read the LZW block header.
+         */
+        if (isType2) {
+            rleLen = Nu_GetHeaderByte(lzwState);
+            rleLen |= Nu_GetHeaderByte(lzwState) << 8;
+            lzwUsed = rleLen & 0x8000 ? true : false;
+            rleLen &= 0x1fff;
+            rleUsed = (rleLen != kNuLZWBlockSize);
 
-			if (lzwUsed) {
-				lzwLen = Nu_GetHeaderByte(lzwState);
-				lzwLen |= Nu_GetHeaderByte(lzwState) << 8;
-				lzwLen -= 4;	/* don't include header bytes */
-			}
-		} else {
-			rleLen = Nu_GetHeaderByte(lzwState);
-			rleLen |= Nu_GetHeaderByte(lzwState) << 8;
-			lzwUsed = Nu_GetHeaderByte(lzwState);
-			if (lzwUsed != 0 && lzwUsed != 1) {
-				err = kNuErrBadData;
-				Nu_ReportError(NU_BLOB, err, "garbled LZW header");
-				goto bail;
-			}
-			rleUsed = (rleLen != kNuLZWBlockSize);
-		}
+            if (lzwUsed) {
+                lzwLen = Nu_GetHeaderByte(lzwState);
+                lzwLen |= Nu_GetHeaderByte(lzwState) << 8;
+                lzwLen -= 4;    /* don't include header bytes */
+            }
+        } else {
+            rleLen = Nu_GetHeaderByte(lzwState);
+            rleLen |= Nu_GetHeaderByte(lzwState) << 8;
+            lzwUsed = Nu_GetHeaderByte(lzwState);
+            if (lzwUsed != 0 && lzwUsed != 1) {
+                err = kNuErrBadData;
+                Nu_ReportError(NU_BLOB, err, "garbled LZW header");
+                goto bail;
+            }
+            rleUsed = (rleLen != kNuLZWBlockSize);
+        }
 
-		/*DBUG_LZW(("### CHUNK rleLen=%d(%d) lzwLen=%d(%d) uncompRem=%ld\n",
-			rleLen, rleUsed, lzwLen, lzwUsed, uncompRemaining));*/
+        /*DBUG_LZW(("### CHUNK rleLen=%d(%d) lzwLen=%d(%d) uncompRem=%ld\n",
+            rleLen, rleUsed, lzwLen, lzwUsed, uncompRemaining));*/
 
-		if (uncompRemaining <= kNuLZWBlockSize)
-			writeLen = uncompRemaining;		/* last block */
-		else
-			writeLen = kNuLZWBlockSize;
+        if (uncompRemaining <= kNuLZWBlockSize)
+            writeLen = uncompRemaining;     /* last block */
+        else
+            writeLen = kNuLZWBlockSize;
 
-		#ifndef NDEBUG
-		writeBuf = nil;
-		#endif
+        #ifndef NDEBUG
+        writeBuf = nil;
+        #endif
 
-		/*
-		 * Decode the chunk, and point "writeBuf" at the uncompressed data.
-		 *
-		 * LZW always expands from the read buffer into lzwState->lzwOutBuf.
-		 * RLE expands from a specific buffer to lzwState->rleOutBuf.
-		 */
-		if (lzwUsed) {
-			if (!isType2) {
-				err = Nu_ExpandLZW1(lzwState, rleLen);
-			} else {
-				Assert(lzwState->dataInBuffer >= lzwLen);
-				err = Nu_ExpandLZW2(lzwState, rleLen, lzwLen);
-			}
+        /*
+         * Decode the chunk, and point "writeBuf" at the uncompressed data.
+         *
+         * LZW always expands from the read buffer into lzwState->lzwOutBuf.
+         * RLE expands from a specific buffer to lzwState->rleOutBuf.
+         */
+        if (lzwUsed) {
+            if (!isType2) {
+                err = Nu_ExpandLZW1(lzwState, rleLen);
+            } else {
+                Assert(lzwState->dataInBuffer >= lzwLen);
+                err = Nu_ExpandLZW2(lzwState, rleLen, lzwLen);
+            }
 
-			BailError(err);
+            BailError(err);
 
-			if (rleUsed) {
-				err = Nu_ExpandRLE(lzwState, lzwState->lzwOutBuf, rleLen);
-				BailError(err);
-				writeBuf = lzwState->rleOutBuf;
-			} else {
-				writeBuf = lzwState->lzwOutBuf;
-			}
+            if (rleUsed) {
+                err = Nu_ExpandRLE(lzwState, lzwState->lzwOutBuf, rleLen);
+                BailError(err);
+                writeBuf = lzwState->rleOutBuf;
+            } else {
+                writeBuf = lzwState->lzwOutBuf;
+            }
 
-		} else {
-			if (rleUsed) {
-				err = Nu_ExpandRLE(lzwState, lzwState->dataPtr, rleLen);
-				BailError(err);
-				writeBuf = lzwState->rleOutBuf;
-				inCount = rleLen;
-			} else {
-				writeBuf = lzwState->dataPtr;
-				inCount = writeLen;
-			}
-			
-			/*
-			 * Advance the input buffer data pointers to consume the input.
-			 * The LZW expansion functions do this for us, but we're not
-			 * using LZW.
-			 */
-			lzwState->dataPtr += inCount;
-			lzwState->dataInBuffer -= inCount;
-			Assert(lzwState->dataInBuffer < 32767*65536);
+        } else {
+            if (rleUsed) {
+                err = Nu_ExpandRLE(lzwState, lzwState->dataPtr, rleLen);
+                BailError(err);
+                writeBuf = lzwState->rleOutBuf;
+                inCount = rleLen;
+            } else {
+                writeBuf = lzwState->dataPtr;
+                inCount = writeLen;
+            }
+            
+            /*
+             * Advance the input buffer data pointers to consume the input.
+             * The LZW expansion functions do this for us, but we're not
+             * using LZW.
+             */
+            lzwState->dataPtr += inCount;
+            lzwState->dataInBuffer -= inCount;
+            Assert(lzwState->dataInBuffer < 32767*65536);
 
-			/* no LZW used, reset pointers */
-			lzwState->entry = kNuLZWFirstCode;	/* 0x0101 */
-			lzwState->resetFix = false;
-		}
+            /* no LZW used, reset pointers */
+            lzwState->entry = kNuLZWFirstCode;  /* 0x0101 */
+            lzwState->resetFix = false;
+        }
 
-		Assert(writeBuf != nil);
+        Assert(writeBuf != nil);
 
-		/*
-		 * Compute the CRC of the uncompressed data, and write it.  For
-		 * LZW/1, the CRC of the last block includes the zeros that pad
-		 * it out to 4096 bytes.
-		 *
-		 * See commentary in the compression code for why we have to
-		 * compute two CRCs for LZW/1.
-		 */
-		if (isType2) {
-			if (pThreadCrc != nil) {
-				*pThreadCrc = Nu_CalcCRC16(*pThreadCrc, writeBuf, writeLen);
-			}
-		} else {
-			if (pThreadCrc != nil) {
-				*pThreadCrc = Nu_CalcCRC16(*pThreadCrc, writeBuf,
-								kNuLZWBlockSize);
-			}
-			lzwState->chunkCrc = Nu_CalcCRC16(lzwState->chunkCrc,
-				writeBuf, kNuLZWBlockSize);
-		}
+        /*
+         * Compute the CRC of the uncompressed data, and write it.  For
+         * LZW/1, the CRC of the last block includes the zeros that pad
+         * it out to 4096 bytes.
+         *
+         * See commentary in the compression code for why we have to
+         * compute two CRCs for LZW/1.
+         */
+        if (isType2) {
+            if (pThreadCrc != nil) {
+                *pThreadCrc = Nu_CalcCRC16(*pThreadCrc, writeBuf, writeLen);
+            }
+        } else {
+            if (pThreadCrc != nil) {
+                *pThreadCrc = Nu_CalcCRC16(*pThreadCrc, writeBuf,
+                                kNuLZWBlockSize);
+            }
+            lzwState->chunkCrc = Nu_CalcCRC16(lzwState->chunkCrc,
+                writeBuf, kNuLZWBlockSize);
+        }
 
-		/* write the data, possibly doing an EOL conversion */
-		err = Nu_FunnelWrite(pArchive, pFunnel, writeBuf, writeLen);
-		if (err != kNuErrNone) {
-			Nu_ReportError(NU_BLOB, err, "unable to write output");
-			goto bail;
-		}
+        /* write the data, possibly doing an EOL conversion */
+        err = Nu_FunnelWrite(pArchive, pFunnel, writeBuf, writeLen);
+        if (err != kNuErrNone) {
+            Nu_ReportError(NU_BLOB, err, "unable to write output");
+            goto bail;
+        }
 
-		uncompRemaining -= writeLen;
-		Assert(uncompRemaining < 32767*65536);
-	}
+        uncompRemaining -= writeLen;
+        Assert(uncompRemaining < 32767*65536);
+    }
 
-	/*
-	 * It appears that ShrinkIt appends an extra byte after the last
-	 * LZW block.  The byte is included in the compThreadEOF, but isn't
-	 * consumed by the LZW expansion routine, so it's usually harmless.
-	 *
-	 * It is *possible* for extra bytes to be here legitimately, but very
-	 * unlikely.  The very last block is always padded out to 4K with
-	 * zeros.  If you found a situation where that last block failed
-	 * to compress with RLE and LZW (perhaps the last block filled up
-	 * all but the last 2 or 3 bytes with uncompressible data), but
-	 * earlier data made the overall file compressible, you would have
-	 * a few stray bytes in the archive.
-	 *
-	 * This is a little easier to do if the last block has lots of single
-	 * 0xdb characters in it, since that requires RLE to escape them.
-	 *
-	 * Whatever the case, issue a warning if it looks like there's too
-	 * many of them.
-	 */
-	if (lzwState->dataInBuffer > 1) {
-		DBUG(("--- Found %ld bytes following compressed data (compRem=%ld)\n",
-			lzwState->dataInBuffer, compRemaining));
-		if (lzwState->dataInBuffer > 32) {
-			Nu_ReportError(NU_BLOB, kNuErrNone, "(Warning) lots of fluff (%ld)",
-				lzwState->dataInBuffer);
-		}
-	}
+    /*
+     * It appears that ShrinkIt appends an extra byte after the last
+     * LZW block.  The byte is included in the compThreadEOF, but isn't
+     * consumed by the LZW expansion routine, so it's usually harmless.
+     *
+     * It is *possible* for extra bytes to be here legitimately, but very
+     * unlikely.  The very last block is always padded out to 4K with
+     * zeros.  If you found a situation where that last block failed
+     * to compress with RLE and LZW (perhaps the last block filled up
+     * all but the last 2 or 3 bytes with uncompressible data), but
+     * earlier data made the overall file compressible, you would have
+     * a few stray bytes in the archive.
+     *
+     * This is a little easier to do if the last block has lots of single
+     * 0xdb characters in it, since that requires RLE to escape them.
+     *
+     * Whatever the case, issue a warning if it looks like there's too
+     * many of them.
+     */
+    if (lzwState->dataInBuffer > 1) {
+        DBUG(("--- Found %ld bytes following compressed data (compRem=%ld)\n",
+            lzwState->dataInBuffer, compRemaining));
+        if (lzwState->dataInBuffer > 32) {
+            Nu_ReportError(NU_BLOB, kNuErrNone, "(Warning) lots of fluff (%ld)",
+                lzwState->dataInBuffer);
+        }
+    }
 
-	/*
-	 * We might be okay with stray bytes in the thread, but we're definitely
-	 * not okay with anything identified as compressed data being unused.
-	 */
-	if (compRemaining) {
-		err = kNuErrBadData;
-		Nu_ReportError(NU_BLOB, err,
-			"not all compressed data was used (%ld/%ld)",
-			compRemaining, lzwState->dataInBuffer);
-		goto bail;
-	}
+    /*
+     * We might be okay with stray bytes in the thread, but we're definitely
+     * not okay with anything identified as compressed data being unused.
+     */
+    if (compRemaining) {
+        err = kNuErrBadData;
+        Nu_ReportError(NU_BLOB, err,
+            "not all compressed data was used (%ld/%ld)",
+            compRemaining, lzwState->dataInBuffer);
+        goto bail;
+    }
 
-	/*
-	 * ShrinkIt used to put the CRC in the stream and not in the thread
-	 * header.  For LZW/1, we check the CRC here; for LZW/2, we hope it's
-	 * in the thread header.  (As noted in the compression code, it's
-	 * possible to end up with two CRCs or no CRCs.)
-	 */
-	if (!isType2 && !pArchive->valIgnoreCRC) {
-		if (lzwState->chunkCrc != lzwState->fileCrc) {
-			if (!Nu_ShouldIgnoreBadCRC(pArchive, pRecord, kNuErrBadDataCRC)) {
-				err = kNuErrBadDataCRC;
-				Nu_ReportError(NU_BLOB, err,
-					"expected 0x%04x, got 0x%04x (LZW/1)",
-					lzwState->fileCrc, lzwState->chunkCrc);
-				(void) Nu_FunnelFlush(pArchive, pFunnel);
-				goto bail;
-			}
-		} else {
-			DBUG(("--- LZW/1 CRCs match (0x%04x)\n", lzwState->chunkCrc));
-		}
-	}
+    /*
+     * ShrinkIt used to put the CRC in the stream and not in the thread
+     * header.  For LZW/1, we check the CRC here; for LZW/2, we hope it's
+     * in the thread header.  (As noted in the compression code, it's
+     * possible to end up with two CRCs or no CRCs.)
+     */
+    if (!isType2 && !pArchive->valIgnoreCRC) {
+        if (lzwState->chunkCrc != lzwState->fileCrc) {
+            if (!Nu_ShouldIgnoreBadCRC(pArchive, pRecord, kNuErrBadDataCRC)) {
+                err = kNuErrBadDataCRC;
+                Nu_ReportError(NU_BLOB, err,
+                    "expected 0x%04x, got 0x%04x (LZW/1)",
+                    lzwState->fileCrc, lzwState->chunkCrc);
+                (void) Nu_FunnelFlush(pArchive, pFunnel);
+                goto bail;
+            }
+        } else {
+            DBUG(("--- LZW/1 CRCs match (0x%04x)\n", lzwState->chunkCrc));
+        }
+    }
 
 bail:
-	if (err == kNuErrNone)
-		err = Nu_FunnelFlush(pArchive, pFunnel);
+    if (err == kNuErrNone)
+        err = Nu_FunnelFlush(pArchive, pFunnel);
 
-	return err;
+    return err;
 }
 

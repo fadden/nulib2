@@ -14,7 +14,7 @@
 
 /*
  * ===========================================================================
- *		Read and write
+ *      Read and write
  * ===========================================================================
  */
 
@@ -24,23 +24,23 @@
 uchar
 Nu_ReadOneC(NuArchive* pArchive, FILE* fp, ushort* pCrc)
 {
-	int ic;
+    int ic;
 
-	Assert(pArchive != nil);
-	Assert(fp != nil);
-	Assert(pCrc != nil);
+    Assert(pArchive != nil);
+    Assert(fp != nil);
+    Assert(pCrc != nil);
 
-	ic = getc(fp);
-	*pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
+    ic = getc(fp);
+    *pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
 
-	return ic;
+    return ic;
 }
 
 uchar
 Nu_ReadOne(NuArchive* pArchive, FILE* fp)
 {
-	ushort dummyCrc /*= 0*/;
-	return Nu_ReadOneC(pArchive, fp, &dummyCrc);
+    ushort dummyCrc /*= 0*/;
+    return Nu_ReadOneC(pArchive, fp, &dummyCrc);
 }
 
 /*
@@ -49,18 +49,18 @@ Nu_ReadOne(NuArchive* pArchive, FILE* fp)
 void
 Nu_WriteOneC(NuArchive* pArchive, FILE* fp, uchar val, ushort* pCrc)
 {
-	Assert(pArchive != nil);
-	Assert(fp != nil);
-	Assert(pCrc != nil);
+    Assert(pArchive != nil);
+    Assert(fp != nil);
+    Assert(pCrc != nil);
 
-	putc(val, fp);
+    putc(val, fp);
 }
 
 void
 Nu_WriteOne(NuArchive* pArchive, FILE* fp, uchar val)
 {
-	ushort dummyCrc /*= 0*/;
-	Nu_WriteOneC(pArchive, fp, val, &dummyCrc);
+    ushort dummyCrc /*= 0*/;
+    Nu_WriteOneC(pArchive, fp, val, &dummyCrc);
 }
 
 
@@ -70,25 +70,25 @@ Nu_WriteOne(NuArchive* pArchive, FILE* fp, uchar val)
 ushort
 Nu_ReadTwoC(NuArchive* pArchive, FILE* fp, ushort* pCrc)
 {
-	int ic1, ic2;
+    int ic1, ic2;
 
-	Assert(pArchive != nil);
-	Assert(fp != nil);
-	Assert(pCrc != nil);
+    Assert(pArchive != nil);
+    Assert(fp != nil);
+    Assert(pCrc != nil);
 
-	ic1 = getc(fp);
-	*pCrc = Nu_UpdateCRC16((uchar)ic1, *pCrc);
-	ic2 = getc(fp);
-	*pCrc = Nu_UpdateCRC16((uchar)ic2, *pCrc);
+    ic1 = getc(fp);
+    *pCrc = Nu_UpdateCRC16((uchar)ic1, *pCrc);
+    ic2 = getc(fp);
+    *pCrc = Nu_UpdateCRC16((uchar)ic2, *pCrc);
 
-	return ic1 | ic2 << 8;
+    return ic1 | ic2 << 8;
 }
 
 ushort
 Nu_ReadTwo(NuArchive* pArchive, FILE* fp)
 {
-	ushort dummyCrc /*= 0*/;
-	return Nu_ReadTwoC(pArchive, fp, &dummyCrc);
+    ushort dummyCrc /*= 0*/;
+    return Nu_ReadTwoC(pArchive, fp, &dummyCrc);
 }
 
 
@@ -98,26 +98,26 @@ Nu_ReadTwo(NuArchive* pArchive, FILE* fp)
 void
 Nu_WriteTwoC(NuArchive* pArchive, FILE* fp, ushort val, ushort* pCrc)
 {
-	int ic1, ic2;
+    int ic1, ic2;
 
-	Assert(pArchive != nil);
-	Assert(fp != nil);
-	Assert(pCrc != nil);
+    Assert(pArchive != nil);
+    Assert(fp != nil);
+    Assert(pCrc != nil);
 
-	ic1 = val & 0xff;
-	*pCrc = Nu_UpdateCRC16((uchar)ic1, *pCrc);
-	ic2 = val >> 8;
-	*pCrc = Nu_UpdateCRC16((uchar)ic2, *pCrc);
+    ic1 = val & 0xff;
+    *pCrc = Nu_UpdateCRC16((uchar)ic1, *pCrc);
+    ic2 = val >> 8;
+    *pCrc = Nu_UpdateCRC16((uchar)ic2, *pCrc);
 
-	putc(ic1, fp);
-	putc(ic2, fp);
+    putc(ic1, fp);
+    putc(ic2, fp);
 }
 
 void
 Nu_WriteTwo(NuArchive* pArchive, FILE* fp, ushort val)
 {
-	ushort dummyCrc /*= 0*/;
-	Nu_WriteTwoC(pArchive, fp, val, &dummyCrc);
+    ushort dummyCrc /*= 0*/;
+    Nu_WriteTwoC(pArchive, fp, val, &dummyCrc);
 }
 
 
@@ -127,29 +127,29 @@ Nu_WriteTwo(NuArchive* pArchive, FILE* fp, ushort val)
 ulong
 Nu_ReadFourC(NuArchive* pArchive, FILE* fp, ushort* pCrc)
 {
-	int ic1, ic2, ic3, ic4;
+    int ic1, ic2, ic3, ic4;
 
-	Assert(pArchive != nil);
-	Assert(fp != nil);
-	Assert(pCrc != nil);
+    Assert(pArchive != nil);
+    Assert(fp != nil);
+    Assert(pCrc != nil);
 
-	ic1 = getc(fp);
-	*pCrc = Nu_UpdateCRC16((uchar)ic1, *pCrc);
-	ic2 = getc(fp);
-	*pCrc = Nu_UpdateCRC16((uchar)ic2, *pCrc);
-	ic3 = getc(fp);
-	*pCrc = Nu_UpdateCRC16((uchar)ic3, *pCrc);
-	ic4 = getc(fp);
-	*pCrc = Nu_UpdateCRC16((uchar)ic4, *pCrc);
+    ic1 = getc(fp);
+    *pCrc = Nu_UpdateCRC16((uchar)ic1, *pCrc);
+    ic2 = getc(fp);
+    *pCrc = Nu_UpdateCRC16((uchar)ic2, *pCrc);
+    ic3 = getc(fp);
+    *pCrc = Nu_UpdateCRC16((uchar)ic3, *pCrc);
+    ic4 = getc(fp);
+    *pCrc = Nu_UpdateCRC16((uchar)ic4, *pCrc);
 
-	return ic1 | ic2 << 8 | (ulong)ic3 << 16 | (ulong)ic4 << 24;
+    return ic1 | ic2 << 8 | (ulong)ic3 << 16 | (ulong)ic4 << 24;
 }
 
 ulong
 Nu_ReadFour(NuArchive* pArchive, FILE* fp)
 {
-	ushort dummyCrc /*= 0*/;
-	return Nu_ReadFourC(pArchive, fp, &dummyCrc);
+    ushort dummyCrc /*= 0*/;
+    return Nu_ReadFourC(pArchive, fp, &dummyCrc);
 }
 
 
@@ -159,32 +159,32 @@ Nu_ReadFour(NuArchive* pArchive, FILE* fp)
 void
 Nu_WriteFourC(NuArchive* pArchive, FILE* fp, ulong val, ushort* pCrc)
 {
-	int ic1, ic2, ic3, ic4;
+    int ic1, ic2, ic3, ic4;
 
-	Assert(pArchive != nil);
-	Assert(fp != nil);
-	Assert(pCrc != nil);
+    Assert(pArchive != nil);
+    Assert(fp != nil);
+    Assert(pCrc != nil);
 
-	ic1 = val & 0xff;
-	*pCrc = Nu_UpdateCRC16((uchar)ic1, *pCrc);
-	ic2 = (val >> 8) & 0xff;
-	*pCrc = Nu_UpdateCRC16((uchar)ic2, *pCrc);
-	ic3 = (val >> 16) & 0xff;
-	*pCrc = Nu_UpdateCRC16((uchar)ic3, *pCrc);
-	ic4 = val >> 24;
-	*pCrc = Nu_UpdateCRC16((uchar)ic4, *pCrc);
+    ic1 = val & 0xff;
+    *pCrc = Nu_UpdateCRC16((uchar)ic1, *pCrc);
+    ic2 = (val >> 8) & 0xff;
+    *pCrc = Nu_UpdateCRC16((uchar)ic2, *pCrc);
+    ic3 = (val >> 16) & 0xff;
+    *pCrc = Nu_UpdateCRC16((uchar)ic3, *pCrc);
+    ic4 = val >> 24;
+    *pCrc = Nu_UpdateCRC16((uchar)ic4, *pCrc);
 
-	putc(ic1, fp);
-	putc(ic2, fp);
-	putc(ic3, fp);
-	putc(ic4, fp);
+    putc(ic1, fp);
+    putc(ic2, fp);
+    putc(ic3, fp);
+    putc(ic4, fp);
 }
 
 void
 Nu_WriteFour(NuArchive* pArchive, FILE* fp, ulong val)
 {
-	ushort dummyCrc /*=0*/;
-	Nu_WriteFourC(pArchive, fp, val, &dummyCrc);
+    ushort dummyCrc /*=0*/;
+    Nu_WriteFourC(pArchive, fp, val, &dummyCrc);
 }
 
 
@@ -198,46 +198,46 @@ Nu_WriteFour(NuArchive* pArchive, FILE* fp, ulong val)
 NuDateTime
 Nu_ReadDateTimeC(NuArchive* pArchive, FILE* fp, ushort* pCrc)
 {
-	NuDateTime temp;
-	int ic;
+    NuDateTime temp;
+    int ic;
 
-	Assert(pArchive != nil);
-	Assert(fp != nil);
-	Assert(pCrc != nil);
+    Assert(pArchive != nil);
+    Assert(fp != nil);
+    Assert(pCrc != nil);
 
-	ic = getc(fp);
-	*pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
-	temp.second = ic;
-	ic = getc(fp);
-	*pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
-	temp.minute = ic;
-	ic = getc(fp);
-	*pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
-	temp.hour = ic;
-	ic = getc(fp);
-	*pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
-	temp.year = ic;
-	ic = getc(fp);
-	*pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
-	temp.day = ic;
-	ic = getc(fp);
-	*pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
-	temp.month = ic;
-	ic = getc(fp);
-	*pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
-	temp.extra = ic;
-	ic = getc(fp);
-	*pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
-	temp.weekDay = ic;
+    ic = getc(fp);
+    *pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
+    temp.second = ic;
+    ic = getc(fp);
+    *pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
+    temp.minute = ic;
+    ic = getc(fp);
+    *pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
+    temp.hour = ic;
+    ic = getc(fp);
+    *pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
+    temp.year = ic;
+    ic = getc(fp);
+    *pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
+    temp.day = ic;
+    ic = getc(fp);
+    *pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
+    temp.month = ic;
+    ic = getc(fp);
+    *pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
+    temp.extra = ic;
+    ic = getc(fp);
+    *pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
+    temp.weekDay = ic;
 
-	return temp;
+    return temp;
 }
 
 NuDateTime
 Nu_ReadDateTime(NuArchive* pArchive, FILE* fp, ushort* pCrc)
 {
-	ushort dummyCrc /*= 0*/;
-	return Nu_ReadDateTimeC(pArchive, fp, &dummyCrc);
+    ushort dummyCrc /*= 0*/;
+    return Nu_ReadDateTimeC(pArchive, fp, &dummyCrc);
 }
 
 
@@ -246,45 +246,45 @@ Nu_ReadDateTime(NuArchive* pArchive, FILE* fp, ushort* pCrc)
  */
 void
 Nu_WriteDateTimeC(NuArchive* pArchive, FILE* fp, NuDateTime dateTime,
-	ushort* pCrc)
+    ushort* pCrc)
 {
-	int ic;
+    int ic;
 
-	Assert(pArchive != nil);
-	Assert(fp != nil);
-	Assert(pCrc != nil);
+    Assert(pArchive != nil);
+    Assert(fp != nil);
+    Assert(pCrc != nil);
 
-	ic = dateTime.second;
-	*pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
-	putc(ic, fp);
-	ic = dateTime.minute;
-	*pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
-	putc(ic, fp);
-	ic = dateTime.hour;
-	*pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
-	putc(ic, fp);
-	ic = dateTime.year;
-	*pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
-	putc(ic, fp);
-	ic = dateTime.day;
-	*pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
-	putc(ic, fp);
-	ic = dateTime.month;
-	*pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
-	putc(ic, fp);
-	ic = dateTime.extra;
-	*pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
-	putc(ic, fp);
-	ic = dateTime.weekDay;
-	*pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
-	putc(ic, fp);
+    ic = dateTime.second;
+    *pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
+    putc(ic, fp);
+    ic = dateTime.minute;
+    *pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
+    putc(ic, fp);
+    ic = dateTime.hour;
+    *pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
+    putc(ic, fp);
+    ic = dateTime.year;
+    *pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
+    putc(ic, fp);
+    ic = dateTime.day;
+    *pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
+    putc(ic, fp);
+    ic = dateTime.month;
+    *pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
+    putc(ic, fp);
+    ic = dateTime.extra;
+    *pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
+    putc(ic, fp);
+    ic = dateTime.weekDay;
+    *pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
+    putc(ic, fp);
 }
 
 void
 Nu_WriteDateTime(NuArchive* pArchive, FILE* fp, NuDateTime dateTime)
 {
-	ushort dummyCrc /*= 0*/;
-	Nu_WriteDateTimeC(pArchive, fp, dateTime, &dummyCrc);
+    ushort dummyCrc /*= 0*/;
+    Nu_WriteDateTimeC(pArchive, fp, dateTime, &dummyCrc);
 }
 
 
@@ -293,29 +293,29 @@ Nu_WriteDateTime(NuArchive* pArchive, FILE* fp, NuDateTime dateTime)
  */
 void
 Nu_ReadBytesC(NuArchive* pArchive, FILE* fp, void* vbuffer, long count,
-	ushort* pCrc)
+    ushort* pCrc)
 {
-	uchar* buffer = vbuffer;
-	int ic;
+    uchar* buffer = vbuffer;
+    int ic;
 
-	Assert(pArchive != nil);
-	Assert(fp != nil);
-	Assert(pCrc != nil);
-	Assert(buffer != nil);
-	Assert(count > 0);
+    Assert(pArchive != nil);
+    Assert(fp != nil);
+    Assert(pCrc != nil);
+    Assert(buffer != nil);
+    Assert(count > 0);
 
-	while (count--) {
-		ic = getc(fp);
-		*pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
-		*buffer++ = ic;
-	}
+    while (count--) {
+        ic = getc(fp);
+        *pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
+        *buffer++ = ic;
+    }
 }
 
 void
 Nu_ReadBytes(NuArchive* pArchive, FILE* fp, void* vbuffer, long count)
 {
-	ushort dummyCrc /*= 0*/;
-	Nu_ReadBytesC(pArchive, fp, vbuffer, count, &dummyCrc);
+    ushort dummyCrc /*= 0*/;
+    Nu_ReadBytesC(pArchive, fp, vbuffer, count, &dummyCrc);
 }
 
 
@@ -324,35 +324,35 @@ Nu_ReadBytes(NuArchive* pArchive, FILE* fp, void* vbuffer, long count)
  */
 void
 Nu_WriteBytesC(NuArchive* pArchive, FILE* fp, const void* vbuffer, long count,
-	ushort* pCrc)
+    ushort* pCrc)
 {
-	const uchar* buffer = vbuffer;
-	int ic;
+    const uchar* buffer = vbuffer;
+    int ic;
 
-	Assert(pArchive != nil);
-	Assert(fp != nil);
-	Assert(pCrc != nil);
-	Assert(buffer != nil);
-	Assert(count > 0);
+    Assert(pArchive != nil);
+    Assert(fp != nil);
+    Assert(pCrc != nil);
+    Assert(buffer != nil);
+    Assert(count > 0);
 
-	while (count--) {
-		ic = *buffer++;
-		*pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
-		putc(ic, fp);
-	}
+    while (count--) {
+        ic = *buffer++;
+        *pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
+        putc(ic, fp);
+    }
 }
 
 void
 Nu_WriteBytes(NuArchive* pArchive, FILE* fp, const void* vbuffer, long count)
 {
-	ushort dummyCrc /*= 0*/;
-	Nu_WriteBytesC(pArchive, fp, vbuffer, count, &dummyCrc);
+    ushort dummyCrc /*= 0*/;
+    Nu_WriteBytesC(pArchive, fp, vbuffer, count, &dummyCrc);
 }
 
 
 /*
  * ===========================================================================
- *		General
+ *      General
  * ===========================================================================
  */
 
@@ -363,10 +363,10 @@ Nu_WriteBytes(NuArchive* pArchive, FILE* fp, const void* vbuffer, long count)
 NuError
 Nu_HeaderIOFailed(NuArchive* pArchive, FILE* fp)
 {
-	if (feof(fp) || ferror(fp))
-		return kNuErrFile;
-	else
-		return kNuErrNone;
+    if (feof(fp) || ferror(fp))
+        return kNuErrFile;
+    else
+        return kNuErrNone;
 }
 
 
@@ -379,22 +379,22 @@ Nu_HeaderIOFailed(NuArchive* pArchive, FILE* fp)
 NuError
 Nu_SeekArchive(NuArchive* pArchive, FILE* fp, long offset, int ptrname)
 {
-	if (Nu_IsStreaming(pArchive)) {
-		Assert(ptrname == SEEK_CUR);
-		Assert(offset > 0);
+    if (Nu_IsStreaming(pArchive)) {
+        Assert(ptrname == SEEK_CUR);
+        Assert(offset > 0);
 
-		/* might be faster to fread a chunk at a time */
-		while (offset--)
-			(void) getc(fp);
+        /* might be faster to fread a chunk at a time */
+        while (offset--)
+            (void) getc(fp);
 
-		if (ferror(fp) || feof(fp))
-			return kNuErrFileSeek;
-	} else {
-		if (fseek(fp, offset, ptrname) < 0)
-			return kNuErrFileSeek;
-	}
+        if (ferror(fp) || feof(fp))
+            return kNuErrFileSeek;
+    } else {
+        if (fseek(fp, offset, ptrname) < 0)
+            return kNuErrFileSeek;
+    }
 
-	return kNuErrNone;
+    return kNuErrNone;
 }
 
 
@@ -406,15 +406,15 @@ Nu_SeekArchive(NuArchive* pArchive, FILE* fp, long offset, int ptrname)
 NuError
 Nu_RewindArchive(NuArchive* pArchive)
 {
-	Assert(pArchive != nil);
-	Assert(!Nu_IsStreaming(pArchive));
+    Assert(pArchive != nil);
+    Assert(!Nu_IsStreaming(pArchive));
 
-	if (Nu_SeekArchive(pArchive, pArchive->archiveFp,
-				pArchive->headerOffset + kNuMasterHeaderSize, SEEK_SET) != 0)
-		return kNuErrFileSeek;
+    if (Nu_SeekArchive(pArchive, pArchive->archiveFp,
+                pArchive->headerOffset + kNuMasterHeaderSize, SEEK_SET) != 0)
+        return kNuErrFileSeek;
 
-	pArchive->currentOffset = pArchive->headerOffset + kNuMasterHeaderSize;
-	
-	return kNuErrNone;
+    pArchive->currentOffset = pArchive->headerOffset + kNuMasterHeaderSize;
+    
+    return kNuErrNone;
 }
 

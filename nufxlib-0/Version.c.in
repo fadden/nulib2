@@ -16,7 +16,7 @@ static const long gNuMinorVersion = 0;
 static const long gNuBugVersion = 1;
 
 /* executable was build on or after this date (inserted automatically) */
-static const char gNuBuildDate[] = "BUILT";	/* approximate */
+static const char gNuBuildDate[] = "BUILT"; /* approximate */
 static const char gNuBuildFlags[] = "OPTFLAGS";
 
 
@@ -25,18 +25,18 @@ static const char gNuBuildFlags[] = "OPTFLAGS";
  */
 NuError
 Nu_GetVersion(long* pMajorVersion, long* pMinorVersion, long* pBugVersion,
-	const char** ppBuildDate, const char** ppBuildFlags)
+    const char** ppBuildDate, const char** ppBuildFlags)
 {
-	if (pMajorVersion != nil)
-		*pMajorVersion = gNuMajorVersion;
-	if (pMinorVersion != nil)
-		*pMinorVersion = gNuMinorVersion;
-	if (pBugVersion != nil)
-		*pBugVersion = gNuBugVersion;
-	if (ppBuildDate != nil)
-		*ppBuildDate = gNuBuildDate;
-	if (ppBuildFlags != nil)
-		*ppBuildFlags = gNuBuildFlags;
-	return kNuErrNone;
+    if (pMajorVersion != nil)
+        *pMajorVersion = gNuMajorVersion;
+    if (pMinorVersion != nil)
+        *pMinorVersion = gNuMinorVersion;
+    if (pBugVersion != nil)
+        *pBugVersion = gNuBugVersion;
+    if (ppBuildDate != nil)
+        *ppBuildDate = gNuBuildDate;
+    if (ppBuildFlags != nil)
+        *ppBuildFlags = gNuBuildFlags;
+    return kNuErrNone;
 }
 

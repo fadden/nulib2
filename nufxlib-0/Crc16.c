@@ -6,7 +6,7 @@
  *
  * Compute 16-bit CRCs.
  */
-#define __Crc16_c__	1
+#define __Crc16_c__ 1
 #include "NufxLibPriv.h"
 
 #define CRC_TAB
@@ -85,25 +85,25 @@ const ushort gNuCrc16Table[256] = {
 ushort
 Nu_CalcCRC16(ushort seed, const uchar* ptr, int count)
 {
-	ushort CRC = seed;
+    ushort CRC = seed;
 #ifndef CRC_TAB
-	int x;
-	Assert(sizeof(ushort) == 2);	/* I think this is assumed */
+    int x;
+    Assert(sizeof(ushort) == 2);    /* I think this is assumed */
 #endif
 
-	do {
+    do {
 #ifndef CRC_TAB
-		CRC ^= *ptr++ << 8;					/* XOR hi-byte of CRC w/dat    */
-		for (x = 8; x; --x)					/* Then, for 8 bit shifts...   */
-			if (CRC & 0x8000)				/* Test hi order bit of CRC    */
-				CRC = CRC << 1 ^ 0x1021;	/* if set, shift & XOR w/$1021 */
-			else
-				CRC <<= 1;					/* Else, just shift left once. */
+        CRC ^= *ptr++ << 8;                 /* XOR hi-byte of CRC w/dat    */
+        for (x = 8; x; --x)                 /* Then, for 8 bit shifts...   */
+            if (CRC & 0x8000)               /* Test hi order bit of CRC    */
+                CRC = CRC << 1 ^ 0x1021;    /* if set, shift & XOR w/$1021 */
+            else
+                CRC <<= 1;                  /* Else, just shift left once. */
 #else
-		CRC = Nu_UpdateCRC16(*ptr++, CRC);	/* look up new value in table  */
+        CRC = Nu_UpdateCRC16(*ptr++, CRC);  /* look up new value in table  */
 #endif
-	} while (--count);
+    } while (--count);
 
-	return (CRC);
+    return (CRC);
 }
 

@@ -22,28 +22,28 @@
  * For systems (e.g. Visual C++ 6.0) that don't have these standard values.
  */
 #ifndef S_IRUSR
-# define S_IRUSR	0400
-# define S_IWUSR	0200
-# define S_IXUSR	0100
-# define S_IRWXU	(S_IRUSR|S_IWUSR|S_IXUSR)
-# define S_IRGRP	(S_IRUSR >> 3)
-# define S_IWGRP	(S_IWUSR >> 3)
-# define S_IXGRP	(S_IXUSR >> 3)
-# define S_IRWXG	(S_IRWXU >> 3)
-# define S_IROTH	(S_IRGRP >> 3)
-# define S_IWOTH	(S_IWGRP >> 3)
-# define S_IXOTH	(S_IXGRP >> 3)
-# define S_IRWXO	(S_IRWXG >> 3)
+# define S_IRUSR    0400
+# define S_IWUSR    0200
+# define S_IXUSR    0100
+# define S_IRWXU    (S_IRUSR|S_IWUSR|S_IXUSR)
+# define S_IRGRP    (S_IRUSR >> 3)
+# define S_IWGRP    (S_IWUSR >> 3)
+# define S_IXGRP    (S_IXUSR >> 3)
+# define S_IRWXG    (S_IRWXU >> 3)
+# define S_IROTH    (S_IRGRP >> 3)
+# define S_IWOTH    (S_IWGRP >> 3)
+# define S_IXOTH    (S_IXGRP >> 3)
+# define S_IRWXO    (S_IRWXG >> 3)
 #endif
 #ifndef S_ISREG
-# define S_ISREG(m)	(((m) & S_IFMT) == S_IFREG)
-# define S_ISDIR(m)	(((m) & S_IFMT) == S_IFDIR)
+# define S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
+# define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
 #endif
 
 
 /*
  * ===========================================================================
- *		DateTime conversions
+ *      DateTime conversions
  * ===========================================================================
  */
 
@@ -81,36 +81,36 @@
 static void
 Nu_DateTimeToGMTSeconds(const NuDateTime* pDateTime, time_t* pWhen)
 {
-	struct tm tmbuf;
-	time_t when;
+    struct tm tmbuf;
+    time_t when;
 
-	Assert(pDateTime != nil);
-	Assert(pWhen != nil);
+    Assert(pDateTime != nil);
+    Assert(pWhen != nil);
 
-	tmbuf.tm_sec = pDateTime->second;
-	tmbuf.tm_min = pDateTime->minute;
-	tmbuf.tm_hour = pDateTime->hour;
-	tmbuf.tm_mday = pDateTime->day +1;
-	tmbuf.tm_mon = pDateTime->month;
-	tmbuf.tm_year = pDateTime->year;
-	if (pDateTime->year < 40)
-		tmbuf.tm_year += 100;	/* P8 uses 0-39 for 2000-2039 */
-	tmbuf.tm_wday = 0;
-	tmbuf.tm_yday = 0;
-	tmbuf.tm_isdst = -1;		/* let it figure DST and time zone */
+    tmbuf.tm_sec = pDateTime->second;
+    tmbuf.tm_min = pDateTime->minute;
+    tmbuf.tm_hour = pDateTime->hour;
+    tmbuf.tm_mday = pDateTime->day +1;
+    tmbuf.tm_mon = pDateTime->month;
+    tmbuf.tm_year = pDateTime->year;
+    if (pDateTime->year < 40)
+        tmbuf.tm_year += 100;   /* P8 uses 0-39 for 2000-2039 */
+    tmbuf.tm_wday = 0;
+    tmbuf.tm_yday = 0;
+    tmbuf.tm_isdst = -1;        /* let it figure DST and time zone */
 
-	#if defined(HAVE_MKTIME)
-	when = mktime(&tmbuf);
-	#elif defined(HAVE_TIMELOCAL)
-	when = timelocal(&tmbuf);
-	#else
-	# error "need time converter"
-	#endif
+    #if defined(HAVE_MKTIME)
+    when = mktime(&tmbuf);
+    #elif defined(HAVE_TIMELOCAL)
+    when = timelocal(&tmbuf);
+    #else
+    # error "need time converter"
+    #endif
 
-	if (when == (time_t) -1)
-		*pWhen = 0;
-	else
-		*pWhen = when;
+    if (when == (time_t) -1)
+        *pWhen = 0;
+    else
+        *pWhen = when;
 }
 
 /*
@@ -119,26 +119,26 @@ Nu_DateTimeToGMTSeconds(const NuDateTime* pDateTime, time_t* pWhen)
 static void
 Nu_GMTSecondsToDateTime(const time_t* pWhen, NuDateTime *pDateTime)
 {
-	struct tm* ptm;
+    struct tm* ptm;
 
-	Assert(pWhen != nil);
-	Assert(pDateTime != nil);
+    Assert(pWhen != nil);
+    Assert(pDateTime != nil);
 
-	#if defined(HAVE_LOCALTIME_R) && defined(USE_REENTRANT_CALLS)
-	struct tm res;
-	ptm = localtime_r(pWhen, &res);
-	#else
-	/* NOTE: not thread-safe */
-	ptm = localtime(pWhen);
-	#endif
-	pDateTime->second = ptm->tm_sec;
-	pDateTime->minute = ptm->tm_min;
-	pDateTime->hour = ptm->tm_hour;
-	pDateTime->day = ptm->tm_mday -1;
-	pDateTime->month = ptm->tm_mon;
-	pDateTime->year = ptm->tm_year;
-	pDateTime->extra = 0;
-	pDateTime->weekDay = ptm->tm_wday +1;
+    #if defined(HAVE_LOCALTIME_R) && defined(USE_REENTRANT_CALLS)
+    struct tm res;
+    ptm = localtime_r(pWhen, &res);
+    #else
+    /* NOTE: not thread-safe */
+    ptm = localtime(pWhen);
+    #endif
+    pDateTime->second = ptm->tm_sec;
+    pDateTime->minute = ptm->tm_min;
+    pDateTime->hour = ptm->tm_hour;
+    pDateTime->day = ptm->tm_mday -1;
+    pDateTime->month = ptm->tm_mon;
+    pDateTime->year = ptm->tm_year;
+    pDateTime->extra = 0;
+    pDateTime->weekDay = ptm->tm_wday +1;
 }
 #endif
 
@@ -149,15 +149,15 @@ Nu_GMTSecondsToDateTime(const time_t* pWhen, NuDateTime *pDateTime)
 void
 Nu_SetCurrentDateTime(NuDateTime* pDateTime)
 {
-	Assert(pDateTime != nil);
+    Assert(pDateTime != nil);
 
 #if defined(UNIX_LIKE) || defined(WINDOWS_LIKE)
-	{
-		time_t now = time(nil);
-		Nu_GMTSecondsToDateTime(&now, pDateTime);
-	}
+    {
+        time_t now = time(nil);
+        Nu_GMTSecondsToDateTime(&now, pDateTime);
+    }
 #else
-	#error "Port this"
+    #error "Port this"
 #endif
 }
 
@@ -173,37 +173,37 @@ Nu_SetCurrentDateTime(NuDateTime* pDateTime)
 Boolean
 Nu_IsOlder(const NuDateTime* pWhen1, const NuDateTime* pWhen2)
 {
-	long result, year1, year2;
+    long result, year1, year2;
 
-	/* adjust for P8 ShrinkIt Y2K problem */
-	year1 = pWhen1->year;
-	if (year1 < 40)
-		year1 += 100;
-	year2 = pWhen2->year;
-	if (year2 < 40)
-		year2 += 100;
+    /* adjust for P8 ShrinkIt Y2K problem */
+    year1 = pWhen1->year;
+    if (year1 < 40)
+        year1 += 100;
+    year2 = pWhen2->year;
+    if (year2 < 40)
+        year2 += 100;
 
-	result = year1 - year2;
-	if (!result)
-		result = pWhen1->month - pWhen2->month;
-	if (!result)
-		result = pWhen1->day - pWhen2->day;
-	if (!result)
-		result = pWhen1->hour - pWhen2->hour;
-	if (!result)
-		result = pWhen1->minute - pWhen2->minute;
-	if (!result)
-		result = pWhen1->second - pWhen2->second;
+    result = year1 - year2;
+    if (!result)
+        result = pWhen1->month - pWhen2->month;
+    if (!result)
+        result = pWhen1->day - pWhen2->day;
+    if (!result)
+        result = pWhen1->hour - pWhen2->hour;
+    if (!result)
+        result = pWhen1->minute - pWhen2->minute;
+    if (!result)
+        result = pWhen1->second - pWhen2->second;
 
-	if (result < 0)
-		return true;
-	return false;
+    if (result < 0)
+        return true;
+    return false;
 }
 
 
 /*
  * ===========================================================================
- *		Get/set file info
+ *      Get/set file info
  * ===========================================================================
  */
 
@@ -211,22 +211,22 @@ Nu_IsOlder(const NuDateTime* pWhen1, const NuDateTime* pWhen2)
  * System-independent (mostly) file info struct.
  */
 typedef struct NuFileInfo {
-	Boolean		isValid;	/* init to "false", set "true" after we get data */
+    Boolean     isValid;    /* init to "false", set "true" after we get data */
 
-	Boolean		isRegularFile;	/* is this a regular file? */
-	Boolean		isDirectory;	/* is this a directory? */
+    Boolean     isRegularFile;  /* is this a regular file? */
+    Boolean     isDirectory;    /* is this a directory? */
 
-	ulong		dataEof;
-	ulong		rsrcEof;
+    ulong       dataEof;
+    ulong       rsrcEof;
 
-	ulong		fileType;
-	ulong		auxType;
-	NuDateTime	modWhen;
-	mode_t		unixMode;		/* UNIX-style permissions */
+    ulong       fileType;
+    ulong       auxType;
+    NuDateTime  modWhen;
+    mode_t      unixMode;       /* UNIX-style permissions */
 } NuFileInfo;
 
-#define kDefaultFileType	0		/* "NON" */
-#define kDefaultAuxType		0		/* $0000 */
+#define kDefaultFileType    0       /* "NON" */
+#define kDefaultAuxType     0       /* $0000 */
 
 
 /*
@@ -235,28 +235,28 @@ typedef struct NuFileInfo {
 static Boolean
 Nu_IsForkedFile(NuArchive* pArchive, const NuRecord* pRecord)
 {
-	const NuThread* pThread;
-	NuThreadID threadID;
-	Boolean gotData, gotRsrc;
-	int i;
+    const NuThread* pThread;
+    NuThreadID threadID;
+    Boolean gotData, gotRsrc;
+    int i;
 
-	gotData = gotRsrc = false;
+    gotData = gotRsrc = false;
 
-	for (i = 0; i < (int)pRecord->recTotalThreads; i++) {
-		pThread = Nu_GetThread(pRecord, i);
-		Assert(pThread != nil);
+    for (i = 0; i < (int)pRecord->recTotalThreads; i++) {
+        pThread = Nu_GetThread(pRecord, i);
+        Assert(pThread != nil);
 
-		threadID = NuMakeThreadID(pThread->thThreadClass,pThread->thThreadKind);
-		if (threadID == kNuThreadIDDataFork)
-			gotData = true;
-		else if (threadID == kNuThreadIDRsrcFork)
-			gotRsrc = true;
-	}
+        threadID = NuMakeThreadID(pThread->thThreadClass,pThread->thThreadKind);
+        if (threadID == kNuThreadIDDataFork)
+            gotData = true;
+        else if (threadID == kNuThreadIDRsrcFork)
+            gotRsrc = true;
+    }
 
-	if (gotData && gotRsrc)
-		return true;
-	else
-		return false;
+    if (gotData && gotRsrc)
+        return true;
+    else
+        return false;
 }
 
 
@@ -266,51 +266,51 @@ Nu_IsForkedFile(NuArchive* pArchive, const NuRecord* pRecord)
  */
 static NuError
 Nu_GetFileInfo(NuArchive* pArchive, const char* pathname,
-	NuFileInfo* pFileInfo)
+    NuFileInfo* pFileInfo)
 {
-	NuError err = kNuErrNone;
-	Assert(pArchive != nil);
-	Assert(pathname != nil);
-	Assert(pFileInfo != nil);
+    NuError err = kNuErrNone;
+    Assert(pArchive != nil);
+    Assert(pathname != nil);
+    Assert(pFileInfo != nil);
 
-	pFileInfo->isValid = false;
+    pFileInfo->isValid = false;
 
 #if defined(UNIX_LIKE) || defined(WINDOWS_LIKE)
-	{
-		struct stat sbuf;
-		int cc;
+    {
+        struct stat sbuf;
+        int cc;
 
-		cc = stat(pathname, &sbuf);
-		if (cc) {
-			if (errno == ENOENT)
-				err = kNuErrFileNotFound;
-			else
-				err = kNuErrFileStat;
-			goto bail;
-		}
+        cc = stat(pathname, &sbuf);
+        if (cc) {
+            if (errno == ENOENT)
+                err = kNuErrFileNotFound;
+            else
+                err = kNuErrFileStat;
+            goto bail;
+        }
 
-		pFileInfo->isRegularFile = false;
-		if (S_ISREG(sbuf.st_mode))
-			pFileInfo->isRegularFile = true;
-		pFileInfo->isDirectory = false;
-		if (S_ISDIR(sbuf.st_mode))
-			pFileInfo->isDirectory = true;
+        pFileInfo->isRegularFile = false;
+        if (S_ISREG(sbuf.st_mode))
+            pFileInfo->isRegularFile = true;
+        pFileInfo->isDirectory = false;
+        if (S_ISDIR(sbuf.st_mode))
+            pFileInfo->isDirectory = true;
 
-		/* BUG: should check for 32-bit overflow from 64-bit off_t */
-		pFileInfo->dataEof = sbuf.st_size;
-		pFileInfo->rsrcEof = 0;
-		pFileInfo->fileType = kDefaultFileType;
-		pFileInfo->auxType = kDefaultAuxType;
-		Nu_GMTSecondsToDateTime(&sbuf.st_mtime, &pFileInfo->modWhen);
-		pFileInfo->unixMode = sbuf.st_mode;
-		pFileInfo->isValid = true;
-	}
+        /* BUG: should check for 32-bit overflow from 64-bit off_t */
+        pFileInfo->dataEof = sbuf.st_size;
+        pFileInfo->rsrcEof = 0;
+        pFileInfo->fileType = kDefaultFileType;
+        pFileInfo->auxType = kDefaultAuxType;
+        Nu_GMTSecondsToDateTime(&sbuf.st_mtime, &pFileInfo->modWhen);
+        pFileInfo->unixMode = sbuf.st_mode;
+        pFileInfo->isValid = true;
+    }
 #else
-	#error "Port this"
+    #error "Port this"
 #endif
 
 bail:
-	return err;
+    return err;
 }
 
 
@@ -324,55 +324,55 @@ bail:
  */
 static NuError
 Nu_FileForkExists(NuArchive* pArchive, const char* pathname,
-	Boolean isForkedFile, Boolean checkRsrcFork, Boolean* pExists,
-	NuFileInfo* pFileInfo)
+    Boolean isForkedFile, Boolean checkRsrcFork, Boolean* pExists,
+    NuFileInfo* pFileInfo)
 {
-	NuError err = kNuErrNone;
+    NuError err = kNuErrNone;
 
-	Assert(pArchive != nil);
-	Assert(pathname != nil);
-	Assert(checkRsrcFork == true || checkRsrcFork == false);
-	Assert(pExists != nil);
-	Assert(pFileInfo != nil);
+    Assert(pArchive != nil);
+    Assert(pathname != nil);
+    Assert(checkRsrcFork == true || checkRsrcFork == false);
+    Assert(pExists != nil);
+    Assert(pFileInfo != nil);
 
 #if defined(UNIX_LIKE) || defined(WINDOWS_LIKE)
-	/*
-	 * We ignore "isForkedFile" and "checkRsrcFork".  The file must not
-	 * exist at all.
-	 */
-	Assert(pArchive->lastFileCreated == nil);
+    /*
+     * We ignore "isForkedFile" and "checkRsrcFork".  The file must not
+     * exist at all.
+     */
+    Assert(pArchive->lastFileCreated == nil);
 
-	*pExists = true;
-	err = Nu_GetFileInfo(pArchive, pathname, pFileInfo);
-	if (err == kNuErrFileNotFound) {
-		err = kNuErrNone;
-		*pExists = false;
-	}
+    *pExists = true;
+    err = Nu_GetFileInfo(pArchive, pathname, pFileInfo);
+    if (err == kNuErrFileNotFound) {
+        err = kNuErrNone;
+        *pExists = false;
+    }
 
 #elif defined(__ORCAC__)
-	/*
-	 * If the file doesn't exist, great.  If it does, and "lastFileCreated"
-	 * matches up with this one, then we know that it exists because we
-	 * created it.
-	 *
-	 * This is great unless the record has two data forks or something
-	 * equally dopey, so we check to be sure that the fork we want to
-	 * put the data into is currently empty.
-	 *
-	 * It is possible, though asinine, for a Mac OS or GS/OS extraction
-	 * program to put the data and resource forks of a record into
-	 * separate files, so we can't just assume that because we wrote
-	 * the data fork to file A it is okay for file B to exist.  That's
-	 * why we compare the pathname instead of just remembering that
-	 * we already created a file for this record.
-	 */
-	#error "Finish me"
+    /*
+     * If the file doesn't exist, great.  If it does, and "lastFileCreated"
+     * matches up with this one, then we know that it exists because we
+     * created it.
+     *
+     * This is great unless the record has two data forks or something
+     * equally dopey, so we check to be sure that the fork we want to
+     * put the data into is currently empty.
+     *
+     * It is possible, though asinine, for a Mac OS or GS/OS extraction
+     * program to put the data and resource forks of a record into
+     * separate files, so we can't just assume that because we wrote
+     * the data fork to file A it is okay for file B to exist.  That's
+     * why we compare the pathname instead of just remembering that
+     * we already created a file for this record.
+     */
+    #error "Finish me"
 
 #else
-	#error "Port this"
+    #error "Port this"
 #endif
 
-	return err;
+    return err;
 }
 
 
@@ -381,53 +381,53 @@ Nu_FileForkExists(NuArchive* pArchive, const char* pathname,
  */
 static NuError
 Nu_SetFileDates(NuArchive* pArchive, const NuRecord* pRecord,
-	const char* pathname)
+    const char* pathname)
 {
-	NuError err = kNuErrNone;
+    NuError err = kNuErrNone;
 
-	Assert(pArchive != nil);
-	Assert(pRecord != nil);
-	Assert(pathname != nil);
+    Assert(pArchive != nil);
+    Assert(pRecord != nil);
+    Assert(pathname != nil);
 
 #if defined(UNIX_LIKE) || defined(WINDOWS_LIKE)
-	{
-		struct utimbuf utbuf;
+    {
+        struct utimbuf utbuf;
 
-		/* ignore create time, and set access time equal to mod time */
-		Nu_DateTimeToGMTSeconds(&pRecord->recModWhen, &utbuf.modtime);
-		utbuf.actime = utbuf.modtime;
+        /* ignore create time, and set access time equal to mod time */
+        Nu_DateTimeToGMTSeconds(&pRecord->recModWhen, &utbuf.modtime);
+        utbuf.actime = utbuf.modtime;
 
-		/* only do it if the NuDateTime was valid */
-		if (utbuf.modtime) {
-			if (utime(pathname, &utbuf) < 0) {
-				Nu_ReportError(NU_BLOB, errno,
-					"Unable to set time stamp on '%s'", pathname);
-				err = kNuErrFileSetDate;
-				goto bail;
-			}
-		}
-	}
+        /* only do it if the NuDateTime was valid */
+        if (utbuf.modtime) {
+            if (utime(pathname, &utbuf) < 0) {
+                Nu_ReportError(NU_BLOB, errno,
+                    "Unable to set time stamp on '%s'", pathname);
+                err = kNuErrFileSetDate;
+                goto bail;
+            }
+        }
+    }
 
 #else
-	#error "Port this"
+    #error "Port this"
 #endif
 
 bail:
-	return err;
+    return err;
 }
 
 
 /*
  * Returns "true" if the record is locked (in the ProDOS sense).
  *
- *	Bits 31-8    reserved, must be zero
- *	Bit 7 (D)    1 = destroy enabled
- *	Bit 6 (R)    1 = rename enabled
- *	Bit 5 (B)    1 = file needs to be backed up
- *	Bits 4-3     reserved, must be zero
- *	Bit 2 (I)    1 = file is invisible
- *	Bit 1 (W)    1 = write enabled
- *	Bit 0 (R)    1 = read enabled
+ *  Bits 31-8    reserved, must be zero
+ *  Bit 7 (D)    1 = destroy enabled
+ *  Bit 6 (R)    1 = rename enabled
+ *  Bit 5 (B)    1 = file needs to be backed up
+ *  Bits 4-3     reserved, must be zero
+ *  Bit 2 (I)    1 = file is invisible
+ *  Bit 1 (W)    1 = write enabled
+ *  Bit 0 (R)    1 = read enabled
  *
  * A "locked" file would be 00?00001, "unlocked" 11?00011, with many
  * possible variations.  For our purposes, we treat all files as unlocked
@@ -436,10 +436,10 @@ bail:
 static Boolean
 Nu_IsRecordLocked(const NuRecord* pRecord)
 {
-	if (pRecord->recAccess == 0x21L || pRecord->recAccess == 0x01L)
-		return true;
-	else
-		return false;
+    if (pRecord->recAccess == 0x21L || pRecord->recAccess == 0x01L)
+        return true;
+    else
+        return false;
 }
 
 /*
@@ -450,38 +450,38 @@ Nu_IsRecordLocked(const NuRecord* pRecord)
  */
 static NuError
 Nu_SetFileAccess(NuArchive* pArchive, const NuRecord* pRecord,
-	const char* pathname)
+    const char* pathname)
 {
-	NuError err = kNuErrNone;
+    NuError err = kNuErrNone;
 
-	Assert(pArchive != nil);
-	Assert(pRecord != nil);
-	Assert(pathname != nil);
+    Assert(pArchive != nil);
+    Assert(pRecord != nil);
+    Assert(pathname != nil);
 
 #if defined(UNIX_LIKE) || defined(WINDOWS_LIKE)
-	/* only need to do something if the file was "locked" */
-	if (Nu_IsRecordLocked(pRecord)) {
-		/* set it to 444 */
-		if (chmod(pathname, S_IRUSR | S_IRGRP | S_IROTH) < 0) {
-			Nu_ReportError(NU_BLOB, errno,
-				"unable to set access for '%s'", pathname);
-			err = kNuErrFileSetAccess;
-			goto bail;
-		}
-	}
+    /* only need to do something if the file was "locked" */
+    if (Nu_IsRecordLocked(pRecord)) {
+        /* set it to 444 */
+        if (chmod(pathname, S_IRUSR | S_IRGRP | S_IROTH) < 0) {
+            Nu_ReportError(NU_BLOB, errno,
+                "unable to set access for '%s'", pathname);
+            err = kNuErrFileSetAccess;
+            goto bail;
+        }
+    }
 
 #else
-	#error "Port this"
+    #error "Port this"
 #endif
 
 bail:
-	return err;
+    return err;
 }
 
 
 /*
  * ===========================================================================
- *		Create/open an output file
+ *      Create/open an output file
  * ===========================================================================
  */
 
@@ -493,40 +493,40 @@ bail:
  */
 static NuError
 Nu_PrepareForWriting(NuArchive* pArchive, const char* pathname,
-	Boolean prepRsrc, NuFileInfo* pFileInfo)
+    Boolean prepRsrc, NuFileInfo* pFileInfo)
 {
-	NuError err = kNuErrNone;
+    NuError err = kNuErrNone;
 
-	Assert(pArchive != nil);
-	Assert(pathname != nil);
-	Assert(prepRsrc == true || prepRsrc == false);
-	Assert(pFileInfo != nil);
+    Assert(pArchive != nil);
+    Assert(pathname != nil);
+    Assert(prepRsrc == true || prepRsrc == false);
+    Assert(pFileInfo != nil);
 
-	Assert(pFileInfo->isValid == true);
+    Assert(pFileInfo->isValid == true);
 
-	/* don't go playing with directories, pipes, etc */
-	if (pFileInfo->isRegularFile != true)
-		return kNuErrNotRegularFile;
+    /* don't go playing with directories, pipes, etc */
+    if (pFileInfo->isRegularFile != true)
+        return kNuErrNotRegularFile;
 
 #if defined(UNIX_LIKE) || defined(WINDOWS_LIKE)
-	if (!(pFileInfo->unixMode & S_IWUSR)) {
-		/* make it writable by owner, plus whatever it was before */
-		if (chmod(pathname, S_IWUSR | pFileInfo->unixMode) < 0) {
-			Nu_ReportError(NU_BLOB, errno,
-				"unable to set access for '%s'", pathname);
-			err = kNuErrFileSetAccess;
-			goto bail;
-		}
-	}
+    if (!(pFileInfo->unixMode & S_IWUSR)) {
+        /* make it writable by owner, plus whatever it was before */
+        if (chmod(pathname, S_IWUSR | pFileInfo->unixMode) < 0) {
+            Nu_ReportError(NU_BLOB, errno,
+                "unable to set access for '%s'", pathname);
+            err = kNuErrFileSetAccess;
+            goto bail;
+        }
+    }
 
-	return kNuErrNone;
+    return kNuErrNone;
 
 #else
-	#error "Port this"
+    #error "Port this"
 #endif
 
 bail:
-	return err;
+    return err;
 }
 
 
@@ -536,31 +536,31 @@ bail:
 static NuError
 Nu_Mkdir(NuArchive* pArchive, const char* dir)
 {
-	NuError err = kNuErrNone;
+    NuError err = kNuErrNone;
 
-	Assert(pArchive != nil);
-	Assert(dir != nil);
+    Assert(pArchive != nil);
+    Assert(dir != nil);
 
 #if defined(UNIX_LIKE)
-	if (mkdir(dir, S_IRWXU | S_IRGRP|S_IXGRP | S_IROTH|S_IXOTH) < 0) {
-		err = errno ? errno : kNuErrDirCreate;
-		Nu_ReportError(NU_BLOB, err, "Unable to create dir '%s'", dir);
-		goto bail;
-	}
+    if (mkdir(dir, S_IRWXU | S_IRGRP|S_IXGRP | S_IROTH|S_IXOTH) < 0) {
+        err = errno ? errno : kNuErrDirCreate;
+        Nu_ReportError(NU_BLOB, err, "Unable to create dir '%s'", dir);
+        goto bail;
+    }
 
 #elif defined(WINDOWS_LIKE)
-	if (mkdir(dir) < 0) {
-		err = errno ? errno : kNuErrDirCreate;
-		Nu_ReportError(NU_BLOB, err, "Unable to create dir '%s'", dir);
-		goto bail;
-	}
+    if (mkdir(dir) < 0) {
+        err = errno ? errno : kNuErrDirCreate;
+        Nu_ReportError(NU_BLOB, err, "Unable to create dir '%s'", dir);
+        goto bail;
+    }
 
 #else
-	#error "Port this"
+    #error "Port this"
 #endif
 
 bail:
-	return err;
+    return err;
 }
 
 
@@ -571,50 +571,50 @@ bail:
  */
 static NuError
 Nu_CreateSubdirIFN(NuArchive* pArchive, const char* pathStart,
-	const char* pathEnd, char fssep)
+    const char* pathEnd, char fssep)
 {
-	NuError err = kNuErrNone;
-	NuFileInfo fileInfo;
-	char* tmpBuf = nil;
+    NuError err = kNuErrNone;
+    NuFileInfo fileInfo;
+    char* tmpBuf = nil;
 
-	Assert(pArchive != nil);
-	Assert(pathStart != nil);
-	Assert(pathEnd != nil);
-	Assert(fssep != '\0');
+    Assert(pArchive != nil);
+    Assert(pathStart != nil);
+    Assert(pathEnd != nil);
+    Assert(fssep != '\0');
 
-	/* pathStart might have whole path, but we only want up to "pathEnd" */
-	tmpBuf = strdup(pathStart);
-	tmpBuf[pathEnd - pathStart +1] = '\0';
+    /* pathStart might have whole path, but we only want up to "pathEnd" */
+    tmpBuf = strdup(pathStart);
+    tmpBuf[pathEnd - pathStart +1] = '\0';
 
-	err = Nu_GetFileInfo(pArchive, tmpBuf, &fileInfo);
-	if (err == kNuErrFileNotFound) {
-		/* dir doesn't exist; move up a level and check parent */
-		pathEnd = strrchr(tmpBuf, fssep);
-		if (pathEnd != nil) {
-			pathEnd--;
-			Assert(pathEnd >= tmpBuf);
-			err = Nu_CreateSubdirIFN(pArchive, tmpBuf, pathEnd, fssep);
-			BailError(err);
-		}
+    err = Nu_GetFileInfo(pArchive, tmpBuf, &fileInfo);
+    if (err == kNuErrFileNotFound) {
+        /* dir doesn't exist; move up a level and check parent */
+        pathEnd = strrchr(tmpBuf, fssep);
+        if (pathEnd != nil) {
+            pathEnd--;
+            Assert(pathEnd >= tmpBuf);
+            err = Nu_CreateSubdirIFN(pArchive, tmpBuf, pathEnd, fssep);
+            BailError(err);
+        }
 
-		/* parent is taken care of; create this one */
-		err = Nu_Mkdir(pArchive, tmpBuf);
-		BailError(err);
-	} else if (err != kNuErrNone) {
-		goto bail;
-	} else {
-		/* file does exist, make sure it's a directory */
-		Assert(fileInfo.isValid == true);
-		if (!fileInfo.isDirectory) {
-			err = kNuErrNotDir;
-			Nu_ReportError(NU_BLOB, err, "Unable to create path '%s'", tmpBuf);
-			goto bail;
-		}
-	}
+        /* parent is taken care of; create this one */
+        err = Nu_Mkdir(pArchive, tmpBuf);
+        BailError(err);
+    } else if (err != kNuErrNone) {
+        goto bail;
+    } else {
+        /* file does exist, make sure it's a directory */
+        Assert(fileInfo.isValid == true);
+        if (!fileInfo.isDirectory) {
+            err = kNuErrNotDir;
+            Nu_ReportError(NU_BLOB, err, "Unable to create path '%s'", tmpBuf);
+            goto bail;
+        }
+    }
 
 bail:
-	Nu_Free(pArchive, tmpBuf);
-	return err;
+    Nu_Free(pArchive, tmpBuf);
+    return err;
 }
 
 /*
@@ -627,48 +627,48 @@ bail:
 static NuError
 Nu_CreatePathIFN(NuArchive* pArchive, const char* pathname, char fssep)
 {
-	NuError err = kNuErrNone;
-	const char* pathStart;
-	const char* pathEnd;
+    NuError err = kNuErrNone;
+    const char* pathStart;
+    const char* pathEnd;
 
-	Assert(pArchive != nil);
-	Assert(pathname != nil);
-	Assert(fssep != '\0');
+    Assert(pArchive != nil);
+    Assert(pathname != nil);
+    Assert(fssep != '\0');
 
-	pathStart = pathname;
-	if (pathname[0] == fssep)
-		pathStart++;
+    pathStart = pathname;
+    if (pathname[0] == fssep)
+        pathStart++;
 
-	/* NOTE: not expecting names like "foo/bar/ack/", with terminating fssep */
-	pathEnd = strrchr(pathStart, fssep);
-	if (pathEnd == nil) {
-		/* no subdirectory components found */
-		goto bail;
-	}
-	pathEnd--;
+    /* NOTE: not expecting names like "foo/bar/ack/", with terminating fssep */
+    pathEnd = strrchr(pathStart, fssep);
+    if (pathEnd == nil) {
+        /* no subdirectory components found */
+        goto bail;
+    }
+    pathEnd--;
 
-	Assert(pathEnd >= pathStart);
-	if (pathEnd - pathStart < 0)
-		goto bail;
+    Assert(pathEnd >= pathStart);
+    if (pathEnd - pathStart < 0)
+        goto bail;
 
-	/* (on some filesystems, strncasecmp would be appropriate here) */
-	if (pArchive->lastDirCreated &&
-		strncmp(pathStart, pArchive->lastDirCreated, pathEnd - pathStart +1) == 0)
-	{
-		/* we created this one recently, don't do it again */
-		goto bail;
-	}
+    /* (on some filesystems, strncasecmp would be appropriate here) */
+    if (pArchive->lastDirCreated &&
+        strncmp(pathStart, pArchive->lastDirCreated, pathEnd - pathStart +1) == 0)
+    {
+        /* we created this one recently, don't do it again */
+        goto bail;
+    }
 
-	/*
-	 * Test to determine which directories exist.  The most likely case
-	 * is that some or all of the components have already been created,
-	 * so we start with the last one and work backward.
-	 */
-	err = Nu_CreateSubdirIFN(pArchive, pathStart, pathEnd, fssep);
-	BailError(err);
+    /*
+     * Test to determine which directories exist.  The most likely case
+     * is that some or all of the components have already been created,
+     * so we start with the last one and work backward.
+     */
+    err = Nu_CreateSubdirIFN(pArchive, pathStart, pathEnd, fssep);
+    BailError(err);
 
 bail:
-	return err;
+    return err;
 }
 
 
@@ -677,12 +677,12 @@ bail:
  */
 static NuError
 Nu_OpenFileForWrite(NuArchive* pArchive, const char* pathname,
-	Boolean openRsrc, FILE** pFp)
+    Boolean openRsrc, FILE** pFp)
 {
-	*pFp = fopen(pathname, kNuFileOpenWriteTrunc);
-	if (*pFp == nil)
-		return errno ? errno : -1;
-	return kNuErrNone;
+    *pFp = fopen(pathname, kNuFileOpenWriteTrunc);
+    if (*pFp == nil)
+        return errno ? errno : -1;
+    return kNuErrNone;
 }
 
 
@@ -697,231 +697,231 @@ Nu_OpenFileForWrite(NuArchive* pArchive, const char* pathname,
  */
 NuError
 Nu_OpenOutputFile(NuArchive* pArchive, const NuRecord* pRecord,
-	const NuThread* pThread, const char* newPathname, char newFssep,
-	FILE** pFp)
+    const NuThread* pThread, const char* newPathname, char newFssep,
+    FILE** pFp)
 {
-	NuError err = kNuErrNone;
-	Boolean exists, isForkedFile, extractingRsrc = false;
-	NuFileInfo fileInfo;
-	NuErrorStatus errorStatus;
-	NuResult result;
+    NuError err = kNuErrNone;
+    Boolean exists, isForkedFile, extractingRsrc = false;
+    NuFileInfo fileInfo;
+    NuErrorStatus errorStatus;
+    NuResult result;
 
-	Assert(pArchive != nil);
-	Assert(pRecord != nil);
-	Assert(pThread != nil);
-	Assert(newPathname != nil);
-	Assert(pFp != nil);
+    Assert(pArchive != nil);
+    Assert(pRecord != nil);
+    Assert(pThread != nil);
+    Assert(newPathname != nil);
+    Assert(pFp != nil);
 
-	/* set up some defaults, in case something goes wrong */
-	errorStatus.operation = kNuOpExtract;
-	errorStatus.err = kNuErrInternal;
-	errorStatus.sysErr = 0;
-	errorStatus.message = nil;
-	errorStatus.pRecord = pRecord;
-	errorStatus.pathname = newPathname;
-	errorStatus.filenameSeparator = newFssep;
-	/*errorStatus.origArchiveTouched = false;*/
-	errorStatus.canAbort = true;
-	errorStatus.canRetry = true;
-	errorStatus.canIgnore = false;
-	errorStatus.canSkip = true;
-	errorStatus.canRename = true;
-	errorStatus.canOverwrite = true;
+    /* set up some defaults, in case something goes wrong */
+    errorStatus.operation = kNuOpExtract;
+    errorStatus.err = kNuErrInternal;
+    errorStatus.sysErr = 0;
+    errorStatus.message = nil;
+    errorStatus.pRecord = pRecord;
+    errorStatus.pathname = newPathname;
+    errorStatus.filenameSeparator = newFssep;
+    /*errorStatus.origArchiveTouched = false;*/
+    errorStatus.canAbort = true;
+    errorStatus.canRetry = true;
+    errorStatus.canIgnore = false;
+    errorStatus.canSkip = true;
+    errorStatus.canRename = true;
+    errorStatus.canOverwrite = true;
 
-	/* decide if this is a forked file (i.e. has *both* forks) */
-	isForkedFile = Nu_IsForkedFile(pArchive, pRecord);
+    /* decide if this is a forked file (i.e. has *both* forks) */
+    isForkedFile = Nu_IsForkedFile(pArchive, pRecord);
 
-	/* decide if we're extracting a resource fork */
-	if (NuMakeThreadID(pThread->thThreadClass, pThread->thThreadKind) ==
-		kNuThreadIDRsrcFork)
-	{
-		extractingRsrc = true;
-	}
+    /* decide if we're extracting a resource fork */
+    if (NuMakeThreadID(pThread->thThreadClass, pThread->thThreadKind) ==
+        kNuThreadIDRsrcFork)
+    {
+        extractingRsrc = true;
+    }
 
-	/*
-	 * Determine whether the file and fork already exists.  If the file
-	 * is one we just created, and the fork we want to write to is
-	 * empty, this will *not* set "exists".
-	 */
-	fileInfo.isValid = false;
-	err = Nu_FileForkExists(pArchive, newPathname, isForkedFile,
-			extractingRsrc, &exists, &fileInfo);
-	BailError(err);
+    /*
+     * Determine whether the file and fork already exists.  If the file
+     * is one we just created, and the fork we want to write to is
+     * empty, this will *not* set "exists".
+     */
+    fileInfo.isValid = false;
+    err = Nu_FileForkExists(pArchive, newPathname, isForkedFile,
+            extractingRsrc, &exists, &fileInfo);
+    BailError(err);
 
-	if (exists) {
-		Assert(fileInfo.isValid == true);
+    if (exists) {
+        Assert(fileInfo.isValid == true);
 
-		/*
-		 * The file exists when it shouldn't.  Decide what to do, based
-		 * on the options configured by the application.
-		 */
-		 
-		/*
-		 * Start by checking to see if we're willing to overwrite older files.
-		 * If not, see if the application wants to rename the file, or force
-		 * the overwrite.  Most likely they'll just want to skip it.
-		 */
-		if ((pArchive->valOnlyUpdateOlder) &&
-			!Nu_IsOlder(&fileInfo.modWhen, &pRecord->recModWhen))
-		{
-			if (pArchive->errorHandlerFunc != nil) {
-				errorStatus.err = kNuErrNotNewer;
-				result = (*pArchive->errorHandlerFunc)(pArchive, &errorStatus);
+        /*
+         * The file exists when it shouldn't.  Decide what to do, based
+         * on the options configured by the application.
+         */
+         
+        /*
+         * Start by checking to see if we're willing to overwrite older files.
+         * If not, see if the application wants to rename the file, or force
+         * the overwrite.  Most likely they'll just want to skip it.
+         */
+        if ((pArchive->valOnlyUpdateOlder) &&
+            !Nu_IsOlder(&fileInfo.modWhen, &pRecord->recModWhen))
+        {
+            if (pArchive->errorHandlerFunc != nil) {
+                errorStatus.err = kNuErrNotNewer;
+                result = (*pArchive->errorHandlerFunc)(pArchive, &errorStatus);
 
-				switch (result) {
-				case kNuAbort:
-					err = kNuErrAborted;
-					goto bail;
-				case kNuRetry:
-				case kNuRename:
-					err = kNuErrRename;
-					goto bail;
-				case kNuSkip:
-					err = kNuErrSkipped;
-					goto bail;
-				case kNuOverwrite:
-					break;	/* fall back into main code */
-				case kNuIgnore:
-				default:
-					err = kNuErrSyntax;
-					Nu_ReportError(NU_BLOB, err,
-						"Wasn't expecting result %d here", result);
-					goto bail;
-				}
-			} else {
-				err = kNuErrNotNewer;
-				goto bail;
-			}
-		}
+                switch (result) {
+                case kNuAbort:
+                    err = kNuErrAborted;
+                    goto bail;
+                case kNuRetry:
+                case kNuRename:
+                    err = kNuErrRename;
+                    goto bail;
+                case kNuSkip:
+                    err = kNuErrSkipped;
+                    goto bail;
+                case kNuOverwrite:
+                    break;  /* fall back into main code */
+                case kNuIgnore:
+                default:
+                    err = kNuErrSyntax;
+                    Nu_ReportError(NU_BLOB, err,
+                        "Wasn't expecting result %d here", result);
+                    goto bail;
+                }
+            } else {
+                err = kNuErrNotNewer;
+                goto bail;
+            }
+        }
 
-		/* If they "might" allow overwrites, and they have an error-handling
-		 * callback defined, call that to find out what they want to do
-		 * here.  Options include skipping the file, overwriting the file,
-		 * and extracting to a different file.
-		 */
-		if (pArchive->valHandleExisting == kNuMaybeOverwrite) {
-			if (pArchive->errorHandlerFunc != nil) {
-				errorStatus.err = kNuErrFileExists;
-				result = (*pArchive->errorHandlerFunc)(pArchive, &errorStatus);
+        /* If they "might" allow overwrites, and they have an error-handling
+         * callback defined, call that to find out what they want to do
+         * here.  Options include skipping the file, overwriting the file,
+         * and extracting to a different file.
+         */
+        if (pArchive->valHandleExisting == kNuMaybeOverwrite) {
+            if (pArchive->errorHandlerFunc != nil) {
+                errorStatus.err = kNuErrFileExists;
+                result = (*pArchive->errorHandlerFunc)(pArchive, &errorStatus);
 
-				switch (result) {
-				case kNuAbort:
-					err = kNuErrAborted;
-					goto bail;
-				case kNuRetry:
-				case kNuRename:
-					err = kNuErrRename;
-					goto bail;
-				case kNuSkip:
-					err = kNuErrSkipped;
-					goto bail;
-				case kNuOverwrite:
-					break;	/* fall back into main code */
-				case kNuIgnore:
-				default:
-					err = kNuErrSyntax;
-					Nu_ReportError(NU_BLOB, err,
-						"Wasn't expecting result %d here", result);
-					goto bail;
-				}
-			} else {
-				/* no error handler, return an error to the caller */
-				err = kNuErrFileExists;
-				goto bail;
-			}
-		} else if (pArchive->valHandleExisting == kNuNeverOverwrite) {
-			err = kNuErrSkipped;
-			goto bail;
-		}
-	} else {
-		/*
-		 * The file doesn't exist.  If we're doing a "freshen" from the
-		 * archive, we don't want to create a new file, so we return an
-		 * error to the user instead.  However, we give the application
-		 * a chance to straighten things out.  Most likely they'll just
-		 * return kNuSkip.
-		 */
-		if (pArchive->valHandleExisting == kNuMustOverwrite) {
-			DBUG(("+++ can't freshen nonexistent file '%s'\n", newPathname));
-			if (pArchive->errorHandlerFunc != nil) {
-				errorStatus.err = kNuErrDuplicateNotFound;
+                switch (result) {
+                case kNuAbort:
+                    err = kNuErrAborted;
+                    goto bail;
+                case kNuRetry:
+                case kNuRename:
+                    err = kNuErrRename;
+                    goto bail;
+                case kNuSkip:
+                    err = kNuErrSkipped;
+                    goto bail;
+                case kNuOverwrite:
+                    break;  /* fall back into main code */
+                case kNuIgnore:
+                default:
+                    err = kNuErrSyntax;
+                    Nu_ReportError(NU_BLOB, err,
+                        "Wasn't expecting result %d here", result);
+                    goto bail;
+                }
+            } else {
+                /* no error handler, return an error to the caller */
+                err = kNuErrFileExists;
+                goto bail;
+            }
+        } else if (pArchive->valHandleExisting == kNuNeverOverwrite) {
+            err = kNuErrSkipped;
+            goto bail;
+        }
+    } else {
+        /*
+         * The file doesn't exist.  If we're doing a "freshen" from the
+         * archive, we don't want to create a new file, so we return an
+         * error to the user instead.  However, we give the application
+         * a chance to straighten things out.  Most likely they'll just
+         * return kNuSkip.
+         */
+        if (pArchive->valHandleExisting == kNuMustOverwrite) {
+            DBUG(("+++ can't freshen nonexistent file '%s'\n", newPathname));
+            if (pArchive->errorHandlerFunc != nil) {
+                errorStatus.err = kNuErrDuplicateNotFound;
 
-				/* give them a chance to rename */
-				result = (*pArchive->errorHandlerFunc)(pArchive, &errorStatus);
-				switch (result) {
-				case kNuAbort:
-					err = kNuErrAborted;
-					goto bail;
-				case kNuRetry:
-				case kNuRename:
-					err = kNuErrRename;
-					goto bail;
-				case kNuSkip:
-					err = kNuErrSkipped;
-					goto bail;
-				case kNuOverwrite:
-					break;	/* fall back into main code */
-				case kNuIgnore:
-				default:
-					err = kNuErrSyntax;
-					Nu_ReportError(NU_BLOB, err,
-						"Wasn't expecting result %d here", result);
-					goto bail;
-				}
-			} else {
-				/* no error handler, return an error to the caller */
-				err = kNuErrDuplicateNotFound;
-				goto bail;
-			}
-		}
-	}
+                /* give them a chance to rename */
+                result = (*pArchive->errorHandlerFunc)(pArchive, &errorStatus);
+                switch (result) {
+                case kNuAbort:
+                    err = kNuErrAborted;
+                    goto bail;
+                case kNuRetry:
+                case kNuRename:
+                    err = kNuErrRename;
+                    goto bail;
+                case kNuSkip:
+                    err = kNuErrSkipped;
+                    goto bail;
+                case kNuOverwrite:
+                    break;  /* fall back into main code */
+                case kNuIgnore:
+                default:
+                    err = kNuErrSyntax;
+                    Nu_ReportError(NU_BLOB, err,
+                        "Wasn't expecting result %d here", result);
+                    goto bail;
+                }
+            } else {
+                /* no error handler, return an error to the caller */
+                err = kNuErrDuplicateNotFound;
+                goto bail;
+            }
+        }
+    }
 
-	Assert(err == kNuErrNone);
+    Assert(err == kNuErrNone);
 
-	/*
-	 * After the above, if the file exists then we need to prepare it for
-	 * writing.  On some systems -- notably those with forked files -- it
-	 * may be easiest to delete the entire file and start over.  On
-	 * simpler systems, an (optional) chmod followed by an open that
-	 * truncates the file should be sufficient.
-	 *
-	 * If the file didn't exist, we need to be sure that the path leading
-	 * up to its eventual location exists.  This might require creating
-	 * several directories.  We distinguish the case of "file isn't there"
-	 * from "file is there but fork isn't" by seeing if we were able to
-	 * get valid file info.
-	 */
-	if (exists) {
-		Assert(fileInfo.isValid == true);
-		err = Nu_PrepareForWriting(pArchive, newPathname, extractingRsrc,
-				&fileInfo);
-		BailError(err);
-	} else if (!fileInfo.isValid) {
-		err = Nu_CreatePathIFN(pArchive, newPathname, newFssep);
-		BailError(err);
-	}
+    /*
+     * After the above, if the file exists then we need to prepare it for
+     * writing.  On some systems -- notably those with forked files -- it
+     * may be easiest to delete the entire file and start over.  On
+     * simpler systems, an (optional) chmod followed by an open that
+     * truncates the file should be sufficient.
+     *
+     * If the file didn't exist, we need to be sure that the path leading
+     * up to its eventual location exists.  This might require creating
+     * several directories.  We distinguish the case of "file isn't there"
+     * from "file is there but fork isn't" by seeing if we were able to
+     * get valid file info.
+     */
+    if (exists) {
+        Assert(fileInfo.isValid == true);
+        err = Nu_PrepareForWriting(pArchive, newPathname, extractingRsrc,
+                &fileInfo);
+        BailError(err);
+    } else if (!fileInfo.isValid) {
+        err = Nu_CreatePathIFN(pArchive, newPathname, newFssep);
+        BailError(err);
+    }
 
-	/*
-	 * Open sesame.
-	 */
-	err = Nu_OpenFileForWrite(pArchive, newPathname, extractingRsrc, pFp);
-	BailError(err);
+    /*
+     * Open sesame.
+     */
+    err = Nu_OpenFileForWrite(pArchive, newPathname, extractingRsrc, pFp);
+    BailError(err);
 
 
 #if defined(HAS_RESOURCE_FORKS)
-	pArchive->lastFileCreated = newPathname;
+    pArchive->lastFileCreated = newPathname;
 #endif
 
 bail:
-	if (err != kNuErrNone) {
-		if (err != kNuErrSkipped && err != kNuErrRename &&
-			err != kNuErrFileExists)
-		{
-			Nu_ReportError(NU_BLOB, err, "Unable to open '%s'%s",
-				newPathname, extractingRsrc ? " (rsrc fork)" : "");
-		}
-	}
-	return err;
+    if (err != kNuErrNone) {
+        if (err != kNuErrSkipped && err != kNuErrRename &&
+            err != kNuErrFileExists)
+        {
+            Nu_ReportError(NU_BLOB, err, "Unable to open '%s'%s",
+                newPathname, extractingRsrc ? " (rsrc fork)" : "");
+        }
+    }
+    return err;
 }
 
 
@@ -944,29 +944,29 @@ bail:
  */
 NuError
 Nu_CloseOutputFile(NuArchive* pArchive, const NuRecord* pRecord, FILE* fp,
-	const char* pathname)
+    const char* pathname)
 {
-	NuError err;
+    NuError err;
 
-	Assert(pArchive != nil);
-	Assert(pRecord != nil);
-	Assert(fp != nil);
+    Assert(pArchive != nil);
+    Assert(pRecord != nil);
+    Assert(fp != nil);
 
-	fclose(fp);
+    fclose(fp);
 
-	err = Nu_SetFileDates(pArchive, pRecord, pathname);
-	BailError(err);
+    err = Nu_SetFileDates(pArchive, pRecord, pathname);
+    BailError(err);
 
-	err = Nu_SetFileAccess(pArchive, pRecord, pathname);
-	BailError(err);
+    err = Nu_SetFileAccess(pArchive, pRecord, pathname);
+    BailError(err);
 
 bail:
-	return kNuErrNone;
+    return kNuErrNone;
 }
 
 /*
  * ===========================================================================
- *		Open an input file
+ *      Open an input file
  * ===========================================================================
  */
 
@@ -975,12 +975,12 @@ bail:
  */
 static NuError
 Nu_OpenFileForRead(NuArchive* pArchive, const char* pathname,
-	Boolean openRsrc, FILE** pFp)
+    Boolean openRsrc, FILE** pFp)
 {
-	*pFp = fopen(pathname, kNuFileOpenReadOnly);
-	if (*pFp == nil)
-		return errno ? errno : -1;
-	return kNuErrNone;
+    *pFp = fopen(pathname, kNuFileOpenReadOnly);
+    if (*pFp == nil)
+        return errno ? errno : -1;
+    return kNuErrNone;
 }
 
 
@@ -992,87 +992,87 @@ Nu_OpenFileForRead(NuArchive* pArchive, const char* pathname,
  */
 NuError
 Nu_OpenInputFile(NuArchive* pArchive, const char* pathname,
-	Boolean openRsrc, FILE** pFp)
+    Boolean openRsrc, FILE** pFp)
 {
-	NuError err = kNuErrNone;
-	NuError openErr = kNuErrNone;
-	NuErrorStatus errorStatus;
-	NuResult result;
+    NuError err = kNuErrNone;
+    NuError openErr = kNuErrNone;
+    NuErrorStatus errorStatus;
+    NuResult result;
 
-	Assert(pArchive != nil);
-	Assert(pathname != nil);
-	Assert(pFp != nil);
+    Assert(pArchive != nil);
+    Assert(pathname != nil);
+    Assert(pFp != nil);
 
 retry:
-	/*
-	 * Open sesame.
-	 */
-	err = Nu_OpenFileForRead(pArchive, pathname, openRsrc, pFp);
-	if (err == kNuErrNone)	/* success! */
-		goto bail;
+    /*
+     * Open sesame.
+     */
+    err = Nu_OpenFileForRead(pArchive, pathname, openRsrc, pFp);
+    if (err == kNuErrNone)  /* success! */
+        goto bail;
 
-	if (err == ENOENT)
-		openErr = kNuErrFileNotFound;
+    if (err == ENOENT)
+        openErr = kNuErrFileNotFound;
 
-	if (pArchive->errorHandlerFunc != nil) {
-		errorStatus.operation = kNuOpAdd;
-		errorStatus.err = openErr;
-		errorStatus.sysErr = 0;
-		errorStatus.message = nil;
-		errorStatus.pRecord = nil;
-		errorStatus.pathname = pathname;
-		errorStatus.filenameSeparator = '\0';
-		/*errorStatus.origArchiveTouched = false;*/
-		errorStatus.canAbort = true;
-		errorStatus.canRetry = true;
-		errorStatus.canIgnore = false;
-		errorStatus.canSkip = true;
-		errorStatus.canRename = false;
-		errorStatus.canOverwrite = false;
+    if (pArchive->errorHandlerFunc != nil) {
+        errorStatus.operation = kNuOpAdd;
+        errorStatus.err = openErr;
+        errorStatus.sysErr = 0;
+        errorStatus.message = nil;
+        errorStatus.pRecord = nil;
+        errorStatus.pathname = pathname;
+        errorStatus.filenameSeparator = '\0';
+        /*errorStatus.origArchiveTouched = false;*/
+        errorStatus.canAbort = true;
+        errorStatus.canRetry = true;
+        errorStatus.canIgnore = false;
+        errorStatus.canSkip = true;
+        errorStatus.canRename = false;
+        errorStatus.canOverwrite = false;
 
-		DBUG(("--- invoking error handler function\n"));
-		result = (*pArchive->errorHandlerFunc)(pArchive, &errorStatus);
+        DBUG(("--- invoking error handler function\n"));
+        result = (*pArchive->errorHandlerFunc)(pArchive, &errorStatus);
 
-		switch (result) {
-		case kNuAbort:
-			err = kNuErrAborted;
-			goto bail;
-		case kNuRetry:
-			goto retry;
-		case kNuSkip:
-			err = kNuErrSkipped;
-			goto bail;
-		case kNuRename:
-		case kNuOverwrite:
-		case kNuIgnore:
-		default:
-			err = kNuErrSyntax;
-			Nu_ReportError(NU_BLOB, err,
-				"Wasn't expecting result %d here", result);
-			goto bail;
-		}
-	} else {
-		DBUG(("+++ no error callback in OpenInputFile\n"));
-	}
+        switch (result) {
+        case kNuAbort:
+            err = kNuErrAborted;
+            goto bail;
+        case kNuRetry:
+            goto retry;
+        case kNuSkip:
+            err = kNuErrSkipped;
+            goto bail;
+        case kNuRename:
+        case kNuOverwrite:
+        case kNuIgnore:
+        default:
+            err = kNuErrSyntax;
+            Nu_ReportError(NU_BLOB, err,
+                "Wasn't expecting result %d here", result);
+            goto bail;
+        }
+    } else {
+        DBUG(("+++ no error callback in OpenInputFile\n"));
+    }
 
 bail:
-	if (err == kNuErrNone) {
-		Assert(*pFp != nil);
-	} else {
-		if (err != kNuErrSkipped && err != kNuErrRename &&
-			err != kNuErrFileExists)
-		{
-			Nu_ReportError(NU_BLOB, err, "Unable to open '%s'%s",
-				pathname, openRsrc ? " (rsrc fork)" : "");
-		}
-	}
-	return err;
+    if (err == kNuErrNone) {
+        Assert(*pFp != nil);
+    } else {
+        if (err != kNuErrSkipped && err != kNuErrRename &&
+            err != kNuErrFileExists)
+        {
+            Nu_ReportError(NU_BLOB, err, "Unable to open '%s'%s",
+                pathname, openRsrc ? " (rsrc fork)" : "");
+        }
+    }
+    return err;
 }
 
 
 /*
  * ===========================================================================
- *		Delete and rename files
+ *      Delete and rename files
  * ===========================================================================
  */
 
@@ -1083,17 +1083,17 @@ NuError
 Nu_DeleteFile(const char* pathname)
 {
 #if defined(UNIX_LIKE) || defined(WINDOWS_LIKE)
-	int cc;
+    int cc;
 
-	DBUG(("--- Deleting '%s'\n", pathname));
+    DBUG(("--- Deleting '%s'\n", pathname));
 
-	cc = unlink(pathname);
-	if (cc < 0)
-		return errno ? errno : -1;
-	else
-		return kNuErrNone;
+    cc = unlink(pathname);
+    if (cc < 0)
+        return errno ? errno : -1;
+    else
+        return kNuErrNone;
 #else
-	#error "Port this"
+    #error "Port this"
 #endif
 }
 
@@ -1104,24 +1104,24 @@ NuError
 Nu_RenameFile(const char* fromPath, const char* toPath)
 {
 #if defined(UNIX_LIKE) || defined(WINDOWS_LIKE)
-	int cc;
+    int cc;
 
-	DBUG(("--- Renaming '%s' to '%s'\n", fromPath, toPath));
+    DBUG(("--- Renaming '%s' to '%s'\n", fromPath, toPath));
 
-	cc = rename(fromPath, toPath);
-	if (cc < 0)
-		return errno ? errno : -1;
-	else
-		return kNuErrNone;
+    cc = rename(fromPath, toPath);
+    if (cc < 0)
+        return errno ? errno : -1;
+    else
+        return kNuErrNone;
 #else
-	#error "Port this"
+    #error "Port this"
 #endif
 }
 
 
 /*
  * ===========================================================================
- *		NuError wrappers for std functions
+ *      NuError wrappers for std functions
  * ===========================================================================
  */
 
@@ -1131,16 +1131,16 @@ Nu_RenameFile(const char* fromPath, const char* toPath)
 NuError
 Nu_FTell(FILE* fp, long* pOffset)
 {
-	Assert(fp != nil);
-	Assert(pOffset != nil);
+    Assert(fp != nil);
+    Assert(pOffset != nil);
 
-	errno = 0;
-	*pOffset = ftell(fp);
-	if (*pOffset < 0) {
-		Nu_ReportError(NU_NILBLOB, errno, "file ftell failed");
-		return errno ? errno : kNuErrFileSeek;
-	}
-	return kNuErrNone;
+    errno = 0;
+    *pOffset = ftell(fp);
+    if (*pOffset < 0) {
+        Nu_ReportError(NU_NILBLOB, errno, "file ftell failed");
+        return errno ? errno : kNuErrFileSeek;
+    }
+    return kNuErrNone;
 }
 
 /*
@@ -1149,16 +1149,16 @@ Nu_FTell(FILE* fp, long* pOffset)
 NuError
 Nu_FSeek(FILE* fp, long offset, int ptrname)
 {
-	Assert(fp != nil);
-	Assert(ptrname == SEEK_SET || ptrname == SEEK_CUR || ptrname == SEEK_END);
+    Assert(fp != nil);
+    Assert(ptrname == SEEK_SET || ptrname == SEEK_CUR || ptrname == SEEK_END);
 
-	errno = 0;
-	if (fseek(fp, offset, ptrname) < 0) {
-		Nu_ReportError(NU_NILBLOB, errno,
-			"file fseek(%ld, %d) failed", offset, ptrname);
-		return errno ? errno : kNuErrFileSeek;
-	}
-	return kNuErrNone;
+    errno = 0;
+    if (fseek(fp, offset, ptrname) < 0) {
+        Nu_ReportError(NU_NILBLOB, errno,
+            "file fseek(%ld, %d) failed", offset, ptrname);
+        return errno ? errno : kNuErrFileSeek;
+    }
+    return kNuErrNone;
 }
 
 /*
@@ -1168,13 +1168,13 @@ Nu_FSeek(FILE* fp, long offset, int ptrname)
 NuError
 Nu_FRead(FILE* fp, void* buf, size_t nbyte)
 {
-	size_t result;
+    size_t result;
 
-	errno = 0;
-	result = fread(buf, nbyte, 1, fp);
-	if (result != 1)
-		return errno ? errno : kNuErrFileRead;
-	return kNuErrNone;
+    errno = 0;
+    result = fread(buf, nbyte, 1, fp);
+    if (result != 1)
+        return errno ? errno : kNuErrFileRead;
+    return kNuErrNone;
 }
 
 /*
@@ -1184,18 +1184,18 @@ Nu_FRead(FILE* fp, void* buf, size_t nbyte)
 NuError
 Nu_FWrite(FILE* fp, const void* buf, size_t nbyte)
 {
-	size_t result;
+    size_t result;
 
-	errno = 0;
-	result = fwrite(buf, nbyte, 1, fp);
-	if (result != 1)
-		return errno ? errno : kNuErrFileWrite;
-	return kNuErrNone;
+    errno = 0;
+    result = fwrite(buf, nbyte, 1, fp);
+    if (result != 1)
+        return errno ? errno : kNuErrFileWrite;
+    return kNuErrNone;
 }
 
 /*
  * ===========================================================================
- *		Misc functions
+ *      Misc functions
  * ===========================================================================
  */
 
@@ -1205,33 +1205,33 @@ Nu_FWrite(FILE* fp, const void* buf, size_t nbyte)
 NuError
 Nu_CopyFileSection(NuArchive* pArchive, FILE* dstFp, FILE* srcFp, long length)
 {
-	NuError err;
-	long readLen;
+    NuError err;
+    long readLen;
 
-	Assert(pArchive != nil);
-	Assert(dstFp != nil);
-	Assert(srcFp != nil);
-	Assert(length);
+    Assert(pArchive != nil);
+    Assert(dstFp != nil);
+    Assert(srcFp != nil);
+    Assert(length);
 
-	/* nice big buffer, for speed... could use getc/putc for simplicity */
-	err = Nu_AllocCompressionBufferIFN(pArchive);
-	BailError(err);
+    /* nice big buffer, for speed... could use getc/putc for simplicity */
+    err = Nu_AllocCompressionBufferIFN(pArchive);
+    BailError(err);
 
-	DBUG(("+++ Copying %ld bytes\n", length));
+    DBUG(("+++ Copying %ld bytes\n", length));
 
-	while (length) {
-		readLen = length > kNuGenCompBufSize ?  kNuGenCompBufSize : length;
+    while (length) {
+        readLen = length > kNuGenCompBufSize ?  kNuGenCompBufSize : length;
 
-		err = Nu_FRead(srcFp, pArchive->compBuf, readLen);
-		BailError(err);
-		err = Nu_FWrite(dstFp, pArchive->compBuf, readLen);
-		BailError(err);
+        err = Nu_FRead(srcFp, pArchive->compBuf, readLen);
+        BailError(err);
+        err = Nu_FWrite(dstFp, pArchive->compBuf, readLen);
+        BailError(err);
 
-		length -= readLen;
-	}
+        length -= readLen;
+    }
 
 bail:
-	return err;
+    return err;
 }
 
 
@@ -1248,26 +1248,26 @@ bail:
 NuError
 Nu_GetFileLength(NuArchive* pArchive, FILE* fp, long* pLength)
 {
-	NuError err;
-	long oldpos;
+    NuError err;
+    long oldpos;
 
-	Assert(fp != nil);
-	Assert(pLength != nil);
+    Assert(fp != nil);
+    Assert(pLength != nil);
 
-	err = Nu_FTell(fp, &oldpos);
-	BailError(err);
+    err = Nu_FTell(fp, &oldpos);
+    BailError(err);
 
-	err = Nu_FSeek(fp, 0, SEEK_END);
-	BailError(err);
+    err = Nu_FSeek(fp, 0, SEEK_END);
+    BailError(err);
 
-	err = Nu_FTell(fp, pLength);
-	BailError(err);
+    err = Nu_FTell(fp, pLength);
+    BailError(err);
 
-	err = Nu_FSeek(fp, oldpos, SEEK_SET);
-	BailError(err);
+    err = Nu_FSeek(fp, oldpos, SEEK_SET);
+    BailError(err);
 
 bail:
-	return err;
+    return err;
 }
 
 
@@ -1278,16 +1278,16 @@ bail:
 NuError
 Nu_TruncateOpenFile(FILE* fp, long length)
 {
-	#if defined(HAVE_FTRUNCATE)
-	if (ftruncate(fileno(fp), length) < 0)
-		return errno ? errno : -1;
-	return kNuErrNone;
-	#elif defined(HAVE_CHSIZE)
-	if (chsize(fileno(fp), length) < 0)
-		return errno ? errno : -1;
-	return kNuErrNone;
-	#else
-	return kNuErrInternal;
-	#endif
+    #if defined(HAVE_FTRUNCATE)
+    if (ftruncate(fileno(fp), length) < 0)
+        return errno ? errno : -1;
+    return kNuErrNone;
+    #elif defined(HAVE_CHSIZE)
+    if (chsize(fileno(fp), length) < 0)
+        return errno ? errno : -1;
+    return kNuErrNone;
+    #else
+    return kNuErrInternal;
+    #endif
 }
 

@@ -19,13 +19,13 @@
 const char*
 Nu_strerror(int errnum)
 {
-	extern int sys_nerr;
-	extern char *sys_errlist[];
+    extern int sys_nerr;
+    extern char *sys_errlist[];
 
-	if (errnum < 0 || errnum > sys_nerr)
-		return NULL;
+    if (errnum < 0 || errnum > sys_nerr)
+        return NULL;
 
-	return sys_errlist[errnum];
+    return sys_errlist[errnum];
 }
 #endif
 
@@ -41,13 +41,13 @@ Nu_strerror(int errnum)
 void*
 Nu_memmove(void* dst, const void* src, size_t n)
 {
-	void* retval = dst;
-	char* srcp = (char*)src;
-	char* dstp = (char*)dst;
+    void* retval = dst;
+    char* srcp = (char*)src;
+    char* dstp = (char*)dst;
 
-	/* you can normally get away with this if n==0 */
-	assert(dst != NULL);
-	assert(src != NULL);
+    /* you can normally get away with this if n==0 */
+    assert(dst != NULL);
+    assert(src != NULL);
 
     if (dstp == srcp || !n) {
         /* nothing to do */
@@ -63,7 +63,7 @@ Nu_memmove(void* dst, const void* src, size_t n)
             *dstp++ = *srcp++;
     }
 
-	return retval;
+    return retval;
 }
 #endif
 
@@ -83,7 +83,7 @@ Nu_memmove(void* dst, const void* src, size_t n)
 unsigned long
 Nu_strtoul(const char *nptr, char **endptr, int base)
 {
-	return strtol(nptr, endptr, base);
+    return strtol(nptr, endptr, base);
 }
 #endif
 
@@ -94,9 +94,9 @@ Nu_strtoul(const char *nptr, char **endptr, int base)
 int
 Nu_strcasecmp(const char *str1, const char *str2)
 {
-	while (*str1 && *str2 && toupper(*str1) == toupper(*str2))
-		str1++, str2++;
-	return (toupper(*str1) - toupper(*str2));
+    while (*str1 && *str2 && toupper(*str1) == toupper(*str2))
+        str1++, str2++;
+    return (toupper(*str1) - toupper(*str2));
 }
 
 #endif
@@ -108,13 +108,13 @@ Nu_strcasecmp(const char *str1, const char *str2)
 int
 Nu_strncasecmp(const char *str1, const char *str2, size_t n)
 {
-	while (n && *str1 && *str2 && toupper(*str1) == toupper(*str2))
-		str1++, str2++, n--;
+    while (n && *str1 && *str2 && toupper(*str1) == toupper(*str2))
+        str1++, str2++, n--;
 
-	if (n)
-		return (toupper(*str1) - toupper(*str2));
-	else
-		return 0;	/* no mismatch in first n chars */
+    if (n)
+        return (toupper(*str1) - toupper(*str2));
+    else
+        return 0;   /* no mismatch in first n chars */
 }
 #endif
 

@@ -104,13 +104,13 @@
 
 
 #if defined(__unix__) || defined(__unix) || defined(__BEOS__) || \
-	defined(__hpux) || defined(_AIX) || defined(__APPLE__)
-# define UNIX_LIKE		/* standardize */
+    defined(__hpux) || defined(_AIX) || defined(__APPLE__)
+# define UNIX_LIKE      /* standardize */
 #endif
 
 #if defined(UNIX_LIKE)
 # ifdef USE_REENTRANT_CALLS
-#  define _REENTRANT	/* Solaris 2.x convention */
+#  define _REENTRANT    /* Solaris 2.x convention */
 # endif
 #endif
 
