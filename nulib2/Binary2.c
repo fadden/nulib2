@@ -303,8 +303,8 @@ BNYConvertDateTime(ushort prodosDate, ushort prodosTime, NuDateTime* pWhen)
     pWhen->second = 0;
     pWhen->minute = prodosTime & 0x3f;
     pWhen->hour = (prodosTime >> 8) & 0x1f;
-    pWhen->day = prodosDate & 0x1f;
-    pWhen->month = (prodosDate >> 5) & 0x0f;
+    pWhen->day = (prodosDate & 0x1f) -1;
+    pWhen->month = ((prodosDate >> 5) & 0x0f) -1;
     pWhen->year = (prodosDate >> 9) & 0x7f;
     if (pWhen->year < 40)
         pWhen->year += 100;     /* P8 uses 0-39 for 2000-2039 */
