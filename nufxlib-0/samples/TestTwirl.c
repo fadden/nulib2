@@ -233,6 +233,7 @@ CompareCRCs(NuArchive* pArchive, const CRCList* pOldCRCList)
 {
     CRCList* pNewCRCList = nil;
     int result = -1;
+    int badCrc = 0;
     int i;
 
     pNewCRCList = GatherCRCs(pArchive);
@@ -250,13 +251,14 @@ CompareCRCs(NuArchive* pArchive, const CRCList* pOldCRCList)
     for (i = 0; i < pNewCRCList->numEntries; i++) {
         if (pOldCRCList->entries[i] != pNewCRCList->entries[i]) {
             fprintf(stderr, "ERROR: CRC mismatch: %5d old=0x%04x new=0x%04x\n",
-                i, pOldCRCList->numEntries, pNewCRCList->numEntries);
-            goto bail;
+                i, pOldCRCList->entries[i], pNewCRCList->entries[i]);
+            badCrc = 1;
         }
     }
-    printf("  Matched %d CRCs\n", pOldCRCList->numEntries);
-
-    result = 0;
+    if (!badCrc) {
+        printf("  Matched %d CRCs\n", pOldCRCList->numEntries);
+        result = 0;
+    }
 
 bail:
     FreeCRCs(pNewCRCList);

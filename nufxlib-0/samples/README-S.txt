@@ -105,6 +105,15 @@ place", deleting and adding threads within existing records several times.
 The changes are periodically flushed, but the archive is never closed.
 The goal is to test repeated updates on an open archive.
 
-This will leave a file called "TwirlCopy678" in the current directory, and
-overwrite "TwirlTmp789" during processing.
+The CRC verification mechanism will fail on archives created with ProDOS
+8 ShrinkIt.  The older "version 1" records didn't have CRCs in the thread
+headers, so you will get a series of messages that look like this:
+
+ERROR: CRC mismatch:     0 old=0x0000 new=0x681b
+ERROR: CRC mismatch:     1 old=0x0000 new=0x5570
+ERROR: CRC mismatch:     2 old=0x0000 new=0x4ec5
+
+This will leave the original archive alone, making a copy of it named
+"TwirlCopy678" in the current directory.  It overwrites its temp file,
+"TwirlTmp789", without prompting.
 
