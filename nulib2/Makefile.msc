@@ -33,20 +33,24 @@ OBJS = $(OBJS1) $(OBJS2)
 !ifdef DLL
 ### build using the same libc as the DLL
 !ifdef NODEBUG
+#OPT = $(cdebug) /D NDEBUG /MD
 OPT = $(cdebug) /MD
 LIB_FLAGS = /nodefaultlib:libcd.lib /nologo setargv.obj
 !else
-OPT = $(cdebug) /MDd
+#OPT = $(cdebug) /MDd
+OPT = $(cdebug) /D DEBUG_MSGS /MDd
 LIB_FLAGS = /nodefaultlib:libc.lib /nologo setargv.obj
 !endif
 !else
 
 ### build against static lib
 !ifdef NODEBUG
+#OPT = $(cdebug) /D NDEBUG /ML
 OPT = $(cdebug) /ML
 LIB_FLAGS = /nodefaultlib:libcd.lib /nologo libc.lib setargv.obj
 !else
-OPT = $(cdebug) /MLd
+#OPT = $(cdebug) /MLd
+OPT = $(cdebug) /D DEBUG_MSGS /MLd
 LIB_FLAGS = /nodefaultlib:libc.lib /nologo libcd.lib setargv.obj
 !endif
 !endif
