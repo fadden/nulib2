@@ -61,7 +61,7 @@ LIB_FLAGS = libbz2.lib $(LIB_FLAGS)
 	@$(cc) $(cdebug) $(OPT) $(BUILD_FLAGS) $(cflags) $(cvars) -o $@ $<
 
 
-PRODUCTS = exerciser.exe imgconv.exe launder.exe test-basic.exe test-extract.exe test-simple.exe
+PRODUCTS = exerciser.exe imgconv.exe launder.exe test-basic.exe test-extract.exe test-simple.exe test-twirl.exe
 
 all: $(PRODUCTS)
 

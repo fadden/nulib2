@@ -189,7 +189,7 @@ GatherCRCs(NuArchive* pArchive)
             goto bail;
         }
 
-        for (i = 0; i < NuRecordGetNumThreads(pRecord); i++) {
+        for (i = 0; i < (int)NuRecordGetNumThreads(pRecord); i++) {
             pThread = NuGetThread(pRecord, i);
             if (pThread->thThreadClass == kNuThreadClassData) {
                 if (crcIdx >= maxCRCs) {
@@ -218,7 +218,13 @@ bail:
 
 
 /*
- * Compare the current set of CRCs against our saved list.
+ * Compare the current set of CRCs against our saved list.  If any of
+ * the records or threads were deleted or rearranged, this will fail.
+ * I happen to think this is a *good* thing: if something is the least
+ * bit screwy, I want to know about it.
+ *
+ * Unfortunately, if we *deliberately* delete records, this can't
+ * help us with the survivors.
  *
  * Returns 0 on success, nonzero on failure.
  */
@@ -378,7 +384,7 @@ RecompressRecord(NuArchive* pArchive, NuRecordIdx recordIdx, long* pLen)
         goto bail;
     }
 
-    for (i = 0; i < NuRecordGetNumThreads(pRecord); i++) {
+    for (i = 0; i < (int)NuRecordGetNumThreads(pRecord); i++) {
         pThread = NuGetThread(pRecord, i);
         if (pThread->thThreadClass == kNuThreadClassData) {
             /*printf("    Recompressing %d (threadID=0x%08lx)\n", i,
@@ -444,7 +450,7 @@ RecompressArchive(NuArchive* pArchive, NuValue compression)
         goto bail;
     }
 
-    for (idx = 0; idx < countAttr; idx++) {
+    for (idx = 0; idx < (int)countAttr; idx++) {
         err = NuGetRecordIdxByPosition(pArchive, idx, &pIndices[idx]);
         if (err != kNuErrNone) {
             fprintf(stderr, "ERROR: couldn't get record #%ld (err=%d)\n",
@@ -457,7 +463,7 @@ RecompressArchive(NuArchive* pArchive, NuValue compression)
      * Walk through the index list, handling each record individually.
      */
     heldLen = 0;
-    for (idx = 0; idx < countAttr; idx++) {
+    for (idx = 0; idx < (int)countAttr; idx++) {
         long recHeldLen;
 
         err = RecompressRecord(pArchive, pIndices[idx], &recHeldLen);
@@ -604,9 +610,11 @@ bail:
  * Copy from the current offset in "srcfp" to a new file called
  * "outFileName".  Returns a writable file descriptor for the new file
  * on success, or nil on error.
+ *
+ * (Note "CopyFile()" exists under Win32.)
  */
 FILE*
-CopyFile(const char* outFileName, FILE* srcfp)
+MyCopyFile(const char* outFileName, FILE* srcfp)
 {
     char buf[24576];
     FILE* outfp;
@@ -672,7 +680,7 @@ main(int argc, char** argv)
 
     printf("Copying '%s' to '%s'\n", argv[1], kWorkFileName);
 
-    infp = CopyFile(kWorkFileName, srcfp);
+    infp = MyCopyFile(kWorkFileName, srcfp);
     if (infp == nil) {
         fprintf(stderr, "Copy failed, bailing.\n");
         exit(1);
