@@ -174,6 +174,9 @@ Nu_StrError(NuError err)
     case kNuErrDamaged:
         return "Original archive may have been damaged";
 
+    case kNuErrIsBinary2:
+        return "This is a Binary II archive";
+
     default:
         sprintf(defaultMsg, "(error=%d)", err);
         return defaultMsg;

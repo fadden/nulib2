@@ -101,7 +101,9 @@ typedef enum NuError {
     kNuErrLeadingFssep  = -80,      /* names in archives must not start w/sep */
     kNuErrNotNewer      = -81,      /* item same age or older than existing */
     kNuErrDuplicateNotFound = -82,  /* "must overwrite" was set, but item DNE */
-    kNuErrDamaged       = -83       /* original archive may have been damaged */
+    kNuErrDamaged       = -83,      /* original archive may have been damaged */
+
+    kNuErrIsBinary2     = -90,      /* this looks like a Binary II archive */
 } NuError;
 
 /*
@@ -333,14 +335,14 @@ typedef union NuDataSink NuDataSink;        /* dummy def for internal struct */
  * NuFX Date/Time structure; same as TimeRec from IIgs "misctool.h".
  */
 typedef struct NuDateTime {
-    unsigned char   second;
-    unsigned char   minute;
-    unsigned char   hour;
-    unsigned char   year;
-    unsigned char   day;
-    unsigned char   month;
-    unsigned char   extra;
-    unsigned char   weekDay;
+    unsigned char   second;         /* 0-59 */
+    unsigned char   minute;         /* 0-59 */
+    unsigned char   hour;           /* 0-23 */
+    unsigned char   year;           /* year - 1900 */
+    unsigned char   day;            /* 0-30 */
+    unsigned char   month;          /* 0-11 */
+    unsigned char   extra;          /* (must be zero) */
+    unsigned char   weekDay;        /* 1-7 (1=sunday) */
 } NuDateTime;
 
 /*
@@ -499,7 +501,7 @@ typedef struct NuSelectionProposal {
 } NuSelectionProposal;
 
 /*
- * Passed into the OuputPathnameFilter callback.
+ * Passed into the OutputPathnameFilter callback.
  */
 typedef struct NuPathnameProposal {
     const char*         pathname;

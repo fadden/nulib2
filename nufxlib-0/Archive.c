@@ -308,6 +308,8 @@ Nu_UpdateWrapper(NuArchive* pArchive, FILE* fp)
         BailError(err);
         Nu_WriteFour(pArchive, fp, archiveLen512);
 
+        /* probably ought to update "modified when" date/time field */
+
         /* seek just past end of BNY wrapper */
         err = Nu_FSeek(fp, kNuBinary2BlockSize - (kNuBNYDiskSpace+4), SEEK_CUR);
         BailError(err);
@@ -459,6 +461,10 @@ bail:
  * That way, if the application is trying a series of libraries to find
  * one that will accept the file, we don't generate spurious complaints.
  *
+ * Since there's a fair possibility that whoever is opening this file is
+ * also interested in related formats, we try to return a meaningful error
+ * code for stuff we recognize (especially Binary II).
+ *
  * On exit, the stream will be positioned just past the master header.
  */
 static NuError
@@ -491,7 +497,7 @@ Nu_ReadMasterHeader(NuArchive* pArchive)
             err = kNuErrNotNuFX;
             /* probably too short to be BNY, so go ahead and whine */
             Nu_ReportError(NU_BLOB, kNuErrNone,
-                "Might be Binary II, but it's not NuFX");
+                "Looks like a truncated Binary II archive?");
             goto bail;
         }
 
@@ -502,7 +508,7 @@ Nu_ReadMasterHeader(NuArchive* pArchive)
          */
         count = Nu_ReadOne(pArchive, fp);
         if (count != 0) {
-            err = kNuErrNotNuFX;
+            err = kNuErrIsBinary2;
             /*Nu_ReportError(NU_BLOB, kNuErrNone,
                 "This is a Binary II archive with %d files in it", count+1);*/
             DBUG(("This is a Binary II archive with %d files in it\n",count+1));
@@ -537,6 +543,7 @@ Nu_ReadMasterHeader(NuArchive* pArchive)
         err = kNuErrNotNuFX;
 
         if (isBinary2) {
+            err = kNuErrIsBinary2;
             /*Nu_ReportError(NU_BLOB, kNuErrNone,
                 "Looks like Binary II, not NuFX");*/
             DBUG(("Looks like Binary II, not NuFX\n"));
