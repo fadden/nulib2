@@ -748,6 +748,8 @@ bail:
         /* send a final progress message, indicating failure */
         if (err == kNuErrSkipped)
             pProgressData->state = kNuProgressSkipped;
+        else if (err == kNuErrAborted)
+            pProgressData->state = kNuProgressAborted;
         else
             pProgressData->state = kNuProgressFailed;
         (void) Nu_SendInitialProgress(pArchive, pProgressData);

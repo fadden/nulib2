@@ -1530,7 +1530,8 @@ Nu_ExpandLZW(NuArchive* pArchive, const NuRecord* pRecord,
         /* write the data, possibly doing an EOL conversion */
         err = Nu_FunnelWrite(pArchive, pFunnel, writeBuf, writeLen);
         if (err != kNuErrNone) {
-            Nu_ReportError(NU_BLOB, err, "unable to write output");
+            if (err != kNuErrAborted)
+                Nu_ReportError(NU_BLOB, err, "unable to write output");
             goto bail;
         }
 
