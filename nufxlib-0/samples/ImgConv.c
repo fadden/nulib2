@@ -15,10 +15,14 @@
 #include "NufxLib.h"
 #include "Common.h"
 
-/* we can get this out of NufxLib if the OS doesn't have it */
 #ifndef HAVE_STRCASECMP
-#define strcasecmp Nu_strcasecmp
-int Nu_strcasecmp(const char *s1, const char *s2);
+static int
+strcasecmp(const char *str1, const char *str2)
+{
+    while (*str1 && *str2 && toupper(*str1) == toupper(*str2))
+        str1++, str2++;
+    return (toupper(*str1) - toupper(*str2));
+}
 #endif
 
 
