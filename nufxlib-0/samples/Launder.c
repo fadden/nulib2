@@ -51,6 +51,7 @@ NuResult
 FreeCallback(NuArchive* pArchive, void* args)
 {
     free(args);
+    return kNuOK;
 }
 
 /*

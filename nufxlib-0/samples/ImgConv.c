@@ -219,6 +219,7 @@ NuResult
 FreeCallback(NuArchive* pArchive, void* args)
 {
     free(args);
+    return kNuOK;
 }
 
 /*
@@ -228,6 +229,7 @@ NuResult
 FcloseCallback(NuArchive* pArchive, void* args)
 {
     fclose((FILE*) args);
+    return kNuOK;
 }
 
 /*
