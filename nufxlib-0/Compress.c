@@ -204,7 +204,7 @@ Nu_CompressToArchive(NuArchive* pArchive, NuDataSource* pDataSource,
                     &threadCrc);
             break;
         default:
-			/* should've been blocked in Value.c */
+            /* should've been blocked in Value.c */
             Assert(0);
             err = kNuErrInternal;
             goto bail;

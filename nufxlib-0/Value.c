@@ -208,8 +208,8 @@ Nu_ConvertCompressValToFormat(NuArchive* pArchive, NuValue compValue)
     case kNuCompressLZW1:   threadFormat = kNuThreadFormatLZW1;         break;
     case kNuCompressLZW2:   threadFormat = kNuThreadFormatLZW2;         break;
     case kNuCompressSQ:     threadFormat = kNuThreadFormatHuffmanSQ;    break;
-    case kNuCompressLZC12:  threadFormat = kNuThreadFormatLZC12;		break;
-    case kNuCompressLZC16:  threadFormat = kNuThreadFormatLZC16;		break;
+    case kNuCompressLZC12:  threadFormat = kNuThreadFormatLZC12;        break;
+    case kNuCompressLZC16:  threadFormat = kNuThreadFormatLZC16;        break;
     default:
         Assert(false);
         Nu_ReportError(NU_BLOB, kNuErrInvalidArg,

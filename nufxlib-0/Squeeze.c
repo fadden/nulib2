@@ -136,7 +136,7 @@ Nu_SQGetcCRC(SQState* pSqState, int* pSym)
             pSqState->crc = Nu_CalcCRC16(pSqState->crc, &c, 1);
         }
         *pSym = c;
-		pSqState->uncompRemaining--;
+        pSqState->uncompRemaining--;
     }
 
     return err;
