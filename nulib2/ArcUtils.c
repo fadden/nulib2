@@ -857,7 +857,7 @@ OpenArchiveReadOnly(NulibState* pState)
     BailError(err);
 
 /*
-    DBUG(("--- enabling 'mask threadless' mode\n"));
+    DBUG(("--- enabling 'mask dataless' mode\n"));
     err = NuSetValue(pArchive, kNuValueMaskDataless, true);
     BailError(err);
 */

@@ -14,6 +14,8 @@
  * (Technically, BNY isn't an archive format.  It was a way to encapsulate
  * file attributes and file data for transmission over a modem, and was
  * meant to be added and stripped on the fly.)
+ *
+ * TO DO: add "junk skipping" like NufxLib has.
  */
 #include "Nulib2.h"
 
