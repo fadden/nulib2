@@ -108,7 +108,7 @@ Nu_CompressBzip2(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
 
             err = Nu_StrawRead(pArchive, pStraw, pArchive->compBuf, getSize);
             if (err != kNuErrNone) {
-                Nu_ReportError(NU_BLOB, err, "deflate read failed");
+                Nu_ReportError(NU_BLOB, err, "bzip2 read failed");
                 goto bz_bail;
             }
 
@@ -262,7 +262,7 @@ Nu_ExpandBzip2(NuArchive* pArchive, const NuRecord* pRecord,
             err = Nu_FunnelWrite(pArchive, pFunnel, outbuf,
                     (uchar*)bzstream.next_out - outbuf);
             if (err != kNuErrNone) {
-                Nu_ReportError(NU_BLOB, err, "write failed in inflate");
+                Nu_ReportError(NU_BLOB, err, "write failed in bzip2");
                 goto bz_bail;
             }
 
