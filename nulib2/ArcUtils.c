@@ -317,6 +317,9 @@ ProgressUpdater(NuArchive* pArchive, void* vProgress)
             actionStr = "adding     ";
             showName = true;
             break;
+        case kNuProgressAnalyzing:
+            actionStr = "analyzing  ";
+            break;
         case kNuProgressCompressing:
             actionStr = "compressing";
             break;
@@ -771,7 +774,7 @@ OpenArchiveReadOnly(NulibState* pState)
     if (IsFilenameStdin(NState_GetArchiveFilename(pState))) {
         err = NuStreamOpenRO(stdin, &pArchive);
         if (err != kNuErrNone) {
-            ReportError(err, "unable to open create stdin archive");
+            ReportError(err, "unable to open stdin archive");
             goto bail;
         }
         /*
