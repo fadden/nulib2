@@ -1265,6 +1265,11 @@ Nu_WriteRecordHeader(NuArchive* pArchive, NuRecord* pRecord, FILE* fp)
 
     /*
      * Update values for misc record fields.
+     *
+     * Note that, despite having written the record header, we can still
+     * have "fake" threads.  This is because WriteThreadHeaders only saves
+     * the real ones.  This is in line with our policy of not altering
+     * anything we don't have to.
      */
     pRecord->recHeaderLength =
         bytesWritten + pRecord->recTotalThreads * kNuThreadHeaderSize;
@@ -2295,9 +2300,12 @@ Nu_AddRecord(NuArchive* pArchive, const NuFileDetails* pFileDetails,
     pNewRecord->recFilenameLength = 0;
 
     pNewRecord->recordIdx = Nu_GetNextRecordIdx(pArchive);
+    pNewRecord->threadFilename = nil;
     pNewRecord->newFilename = strdup(pFileDetails->storageName);
     pNewRecord->filename = pNewRecord->newFilename;
+    pNewRecord->recHeaderLength = -1;
     pNewRecord->totalCompLength = 0;
+    pNewRecord->fakeThreads = 0;
     pNewRecord->fileOffset = -1;
 
     /*

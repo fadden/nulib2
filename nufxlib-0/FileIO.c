@@ -1232,8 +1232,8 @@ Nu_CopyFileSection(NuArchive* pArchive, FILE* dstFp, FILE* srcFp, long length)
         if (err != kNuErrNone) {
             Nu_ReportError(NU_BLOB, err,
                     "Nu_FRead failed while copying file section "
-                    "(fp=0x%08lx, readLen=%ld, err=%d)\n",
-                (long) srcFp, readLen, err);
+                    "(fp=0x%08lx, readLen=%ld, length=%ld, err=%d)\n",
+                (long) srcFp, readLen, length, err);
             goto bail;
         }
         err = Nu_FWrite(dstFp, pArchive->compBuf, readLen);

@@ -412,6 +412,8 @@ typedef struct NuThread {
 
 /*
  * NuFX "record" definition.
+ *
+ * (Note to developers: update Nu_AddRecord if this changes.)
  */
 #define kNufxIDLen                  4       /* len of 'NuFX' with funky MSBs */
 #define kNuReasonableAttribCount    256
