@@ -208,18 +208,23 @@ DoHelp(const NulibState* pState)
         },
         { kCommandAdd, 'a', "add files to an archive",
 "  Add files to an archive, possibly creating it first.  Files in\n"
-"  subdirectories will not be added unless the '-r' flag is provided.\n",
+"  subdirectories will not be added unless the '-r' flag is provided.\n"
+"\n"
+"  You can specify the '-z' or '-zz' flag to use \"deflate\" or \"bzip2\"\n"
+"  compression, respectively.  These work much better than ShrinkIt's LZW,\n"
+"  but the files can't be unpacked on an Apple II.  The flags will only be\n"
+"  enabled if NuLib2 was built with the necessary libraries.\n",
         },
         { kCommandExtract, 'x', "extract files from an archive",
 "  Extract the specified items from the archive.  If nothing is specified,\n"
 "  everything is extracted.  The '-r' modifier tells NuLib2 to do a prefix\n"
 "  match, so \"nulib2 -xr archive.shk doc\" will extract everything in the\n"
 "  \"doc\" directory.  It will also extract a file called \"document\".  If\n"
-"  you just want a directory, tack on the filename separator character, e.g.\n"
-"  \"nulib2 -xr archive.shk doc:\".\n"
+"  you just want what's in a directory, tack on the filename separator\n"
+"  character, e.g. \"nulib2 -xr archive.shk doc:\".\n"
 "\n"
 "  When working with Binary II archives, the following suboptions aren't\n"
-"  allowed: -u -f -c -l -ll\n",
+"  allowed: -u -f -c -l -ll.\n",
         },
         { kCommandExtractToPipe, 'p', "extract files to pipe",
 "  Works just like '-x', but all files are written to stdout.  Useful for\n"
@@ -227,9 +232,9 @@ DoHelp(const NulibState* pState)
 "  The progress indicators and interactive prompts are disabled.\n",
         },
         { kCommandTest, 'i', "test archive integrity",
-"  Verify the contents of an archive by extracting all files and verifying\n"
-"  all CRCs.  Note that uncompressed files in archives created by P8\n"
-"  ShrinkIt and un-SQueezed files in Binary II archives do not have any\n"
+"  Verify the contents of an archive by extracting all files to memory and\n"
+"  verifying all CRCs.  Note that uncompressed files in archives created by\n"
+"  P8 ShrinkIt and un-SQueezed files in Binary II archives do not have any\n"
 "  sort of checksum.\n",
         },
         { kCommandDelete, 'd', "delete files from archive",
