@@ -1114,6 +1114,70 @@ BNYListDebug(BNYArchive* pBny, BNYEntry* pEntry, Boolean* pConsumedFlag)
     return err;
 }
 
+/* quick enum to simplify our lives a bit */
+typedef enum { kBNYExtNormal, kBNYExtPipe, kBNYExtTest } ExtMode;
+
+/*
+ * Handle "extraction" of a directory.
+ */
+static NuError
+BNYExtractDirectory(BNYArchive* pBny, BNYEntry* pEntry, ExtMode extMode)
+{
+    NuError err = kNuErrNone;
+    const char* newName;
+    Boolean isDir;
+    const char* actionStr = "HOSED";
+
+    if (extMode == kBNYExtTest) {
+        actionStr = "skipping ";
+    } else {
+        /*
+         * Using the normalized name of a directory is a problem
+         * when "-e" is set.  Since Binary II officially only
+         * allows ProDOS names, and everything under the sun that
+         * supports "long" filenames can handle 15 chars of
+         * [A-Z][a-z][0-9][.], I'm going to skip the normalization
+         * step.
+         *
+         * The "right" way to handle this is to ignore the directory
+         * entries and just create any directories for the fully
+         * normalized pathname generated below.
+         */
+        /*newName = BNYNormalizePath(pBny, pEntry);*/
+        newName = pEntry->fileName;
+        if (newName == nil)
+            goto bail;
+
+        err = TestFileExistence(newName, &isDir);
+        if (err == kNuErrNone) {
+            if (isDir) {
+                actionStr = "skipping  ";
+            } else {
+                err = kNuErrFileExists;
+                ReportError(err,
+                    "unable to create directory '%s'", newName);
+                goto bail;
+            }
+        } else if (err == kNuErrFileNotFound) {
+            err = Mkdir(newName);
+
+            if (err == kNuErrNone) {
+                actionStr = "creating  ";
+            } else {
+                ReportError(err, "failed creating directory '%s'", newName);
+            }
+        }
+    }
+
+    if (!NState_GetSuppressOutput(pBny->pState)) {
+        printf("\rDONE %s  %s  (directory)\n", actionStr, pEntry->fileName);
+    }
+
+bail:
+    return err;
+}
+
+
 /*
  * Handle "extract", "extract to pipe", and "test".
  */
@@ -1122,7 +1186,7 @@ BNYExtract(BNYArchive* pBny, BNYEntry* pEntry, Boolean* pConsumedFlag)
 {
     NuError err = kNuErrNone;
     NulibState* pState;
-    enum { kBNYExtNormal, kBNYExtPipe, kBNYExtTest } extMode;
+    ExtMode extMode;
     const char* actionStr = "HOSED";
     FILE* outfp = nil;
     Boolean eolConv;
@@ -1142,60 +1206,14 @@ BNYExtract(BNYArchive* pBny, BNYEntry* pEntry, Boolean* pConsumedFlag)
     }
 
     /*eolConv = NState_GetModConvertAll(pState);*/
-    eolConv = false;
+    eolConv = false;        /* maybe someday */
 
     /*
      * Binary II requires that all directories be listed explicitly.
      * If we see one, create it.
      */
     if (IsDir(pEntry)) {
-        const char* newName;
-        Boolean isDir;
-
-        if (extMode == kBNYExtTest) {
-            actionStr = "skipping ";
-        } else {
-            /*
-             * Using the normalized name of a directory is a problem
-             * when "-e" is set.  Since Binary II officially only
-             * allows ProDOS names, and everything under the sun that
-             * supports "long" filenames can handle 15 chars of
-             * [A-Z][a-z][0-9][.], I'm going to skip the normalization
-             * step.
-             *
-             * The "right" way to handle this is to ignore the directory
-             * entries and just create any directories for the fully
-             * normalized pathname generated below.
-             */
-            /*newName = BNYNormalizePath(pBny, pEntry);*/
-            newName = pEntry->fileName;
-            if (newName == nil)
-                goto bail;
-
-            err = TestFileExistence(newName, &isDir);
-            if (err == kNuErrNone) {
-                if (isDir) {
-                    actionStr = "skipping  ";
-                } else {
-                    err = kNuErrFileExists;
-                    ReportError(err,
-                        "unable to create directory '%s'", newName);
-                    goto bail;
-                }
-            } else if (err == kNuErrFileNotFound) {
-                err = Mkdir(newName);
-
-                if (err == kNuErrNone) {
-                    actionStr = "creating  ";
-                } else {
-                    ReportError(err, "failed creating directory '%s'", newName);
-                }
-            }
-        }
-
-        if (!NState_GetSuppressOutput(pState)) {
-            printf("\rDONE %s  %s  (directory)\n", actionStr, pEntry->fileName);
-        }
+        err = BNYExtractDirectory(pBny, pEntry, extMode);
         goto bail;
     }
 
@@ -1216,6 +1234,17 @@ BNYExtract(BNYArchive* pBny, BNYEntry* pEntry, Boolean* pConsumedFlag)
          */
         const char* newName;
         Boolean isDir;
+        char* ext;
+
+        /* if we find .qq on a squeezed file, just stomp the copy in pEntry */
+        if (strlen(pEntry->fileName) > 3) {
+            ext = pEntry->fileName + strlen(pEntry->fileName) -3;
+            if (IsSqueezed(pEntry->blockBuf[0], pEntry->blockBuf[1]) &&
+                strcasecmp(ext, ".qq") == 0)
+            {
+                *ext = '\0';
+            }
+        }
 
         newName = BNYNormalizePath(pBny, pEntry);
         if (newName == nil)
@@ -1239,6 +1268,9 @@ BNYExtract(BNYArchive* pBny, BNYEntry* pEntry, Boolean* pConsumedFlag)
         } else if (err != kNuErrFileNotFound) {
             ReportError(err, "stat failed on '%s'", newName);
             goto bail;
+        } else {
+            Assert(err == kNuErrFileNotFound);
+            err = kNuErrNone;
         }
 
         /* open it, overwriting anything present */
@@ -1271,7 +1303,7 @@ BNYExtract(BNYArchive* pBny, BNYEntry* pEntry, Boolean* pConsumedFlag)
      * Extract the file.  Send the output, perhaps with EOL conversion,
      * to the output file.
      *
-     * Thought for the day: assuming a file is Squeezed just based on
+     * Thought for the day: assuming a file is Squeezed based only on
      * the magic number is bogus.  If we get certain classes of failures,
      * and this isn't a streaming archive, we should back up and just
      * extract it as a plain file.
@@ -1326,6 +1358,13 @@ BNYDoExtract(NulibState* pState)
     {
         fprintf(stderr,
             "%s: Binary II extraction doesn't support '-f' or '-u'\n",
+            gProgName);
+        return kNuErrSyntax;
+    }
+    if (NState_GetModComments(pState))
+    {
+        fprintf(stderr,
+            "%s: Binary II extraction doesn't support '-c'\n",
             gProgName);
         return kNuErrSyntax;
     }
