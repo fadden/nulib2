@@ -1456,7 +1456,13 @@ Nu_ExpandLZW(NuArchive* pArchive, const NuRecord* pRecord,
             if (!isType2) {
                 err = Nu_ExpandLZW1(lzwState, rleLen);
             } else {
-                Assert(lzwState->dataInBuffer >= lzwLen);
+                if (lzwState->dataInBuffer < lzwLen) {
+                    /* rare -- GSHK will do this if you don't let it finish */
+                    err = kNuErrBufferUnderrun;
+                    Nu_ReportError(NU_BLOB, err, "not enough compressed data "
+                        "-- archive truncated during creation?");
+                    goto bail;
+                }
                 err = Nu_ExpandLZW2(lzwState, rleLen, lzwLen);
             }
 

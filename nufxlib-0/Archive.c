@@ -581,6 +581,24 @@ Nu_ReadMasterHeader(NuArchive* pArchive)
     }
 
     /*
+     * Check for an unusual condition.  GS/ShrinkIt appears to update
+     * the archive structure in the disk file periodically as it writes,
+     * so it's possible to get an apparently complete archive (with
+     * correct CRCs in the master and record headers!) that is actually
+     * only partially written.  I did this by accident when archiving a
+     * 3.5" disk across a slow AppleTalk network.  The only obvious
+     * indication of brain-damage, until you try to unpack the archive,
+     * seems to be a bogus MasterEOF==48.
+     */
+    if (pHeader->mhMasterEOF <= kNuMasterHeaderSize) {
+        err = kNuErrNoRecords;
+        Nu_ReportError(NU_BLOB, err,
+            "Master EOF is %ld, archive is probably truncated",
+            pHeader->mhMasterEOF);
+        goto bail;
+    }
+
+    /*
      * Set up a few things in the archive structure on our way out.
      */
     if (isBinary2) {
@@ -672,6 +690,7 @@ bail:
     if (err != kNuErrNone) {
         if (pArchive != nil)
             (void) Nu_NuArchiveFree(pArchive);
+        *ppArchive = nil;
     }
     return err;
 }
