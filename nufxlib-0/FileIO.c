@@ -1229,7 +1229,13 @@ Nu_CopyFileSection(NuArchive* pArchive, FILE* dstFp, FILE* srcFp, long length)
         readLen = length > kNuGenCompBufSize ?  kNuGenCompBufSize : length;
 
         err = Nu_FRead(srcFp, pArchive->compBuf, readLen);
-        BailError(err);
+        if (err != kNuErrNone) {
+            Nu_ReportError(NU_BLOB, err,
+                    "Nu_FRead failed while copying file section "
+                    "(fp=0x%08lx, readLen=%ld, err=%d)\n",
+                (long) srcFp, readLen, err);
+            goto bail;
+        }
         err = Nu_FWrite(dstFp, pArchive->compBuf, readLen);
         BailError(err);
 
