@@ -9,7 +9,7 @@
 #include "Nulib2.h"
 
 
-static const char* gProgramVersion = "1.1.0d1";
+static const char* gProgramVersion = "1.1.0";
 
 
 /*

@@ -150,7 +150,7 @@ Usage(const NulibState* pState)
         NState_GetProgramVersion(pState),
         majorVersion, minorVersion, bugVersion, nufxLibFlags);
     printf("This software is distributed under terms of the GNU General Public License.\n");
-    printf("Written by Andy McFadden.  See http://www.nulib.com/ for full manual.\n\n");
+    printf("Written by Andy McFadden.  See http://www.nulib.com/ for source and docs.\n\n");
     printf("Usage: %s -command[modifiers] archive [filename-list]\n\n",
         gProgName);
     printf(
@@ -290,7 +290,7 @@ DoHelp(const NulibState* pState)
     }
     putchar('\n');
 
-    printf("Compression algorithms supported by this copy of NufxLib:\n");
+    printf("Compression algorithms supported:\n");
     printf("  SQueeze (Huffman+RLE) ...... %s\n",
         NuTestFeature(kNuFeatureCompressSQ) == kNuErrNone? "yes" : "no");
     printf("  LZW/1 and LZW/2 ............ %s\n",
