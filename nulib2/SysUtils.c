@@ -432,7 +432,7 @@ ReplaceFssep(char* str, char oldc, char newc, char newSubst)
  * and characteristics of the file.
  */
 static NuError
-SetFileDetails(NulibState* pState, const char* pathname, struct stat* psb,
+GetFileDetails(NulibState* pState, const char* pathname, struct stat* psb,
     NuFileDetails* pDetails)
 {
     Boolean wasPreserved;
@@ -807,7 +807,7 @@ UNIXAddFile(NulibState* pState, NuArchive* pArchive, const char* pathname)
      */
     DBUG(("+++ ADD '%s'\n", pathname));
 
-    err = SetFileDetails(pState, pathname, &sb, &details);
+    err = GetFileDetails(pState, pathname, &sb, &details);
     if (err != kNuErrNone)
         goto bail;
 
@@ -990,10 +990,9 @@ bail:
 }
 
 /*
- * Add a file to the list we're adding to the archive.
- *
- * I haven't figured out the recursive tree traversal stuff yet, so for
- * now this ignores directories.
+ * Add a file to the list we're adding to the archive.  If it's a directory,
+ * and the recursive descent feature is enabled, call Win32AddDirectory to
+ * add the contents of the dir.
  *
  * Returns with an error if the file doesn't exist or isn't readable.
  */
@@ -1038,7 +1037,7 @@ Win32AddFile(NulibState* pState, NuArchive* pArchive, const char* pathname)
      */
     DBUG(("+++ ADD '%s'\n", pathname));
 
-    err = SetFileDetails(pState, pathname, &sb, &details);
+    err = GetFileDetails(pState, pathname, &sb, &details);
     if (err != kNuErrNone)
         goto bail;
 
