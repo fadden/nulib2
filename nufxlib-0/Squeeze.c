@@ -683,6 +683,10 @@ bail:
  * Compress "srcLen" bytes into SQ format, from "pStraw" to "fp".
  *
  * This requires two passes through the input.
+ *
+ * Bit of trivia: "sq3" on the Apple II self-destructs if you hand
+ * it an empty file.  "xsq" works fine, creating an empty tree that
+ * "xusq" unpacks.
  */
 NuError
 Nu_CompressHuffmanSQ(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
@@ -905,6 +909,7 @@ Nu_ExpandHuffmanSQ(NuArchive* pArchive, const NuRecord* pRecord,
 #endif
     short nodeCount;
     int i, inrep;
+    uchar lastc = 0;
 
     err = Nu_AllocCompressionBufferIFN(pArchive);
     if (err != kNuErrNone)
@@ -915,7 +920,12 @@ Nu_ExpandHuffmanSQ(NuArchive* pArchive, const NuRecord* pRecord,
     usqState.dataPtr = pArchive->compBuf;
 
     compRemaining = pThread->thCompThreadEOF;
-    if (compRemaining < 8) {
+#ifdef FULL_SQ_HEADER
+    if (compRemaining < 8)
+#else
+    if (compRemaining < 3)
+#endif
+    {
         err = kNuErrBadData;
         Nu_ReportError(NU_BLOB, err, "thread too short to be valid SQ data");
         goto bail;
@@ -1007,7 +1017,6 @@ Nu_ExpandHuffmanSQ(NuArchive* pArchive, const NuRecord* pRecord,
     inrep = false;
     while (1) {
         int val;
-        uchar lastc;
 
         if (usqState.dataInBuffer < 65 && compRemaining) {
             /*

@@ -8,7 +8,11 @@
  *
  * This compression format is totally unsupported on the Apple II.  This
  * is provided primarily for the benefit of Apple II emulators that want
- * a better storage format for disk images than SHK+LZW or a ZIP.
+ * a better storage format for disk images than SHK+LZW or a ZIP file.
+ *
+ * This code was developed and tested with ZLIB_VERSION "1.1.3".  It is
+ * expected to work with any version >= 1.1.3 and < 2.x.  Please visit
+ * http://www.zlib.org/ for more information.
  */
 #include "NufxLibPriv.h"
 

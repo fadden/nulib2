@@ -1287,6 +1287,7 @@ Nu_TruncateOpenFile(FILE* fp, long length)
         return errno ? errno : -1;
     return kNuErrNone;
     #else
+    /* not fatal; return this to indicate that it's an unsupported operation */
     return kNuErrInternal;
     #endif
 }

@@ -72,11 +72,14 @@ $(STATIC_PRODUCT): $(OBJS)
 	$(AR) $@ $(OBJS)
 	@RANLIB@ $@
 
+# BUG: we probably want -fPIC -D_REENTRANT on the compile lines for this.
+# BUG: for Linux we may want -Wl,-soname,libnufx.so.1 on the link line.
 $(SHARED_PRODUCT): $(OBJS)
 	-rm -f $(STATIC_PRODUCT) $(SHARED_PRODUCT)
 	$(CC) @SHARE_FLAGS@ -o $@ $(OBJS) @LIBS@
 
-# the build date is approximate, the build flags are accurate
+# The build date is approximate, the build flags are accurate so long
+# as they were changed by touching the makefile.
 Version.c: Version.c.in Makefile
 	(sed -e "s/BUILT/`date`/" -e "s/OPTFLAGS/$(OPT)/" < Version.c.in > Version.c)
 
