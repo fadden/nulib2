@@ -31,8 +31,8 @@ extern "C" {
  * The "bug" version can usually be ignored, since it represents minor
  * fixes.
  */
-#define kNuVersionMajor     1
-#define kNuVersionMinor     1
+#define kNuVersionMajor     2
+#define kNuVersionMinor     0
 #define kNuVersionBug       0
 
 
@@ -576,6 +576,7 @@ typedef enum NuProgressState {
 
     kNuProgressDone,            /* all done, success */
     kNuProgressSkipped,         /* all done, we skipped this one */
+    kNuProgressAborted,         /* all done, user cancelled the operation */
     kNuProgressFailed           /* all done, failure */
 } NuProgressState;
 
