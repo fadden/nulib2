@@ -832,6 +832,10 @@ OpenArchiveReadOnly(NulibState* pState)
         err = NuSetValue(pArchive, kNuValueConvertExtractedEOL, kNuConvertOff);
     BailError(err);
 
+    /* if we're converting EOL, we probably ought to do this too */
+    err = NuSetValue(pArchive, kNuValueStripHighASCII, true);
+    BailError(err);
+
     /* handle "-s" flag */
     if (NState_GetModOverwriteExisting(pState)) {
         err = NuSetValue(pArchive, kNuValueHandleExisting, kNuAlwaysOverwrite);
