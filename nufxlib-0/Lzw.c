@@ -1014,6 +1014,13 @@ Nu_ExpandLZW1(LZWExpandState* lzwState, uint expectedLen)
 
         /* handle KwKwK case */
         if (ptr >= entry) {
+            //DBUG_LZW(("### KwKwK (ptr=%d entry=%d)\n", ptr, entry));
+            if (ptr != entry) {
+                /* bad code -- this would make us read uninitialized data */
+                DBUG(("--- bad code (ptr=%d entry=%d)\n", ptr, entry));
+                err = kNuErrBadData;
+                return err;
+            }
             Nu_LZWPush((uchar)finalc);
             ptr = oldcode;
         }
@@ -1145,12 +1152,19 @@ clear_table:
 main_loop:
     while (outbuf < outbufend) {
         incode = ptr = Nu_LZWGetCode(&inbuf, entry, &atBit, &lastByte);
-        /*DBUG_LZW(("### read incode=0x%04x\n", incode));*/
+        //DBUG_LZW(("### read incode=0x%04x\n", incode));
         if (incode == kNuLZWClearCode)      /* table clear - 0x0100 */
             goto clear_table;
 
         /* handle KwKwK case */
         if (ptr >= entry) {
+            //DBUG_LZW(("### KwKwK (ptr=%d entry=%d)\n", ptr, entry));
+            if (ptr != entry) {
+                /* bad code -- this would make us read uninitialized data */
+                DBUG(("--- bad code (ptr=%d entry=%d)\n", ptr, entry));
+                err = kNuErrBadData;
+                return err;
+            }
             Nu_LZWPush((uchar)finalc);
             ptr = oldcode;
         }
@@ -1183,7 +1197,13 @@ main_loop:
 
 bail:
     /*DBUG_LZW(("### end of block\n"));*/
-    Assert(inbuf == inbufend);
+	if (inbuf != inbufend) {
+		/* data was corrupted; if we keep going this will get worse */
+		DBUG(("--- inbuf != inbufend in ExpandLZW2 (diff=%d)\n",
+			inbufend - inbuf));
+		err = kNuErrBadData;
+		return err;
+	}
     Assert(outbuf == outbufend);
 
     /* adjust input buffer */
