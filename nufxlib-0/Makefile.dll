@@ -12,11 +12,12 @@
 #
 
 CFG=nufxlib - Win32 Debug
+MY_BUILD_FLAGS=/D "DEBUG_MSGS"
 !ifdef NODEBUG
 CFG=nufxlib - Win32 Release
+MY_BUILD_FLAGS=
 !endif
 
-MY_BUILD_FLAGS=
 MY_LIB_FLAGS=
 !ifdef LIBZ
 MY_BUILD_FLAGS = $(MY_BUILD_FLAGS) /D "ENABLE_DEFLATE"
