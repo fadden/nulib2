@@ -1,6 +1,6 @@
 /*
  * NuFX archive manipulation library
- * Copyright (C) 2000-2002 by Andy McFadden, All Rights Reserved.
+ * Copyright (C) 2000-2003 by Andy McFadden, All Rights Reserved.
  * This is free software; you can redistribute it and/or modify it under the
  * terms of the GNU Library General Public License, see the file COPYING.LIB.
  *
@@ -41,6 +41,8 @@
 
 /*
  * Figure out what path separator to use.
+ *
+ * NOTE: recent versions of Win32 will also accept '/'.
  */
 
 #ifdef MSDOS
