@@ -103,7 +103,7 @@
 
 #if defined(WINDOWS_LIKE)
 # ifndef F_OK
-#  define F_OK 02
+#  define F_OK 0            /* was 02 in <= v1.1.0 */
 # endif
 #endif
 
