@@ -1,3 +1,6 @@
+2002/10/10  fadden
+    - changed behavior so that deleting all records is allowed
+
 2002/10/09  fadden
     - added support for "bzip2" compression via libbz2
     - added ability to selectively disable compression methods

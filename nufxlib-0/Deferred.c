@@ -1850,12 +1850,14 @@ Nu_UpdateMasterHeader(NuArchive* pArchive, FILE* fp, long archiveEOF)
         numRecords += Nu_RecordSet_GetNumRecords(&pArchive->origRecordSet);
     if (Nu_RecordSet_GetLoaded(&pArchive->newRecordSet))
         numRecords += Nu_RecordSet_GetNumRecords(&pArchive->newRecordSet);
+    #if 0   /* we allow delete-all now */
     if (numRecords == 0) {
         /* don't allow empty archives */
-        DBUG(("--- Didn't find any records\n"));
+        DBUG(("--- UpdateMasterHeader didn't find any records\n"));
         err = kNuErrNoRecords;
         goto bail;
     }
+    #endif
 
     pArchive->newMasterHeader.mhTotalRecords = numRecords;
     pArchive->newMasterHeader.mhMasterEOF = archiveEOF;
@@ -2092,6 +2094,9 @@ bail:
  *
  * If the flush fails, the archive state may be aborted or even placed
  * into read-only mode to prevent problems from compounding.
+ *
+ * If the things this function is doing aren't making any sense at all,
+ * read "NOTES.txt" for an introduction.
  */
 NuError
 Nu_Flush(NuArchive* pArchive, long* pStatusFlags)
@@ -2099,6 +2104,7 @@ Nu_Flush(NuArchive* pArchive, long* pStatusFlags)
     NuError err = kNuErrNone;
     Boolean canAbort = true;
     Boolean writeToTemp = true;
+    Boolean deleteAll = false;
     long initialEOF, finalOffset;
 
     DBUG(("--- FLUSH\n"));
@@ -2121,13 +2127,16 @@ Nu_Flush(NuArchive* pArchive, long* pStatusFlags)
      * As a special case, we test for an archive that had all of its
      * records deleted.  This looks a lot like an archive that has had
      * nothing done, because we would have made a "copy" list and then
-     * deleted all the records, leaving us with an empty list.
+     * deleted all the records, leaving us with an empty list.  (The
+     * difference is that an untouched archive wouldn't have a "copy"
+     * list allocated.)
      *
      * In some cases, such as doing a bulk delete that doesn't end up
      * matching anything or an attempted UpdatePresizedThread on a thread
      * that isn't actually pre-sized, we create the "copy" list but don't
      * actually change anything.  We deal with that by frying the "copy"
-     * list if it doesn't have anything interesting in it.
+     * list if it doesn't have anything interesting in it (i.e. it's an
+     * exact match of the "orig" list).
      */
     Nu_ResetCopySetIfUntouched(pArchive);
     if (Nu_RecordSet_IsEmpty(&pArchive->copyRecordSet) &&
@@ -2135,6 +2144,7 @@ Nu_Flush(NuArchive* pArchive, long* pStatusFlags)
     {
         if (Nu_RecordSet_GetLoaded(&pArchive->copyRecordSet)) {
             DBUG(("--- All records deleted!\n"));
+            #if 0
             /*
              * Options:
              *  (1) allow it, leaving an archive with nothing but a header
@@ -2147,6 +2157,14 @@ Nu_Flush(NuArchive* pArchive, long* pStatusFlags)
              */
             err = kNuErrAllDeleted;
             goto bail;
+            #else
+            /*
+             *  (4) go ahead and delete everything, then mark the archive
+             *    as brand new, so that closing the archive with new
+             *    records in it will trigger deletion of the archive file.
+             */
+            deleteAll = true;
+            #endif
         } else {
             DBUG(("--- Nothing pending\n"));
             goto flushed;
@@ -2159,17 +2177,18 @@ Nu_Flush(NuArchive* pArchive, long* pStatusFlags)
 
     /*
      * Step 2: purge any records from the "copy" and "new" lists that don't
-     * have any threads.  You can't delete from the "new" list, but it's
-     * possible somebody called NuAddRecord and never put anything in it.
+     * have any threads.  You can't delete threads from the "new" list, but
+     * it's possible somebody called NuAddRecord and never put anything in it.
      */
     err = Nu_PurgeEmptyRecords(pArchive, &pArchive->copyRecordSet);
     BailError(err);
     err = Nu_PurgeEmptyRecords(pArchive, &pArchive->newRecordSet);
     BailError(err);
 
-    /* we rejected delete-all actions above, so just check for empty */
+    /* we checked delete-all actions above, so just check for empty */
     if (Nu_RecordSet_IsEmpty(&pArchive->copyRecordSet) &&
-        Nu_RecordSet_IsEmpty(&pArchive->newRecordSet))
+        Nu_RecordSet_IsEmpty(&pArchive->newRecordSet) &&
+        !deleteAll)
     {
         DBUG(("--- Nothing pending after purge\n"));
         goto flushed;
@@ -2285,7 +2304,7 @@ Nu_Flush(NuArchive* pArchive, long* pStatusFlags)
                 finalOffset - pArchive->headerOffset);
         /* fall through with err */
     }
-    if (err == kNuErrNoRecords) {
+    if (err == kNuErrNoRecords && !deleteAll) {
         /*
          * Somehow we ended up without any records at all.  If we managed
          * to get this far, it could only be because the user told us to
@@ -2438,6 +2457,14 @@ flushed:
         /* can't NuAbort() our way out of a bad temp file */
         canAbort = false;
         goto bail;
+    }
+
+    if (deleteAll) {
+        /* there's nothing in it, so treat it like a newly-created archive */
+        /* (that way it gets deleted if the app closes without adding stuff) */
+        DBUG(("--- marking archive as newly created\n"));
+        pArchive->newlyCreated = true;
+        /*pArchive->valModifyOrig = true;*/
     }
 
 bail:

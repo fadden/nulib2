@@ -526,9 +526,10 @@ bail:
 }
 
 /*
- * Move all of the records from one record set to another.
+ * Move all of the records from one record set to another.  The records
+ * from "pSrcSet" are appended to "pDstSet".
  *
- * On completion, "pSrcSet" will be empty.
+ * On completion, "pSrcSet" will be empty and "unloaded".
  */
 NuError
 Nu_RecordSet_MoveAllRecords(NuArchive* pArchive, NuRecordSet* pDstSet,
@@ -539,8 +540,10 @@ Nu_RecordSet_MoveAllRecords(NuArchive* pArchive, NuRecordSet* pDstSet,
     Assert(pDstSet != nil);
     Assert(pSrcSet != nil);
 
+    #if 0   /* this is bogus -- empty set != unloaded set */
     if (!Nu_RecordSet_GetNumRecords(pSrcSet))   /* nothing to do? */
         return kNuErrNone;
+    #endif
 
     if (pDstSet->nuRecordHead == nil) {
         /* empty dst list */
