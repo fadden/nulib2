@@ -21,8 +21,8 @@
 #include "Common.h"
 
 
-#define false   0
-#define true    (!false)
+/*#define false   0*/
+/*#define true    (!false)*/
 
 #define kHappySize  2408
 
@@ -414,7 +414,6 @@ DoFileStuff(const char* filename)
 {
     NuError err;
     NuArchive* pArchive = nil;
-    NuMasterHeader* pMasterHeader = nil;
     ArchiveData* pArchiveData = ArchiveData_New();
 
     err = NuOpenRO(filename, &pArchive);
@@ -450,9 +449,6 @@ bail:
         if (err == kNuErrNone && err2 != kNuErrNone)
             err = err2;
     }
-
-    if (pMasterHeader != nil)
-        free(pMasterHeader);
 
     ArchiveData_Free(pArchiveData);
 
