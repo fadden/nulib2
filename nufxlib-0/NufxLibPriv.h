@@ -147,6 +147,7 @@ struct NuArchive {
     NuValue         valEOL;                 /* EOL value to convert to */
     NuValue         valHandleExisting;      /* how to deal with existing files*/
     NuValue         valIgnoreCRC;           /* don't compute or test CRCs */
+    NuValue         valMaskDataless;        /* alter Records w/o data threads */
     NuValue         valMimicSHK;            /* mimic some ShrinkIt quirks */
     NuValue         valModifyOrig;          /* modify original arc in place? */
     NuValue         valOnlyUpdateOlder;     /* modify original arc in place? */
@@ -160,7 +161,6 @@ struct NuArchive {
 };
 
 #define kNuArchiveStructMagic   0xc0edbabe
-
 
 #define kNuDefaultRecordName    "UNKNOWN"
 

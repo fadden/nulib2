@@ -42,6 +42,9 @@ Nu_GetValue(NuArchive* pArchive, NuValueID ident, NuValue* pValue)
     case kNuValueIgnoreCRC:
         *pValue = pArchive->valIgnoreCRC;
         break;
+    case kNuValueMaskDataless:
+        *pValue = pArchive->valMaskDataless;
+        break;
     case kNuValueMimicSHK:
         *pValue = pArchive->valMimicSHK;
         break;
@@ -126,6 +129,14 @@ Nu_SetValue(NuArchive* pArchive, NuValueID ident, NuValue value)
             goto bail;
         }
         pArchive->valIgnoreCRC = value;
+        break;
+    case kNuValueMaskDataless:
+        if (value != true && value != false) {
+            Nu_ReportError(NU_BLOB, err,
+                "Invalid kNuValueMaskDataless value %ld", value);
+            goto bail;
+        }
+        pArchive->valMaskDataless = value;
         break;
     case kNuValueMimicSHK:
         if (value != true && value != false) {

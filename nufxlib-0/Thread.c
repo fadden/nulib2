@@ -189,6 +189,7 @@ Nu_ReadThreadHeaders(NuArchive* pArchive, NuRecord* pRecord, ushort* pCrc)
     NuError err = kNuErrNone;
     NuThread* pThread;
     long count;
+    Boolean hasData = false;
 
     Assert(pArchive != nil);
     Assert(pRecord != nil);
@@ -209,6 +210,9 @@ Nu_ReadThreadHeaders(NuArchive* pArchive, NuRecord* pRecord, ushort* pCrc)
     while (count--) {
         err = Nu_ReadThreadHeader(pArchive, pThread, pCrc);
         BailError(err);
+
+        if (pThread->thThreadClass == kNuThreadClassData)
+            hasData = true;
 
         /*
          * Some versions of ShrinkIt write an invalid thThreadEOF for disks,
@@ -244,6 +248,51 @@ Nu_ReadThreadHeaders(NuArchive* pArchive, NuRecord* pRecord, ushort* pCrc)
 
         pThread->used = false;
         pThread++;
+    }
+
+    /*
+     * If "mask threadless" is set, create "fake" threads with empty
+     * data and resource forks as needed.
+     */
+    if (!hasData && pArchive->valMaskDataless) {
+        Boolean needRsrc = (pRecord->recStorageType == kNuStorageExtended);
+        int firstNewThread = pRecord->recTotalThreads;
+
+        pRecord->recTotalThreads++;
+        pRecord->fakeThreads++;
+        if (needRsrc) {
+            pRecord->recTotalThreads++;
+            pRecord->fakeThreads++;
+        }
+
+        pRecord->pThreads = Nu_Realloc(pArchive, pRecord->pThreads,
+                                pRecord->recTotalThreads * sizeof(NuThread));
+        BailAlloc(pRecord->pThreads);
+
+        pThread = pRecord->pThreads + firstNewThread;
+
+        pThread->thThreadClass = kNuThreadClassData;
+        pThread->thThreadFormat = kNuThreadFormatUncompressed;
+        pThread->thThreadKind = 0x0000;     /* data fork */
+        pThread->thThreadCRC = kNuInitialThreadCRC;
+        pThread->thThreadEOF = 0;
+        pThread->thCompThreadEOF = 0;
+        pThread->actualThreadEOF = 0;
+        pThread->threadIdx = Nu_GetNextThreadIdx(pArchive);
+        pThread->fileOffset = -1;
+
+        if (needRsrc) {
+            pThread++;
+            pThread->thThreadClass = kNuThreadClassData;
+            pThread->thThreadFormat = kNuThreadFormatUncompressed;
+            pThread->thThreadKind = 0x0002;     /* rsrc fork */
+            pThread->thThreadCRC = kNuInitialThreadCRC;
+            pThread->thThreadEOF = 0;
+            pThread->thCompThreadEOF = 0;
+            pThread->actualThreadEOF = 0;
+            pThread->threadIdx = Nu_GetNextThreadIdx(pArchive);
+            pThread->fileOffset = -1;
+        }
     }
 
 bail:

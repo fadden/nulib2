@@ -17,6 +17,26 @@ extern "C" {
 #endif
 
 /*
+ * NufxLib version number.  Compare these values (which represent the
+ * version against which your application was compiled) to the values
+ * returned by NuGetVersion (representing the version against which
+ * your application is statically or dynamically linked).  If the major
+ * number doesn't match exactly, an existing interface has changed and you
+ * should halt immediately.  If the minor number from NuGetVersion is
+ * less, there may be new interfaces, new features, or bug fixes missing
+ * upon which your application depends, so you should halt immediately.
+ * (If the minor number is greater, there are new features, but your
+ * application will not be affected by them.)
+ *
+ * The "bug" version can usually be ignored, since it represents minor
+ * fixes.
+ */
+#define kNuVersionMajor     1
+#define kNuVersionMinor     1
+#define kNuVersionBug       0
+
+
+/*
  * ===========================================================================
  *      Types
  * ===========================================================================
@@ -242,7 +262,8 @@ typedef enum NuValueID {
     kNuValueAllowDuplicates     = 7,
     kNuValueHandleExisting      = 8,
     kNuValueModifyOrig          = 9,
-    kNuValueMimicSHK            = 10
+    kNuValueMimicSHK            = 10,
+    kNuValueMaskDataless        = 11
 } NuValueID;
 typedef unsigned long NuValue;
 
@@ -425,6 +446,7 @@ typedef struct NuRecord {
     const char*         filename;       /* points at recFilen or threadFilen */
     unsigned long       recHeaderLength; /* size of rec hdr, incl thread hdrs */
     unsigned long       totalCompLength; /* total len of data in archive file */
+    long                fakeThreads;    /* used by "MaskDataless" */
 
     long                fileOffset;     /* file offset of record header */
 

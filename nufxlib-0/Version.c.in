@@ -10,12 +10,8 @@
  */
 #include "NufxLibPriv.h"
 
-/* version number; edit by hand */
-static const long gNuMajorVersion = 1;
-static const long gNuMinorVersion = 1;
-static const long gNuBugVersion = 0;
-
 /* executable was build on or after this date (inserted automatically) */
+/* (some compilers e.g. MSC have __DATE__; use that?) */
 static const char gNuBuildDate[] = "BUILT"; /* approximate */
 static const char gNuBuildFlags[] = "OPTFLAGS";
 
@@ -28,11 +24,11 @@ Nu_GetVersion(long* pMajorVersion, long* pMinorVersion, long* pBugVersion,
     const char** ppBuildDate, const char** ppBuildFlags)
 {
     if (pMajorVersion != nil)
-        *pMajorVersion = gNuMajorVersion;
+        *pMajorVersion = kNuVersionMajor;
     if (pMinorVersion != nil)
-        *pMinorVersion = gNuMinorVersion;
+        *pMinorVersion = kNuVersionMinor;
     if (pBugVersion != nil)
-        *pBugVersion = gNuBugVersion;
+        *pBugVersion = kNuVersionBug;
     if (ppBuildDate != nil)
         *ppBuildDate = gNuBuildDate;
     if (ppBuildFlags != nil)

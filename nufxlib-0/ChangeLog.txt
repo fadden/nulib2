@@ -1,3 +1,12 @@
+2003/01/10  fadden
+    - Added version numbers to header.
+    - Added kNuValueMaskThreadless to control handling of "threadless"
+      records.  Now records without threads can be silently "fixed" so
+      the application does need to handle them specially.
+
+2002/12/06  fadden
+    - Made changes to allow NufxLib to be built as a DLL.
+
 2002/10/20  ***** v1.1.0 shipped *****
 
 2002/10/10  fadden

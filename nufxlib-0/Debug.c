@@ -231,10 +231,14 @@ Nu_DebugDumpRecord(NuArchive* pArchive, const NuRecord* pRecord,
         pRecord->extraCount, pRecord->fileOffset, pRecord->recHeaderLength);
 
     for (idx = 0; idx < pRecord->recTotalThreads; idx++) {
+        Boolean isFake;
+
+        isFake = (idx >= pRecord->recTotalThreads - pRecord->fakeThreads);
         pThread = Nu_GetThread(pRecord, idx);
         Assert(pThread != nil);
 
-        printf("%s--Thread #%lu (idx=%lu)\n", kInd, idx, pThread->threadIdx);
+        printf("%s--Thread #%lu (idx=%lu)%s\n", kInd, idx, pThread->threadIdx,
+            isFake ? " [FAKE]" : "");
         Nu_DebugDumpThread(pThread);
     }
 

@@ -1002,6 +1002,7 @@ Nu_ReadRecordHeader(NuArchive* pArchive, NuRecord* pRecord)
      * Read the threads records.  The data is included in the record header
      * CRC, so we have to pass that in too.
      */
+    pRecord->fakeThreads = 0;
     err = Nu_ReadThreadHeaders(pArchive, pRecord, &crc);
     BailError(err);
 
@@ -1018,6 +1019,8 @@ Nu_ReadRecordHeader(NuArchive* pArchive, NuRecord* pRecord)
             err = kNuErrBadRHCRC;
             Nu_ReportError(NU_BLOB, err, "Stored RH CRC=0x%04x, calc=0x%04x",
                 pRecord->recHeaderCRC, crc);
+            Nu_ReportError(NU_BLOB_DEBUG, kNuErrNone,
+                "--- Problematic record is id=%ld", pRecord->recordIdx);
             goto bail;
         }
     }
@@ -1027,7 +1030,8 @@ Nu_ReadRecordHeader(NuArchive* pArchive, NuRecord* pRecord)
      */
     /* adjust "currentOffset" for the entire record header */
     pArchive->currentOffset += bytesRead;
-    pArchive->currentOffset += pRecord->recTotalThreads * kNuThreadHeaderSize;
+    pArchive->currentOffset +=
+        (pRecord->recTotalThreads - pRecord->fakeThreads) * kNuThreadHeaderSize;
 
     pRecord->recHeaderLength =
         bytesRead + pRecord->recTotalThreads * kNuThreadHeaderSize;
@@ -1458,21 +1462,23 @@ bail:
  * thing as it is a bug-workaround thing.
  *
  * The record's storage type should tell us if it was an extended file or
- * a plain file, but I'm not sure if there's any value in creating a
- * zero-byte resource fork.
+ * a plain file.  Not really important when extracting, but if we want
+ * to recreate the original we need to re-add the resource fork so
+ * NufxLib knows to make it an extended file.
  */
 static NuError
-Nu_FakeZeroExtract(NuArchive* pArchive, NuRecord* pRecord)
+Nu_FakeZeroExtract(NuArchive* pArchive, NuRecord* pRecord, int threadKind)
 {
     NuError err;
     NuThread fakeThread;
 
     Assert(pRecord != nil);
 
-    DBUG(("--- found empty record, creating zero-byte data file\n"));
+    DBUG(("--- found empty record, creating zero-byte file (kind=0x%04x)\n",
+        threadKind));
     fakeThread.thThreadClass = kNuThreadClassData;
     fakeThread.thThreadFormat = kNuThreadFormatUncompressed;
-    fakeThread.thThreadKind = 0x0000;           /* assume data thread */
+    fakeThread.thThreadKind = threadKind;
     fakeThread.thThreadCRC = kNuInitialThreadCRC;
     fakeThread.thThreadEOF = 0;
     fakeThread.thCompThreadEOF = 0;
@@ -1577,17 +1583,17 @@ Nu_StreamExtract(NuArchive* pArchive)
         /*
          * If we're trying to be compatible with ShrinkIt, and the record
          * had nothing in it but comments and filenames, then we need to
-         * create a zero-byte data file.
+         * create a zero-byte data file (and possibly a resource fork).
          *
-         * [ I'm going to make this a non-Mimic feature, so I can turn
-         *   MimicSHK off and still extract zero-byte files from GSHK
-         *   archives.  We should perhaps consider a separate "bug
-         *   workaround" flag to control this.  Note there's similar
-         *   code in Nu_ExtractRecordByPtr, below. ]
+         * See notes in previous instance, above.
          */
-        if (/*pArchive->valMimicSHK &&*/ !hasInterestingThread) {
-            err = Nu_FakeZeroExtract(pArchive, &tmpRecord);
+        if (/*pArchive->valMaskDataless &&*/ !hasInterestingThread) {
+            err = Nu_FakeZeroExtract(pArchive, &tmpRecord, 0x0000);
             BailError(err);
+            if (tmpRecord.recStorageType == kNuStorageExtended) {
+                err = Nu_FakeZeroExtract(pArchive, &tmpRecord, 0x0002);
+                BailError(err);
+            }
         }
 
         /* dispose of the entry */
@@ -1708,11 +1714,27 @@ Nu_ExtractRecordByPtr(NuArchive* pArchive, NuRecord* pRecord)
     /*
      * If we're trying to be compatible with ShrinkIt, and the record
      * had nothing in it but comments and filenames, then we need to
-     * create a zero-byte data file.
+     * create a zero-byte file.
+     *
+     * (GSHK handles empty data and resource forks by not storing a
+     * thread at all.  It doesn't correctly deal with them when extracting
+     * though, so it appears this behavior wasn't entirely expected.)
+     *
+     * NOTE: this might be doing the (slightly) wrong thing if the storage
+     * type of the file indicates that it was forked.  We might need to be
+     * extracting zero-byte data *and* resource forks here.  Only matters
+     * if we want to be able to reconstruct the original archive contents
+     * from what we extracted.  ++ATM 20030110
+     *
+     * Note there's another one of these below, in Nu_StreamExtract.
      */
-    if (/*pArchive->valMimicSHK &&*/ !hasInterestingThread) {
-        err = Nu_FakeZeroExtract(pArchive, pRecord);
+    if (/*pArchive->valMaskDataless &&*/ !hasInterestingThread) {
+        err = Nu_FakeZeroExtract(pArchive, pRecord, 0x0000 /*data*/);
         BailError(err);
+        if (pRecord->recStorageType == kNuStorageExtended) {
+            err = Nu_FakeZeroExtract(pArchive, pRecord, 0x0002 /*rsrc*/);
+            BailError(err);
+        }
     }
 
 bail:

@@ -77,8 +77,7 @@ Nu_NuArchiveNew(NuArchive** ppArchive)
      * system-specific values here; it's up to the application to decide
      * what is most appropriate for the current system.
      */
-    (*ppArchive)->valAllowDuplicates = false;
-    (*ppArchive)->valConvertExtractedEOL = kNuConvertOff;
+    (*ppArchive)->valIgnoreCRC = false;
     #ifdef ENABLE_LZW
     (*ppArchive)->valDataCompression = kNuCompressLZW2;
     #else
@@ -86,11 +85,14 @@ Nu_NuArchiveNew(NuArchive** ppArchive)
     #endif
     (*ppArchive)->valDiscardWrapper = false;
     (*ppArchive)->valEOL = kNuEOLLF;    /* non-UNIX apps must override */
-    (*ppArchive)->valHandleExisting = kNuMaybeOverwrite;
-    (*ppArchive)->valIgnoreCRC = false;
-    (*ppArchive)->valMimicSHK = false;
-    (*ppArchive)->valModifyOrig = false;
+    (*ppArchive)->valConvertExtractedEOL = kNuConvertOff;
     (*ppArchive)->valOnlyUpdateOlder = false;
+    (*ppArchive)->valAllowDuplicates = false;
+    (*ppArchive)->valHandleExisting = kNuMaybeOverwrite;
+    (*ppArchive)->valModifyOrig = false;
+    (*ppArchive)->valMimicSHK = false;
+    (*ppArchive)->valMaskDataless = false;
+
 
     return kNuErrNone;
 }
