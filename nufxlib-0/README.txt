@@ -86,6 +86,7 @@ When it finishes, run "test-basic.exe".
 
 If you want to build NufxLib as a DLL, use "makefile.dll" instead.
 If you're using zlib or libbz2, these will need to be linked into the DLL.
+The makefile currently assumes that you will want to use zlib.dll.
 
 
 Other Notes
