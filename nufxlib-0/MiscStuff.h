@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2000 by Andy McFadden, All Rights Reserved.
+ * Copyright (C) 2000-2002 by Andy McFadden, All Rights Reserved.
  * This is free software; you can redistribute it and/or modify it under the
- * terms of the GNU Library General Public License, see the file COPYING.LIB.
+ * terms of the GNU Library General Public License, see the file COPYING-LIB.
  *
  * Misc stuff (shared between nufxlib and nulib2).  This is a collection
  * of miscellaneous types and macros that I find generally useful.
@@ -9,7 +9,7 @@
 #ifndef __MiscStuff__
 #define __MiscStuff__
 
-#define VALGRIND        /* let's just assume we're using it */
+#define VALGRIND        /* assume we're using it */
 
 #include "SysDefs.h"
 

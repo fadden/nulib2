@@ -1,8 +1,8 @@
 /*
  * NuFX archive manipulation library
- * Copyright (C) 2002 by Andy McFadden, All Rights Reserved.
+ * Copyright (C) 2000-2002 by Andy McFadden, All Rights Reserved.
  * This is free software; you can redistribute it and/or modify it under the
- * terms of the GNU Library General Public License, see the file COPYING.LIB.
+ * terms of the GNU Library General Public License, see the file COPYING-LIB.
  *
  * Huffman/RLE "squeeze" compression, based on SQ/USQ.  This format is
  * listed in the NuFX documentation, but to my knowledge has never
