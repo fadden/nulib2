@@ -617,7 +617,8 @@ Nu_RecordSet_FindByThreadIdx(NuRecordSet* pRecordSet, NuThreadIdx threadIdx,
 
 
 /*
- * Compare two filenames pulled out of a record.
+ * Compare two record filenames.  This comes into play when looking for
+ * conflicts while adding records to an archive.
  *
  * Interesting issues:
  *  - some filesystems are case-sensitive, some aren't
@@ -626,7 +627,7 @@ Nu_RecordSet_FindByThreadIdx(NuRecordSet* pRecordSet, NuThreadIdx threadIdx,
  *    the same thing
  *
  * Some of these are out of our control.  For now, I'm just doing a
- * case-sensitive comparison, since the most interesting case for us is
+ * case-insensitive comparison, since the most interesting case for us is
  * when the person is adding a data fork and a resource fork from the
  * same file during the same operation.
  *
@@ -640,7 +641,11 @@ Nu_RecordSet_FindByThreadIdx(NuRecordSet* pRecordSet, NuThreadIdx threadIdx,
 static int
 Nu_CompareRecordNames(const char* name1, const char* name2)
 {
+#ifdef NU_CASE_SENSITIVE
     return strcmp(name1, name2);
+#else
+    return strcasecmp(name1, name2);
+#endif
 }
 
 

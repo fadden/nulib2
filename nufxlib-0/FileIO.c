@@ -651,7 +651,11 @@ Nu_CreatePathIFN(NuArchive* pArchive, const char* pathname, char fssep)
     if (pathEnd - pathStart < 0)
         goto bail;
 
-    /* (on some filesystems, strncasecmp would be appropriate here) */
+    /*
+     * On some filesystems, strncasecmp would be appropriate here.  However,
+     * this is meant solely as an optimization to avoid extra stat() calls,
+     * so we want to use the most restrictive case.
+     */
     if (pArchive->lastDirCreated &&
         strncmp(pathStart, pArchive->lastDirCreated, pathEnd - pathStart +1) == 0)
     {

@@ -16,6 +16,7 @@
 
 #define kNumEntries     3   /* how many records are we going to add? */
 #define kTestEntryBytes     "bytes"
+#define kTestEntryBytesUPPER "BYTES"
 #define kTestEntryEnglish   "English"
 #define kTestEntryLong      "three|is a fairly long filename, complete with" \
                             "punctuation and other nifty/bad stuff"
@@ -540,7 +541,7 @@ Test_Extract(NuArchive* pArchive)
     /*
      * Extract "bytes".
      */
-    err = NuGetRecordIdxByName(pArchive, kTestEntryBytes, &recordIdx);
+    err = NuGetRecordIdxByName(pArchive, kTestEntryBytesUPPER, &recordIdx);
     if (err != kNuErrNone) {
         fprintf(stderr, "ERROR: couldn't find '%s' (err=%d)\n", kTestEntryBytes,
             err);

@@ -1,6 +1,7 @@
 2003/02/18  fadden
     - Added "original pathname" fields to NuFileDetails and NuErrorStatus.
     - Changed callback setters to return NuCallback instead of NuError.
+    - Switched to case-sensitive filename comparisons.
 
 2003/02/08  fadden
     - Upped version to v2.0.0.
