@@ -1053,6 +1053,7 @@ Nu_ReadRecordHeader(NuArchive* pArchive, NuRecord* pRecord)
 
     pRecord->recHeaderLength =
         bytesRead + pRecord->recTotalThreads * kNuThreadHeaderSize;
+    pRecord->recHeaderLength -= pRecord->fakeThreads * kNuThreadHeaderSize;
 
     err = Nu_ComputeThreadData(pArchive, pRecord);
     BailError(err);
@@ -1267,6 +1268,7 @@ Nu_WriteRecordHeader(NuArchive* pArchive, NuRecord* pRecord, FILE* fp)
      */
     pRecord->recHeaderLength =
         bytesWritten + pRecord->recTotalThreads * kNuThreadHeaderSize;
+    pRecord->recHeaderLength -= pRecord->fakeThreads * kNuThreadHeaderSize;
 
     err = Nu_ComputeThreadData(pArchive, pRecord);
     BailError(err);
@@ -1738,11 +1740,10 @@ Nu_ExtractRecordByPtr(NuArchive* pArchive, NuRecord* pRecord)
      * thread at all.  It doesn't correctly deal with them when extracting
      * though, so it appears this behavior wasn't entirely expected.)
      *
-     * NOTE: this might be doing the (slightly) wrong thing if the storage
-     * type of the file indicates that it was forked.  We might need to be
-     * extracting zero-byte data *and* resource forks here.  Only matters
-     * if we want to be able to reconstruct the original archive contents
-     * from what we extracted.  ++ATM 20030110
+     * If it's a forked file, we also need to create an empty rsrc file.
+     *
+     * If valMaskDataless is enabled, this won't fire, because we "forge"
+     * appropriate threads.
      *
      * Note there's another one of these below, in Nu_StreamExtract.
      */

@@ -279,7 +279,7 @@ Nu_ReadThreadHeaders(NuArchive* pArchive, NuRecord* pRecord, ushort* pCrc)
         pThread->thCompThreadEOF = 0;
         pThread->actualThreadEOF = 0;
         pThread->threadIdx = Nu_GetNextThreadIdx(pArchive);
-        pThread->fileOffset = -1;
+        pThread->fileOffset = -99999999;
 
         if (needRsrc) {
             pThread++;
@@ -291,7 +291,7 @@ Nu_ReadThreadHeaders(NuArchive* pArchive, NuRecord* pRecord, ushort* pCrc)
             pThread->thCompThreadEOF = 0;
             pThread->actualThreadEOF = 0;
             pThread->threadIdx = Nu_GetNextThreadIdx(pArchive);
-            pThread->fileOffset = -1;
+            pThread->fileOffset = -99999999;
         }
     }
 
