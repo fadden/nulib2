@@ -953,11 +953,29 @@ Nu_ReadRecordHeader(NuArchive* pArchive, NuRecord* pRecord)
         pRecord->recOptionSize = Nu_ReadTwoC(pArchive, fp, &crc);
         bytesRead += 2;
 
+        /*
+         * It appears GS/ShrinkIt is creating bad option lists, claiming
+         * 36 bytes of data when there's only room for 18.  Since we don't
+         * really pay attention to the option list
+         */
+        if (pRecord->recOptionSize + bytesRead > pRecord->recAttribCount -2) {
+            DBUG(("--- truncating option list from %d to %d\n",
+                pRecord->recOptionSize,
+                pRecord->recAttribCount -2 - bytesRead));
+            if (pRecord->recAttribCount -2 > bytesRead)
+                pRecord->recOptionSize = pRecord->recAttribCount -2 - bytesRead;
+            else
+                pRecord->recOptionSize = 0;
+        }
+
+        /* this is the older test, which rejected funky archives */
         if (pRecord->recOptionSize + bytesRead > pRecord->recAttribCount -2) {
             /* option size exceeds the total attribute area */
             err = kNuErrBadRecord;
             Nu_ReportError(NU_BLOB, kNuErrBadRecord,
-                "Option size exceeds attribs (%u)", pRecord->recOptionSize);
+                "Option size (%u) exceeds attribs (%u,%u-2)",
+                    pRecord->recOptionSize, bytesRead,
+                    pRecord->recAttribCount);
             goto bail;
         }
 

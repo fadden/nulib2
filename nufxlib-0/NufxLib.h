@@ -33,7 +33,7 @@ extern "C" {
  */
 #define kNuVersionMajor     2
 #define kNuVersionMinor     0
-#define kNuVersionBug       0
+#define kNuVersionBug       1
 
 
 /*
@@ -268,7 +268,8 @@ typedef enum NuValueID {
     kNuValueModifyOrig          = 9,
     kNuValueMimicSHK            = 10,
     kNuValueMaskDataless        = 11,
-    kNuValueStripHighASCII      = 12
+    kNuValueStripHighASCII      = 12,
+    kNuValueJunkSkipMax         = 13
 } NuValueID;
 typedef unsigned long NuValue;
 

@@ -2351,6 +2351,8 @@ Nu_Flush(NuArchive* pArchive, long* pStatusFlags)
      * assumption is invalid, we'd need to adjust "headerOffset" earlier,
      * or do lots of data copying.  Looks like Binary II and SEA headers
      * are both fixed size, so we should be okay.
+     *
+     * We also carry forward any unrecognized junk.
      */
     if (pArchive->headerOffset) {
         if (writeToTemp) {

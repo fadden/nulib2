@@ -8,6 +8,8 @@
  */
 #include "NufxLibPriv.h"
 
+#define kMaxJunkSkipMax 8192
+
 
 /*
  * Get a configurable parameter.
@@ -56,6 +58,9 @@ Nu_GetValue(NuArchive* pArchive, NuValueID ident, NuValue* pValue)
         break;
     case kNuValueStripHighASCII:
         *pValue = pArchive->valStripHighASCII;
+        break;
+    case kNuValueJunkSkipMax:
+        *pValue = pArchive->valJunkSkipMax;
         break;
     default:
         err = kNuErrInvalidArg;
@@ -168,10 +173,18 @@ Nu_SetValue(NuArchive* pArchive, NuValueID ident, NuValue value)
     case kNuValueStripHighASCII:
         if (value != true && value != false) {
             Nu_ReportError(NU_BLOB, err,
-                "Invalid kNuStripHighASCII value %ld", value);
+                "Invalid kNuValueStripHighASCII value %ld", value);
             goto bail;
         }
         pArchive->valStripHighASCII = value;
+        break;
+    case kNuValueJunkSkipMax:
+        if (value > kMaxJunkSkipMax) {
+            Nu_ReportError(NU_BLOB, err,
+                "Invalid kNuValueJunkSkipMax value %ld", value);
+            goto bail;
+        }
+        pArchive->valJunkSkipMax = value;
         break;
     default:
         Nu_ReportError(NU_BLOB, err, "Unknown ValueID %d requested", ident);

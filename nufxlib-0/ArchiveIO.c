@@ -24,7 +24,7 @@
  */
 
 /*
- * Read one little-endian bytes, optionally computing a CRC.
+ * Read one byte, optionally computing a CRC.
  */
 uchar
 Nu_ReadOneC(NuArchive* pArchive, FILE* fp, ushort* pCrc)
@@ -38,7 +38,7 @@ Nu_ReadOneC(NuArchive* pArchive, FILE* fp, ushort* pCrc)
     ic = getc(fp);
     *pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
 
-    return ic;
+    return (uchar) ic;
 }
 
 uchar

@@ -39,6 +39,7 @@ static const uchar kNuSHKSEAID[] =
 #define kNuSEALength1       11946   /* length of archive (4B?) */
 #define kNuSEALength2       12001   /* length of archive (4B?) */
 
+#define kDefaultJunkSkipMax 1024    /* default junk scan size */
 
 static void Nu_CloseAndFree(NuArchive* pArchive);
 
@@ -93,6 +94,8 @@ Nu_NuArchiveNew(NuArchive** ppArchive)
     (*ppArchive)->valMimicSHK = false;
     (*ppArchive)->valMaskDataless = false;
     (*ppArchive)->valStripHighASCII = false;
+    /* bug: this can't be set by application! */
+    (*ppArchive)->valJunkSkipMax = kDefaultJunkSkipMax;
 
     (*ppArchive)->messageHandlerFunc = gNuGlobalErrorMessageHandler;
 
@@ -231,6 +234,7 @@ bail:
  * assumed to start at offset 0.
  *
  * Wrappers must appear in this order:
+ *  Leading junk
  *  Binary II
  *  ShrinkIt SEA (Self-Extracting Archive)
  *
@@ -266,7 +270,9 @@ Nu_UpdateWrapper(NuArchive* pArchive, FILE* fp)
         hasBinary2 = hasSea = true;
         break;
     default:
-        if (pArchive->headerOffset) {
+        if (pArchive->headerOffset != 0 &&
+            pArchive->headerOffset != pArchive->junkOffset)
+        {
             Nu_ReportError(NU_BLOB, kNuErrNone, "Can't fix the wrapper??");
             err = kNuErrInternal;
             goto bail;
@@ -274,7 +280,7 @@ Nu_UpdateWrapper(NuArchive* pArchive, FILE* fp)
             goto bail;
     }
 
-    err = Nu_FSeek(fp, 0, SEEK_SET);
+    err = Nu_FSeek(fp, pArchive->junkOffset, SEEK_SET);
     BailError(err);
 
     if (hasBinary2) {
@@ -290,9 +296,10 @@ Nu_UpdateWrapper(NuArchive* pArchive, FILE* fp)
             goto bail;
         }
 
-        /* archiveLen includes the SEA wrapper, if any */
+        /* archiveLen includes the SEA wrapper, if any, but excludes junk */
         archiveLen = pArchive->newMasterHeader.mhMasterEOF +
-                        (pArchive->headerOffset - kNuBinary2BlockSize);
+                        (pArchive->headerOffset - pArchive->junkOffset) -
+                        kNuBinary2BlockSize;
         archiveLen512 = (archiveLen + 511) / 512;
 
         err = Nu_FSeek(fp, kNuBNYFileSizeLo - kNufileIDLen, SEEK_CUR);
@@ -411,7 +418,9 @@ Nu_AdjustWrapperPadding(NuArchive* pArchive, FILE* fp)
         hasBinary2 = hasSea = true;
         break;
     default:
-        if (pArchive->headerOffset) {
+        if (pArchive->headerOffset != 0 &&
+            pArchive->headerOffset != pArchive->junkOffset)
+        {
             Nu_ReportError(NU_BLOB, kNuErrNone, "Can't check the padding??");
             err = kNuErrInternal;
             goto bail;
@@ -433,7 +442,9 @@ Nu_AdjustWrapperPadding(NuArchive* pArchive, FILE* fp)
 
         err = Nu_FTell(fp, &curOffset);
         BailError(err);
+        curOffset -= pArchive->junkOffset;  /* don't factor junk into account */
 
+        DBUG(("+++ BNY needs %ld bytes of padding\n", curOffset & 0x7f));
         if (curOffset & 0x7f) {
             int i;
 
@@ -473,6 +484,13 @@ bail:
  * also interested in related formats, we try to return a meaningful error
  * code for stuff we recognize (especially Binary II).
  *
+ * If at first we don't succeed, we keep trying further along until we
+ * find something we recognize.  We don't want to just scan for the
+ * NuFile ID, because that might prevent this from working properly with
+ * SEA archives which push the NuFX start out about 12K.  We also wouldn't
+ * be able to update the BNY/SEA wrappers correctly.  So, we inch our way
+ * along until we find something we recognize or get bored.
+ *
  * On exit, the stream will be positioned just past the master header.
  */
 static NuError
@@ -490,7 +508,10 @@ Nu_ReadMasterHeader(NuArchive* pArchive)
     fp = pArchive->archiveFp;       /* saves typing */
     pHeader = &pArchive->masterHeader;
 
-    pArchive->headerOffset = 0;
+    pArchive->junkOffset = 0;
+
+retry:
+    pArchive->headerOffset = pArchive->junkOffset;
     Nu_ReadBytes(pArchive, fp, pHeader->mhNufileID, kNufileIDLen);
     /* may have read fewer than kNufileIDLen; that's okay */
 
@@ -548,6 +569,22 @@ Nu_ReadMasterHeader(NuArchive* pArchive)
     }
 
     if (memcmp(kNuMasterID, pHeader->mhNufileID, kNufileIDLen) != 0) {
+        /*
+         * Doesn't look like a NuFX archive.  Scan forward and see if we
+         * can find the start past some leading junk.  MacBinary headers
+         * and chunks of HTTP seem popular on FTP sites.
+         */
+        if ((pArchive->openMode == kNuOpenRO ||
+             pArchive->openMode == kNuOpenRW) &&
+            pArchive->junkOffset < (long)pArchive->valJunkSkipMax)
+        {
+            pArchive->junkOffset++;
+            DBUG(("+++ scanning from offset %ld\n", pArchive->junkOffset));
+            err = Nu_SeekArchive(pArchive, fp, pArchive->junkOffset, SEEK_SET);
+            BailError(err);
+            goto retry;
+        }
+
         err = kNuErrNotNuFX;
 
         if (isBinary2) {

@@ -103,6 +103,9 @@ struct NuArchive {
     char*           archivePathname;        /* pathname or "(stream)" */
     FILE*           archiveFp;
     NuArchiveType   archiveType;
+
+    /* stuff before NuFX; both offsets are from 0, i.e. hdrOff includes junk */
+    long            junkOffset;             /* skip past leading junk */
     long            headerOffset;           /* adjustment for BXY/SEA/BSE */
 
     char*           tmpPathname;            /* temp file, for writes */
@@ -152,6 +155,7 @@ struct NuArchive {
     NuValue         valModifyOrig;          /* modify original arc in place? */
     NuValue         valOnlyUpdateOlder;     /* modify original arc in place? */
     NuValue         valStripHighASCII;      /* during EOL conv, strip hi bit? */
+    NuValue         valJunkSkipMax;         /* scan this far for header */
 
     /* callback functions */
     NuCallback      selectionFilterFunc;
