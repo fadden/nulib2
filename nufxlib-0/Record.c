@@ -1259,7 +1259,7 @@ Nu_WriteRecordHeader(NuArchive* pArchive, NuRecord* pRecord, FILE* fp)
         goto bail;
     }
 
-    /* write the thread headers */
+    /* write the thread headers, and zero out "fake" thread count */
     err = Nu_WriteThreadHeaders(pArchive, pRecord, fp, &crc);
     BailError(err);
 
@@ -1283,12 +1283,8 @@ Nu_WriteRecordHeader(NuArchive* pArchive, NuRecord* pRecord, FILE* fp)
 
     /*
      * Update values for misc record fields.
-     *
-     * Note that, despite having written the record header, we can still
-     * have "fake" threads.  This is because WriteThreadHeaders only saves
-     * the real ones.  This is in line with our policy of not altering
-     * anything we don't have to.
      */
+    Assert(pRecord->fakeThreads == 0);
     pRecord->recHeaderLength =
         bytesWritten + pRecord->recTotalThreads * kNuThreadHeaderSize;
     pRecord->recHeaderLength -= pRecord->fakeThreads * kNuThreadHeaderSize;
@@ -1525,9 +1521,11 @@ Nu_FakeZeroExtract(NuArchive* pArchive, NuRecord* pRecord, int threadKind)
     fakeThread.thThreadCRC = kNuInitialThreadCRC;
     fakeThread.thThreadEOF = 0;
     fakeThread.thCompThreadEOF = 0;
-    fakeThread.actualThreadEOF = 0;
+
     fakeThread.threadIdx = (NuThreadIdx)-1; /* shouldn't matter */
+    fakeThread.actualThreadEOF = 0;
     fakeThread.fileOffset = 0;                  /* shouldn't matter */
+    fakeThread.used = false;
 
     err = Nu_ExtractThreadBulk(pArchive, pRecord, &fakeThread);
     if (err == kNuErrSkipped)

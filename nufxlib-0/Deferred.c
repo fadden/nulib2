@@ -36,6 +36,7 @@ Nu_ThreadModAdd_New(NuArchive* pArchive, NuThreadID threadID,
         return kNuErrMalloc;
 
     (*ppThreadMod)->entry.kind = kNuThreadModAdd;
+    (*ppThreadMod)->entry.add.used = false;
     (*ppThreadMod)->entry.add.threadIdx = Nu_GetNextThreadIdx(pArchive);
     (*ppThreadMod)->entry.add.threadID = threadID;
     (*ppThreadMod)->entry.add.threadFormat = threadFormat;
@@ -64,6 +65,7 @@ Nu_ThreadModUpdate_New(NuArchive* pArchive, NuThreadIdx threadIdx,
         return kNuErrMalloc;
 
     (*ppThreadMod)->entry.kind = kNuThreadModUpdate;
+    (*ppThreadMod)->entry.update.used = false;
     (*ppThreadMod)->entry.update.threadIdx = threadIdx;
     (*ppThreadMod)->entry.update.pDataSource = Nu_DataSourceCopy(pDataSource);
 
@@ -87,6 +89,7 @@ Nu_ThreadModDelete_New(NuArchive* pArchive, NuThreadIdx threadIdx,
         return kNuErrMalloc;
 
     (*ppThreadMod)->entry.kind = kNuThreadModDelete;
+    (*ppThreadMod)->entry.delete.used = false;
     (*ppThreadMod)->entry.delete.threadIdx = threadIdx;
     (*ppThreadMod)->entry.delete.threadID = threadID;
 
@@ -506,6 +509,8 @@ Nu_VerifyAllTouched(NuArchive* pArchive, const NuRecord* pRecord)
 
     pThreadMod = pRecord->pThreadMods;
     while (pThreadMod != nil) {
+        Assert(pThreadMod->entry.generic.used == false ||
+               pThreadMod->entry.generic.used == true);
         if (!pThreadMod->entry.generic.used)
             return false;
         pThreadMod = pThreadMod->pNext;
@@ -515,6 +520,7 @@ Nu_VerifyAllTouched(NuArchive* pArchive, const NuRecord* pRecord)
         pThread = Nu_GetThread(pRecord, idx);
         Assert(pThread != nil);
 
+        Assert(pThread->used == false || pThread->used == true);
         if (!pThread->used)
             return false;
     }
@@ -943,7 +949,7 @@ Nu_ConstructArchiveThreads(NuArchive* pArchive, NuRecord* pRecord,
                  * The thread has a related ThreadMod.  Deal with it.
                  */
 
-                pThreadMod->entry.generic.used = true;  /* for assert, later */
+                pThreadMod->entry.generic.used = true;  /* for Assert, later */
 
                 if (pThreadMod->entry.kind == kNuThreadModDelete) {
                     /* this is a delete, ignore this thread */
@@ -1111,7 +1117,12 @@ Nu_ConstructArchiveRecord(NuArchive* pArchive, NuRecord* pRecord)
     if (pRecord->filename == nil)
         pRecord->filename = kNuDefaultRecordName;
 
-    /* make a hole, including the header filename if we're not dropping it */
+    /*
+     * Make a hole, including the header filename if we're not dropping it.
+     *
+     * This ignores fake vs. non-fake threads, because once we're done
+     * writing they're all "real".
+     */
     newHeaderSize = pRecord->recAttribCount + numThreads * kNuThreadHeaderSize;
     if (!pRecord->dropRecFilename)
         newHeaderSize += pRecord->recFilenameLength;
@@ -1206,6 +1217,8 @@ Nu_ConstructArchiveRecord(NuArchive* pArchive, NuRecord* pRecord)
     BailError(err);
     err = Nu_WriteRecordHeader(pArchive, pRecord, pArchive->tmpFp);
     BailError(err);
+
+    Assert(newHeaderSize == pRecord->recHeaderLength);
 
     /*
      * Seek forward once again, so we are positioned at the correct

@@ -172,6 +172,7 @@ Nu_ReadThreadHeader(NuArchive* pArchive, NuThread* pThread, ushort* pCrc)
     pThread->threadIdx = Nu_GetNextThreadIdx(pArchive);
     pThread->actualThreadEOF = 0;   /* fix me later */
     pThread->fileOffset = -1;       /* mark as invalid */
+    pThread->used = 0xcfcf;         /* init to invalid value */
 
     return Nu_HeaderIOFailed(pArchive, fp);
 }
@@ -277,9 +278,10 @@ Nu_ReadThreadHeaders(NuArchive* pArchive, NuRecord* pRecord, ushort* pCrc)
         pThread->thThreadCRC = kNuInitialThreadCRC;
         pThread->thThreadEOF = 0;
         pThread->thCompThreadEOF = 0;
-        pThread->actualThreadEOF = 0;
         pThread->threadIdx = Nu_GetNextThreadIdx(pArchive);
+        pThread->actualThreadEOF = 0;
         pThread->fileOffset = -99999999;
+        pThread->used = false;
 
         if (needRsrc) {
             pThread++;
@@ -289,9 +291,10 @@ Nu_ReadThreadHeaders(NuArchive* pArchive, NuRecord* pRecord, ushort* pCrc)
             pThread->thThreadCRC = kNuInitialThreadCRC;
             pThread->thThreadEOF = 0;
             pThread->thCompThreadEOF = 0;
-            pThread->actualThreadEOF = 0;
             pThread->threadIdx = Nu_GetNextThreadIdx(pArchive);
+            pThread->actualThreadEOF = 0;
             pThread->fileOffset = -99999999;
+            pThread->used = false;
         }
     }
 
@@ -324,6 +327,10 @@ Nu_WriteThreadHeader(NuArchive* pArchive, const NuThread* pThread, FILE* fp,
 
 /*
  * Write the thread headers for the record at the current file position.
+ *
+ * Note this doesn't care whether a thread was "fake" or not.  In
+ * effect, we promote all threads to "real" status.  We update the
+ * "fake" count in pRecord accordingly.
  */
 NuError
 Nu_WriteThreadHeaders(NuArchive* pArchive, NuRecord* pRecord, FILE* fp,
@@ -339,6 +346,11 @@ Nu_WriteThreadHeaders(NuArchive* pArchive, NuRecord* pRecord, FILE* fp,
 
         err = Nu_WriteThreadHeader(pArchive, pThread, fp, pCrc);
         BailError(err);
+    }
+
+    if (pRecord->fakeThreads != 0) {
+        DBUG(("+++ promoting %ld fake threads to real\n",pRecord->fakeThreads));
+        pRecord->fakeThreads = 0;
     }
 
 bail:
