@@ -777,16 +777,23 @@ Nu_ExtractThreadBulk(NuArchive* pArchive, const NuRecord* pRecord,
 {
     NuError err;
     NuDataSink* pDataSink = nil;
+    NuValue eolConv;
 
     /*
      * Create a file data sink for the file.  We use whatever EOL conversion
      * is set as the default for the entire archive.  (If you want to
      * specify your own EOL conversion for each individual file, you will
      * need to extract them individually, creating a data sink for each.)
+     *
+     * One exception: we turn EOL conversion off for disk image threads.
+     * It's *very* unlikely this would be desirable, and could be a problem
+     * if the user is extracting a collection of disks and files.
      */
-    err = Nu_DataSinkFile_New(true, pArchive->valConvertExtractedEOL,
-            pRecord->filename, NuGetSepFromSysInfo(pRecord->recFileSysInfo),
-            &pDataSink);
+    eolConv = pArchive->valConvertExtractedEOL;
+    if (NuGetThreadID(pThread) == kNuThreadIDDiskImage)
+        eolConv = kNuConvertOff;
+    err = Nu_DataSinkFile_New(true, eolConv, pRecord->filename,
+            NuGetSepFromSysInfo(pRecord->recFileSysInfo), &pDataSink);
     BailError(err);
 
     err = Nu_ExtractThreadCommon(pArchive, pRecord, pThread, pDataSink);
@@ -1069,7 +1076,7 @@ bail:
  * caught with a fatal assert or (if NDEBUG is defined) not at all.
  *
  * On success, the NuThreadIdx of the newly-created record will be placed
- * in "*pThreadIdx".
+ * in "*pThreadIdx", and "pDataSource" will be owned by NufxLib.
  */
 NuError
 Nu_AddThread(NuArchive* pArchive, NuRecordIdx recIdx, NuThreadID threadID,
