@@ -6,8 +6,10 @@
 # in "..\nufxlib-$(VERSION)".
 #
 # To build without debugging info, use "nmake nodebug=1".
-# To link with libz, use "nmake libz=1".
+# To build with libz, use "nmake libz=1".
 # To build with libbz2, use "nmake libbz2=1".
+# If you're linking against nufxlib as a DLL, add "DLL=1", and don't
+#   specify libz or libbz2.
 #
 # For libz/libbz2, you need to have the appropriate library either
 # in this directory or in a standard location that the linker can find.
@@ -17,7 +19,7 @@
 TARGETOS = BOTH
 !include <ntwin32.mak>
 
-VERSION=0
+VERSION=110
 NUFXSRCDIR = ..\nufxlib-$(VERSION)
 
 # object files
@@ -25,13 +27,25 @@ OBJS1 = Add.obj ArcUtils.obj Binary2.obj Delete.obj Extract.obj Filename.obj
 OBJS2 = List.obj Main.obj MiscStuff.obj MiscUtils.obj State.obj SysUtils.obj
 OBJS = $(OBJS1) $(OBJS2)
 
+!ifdef DLL
+### build against the DLL
 !ifdef NODEBUG
-#OPT = $(cdebug) /D NDEBUG /ML
+OPT = $(cdebug) /MD
+LIB_FLAGS = /nodefaultlib:libcd.lib /nologo setargv.obj
+!else
+OPT = $(cdebug) /MDd
+LIB_FLAGS = /nodefaultlib:libc.lib /nologo setargv.obj
+!endif
+
+!else
+### build against static lib
+!ifdef NODEBUG
 OPT = $(cdebug) /ML
 LIB_FLAGS = /nodefaultlib:libcd.lib /nologo libc.lib setargv.obj
 !else
 OPT = $(cdebug) /MLd
 LIB_FLAGS = /nodefaultlib:libc.lib /nologo libcd.lib setargv.obj
+!endif
 !endif
 
 BUILD_FLAGS = /W3 /GX /D "WIN32" /D "_CONSOLE" /I "$(NUFXSRCDIR)"
@@ -45,7 +59,7 @@ LIB_FLAGS = libbz2.lib $(LIB_FLAGS)
 
 # how to compile sources
 .c.obj:
-	@$(cc) $(cdebug) $(OPT) $(BUILD_FLAGS) $(cflags) $(cvars) -o $@ $<
+	@$(cc) $(OPT) $(BUILD_FLAGS) $(cflags) $(cvars) -o $@ $<
 
 
 PRODUCT = nulib2.exe
