@@ -178,7 +178,7 @@ AddPreservationString(NulibState* pState,
          * where do the rest fall in?  We might want to force TXT files
          * to be ".txt", and perhaps do something clever for some others.
          */
-        if (pRecord->recFileType == 0x04)
+        if (pRecord->recFileType == 0x04 || threadID == kNuThreadIDDiskImage)
             pExt = nil;
         else
             pExt = FindExtension(pState, pathBuf);
@@ -207,7 +207,9 @@ AddPreservationString(NulibState* pState,
              * ProDOS type, if one exists for this entry.  We don't use
              * the table if it's "NON" or a hex value.
              */
-            if (pRecord->recFileType) {
+            if (threadID == kNuThreadIDDiskImage)
+                pExt = "PO";    /* indicate it's a ProDOS-ordered image */
+            else if (pRecord->recFileType) {
                 pExt = GetFileTypeString(pRecord->recFileType);
                 if (pExt[0] == '?' || pExt[0] == '$')
                     pExt = nil;
