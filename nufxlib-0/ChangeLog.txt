@@ -1,3 +1,12 @@
+2003/02/08  fadden
+    - Upped version to v2.0.0.
+    - Changed DataSource API.  Removed "doClose" and added an optional
+      callback function that handles releasing of resources.  Necessary
+      to make Win32 DLLs work right with unsuspecting apps.
+    - Changed DataSource "copy" function to use refcounting.  Still
+      not quite right, but it'll do for now.  Memory leaks in DataSource
+      handling appear to be fixed.  (I love valgrind.)
+
 2003/01/10  fadden
     - Added version numbers to header.
     - Added kNuValueMaskThreadless to control handling of "threadless"
@@ -5,7 +14,7 @@
       the application does need to handle them specially.
 
 2002/12/06  fadden
-    - Made changes to allow NufxLib to be built as a DLL.
+    - Made changes to allow NufxLib to be built as a Win32 DLL.
 
 2002/10/20  ***** v1.1.0 shipped *****
 

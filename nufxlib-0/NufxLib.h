@@ -760,14 +760,14 @@ NUFXLIB_API NuError NuDebugDumpArchive(NuArchive* pArchive);
 
 /* sources and sinks */
 NUFXLIB_API NuError NuCreateDataSourceForFile(NuThreadFormat threadFormat,
-            short doClose, unsigned long otherLen, const char* pathname,
+            unsigned long otherLen, const char* pathname,
             short isFromRsrcFork, NuDataSource** ppDataSource);
 NUFXLIB_API NuError NuCreateDataSourceForFP(NuThreadFormat threadFormat,
-            short doClose, unsigned long otherLen, FILE* fp, long offset,
-            long length, NuDataSource** ppDataSource);
+            unsigned long otherLen, FILE* fp, long offset, long length,
+            NuCallback closeFunc, NuDataSource** ppDataSource);
 NUFXLIB_API NuError NuCreateDataSourceForBuffer(NuThreadFormat threadFormat,
-            short doClose, unsigned long otherLen, const unsigned char* buffer,
-            long offset, long length, NuDataSource** ppDataSource);
+            unsigned long otherLen, const unsigned char* buffer, long offset,
+            long length, NuCallback freeFunc, NuDataSource** ppDataSource);
 NUFXLIB_API NuError NuFreeDataSource(NuDataSource* pDataSource);
 NUFXLIB_API NuError NuDataSourceSetRawCrc(NuDataSource* pDataSource,
             unsigned short crc);
@@ -809,6 +809,7 @@ NUFXLIB_API NuError NuSetOutputPathnameFilter(NuArchive* pArchive,
             NuCallback filterFunc);
 NUFXLIB_API NuError NuSetProgressUpdater(NuArchive* pArchive,
             NuCallback updateFunc);
+NUFXLIB_API NuError NuSetFreeHandler(NuArchive* pArchive, NuCallback freeFunc);
 NUFXLIB_API NuError NuSetErrorHandler(NuArchive* pArchive,NuCallback errorFunc);
 NUFXLIB_API NuError NuSetErrorMessageHandler(NuArchive* pArchive,
             NuCallback messageHandlerFunc);

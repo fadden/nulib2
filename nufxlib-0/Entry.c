@@ -555,30 +555,30 @@ NuDebugDumpArchive(NuArchive* pArchive)
  */
 
 NUFXLIB_API NuError
-NuCreateDataSourceForFile(NuThreadFormat threadFormat, short doClose,
+NuCreateDataSourceForFile(NuThreadFormat threadFormat,
     unsigned long otherLen, const char* pathname, short isFromRsrcFork,
     NuDataSource** ppDataSource)
 {
-    return Nu_DataSourceFile_New(threadFormat, (Boolean)(doClose != 0),
-            otherLen, pathname, (Boolean)(isFromRsrcFork != 0), ppDataSource);
+    return Nu_DataSourceFile_New(threadFormat, otherLen,
+            pathname, (Boolean)(isFromRsrcFork != 0), ppDataSource);
 }
 
 NUFXLIB_API NuError
-NuCreateDataSourceForFP(NuThreadFormat threadFormat, short doClose,
+NuCreateDataSourceForFP(NuThreadFormat threadFormat,
     unsigned long otherLen, FILE* fp, long offset, long length,
-    NuDataSource** ppDataSource)
+    NuCallback fcloseFunc, NuDataSource** ppDataSource)
 {
-    return Nu_DataSourceFP_New(threadFormat, (Boolean)(doClose != 0),
-            otherLen, fp, offset, length, ppDataSource);
+    return Nu_DataSourceFP_New(threadFormat, otherLen,
+            fp, offset, length, fcloseFunc, ppDataSource);
 }
 
 NUFXLIB_API NuError
-NuCreateDataSourceForBuffer(NuThreadFormat threadFormat, short doClose,
+NuCreateDataSourceForBuffer(NuThreadFormat threadFormat,
     unsigned long otherLen, const unsigned char* buffer, long offset,
-    long length, NuDataSource** ppDataSource)
+    long length, NuCallback freeFunc, NuDataSource** ppDataSource)
 {
-    return Nu_DataSourceBuffer_New(threadFormat, (Boolean)(doClose != 0),
-            otherLen, buffer, offset, length, ppDataSource);
+    return Nu_DataSourceBuffer_New(threadFormat, otherLen,
+            buffer, offset, length, freeFunc, ppDataSource);
 }
 
 NUFXLIB_API NuError

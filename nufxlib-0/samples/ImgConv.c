@@ -213,15 +213,37 @@ DumpImgHeader(ImgHeader* pHeader)
 typedef enum ArchiveKind { kKindUnknown, kKindShk, kKindImg } ArchiveKind;
 
 /*
+ * This gets called when a buffer DataSource is no longer needed.
+ */
+NuResult
+FreeCallback(NuArchive* pArchive, void* args)
+{
+    free(args);
+}
+
+/*
+ * This gets called when an "FP" DataSource is no longer needed.
+ */
+NuResult
+FcloseCallback(NuArchive* pArchive, void* args)
+{
+    fclose((FILE*) args);
+}
+
+/*
  * Create a data source for a ProDOS-ordered image.  Since this is already
  * in the correct format, we just point at the correct offset in the 2MG file.
+ *
+ * This supplies an FcloseCallback so that we can exercise that feature
+ * of NufxLib.  We could just as easily not set it and call fclose()
+ * ourselves, because the structure of this program is pretty simple.
  */
 NuError
 CreateProdosSource(const ImgHeader* pHeader, FILE* fp,
     NuDataSource** ppDataSource)
 {
-    return NuCreateDataSourceForFP(kNuThreadFormatUncompressed, false, 0, fp,
-            pHeader->dataOffset, pHeader->dataLen, ppDataSource);
+    return NuCreateDataSourceForFP(kNuThreadFormatUncompressed, 0, fp,
+            pHeader->dataOffset, pHeader->dataLen, FcloseCallback,ppDataSource);
 }
 
 /*
@@ -290,9 +312,9 @@ CreateDosSource(const ImgHeader* pHeader, FILE* fp,
      * Create a data source for the buffer.  We set the "doClose" flag to
      * "true", so NufxLib will free the buffer for us.
      */
-    err = NuCreateDataSourceForBuffer(kNuThreadFormatUncompressed, true, 0,
+    err = NuCreateDataSourceForBuffer(kNuThreadFormatUncompressed, 0,
             (const unsigned char*) diskBuffer, 0, pHeader->dataLen,
-            ppDataSource);
+            FreeCallback, ppDataSource);
     if (err == kNuErrNone)
         diskBuffer = nil;
 
@@ -405,9 +427,11 @@ ConvertFromImgToShk(const char* srcName, const char* dstName)
     switch (header.imageFormat) {
     case kImageFormatDOS:
         err = CreateDosSource(&header, fp, &pDataSource);
+        fp = nil;
         break;
     case kImageFormatProDOS:
         err = CreateProdosSource(&header, fp, &pDataSource);
+        fp = nil;
         break;
     default:
         fprintf(stderr, "How the heck did I get here?");

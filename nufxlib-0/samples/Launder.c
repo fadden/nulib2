@@ -44,6 +44,14 @@
 char gSentRecordWarning = false;
 
 
+/*
+ * This gets called when a buffer DataSource is no longer needed.
+ */
+NuResult
+FreeCallback(NuArchive* pArchive, void* args)
+{
+    free(args);
+}
 
 /*
  * Copy a thread, expanding and recompressing it.
@@ -107,18 +115,18 @@ CopyThreadRecompressed(NuArchive* pInArchive, NuArchive* pOutArchive,
      * the right thing.
      */
     if (NuIsPresizedThreadID(NuGetThreadID(pThread))) {
-        err = NuCreateDataSourceForBuffer(kNuThreadFormatUncompressed, true,
+        err = NuCreateDataSourceForBuffer(kNuThreadFormatUncompressed,
                 pThread->thCompThreadEOF, buffer, 0,
-                pThread->actualThreadEOF, &pDataSource);
+                pThread->actualThreadEOF, FreeCallback, &pDataSource);
         if (err != kNuErrNone) {
             fprintf(stderr,
                 "ERROR: unable to create pre-sized data source (err=%d)\n",err);
             goto bail;
         }
     } else {
-        err = NuCreateDataSourceForBuffer(kNuThreadFormatUncompressed, true,
-                0, buffer, 0,
-                pThread->actualThreadEOF, &pDataSource);
+        err = NuCreateDataSourceForBuffer(kNuThreadFormatUncompressed,
+                0, buffer, 0, pThread->actualThreadEOF,
+                FreeCallback, &pDataSource);
         if (err != kNuErrNone) {
             fprintf(stderr,
                 "ERROR: unable to create data source (err=%d)\n", err);
@@ -234,18 +242,18 @@ CopyThreadUncompressed(NuArchive* pInArchive, NuArchive* pOutArchive,
      * for disk archives created by certain versions of ShrinkIt.
      */
     if (NuIsPresizedThreadID(NuGetThreadID(pThread))) {
-        err = NuCreateDataSourceForBuffer(pThread->thThreadFormat, true,
+        err = NuCreateDataSourceForBuffer(pThread->thThreadFormat,
                 pThread->thCompThreadEOF, buffer, 0,
-                pThread->actualThreadEOF, &pDataSource);
+                pThread->actualThreadEOF, FreeCallback, &pDataSource);
         if (err != kNuErrNone) {
             fprintf(stderr,
                 "ERROR: unable to create pre-sized data source (err=%d)\n",err);
             goto bail;
         }
     } else {
-        err = NuCreateDataSourceForBuffer(pThread->thThreadFormat, true,
+        err = NuCreateDataSourceForBuffer(pThread->thThreadFormat,
                 pThread->actualThreadEOF, buffer, 0,
-                pThread->thCompThreadEOF, &pDataSource);
+                pThread->thCompThreadEOF, FreeCallback, &pDataSource);
         if (err != kNuErrNone) {
             fprintf(stderr,
                 "ERROR: unable to create data source (err=%d)\n", err);

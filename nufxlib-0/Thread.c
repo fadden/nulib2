@@ -1126,7 +1126,7 @@ Nu_AddThread(NuArchive* pArchive, NuRecordIdx recIdx, NuThreadID threadID,
     }
     DBUG(("--- using threadFormat = %d\n", threadFormat));
 
-    /* create a new ThreadMod */
+    /* create a new ThreadMod (which makes a copy of the data source) */
     err = Nu_ThreadModAdd_New(pArchive, threadID, threadFormat, pDataSource,
             &pThreadMod);
     BailError(err);
@@ -1151,6 +1151,11 @@ Nu_AddThread(NuArchive* pArchive, NuRecordIdx recIdx, NuThreadID threadID,
 bail:
     if (pThreadMod != nil)
         Nu_ThreadModFree(pArchive, pThreadMod);
+    if (err == kNuErrNone && pDataSource != nil) {
+        /* on success, we have ownership of the data source.  ThreadMod
+           made its own copy, so get rid of this one */
+        Nu_DataSourceFree(pDataSource);
+    }
     return err;
 }
 

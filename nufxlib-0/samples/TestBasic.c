@@ -91,6 +91,15 @@ ErrorMessageHandler(NuArchive* pArchive, void* vErrorMessage)
     return kNuOK;
 }
 
+/*
+ * This gets called when a buffer DataSource is no longer needed.
+ */
+NuResult
+FreeCallback(NuArchive* pArchive, void* args)
+{
+    free(args);
+}
+
 
 /*
  * ===========================================================================
@@ -186,8 +195,8 @@ Test_AddStuff(NuArchive* pArchive)
         *(buf+i) = i & 0xff;
 
     FAIL_OK;
-    err = NuCreateDataSourceForBuffer(kNuThreadFormatUncompressed, true,
-            0, nil, 0, 131072, &pDataSource);
+    err = NuCreateDataSourceForBuffer(kNuThreadFormatUncompressed,
+            0, nil, 0, 131072, FreeCallback, &pDataSource);
     FAIL_BAD;
     if (err == kNuErrNone) {
         fprintf(stderr, "ERROR: that should've failed!\n");
@@ -197,8 +206,8 @@ Test_AddStuff(NuArchive* pArchive)
     /*
      * Create a data source for the big batch of bytes.
      */
-    err = NuCreateDataSourceForBuffer(kNuThreadFormatUncompressed, true,
-            0, buf, 0, 131072, &pDataSource);
+    err = NuCreateDataSourceForBuffer(kNuThreadFormatUncompressed,
+            0, buf, 0, 131072, FreeCallback, &pDataSource);
     if (err != kNuErrNone) {
         fprintf(stderr,
             "ERROR: 'bytes' data source create failed (err=%d)\n", err);
@@ -225,8 +234,8 @@ Test_AddStuff(NuArchive* pArchive)
      * Create a data source for our lovely text message.
      */
     printf("... add 'English' record\n");
-    err = NuCreateDataSourceForBuffer(kNuThreadFormatUncompressed, false,
-            0, (const uchar*)testMsg, 0, strlen(testMsg), &pDataSource);
+    err = NuCreateDataSourceForBuffer(kNuThreadFormatUncompressed,
+            0, (const uchar*)testMsg, 0, strlen(testMsg), nil, &pDataSource);
     if (err != kNuErrNone) {
         fprintf(stderr,
             "ERROR: 'English' source create failed (err=%d)\n", err);
@@ -269,8 +278,8 @@ Test_AddStuff(NuArchive* pArchive)
      * Create an empty file with a rather non-empty name.
      */
     printf("... add 'long' record\n");
-    err = NuCreateDataSourceForBuffer(kNuThreadFormatUncompressed, false,
-            0, nil, 0, 0, &pDataSource);
+    err = NuCreateDataSourceForBuffer(kNuThreadFormatUncompressed,
+            0, nil, 0, 0, nil, &pDataSource);
     if (err != kNuErrNone) {
         fprintf(stderr,
             "ERROR: 'English' source create failed (err=%d)\n", err);

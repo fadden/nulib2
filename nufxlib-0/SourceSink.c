@@ -35,18 +35,28 @@ Nu_DataSourceNew(NuDataSource** ppDataSource)
 
 
 /*
- * Make a copy of a DataSource.
+ * Make a copy of a DataSource.  Actually just increments a reference count.
  *
- * IMPORTANT: if the original had the "doClose" flag set, it will be cleared,
- * but left set in the duplicate.  The assumption is that the original will
- * be thrown out before the duplicate.  If this isn't the case, you will
- * need to fix the flags on the copied data.
+ * What we *really* want to be doing is copying the structure (since we
+ * can't guarantee copy-on-write semantics for the fields without adding
+ * more stuff) and refcounting the underlying resource, so that "auto-free"
+ * semantics work out right.
+ *
+ * We're okay for now, since for the most part we only do work on one
+ * copy of each.  (I wish I could remember why this copying thing was
+ * needed in the first place.)  Buffer sources are a little scary since
+ * they include a "curOffset" value.
  *
  * Returns nil on error.
  */
 NuDataSource*
 Nu_DataSourceCopy(NuDataSource* pDataSource)
 {
+    Assert(pDataSource->common.refCount >= 1);
+    pDataSource->common.refCount++;
+    return pDataSource;
+
+#if 0   /* we used to copy them -- very bad idea */
     NuDataSource* pNewDataSource;
 
     Assert(pDataSource != nil);
@@ -72,6 +82,7 @@ Nu_DataSourceCopy(NuDataSource* pDataSource)
     }
 
     return pNewDataSource;
+#endif
 }
 
 
@@ -84,6 +95,12 @@ Nu_DataSourceFree(NuDataSource* pDataSource)
     if (pDataSource == nil)
         return kNuErrNone;
 
+    Assert(pDataSource->common.refCount > 0);
+    if (pDataSource->common.refCount > 1) {
+        pDataSource->common.refCount--;
+        return kNuErrNone;
+    }
+
     switch (pDataSource->sourceType) {
     case kNuDataSourceFromFile:
         Nu_Free(nil, pDataSource->fromFile.pathname);
@@ -93,14 +110,17 @@ Nu_DataSourceFree(NuDataSource* pDataSource)
         }
         break;
     case kNuDataSourceFromFP:
-        if (pDataSource->common.doClose) {
-            fclose(pDataSource->fromFile.fp);
-            pDataSource->fromFile.fp = nil;
+        if (pDataSource->fromFP.fcloseFunc != nil &&
+            pDataSource->fromFP.fp != nil)
+        {
+            (*pDataSource->fromFP.fcloseFunc)(nil, pDataSource->fromFP.fp);
+            pDataSource->fromFP.fp = nil;
         }
         break;
     case kNuDataSourceFromBuffer:
-        if (pDataSource->common.doClose) {
-            Nu_Free(nil, (char*)pDataSource->fromBuffer.buffer);
+        if (pDataSource->fromBuffer.freeFunc != nil) {
+            (*pDataSource->fromBuffer.freeFunc)(nil,
+                                        (void*)pDataSource->fromBuffer.buffer);
             pDataSource->fromBuffer.buffer = nil;
         }
         break;
@@ -120,14 +140,12 @@ Nu_DataSourceFree(NuDataSource* pDataSource)
  * Create a data source for an unopened file.
  */
 NuError
-Nu_DataSourceFile_New(NuThreadFormat threadFormat, Boolean doClose,
-    ulong otherLen, const char* pathname, Boolean isFromRsrcFork,
-    NuDataSource** ppDataSource)
+Nu_DataSourceFile_New(NuThreadFormat threadFormat, ulong otherLen,
+    const char* pathname, Boolean isFromRsrcFork, NuDataSource** ppDataSource)
 {
     NuError err;
 
-    if (!(doClose == true || doClose == false) ||
-        pathname == nil ||
+    if (pathname == nil ||
         !(isFromRsrcFork == true || isFromRsrcFork == false) ||
         ppDataSource == nil)
     {
@@ -139,12 +157,13 @@ Nu_DataSourceFile_New(NuThreadFormat threadFormat, Boolean doClose,
 
     (*ppDataSource)->common.sourceType = kNuDataSourceFromFile;
     (*ppDataSource)->common.threadFormat = threadFormat;
-    (*ppDataSource)->common.doClose = doClose;
+    (*ppDataSource)->common.rawCrc = 0;
+    (*ppDataSource)->common.dataLen = 0;    /* to be filled in later */
     (*ppDataSource)->common.otherLen = otherLen;
+    (*ppDataSource)->common.refCount = 1;
+
     (*ppDataSource)->fromFile.pathname = strdup(pathname);
     (*ppDataSource)->fromFile.fromRsrcFork = isFromRsrcFork;
-
-    (*ppDataSource)->common.dataLen = 0;    /* to be filled in later */
     (*ppDataSource)->fromFile.fp = nil;     /* to be filled in later */
 
 bail:
@@ -157,14 +176,13 @@ bail:
  * must be seekable.
  */
 NuError
-Nu_DataSourceFP_New(NuThreadFormat threadFormat, Boolean doClose,
-    ulong otherLen, FILE* fp, long offset, long length,
+Nu_DataSourceFP_New(NuThreadFormat threadFormat, ulong otherLen,
+    FILE* fp, long offset, long length, NuCallback fcloseFunc,
     NuDataSource** ppDataSource)
 {
     NuError err;
 
-    if (!(doClose == true || doClose == false) ||
-        fp == nil || offset < 0 || length < 0 ||
+    if (fp == nil || offset < 0 || length < 0 ||
         ppDataSource == nil)
     {
         return kNuErrInvalidArg;
@@ -181,11 +199,14 @@ Nu_DataSourceFP_New(NuThreadFormat threadFormat, Boolean doClose,
 
     (*ppDataSource)->common.sourceType = kNuDataSourceFromFP;
     (*ppDataSource)->common.threadFormat = threadFormat;
-    (*ppDataSource)->common.doClose = doClose;
+    (*ppDataSource)->common.rawCrc = 0;
     (*ppDataSource)->common.dataLen = length;
     (*ppDataSource)->common.otherLen = otherLen;
+    (*ppDataSource)->common.refCount = 1;
+
     (*ppDataSource)->fromFP.fp = fp;
     (*ppDataSource)->fromFP.offset = offset;
+    (*ppDataSource)->fromFP.fcloseFunc = fcloseFunc;
 
 bail:
     return err;
@@ -200,23 +221,21 @@ bail:
  * blank comment fields.
  */
 NuError
-Nu_DataSourceBuffer_New(NuThreadFormat threadFormat, Boolean doClose,
-    ulong otherLen, const uchar* buffer, long offset, long length,
+Nu_DataSourceBuffer_New(NuThreadFormat threadFormat, ulong otherLen,
+    const uchar* buffer, long offset, long length, NuCallback freeFunc,
     NuDataSource** ppDataSource)
 {
     NuError err;
 
-    if (!(doClose == true || doClose == false) ||
-        offset < 0 || length < 0 || ppDataSource == nil)
-    {
+    if (offset < 0 || length < 0 || ppDataSource == nil)
         return kNuErrInvalidArg;
-    }
     if (buffer == nil && (offset != 0 || length != 0))
-    {
         return kNuErrInvalidArg;
+
+    if (buffer == nil) {
+        DBUG(("+++ zeroing freeFunc for empty-buffer DataSource\n"));
+        freeFunc = nil;
     }
-    if (buffer == nil)
-        doClose = false;
 
     if (otherLen && otherLen < (ulong)length) {
         DBUG(("--- rejecting buffer len=%ld other=%ld\n", length, otherLen));
@@ -229,14 +248,16 @@ Nu_DataSourceBuffer_New(NuThreadFormat threadFormat, Boolean doClose,
 
     (*ppDataSource)->common.sourceType = kNuDataSourceFromBuffer;
     (*ppDataSource)->common.threadFormat = threadFormat;
-    (*ppDataSource)->common.doClose = doClose;
+    (*ppDataSource)->common.rawCrc = 0;
     (*ppDataSource)->common.dataLen = length;
     (*ppDataSource)->common.otherLen = otherLen;
+    (*ppDataSource)->common.refCount = 1;
+
     (*ppDataSource)->fromBuffer.buffer = buffer;
     (*ppDataSource)->fromBuffer.offset = offset;
-
     (*ppDataSource)->fromBuffer.curOffset = offset;
     (*ppDataSource)->fromBuffer.curDataLen = length;
+    (*ppDataSource)->fromBuffer.freeFunc = freeFunc;
 
 bail:
     return err;

@@ -39,7 +39,7 @@ Nu_ThreadModAdd_New(NuArchive* pArchive, NuThreadID threadID,
     (*ppThreadMod)->entry.add.threadIdx = Nu_GetNextThreadIdx(pArchive);
     (*ppThreadMod)->entry.add.threadID = threadID;
     (*ppThreadMod)->entry.add.threadFormat = threadFormat;
-    (*ppThreadMod)->entry.add.pDataSource = pDataSource;
+    (*ppThreadMod)->entry.add.pDataSource = Nu_DataSourceCopy(pDataSource);
 
     /* decide if this is a pre-sized thread [do we want to do this here??] */
     (*ppThreadMod)->entry.add.isPresized = Nu_IsPresizedThreadID(threadID);
@@ -1302,14 +1302,15 @@ Nu_ConstructNewRecord(NuArchive* pArchive, NuRecord* pRecord, FILE* fp)
         len = strlen(pRecord->filename);
         maxLen = len > kNuDefaultFilenameThreadSize ?
                                             len : kNuDefaultFilenameThreadSize;
-        err = Nu_DataSourceBuffer_New(kNuThreadFormatUncompressed, false,
+        err = Nu_DataSourceBuffer_New(kNuThreadFormatUncompressed,
                 maxLen, (const uchar*)pRecord->filename, 0,
-                strlen(pRecord->filename), &pTmpDataSource);
+                strlen(pRecord->filename), nil, &pTmpDataSource);
         BailError(err);
 
-        /* put in a new "add" threadMod */
+        /* put in a new "add" threadMod (which copies the data source) */
         err = Nu_ThreadModAdd_New(pArchive, kNuThreadIDFilename,
                 kNuThreadFormatUncompressed, pTmpDataSource, &pNewThreadMod);
+        Nu_DataSourceFree(pTmpDataSource);
         BailError(err);
 
         /* add it to the list */
@@ -2060,8 +2061,8 @@ Nu_AddCommentToFirstNewRecord(NuArchive* pArchive)
     err = kNuErrNone;
 
     /* create a new data source with nothing in it */
-    err = Nu_DataSourceBuffer_New(kNuThreadFormatUncompressed, false,
-            kNuDefaultCommentSize, nil, 0, 0, &pDataSource);
+    err = Nu_DataSourceBuffer_New(kNuThreadFormatUncompressed,
+            kNuDefaultCommentSize, nil, 0, 0, nil, &pDataSource);
     BailError(err);
     Assert(pDataSource != nil);
 
@@ -2070,7 +2071,7 @@ Nu_AddCommentToFirstNewRecord(NuArchive* pArchive)
             kNuThreadFormatUncompressed, pDataSource, &pThreadMod);
     BailError(err);
     Assert(pThreadMod != nil);
-    pDataSource = nil;  /* don't free on exit */
+    /*pDataSource = nil;*/  /* ThreadModAdd_New makes a copy */
 
     /* add the thread mod to the record */
     Nu_RecordAddThreadMod(pRecord, pThreadMod);
@@ -2479,10 +2480,13 @@ bail:
              * we are able to do so.  This retains any BXY/BSE wrapper padding.
              */
             if (!writeToTemp) {
-                err = Nu_TruncateOpenFile(pArchive->archiveFp, initialEOF);
-                if (err == kNuErrNone) {
-                    DBUG(("+++ truncating orig archive back to %ld\n",
+                NuError err2;
+                err2 = Nu_TruncateOpenFile(pArchive->archiveFp, initialEOF);
+                if (err2 == kNuErrNone) {
+                    DBUG(("+++ truncated orig archive back to %ld\n",
                         initialEOF));
+                } else {
+                    DBUG(("+++ truncate orig failed (err=%d)\n", err2));
                 }
             }
         } else {

@@ -2301,7 +2301,7 @@ Nu_AddFileThreadMod(NuArchive* pArchive, NuRecord* pRecord,
         threadFormat = kNuThreadFormatUncompressed;
 
     /* create a data source for this file, which is assumed uncompressed */
-    err = Nu_DataSourceFile_New(kNuThreadFormatUncompressed, false, 0,
+    err = Nu_DataSourceFile_New(kNuThreadFormatUncompressed, 0,
             pathname, fromRsrcFork, &pDataSource);
     BailError(err);
 
@@ -2310,7 +2310,7 @@ Nu_AddFileThreadMod(NuArchive* pArchive, NuRecord* pRecord,
             pDataSource, &pThreadMod);
     BailError(err);
     Assert(pThreadMod != nil);
-    pDataSource = nil;  /* don't free on exit */
+    /*pDataSource = nil;*/  /* ThreadModAdd_New makes a copy */
 
     /* add the thread mod to the record */
     Nu_RecordAddThreadMod(pRecord, pThreadMod);
@@ -2552,9 +2552,10 @@ Nu_Rename(NuArchive* pArchive, NuRecordIdx recIdx, const char* pathname,
     /* create a data source for the filename, if needed */
     if (doAdd || doUpdate) {
         Assert(newCapacity);
-        err = Nu_DataSourceBuffer_New(kNuThreadFormatUncompressed, true,
+        err = Nu_DataSourceBuffer_New(kNuThreadFormatUncompressed,
                 newCapacity, (const uchar*)strdup(pathname), 0,
-                requiredCapacity /*(strlen)*/, &pDataSource);
+                requiredCapacity /*(strlen)*/, Nu_InternalFreeCallback,
+                &pDataSource);
         BailError(err);
     }
 
@@ -2570,7 +2571,7 @@ Nu_Rename(NuArchive* pArchive, NuRecordIdx recIdx, const char* pathname,
         err = Nu_ThreadModAdd_New(pArchive, kNuThreadIDFilename,
                 kNuThreadFormatUncompressed, pDataSource, &pNewThreadMod);
         BailError(err);
-        pDataSource = nil;      /* successful, don't free */
+        /*pDataSource = nil;*/  /* ThreadModAdd_New makes a copy */
         Nu_RecordAddThreadMod(pRecord, pNewThreadMod);
         pNewThreadMod = nil;    /* successful, don't free */
     }
@@ -2579,7 +2580,7 @@ Nu_Rename(NuArchive* pArchive, NuRecordIdx recIdx, const char* pathname,
         err = Nu_ThreadModUpdate_New(pArchive, pFilenameThread->threadIdx, 
                 pDataSource, &pNewThreadMod);
         BailError(err);
-        pDataSource = nil;      /* successful, don't free */
+        /*pDataSource = nil;*/  /* ThreadModAdd_New makes a copy */
         Nu_RecordAddThreadMod(pRecord, pNewThreadMod);
         pNewThreadMod = nil;    /* successful, don't free */
     }

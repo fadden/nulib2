@@ -319,9 +319,10 @@ typedef struct NuDataSourceCommon {
     NuDataSourceType    sourceType;
     NuThreadFormat      threadFormat;       /* is it already compressed? */
     ushort              rawCrc;             /* crc for already-compressed data*/
-    Boolean             doClose;            /* close on completion? */
+    /*Boolean             doClose;            \* close on completion? */
     ulong               dataLen;            /* length of data (var for buf) */
     ulong               otherLen;           /* uncomp len or preset buf size */
+    int                 refCount;           /* so we can copy structs */
 } NuDataSourceCommon;
 
 union NuDataSource {
@@ -342,6 +343,8 @@ union NuDataSource {
         NuDataSourceCommon  common;
         FILE*               fp;
         long                offset;         /* starting offset */
+
+        NuCallback          fcloseFunc;     /* how to fclose the file */
     } fromFP;
 
     struct {
@@ -351,6 +354,8 @@ union NuDataSource {
 
         long                curOffset;      /* current offset */
         long                curDataLen;     /* remaining data */
+
+        NuCallback          freeFunc;       /* how to free data */
     } fromBuffer;
 };
 
@@ -679,6 +684,7 @@ void* Nu_Calloc(NuArchive* pArchive, size_t size);
 void* Nu_Realloc(NuArchive* pArchive, void* ptr, size_t size);
 void Nu_Free(NuArchive* pArchive, void* ptr);
 #endif
+NuResult Nu_InternalFreeCallback(NuArchive* pArchive, void* args);
 
 /* Record.c */
 void Nu_RecordAddThreadMod(NuRecord* pRecord, NuThreadMod* pThreadMod);
@@ -739,15 +745,15 @@ NuError Nu_Delete(NuArchive* pArchive);
 NuError Nu_DeleteRecord(NuArchive* pArchive, NuRecordIdx rec);
 
 /* SourceSink.c */
-NuError Nu_DataSourceFile_New(NuThreadFormat threadFormat, Boolean doClose,
+NuError Nu_DataSourceFile_New(NuThreadFormat threadFormat,
     ulong otherLen, const char* pathname, Boolean isFromRsrcFork,
     NuDataSource** ppDataSource);
-NuError Nu_DataSourceFP_New(NuThreadFormat threadFormat, Boolean doClose,
+NuError Nu_DataSourceFP_New(NuThreadFormat threadFormat,
     ulong otherLen, FILE* fp, long offset, long length,
-    NuDataSource** ppDataSource);
+    NuCallback fcloseFunc, NuDataSource** ppDataSource);
 NuError Nu_DataSourceBuffer_New(NuThreadFormat threadFormat,
-    Boolean doClose, ulong otherLen, const uchar* buffer, long offset,
-    long length, NuDataSource** ppDataSource);
+    ulong otherLen, const uchar* buffer, long offset, long length,
+    NuCallback freeFunc, NuDataSource** ppDataSource);
 NuDataSource* Nu_DataSourceCopy(NuDataSource* pDataSource);
 NuError Nu_DataSourceFree(NuDataSource* pDataSource);
 NuDataSourceType Nu_DataSourceGetType(const NuDataSource* pDataSource);

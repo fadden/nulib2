@@ -300,6 +300,15 @@ ErrorHandler(NuArchive* pArchive, void* vErrorStatus)
     return result;
 }
 
+/*
+ * This gets called when a buffer DataSource is no longer needed.
+ */
+NuResult
+FreeCallback(NuArchive* pArchive, void* args)
+{
+    free(args);
+}
+
 
 /*
  * ===========================================================================
@@ -448,7 +457,7 @@ AddThreadFunc(ExerciserState* pState, int argc, char** argv)
         }
 
         err = NuCreateDataSourceForFile(kNuThreadFormatUncompressed,
-                true, 0, lineBuf, false, &pDataSource);
+                0, lineBuf, false, &pDataSource);
         if (err != kNuErrNone) {
             fprintf(stderr,
                 "Exerciser: file data source create failed (err=%d)\n", err);
@@ -477,7 +486,8 @@ AddThreadFunc(ExerciserState* pState, int argc, char** argv)
 
         /* create a data source from the buffer */
         err = NuCreateDataSourceForBuffer(kNuThreadFormatUncompressed,
-                true, maxLen, (unsigned char*)lineBuf, 0, ourLen, &pDataSource);
+                maxLen, (unsigned char*)lineBuf, 0, ourLen, FreeCallback,
+                &pDataSource);
         if (err != kNuErrNone) {
             fprintf(stderr,
                 "Exerciser: buffer data source create failed (err=%d)\n", err);
@@ -1004,7 +1014,8 @@ UpdatePresizedThreadFunc(ExerciserState* pState, int argc, char** argv)
 
     /* use "ourLen" for both buffer len and data len */
     err = NuCreateDataSourceForBuffer(kNuThreadFormatUncompressed,
-            true, ourLen, (unsigned char*)lineBuf, 0, ourLen, &pDataSource);
+            ourLen, (unsigned char*)lineBuf, 0, ourLen, FreeCallback,
+            &pDataSource);
     if (err != kNuErrNone) {
         fprintf(stderr, "Exerciser: data source create failed (err=%d)\n",
             err);
@@ -1303,7 +1314,7 @@ CommandLoop(void)
     }
 
     if (pState != nil)
-        free(pState);
+        ExerciserState_Free(pState);
     if (argv != nil)
         free(argv);
     return kNuErrNone;

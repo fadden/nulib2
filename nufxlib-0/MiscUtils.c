@@ -366,3 +366,15 @@ Nu_Free(NuArchive* pArchive, void* ptr)
 }
 #endif
 
+/*
+ * If somebody internal wants to set doClose on a buffer DataSource
+ * (looks like "Rename" does), we need to supply a "free" callback.
+ */
+NuResult
+Nu_InternalFreeCallback(NuArchive* pArchive, void* args)
+{
+    DBUG(("+++ internal free callback 0x%08lx\n", (long) args));
+    Nu_Free(nil, args);
+    return kNuOK;
+}
+
