@@ -454,8 +454,7 @@ bail:
     if (pMasterHeader != nil)
         free(pMasterHeader);
 
-    if (pArchiveData != nil)
-        free(pArchiveData);
+    ArchiveData_Free(pArchiveData);
 
     return err;
 }
@@ -469,7 +468,7 @@ main(int argc, char** argv)
 {
     long major, minor, bug;
     const char* pBuildDate;
-    FILE* infp;
+    FILE* infp = nil;
     int cc;
 
     (void) NuGetVersion(&major, &minor, &bug, &pBuildDate, nil);
@@ -488,6 +487,9 @@ main(int argc, char** argv)
     }
 
     cc = DoFileStuff(argv[1]);
+
+    if (infp != nil)
+        fclose(infp);
 
     exit(cc != 0);
 }
