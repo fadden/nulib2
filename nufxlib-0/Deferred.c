@@ -1172,6 +1172,7 @@ Nu_ConstructArchiveRecord(NuArchive* pArchive, NuRecord* pRecord)
     /* verify that all threads and threadMods have been touched */
     if (!Nu_VerifyAllTouched(pArchive, pRecord)) {
         err = kNuErrInternal;
+		Assert(0);
         goto bail;
     }
 
@@ -1186,6 +1187,7 @@ Nu_ConstructArchiveRecord(NuArchive* pArchive, NuRecord* pRecord)
             initialOffset, finalOffset, threadDisp);
         err = kNuErrInternal;
         Assert(0);
+        goto bail;
     }
 
     /*
@@ -1395,6 +1397,7 @@ Nu_ConstructNewRecord(NuArchive* pArchive, NuRecord* pRecord, FILE* fp)
     /* verify that all threads and threadMods have been touched */
     if (!Nu_VerifyAllTouched(pArchive, pRecord)) {
         err = kNuErrInternal;
+        Assert(0);
         goto bail;
     }
 
@@ -1409,6 +1412,7 @@ Nu_ConstructNewRecord(NuArchive* pArchive, NuRecord* pRecord, FILE* fp)
             initialOffset, finalOffset, threadDisp);
         err = kNuErrInternal;
         Assert(0);
+        goto bail;
     }
 
     /*
