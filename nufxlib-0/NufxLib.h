@@ -316,7 +316,9 @@ enum NuValueValue {
 typedef enum NuAttrID {
     kNuAttrInvalid          = 0,
     kNuAttrArchiveType      = 1,
-    kNuAttrNumRecords       = 2
+    kNuAttrNumRecords       = 2,
+    kNuAttrHeaderOffset     = 3,
+    kNuAttrJunkOffset       = 4,
 } NuAttrID;
 typedef unsigned long NuAttr;
 

@@ -1,3 +1,14 @@
+2004/09/20  fadden
+    - Corrected behavior after flush when original archive can't be
+      deleted.
+
+2004/09/09  fadden
+    - Added header offset and junk offset to NuGetAttr.
+
+2004/08/22  fadden
+    - Fixed obscure bug when recompressing a GSHK-added zero-length file
+      when "fake threads" is enabled.
+
 2004/03/10  ***** v2.0.2 shipped *****
 
 2004/03/09  fadden

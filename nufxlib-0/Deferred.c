@@ -2407,11 +2407,10 @@ Nu_Flush(NuArchive* pArchive, long* pStatusFlags)
      */
     if (writeToTemp) {
         canAbort = false;   /* no going back */
-        fclose(pArchive->tmpFp);
-        pArchive->tmpFp = nil;
+        *pStatusFlags |= kNuFlushSucceeded;     /* temp file is fully valid */
+
         fclose(pArchive->archiveFp);
         pArchive->archiveFp = nil;
-        *pStatusFlags |= kNuFlushSucceeded;
 
         err = Nu_DeleteArchiveFile(pArchive);
         if (err != kNuErrNone) {
@@ -2419,8 +2418,11 @@ Nu_Flush(NuArchive* pArchive, long* pStatusFlags)
             Nu_ReportError(NU_BLOB, kNuErrNone, "New data is in '%s'",
                 pArchive->tmpPathname);
             *pStatusFlags |= kNuFlushInaccessible;
-            goto bail;
+            goto bail_reopen;       /* must re-open archiveFp */
         }
+
+        fclose(pArchive->tmpFp);
+        pArchive->tmpFp = nil;
 
         err = Nu_RenameTempToArchive(pArchive);
         if (err != kNuErrNone) {
@@ -2436,6 +2438,7 @@ Nu_Flush(NuArchive* pArchive, long* pStatusFlags)
             goto bail;
         }
 
+bail_reopen:
         pArchive->archiveFp = fopen(pArchive->archivePathname,
                                 kNuFileOpenReadWrite);
         if (pArchive->archiveFp == nil) {
@@ -2446,6 +2449,9 @@ Nu_Flush(NuArchive* pArchive, long* pStatusFlags)
             *pStatusFlags |= kNuFlushInaccessible;
             goto bail;      /* the Entry.c funcs will obstruct further use */
         }
+
+        if (err != kNuErrNone)  // earlier failure?
+            goto bail;
     } else {
         fflush(pArchive->archiveFp);
         if (ferror(pArchive->archiveFp)) {

@@ -217,6 +217,12 @@ Nu_GetAttr(NuArchive* pArchive, NuAttrID ident, NuAttr* pAttr)
     case kNuAttrNumRecords:
         *pAttr = pArchive->masterHeader.mhTotalRecords;
         break;
+    case kNuAttrHeaderOffset:
+        *pAttr = pArchive->headerOffset;
+        break;
+    case kNuAttrJunkOffset:
+        *pAttr = pArchive->junkOffset;
+        break;
     default:
         err = kNuErrInvalidArg;
         Nu_ReportError(NU_BLOB, err, "Unknown AttrID %d requested", ident);
