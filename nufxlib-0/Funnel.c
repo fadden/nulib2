@@ -357,6 +357,9 @@ static const char gNuIsBinary[256] = {
  * of line terminator is in use.
  *
  * If we don't have enough data to make a determination, don't mess with it.
+ * (Thought for the day: add a "bias" flag, based on the NuRecord fileType,
+ * that causes us to handle borderline cases more reasonably.  If it's of
+ * type TXT, it's probably text.)
  *
  * We try to figure out whether it's CR, LF, or CRLF, so that we can
  * skip the CPU-intensive conversion process if it isn't necessary.
