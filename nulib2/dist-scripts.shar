@@ -1,9 +1,9 @@
 #!/bin/sh
-# This is a shell archive (produced by GNU sharutils 4.2).
+# This is a shell archive (produced by GNU sharutils 4.2.1).
 # To extract the files from this archive, save it to some FILE, remove
 # everything before the `!/bin/sh' line above, then type `sh FILE'.
 #
-# Made on 2001-06-12 12:57 PDT by <fadden@beast.localdomain>.
+# Made on 2002-10-11 17:29 PDT by <fadden@shiny>.
 # Source directory was `/home/fadden/STAGE'.
 #
 # Existing files will *not* be overwritten unless `-c' is specified.
@@ -11,9 +11,9 @@
 # This shar contains:
 # length mode       name
 # ------ ---------- ------------------------------------------
-#    836 -rwxr-xr-x prep.sh
-#    471 -rwxr-xr-x post.sh
-#    546 -rwxr-xr-x mkzip
+#    856 -rwxr-xr-x prep.sh
+#    477 -rwxr-xr-x post.sh
+#    564 -rwxr-xr-x mkzip
 #      4 -rw-r--r-- VERSION
 #
 save_IFS="${IFS}"
@@ -49,9 +49,12 @@ else
   export TEXTDOMAIN
   echo="$gettext_dir/gettext -s"
 fi
-touch -am 1231235999 $$.touch >/dev/null 2>&1
-if test ! -f 1231235999 && test -f $$.touch; then
-  shar_touch=touch
+if touch -am -t 200112312359.59 $$.touch >/dev/null 2>&1 && test ! -f 200112312359.59 -a -f $$.touch; then
+  shar_touch='touch -am -t $1$2$3$4$5$6.$7 "$8"'
+elif touch -am 123123592001.59 $$.touch >/dev/null 2>&1 && test ! -f 123123592001.59 -a ! -f 123123592001.5 -a -f $$.touch; then
+  shar_touch='touch -am $3$4$5$6$1$2.$7 "$8"'
+elif touch -am 1231235901 $$.touch >/dev/null 2>&1 && test ! -f 1231235901 -a -f $$.touch; then
+  shar_touch='touch -am $3$4$5$6$2 "$8"'
 else
   shar_touch=:
   echo
@@ -59,9 +62,9 @@ else
   $echo "installing GNU \`touch', distributed in GNU File Utilities..."
   echo
 fi
-rm -f 1231235999 $$.touch
+rm -f 200112312359.59 123123592001.59 123123592001.5 1231235901 $$.touch
 #
-if mkdir _sh00768; then
+if mkdir _sh01765; then
   $echo 'x -' 'creating lock directory'
 else
   $echo 'failed to create lock directory'
@@ -102,6 +105,7 @@ mkdir $appdir
 cd $appdir
 zcat $HOME/BAK/nulib2.tar.gz | tar xvf -
 make distclean
+rm README-Win32.txt
 X
 sed -e "s/VERSION..= 0/VERSION		= $version/" < Makefile.in > Makefile.new
 set +e ; diff Makefile.in Makefile.new ; set -e
@@ -117,19 +121,19 @@ echo IMPORTANT: put the release into ChangeLog.txt
 X
 Xexit 0
 SHAR_EOF
-  $shar_touch -am 05181614100 'prep.sh' &&
+  (set 20 02 10 11 15 40 07 'prep.sh'; eval "$shar_touch") &&
   chmod 0755 'prep.sh' ||
   $echo 'restore of' 'prep.sh' 'failed'
   if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
   && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
     md5sum -c << SHAR_EOF >/dev/null 2>&1 \
     || $echo 'prep.sh:' 'MD5 check failed'
-a2c73dae7e34b7ab5772a829ce1903e9  prep.sh
+403d6849f37fe0aaf33d9380611e83b3  prep.sh
 SHAR_EOF
   else
     shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < 'prep.sh'`"
-    test 836 -eq "$shar_count" ||
-    $echo 'prep.sh:' 'original size' '836,' 'current size' "$shar_count!"
+    test 856 -eq "$shar_count" ||
+    $echo 'prep.sh:' 'original size' '856,' 'current size' "$shar_count!"
   fi
 fi
 # ============= post.sh ==============
@@ -148,12 +152,12 @@ libdir=nufxlib-$version
 appdir=nulib2-$version
 X
 set -x
-rm -f $appdir/MiscStuff.c
-cp $libdir/MiscStuff.c $appdir
-rm -f $appdir/MiscStuff.h
-cp $libdir/MiscStuff.h $appdir
-rm -f $appdir/SunOS4.h
-cp $libdir/SunOS4.h $appdir
+#rm -f $appdir/MiscStuff.c
+#cp $libdir/MiscStuff.c $appdir
+#rm -f $appdir/MiscStuff.h
+#cp $libdir/MiscStuff.h $appdir
+#rm -f $appdir/SunOS4.h
+#cp $libdir/SunOS4.h $appdir
 X
 tar cf nulibdist-$version.tar $libdir $appdir
 gzip -9 nulibdist-$version.tar
@@ -165,19 +169,19 @@ echo ""
 X
 Xexit 0
 SHAR_EOF
-  $shar_touch -am 05181614100 'post.sh' &&
+  (set 20 02 10 11 13 56 59 'post.sh'; eval "$shar_touch") &&
   chmod 0755 'post.sh' ||
   $echo 'restore of' 'post.sh' 'failed'
   if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
   && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
     md5sum -c << SHAR_EOF >/dev/null 2>&1 \
     || $echo 'post.sh:' 'MD5 check failed'
-3871ee74cbb280cad106da51ce873cba  post.sh
+f662165f13315e3484e1e182d0e4afcb  post.sh
 SHAR_EOF
   else
     shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < 'post.sh'`"
-    test 471 -eq "$shar_count" ||
-    $echo 'post.sh:' 'original size' '471,' 'current size' "$shar_count!"
+    test 477 -eq "$shar_count" ||
+    $echo 'post.sh:' 'original size' '477,' 'current size' "$shar_count!"
   fi
 fi
 # ============= mkzip ==============
@@ -193,16 +197,16 @@ X
 version=`cat VERSION`
 echo "Preparing for version=$version."
 X
-archive=$HOME/nulib2_win32.zip
-#basedir=/dosdev
-basedir=$HOME/tmp
-mansrc=$HOME/CVSsrc/nulib2/nulib2.1
+archive=nulib2_${version}_win32.zip
+basedir=/dosc/Src
+#basedir=$HOME/tmp
+mansrc=$HOME/Nulib2/nulib2/nulib2.1
 manout=$HOME/nulib2.man
 X
 rm -f $archive
 rm -f $manout
 X
-zip -9j $archive $basedir/README-Win32.txt
+zip -9j $archive $HOME/Nulib2/nulib2/README-Win32.txt
 nroff -man $mansrc | col -b > $manout
 zip -9jl $archive $manout
 rm $manout
@@ -213,19 +217,19 @@ X
 Xexit 0
 X
 SHAR_EOF
-  $shar_touch -am 05221917100 'mkzip' &&
+  (set 20 02 10 11 16 01 06 'mkzip'; eval "$shar_touch") &&
   chmod 0755 'mkzip' ||
   $echo 'restore of' 'mkzip' 'failed'
   if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
   && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
     md5sum -c << SHAR_EOF >/dev/null 2>&1 \
     || $echo 'mkzip:' 'MD5 check failed'
-352a57a692602cd77bdda965ae4e31a3  mkzip
+dc224623d9d2d9df478bc622ecf7f61a  mkzip
 SHAR_EOF
   else
     shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < 'mkzip'`"
-    test 546 -eq "$shar_count" ||
-    $echo 'mkzip:' 'original size' '546,' 'current size' "$shar_count!"
+    test 564 -eq "$shar_count" ||
+    $echo 'mkzip:' 'original size' '564,' 'current size' "$shar_count!"
   fi
 fi
 # ============= VERSION ==============
@@ -234,16 +238,16 @@ if test -f 'VERSION' && test "$first_param" != -c; then
 else
   $echo 'x -' extracting 'VERSION' '(text)'
   sed 's/^X//' << 'SHAR_EOF' > 'VERSION' &&
-101
+110
 SHAR_EOF
-  $shar_touch -am 05221727100 'VERSION' &&
+  (set 20 02 10 11 13 53 35 'VERSION'; eval "$shar_touch") &&
   chmod 0644 'VERSION' ||
   $echo 'restore of' 'VERSION' 'failed'
   if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
   && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
     md5sum -c << SHAR_EOF >/dev/null 2>&1 \
     || $echo 'VERSION:' 'MD5 check failed'
-cf6a52053ff904bca9d96fd4e7740d7d  VERSION
+2fe51daae840593fb0f4076b307ccefb  VERSION
 SHAR_EOF
   else
     shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < 'VERSION'`"
@@ -251,5 +255,5 @@ SHAR_EOF
     $echo 'VERSION:' 'original size' '4,' 'current size' "$shar_count!"
   fi
 fi
-rm -fr _sh00768
+rm -fr _sh01765
 exit 0
