@@ -173,11 +173,35 @@ Nu_ProgressDataExpandPrep(NuArchive* pArchive, NuFunnel* pFunnel,
 }
 
 /*
+ * Compute a completion percentage.
+ */
+static int
+Nu_ComputePercent(ulong total, ulong progress)
+{
+    ulong perc;
+
+    if (!total)
+        return 0;
+
+    if (total < 21474836) {
+        perc = (progress * 100 + 50) / total;
+        if (perc > 100)
+            perc = 100;
+    } else {
+        perc = progress / (total / 100);
+        if (perc > 100)
+            perc = 100;
+    }
+
+    return (int) perc;
+}
+
+/*
  * Send the initial progress message, before the output file is opened
  * (when extracting) or the input file is opened (when adding).
  */
 NuError
-Nu_SendInitialProgress(NuArchive* pArchive, const NuProgressData* pProgress)
+Nu_SendInitialProgress(NuArchive* pArchive, NuProgressData* pProgress)
 {
     NuResult result;
 
@@ -186,6 +210,9 @@ Nu_SendInitialProgress(NuArchive* pArchive, const NuProgressData* pProgress)
 
     if (pProgress->progressFunc == nil)
         return kNuErrNone;
+
+    pProgress->percentComplete = Nu_ComputePercent(
+        pProgress->uncompressedLength, pProgress->uncompressedProgress);
 
     result = (*pProgress->progressFunc)(pArchive, (NuProgressData*) pProgress);
 
@@ -703,7 +730,7 @@ Nu_StrawFree(NuArchive* pArchive, NuStraw* pStraw)
 
 
 /*
- * Set the Funnel's progress state.
+ * Set the Straw's progress state.
  */
 NuError
 Nu_StrawSetProgressState(NuStraw* pStraw, NuProgressState state)

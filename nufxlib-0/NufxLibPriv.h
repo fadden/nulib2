@@ -615,8 +615,7 @@ NuError Nu_ProgressDataInit_Compress(NuArchive* pArchive,
 NuError Nu_ProgressDataInit_Expand(NuArchive* pArchive,
     NuProgressData* pProgressData, const NuRecord* pRecord,
     const char* newPathname, char newFssep, NuValue convertEOL);
-NuError Nu_SendInitialProgress(NuArchive* pArchive,
-    const NuProgressData* pProgress);
+NuError Nu_SendInitialProgress(NuArchive* pArchive, NuProgressData* pProgress);
 
 NuError Nu_FunnelNew(NuArchive* pArchive, NuDataSink* pDataSink,
     NuValue convertEOL, NuValue convertEOLTo, NuProgressData* pProgress,
