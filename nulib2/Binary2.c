@@ -1130,6 +1130,8 @@ BNYExtractDirectory(BNYArchive* pBny, BNYEntry* pEntry, ExtMode extMode)
 
     if (extMode == kBNYExtTest) {
         actionStr = "skipping ";
+    } else if (NState_GetModJunkPaths(pBny->pState)) {
+        actionStr = "skipping  ";
     } else {
         /*
          * Using the normalized name of a directory is a problem
