@@ -591,10 +591,16 @@ Nu_SetFileAccess(NuArchive* pArchive, const NuRecord* pRecord,
 #if defined(UNIX_LIKE) || defined(WINDOWS_LIKE)
     /* only need to do something if the file was "locked" */
     if (Nu_IsRecordLocked(pRecord)) {
-        /* set it to 444 */
-        if (chmod(pathname, S_IRUSR | S_IRGRP | S_IROTH) < 0) {
+        mode_t mask;
+
+        /* set it to 444, modified by umask */
+        mask = umask(0);
+        umask(mask);
+        //DBUG(("+++ chmod '%s' %03o (mask=%03o)\n", pathname,
+        //    (S_IRUSR | S_IRGRP | S_IROTH) & ~mask, mask));
+        if (chmod(pathname, (S_IRUSR | S_IRGRP | S_IROTH) & ~mask) < 0) {
             Nu_ReportError(NU_BLOB, errno,
-                "unable to set access for '%s'", pathname);
+                "unable to set access for '%s' to %03o", pathname, mask);
             err = kNuErrFileSetAccess;
             goto bail;
         }
