@@ -1197,13 +1197,13 @@ main_loop:
 
 bail:
     /*DBUG_LZW(("### end of block\n"));*/
-	if (inbuf != inbufend) {
-		/* data was corrupted; if we keep going this will get worse */
-		DBUG(("--- inbuf != inbufend in ExpandLZW2 (diff=%d)\n",
-			inbufend - inbuf));
-		err = kNuErrBadData;
-		return err;
-	}
+    if (inbuf != inbufend) {
+        /* data was corrupted; if we keep going this will get worse */
+        DBUG(("--- inbuf != inbufend in ExpandLZW2 (diff=%d)\n",
+            inbufend - inbuf));
+        err = kNuErrBadData;
+        return err;
+    }
     Assert(outbuf == outbufend);
 
     /* adjust input buffer */
