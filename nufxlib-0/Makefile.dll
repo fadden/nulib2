@@ -66,7 +66,6 @@ OutDir=.\Release
 
 ALL : "$(OUTDIR)\nufxlib.dll"
 
-
 CLEAN :
 	-@erase "$(INTDIR)\Archive.obj"
 	-@erase "$(INTDIR)\ArchiveIO.obj"
@@ -94,6 +93,7 @@ CLEAN :
 	-@erase "$(OUTDIR)\nufxlib.dll"
 	-@erase "$(OUTDIR)\nufxlib.exp"
 	-@erase "$(OUTDIR)\nufxlib.lib"
+	-@erase "Version.c"
 
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
@@ -247,6 +247,7 @@ CLEAN :
 	-@erase "$(OUTDIR)\nufxlib.ilk"
 	-@erase "$(OUTDIR)\nufxlib.lib"
 	-@erase "$(OUTDIR)\nufxlib.pdb"
+	-@erase "Version.c"
 
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
@@ -772,6 +773,14 @@ SOURCE="Version.c"
 
 !ENDIF 
 
+
+# this isn't great, but it'll have to do
+SOURCE="Version.c.in"
+Version.c: Version.c.in
+	copy Version.c.in Version.c
+	@echo -
+	@echo - NOTE: you must update Version.c by hand
+	@echo -
 
 !ENDIF 
 
