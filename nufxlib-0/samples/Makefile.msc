@@ -83,6 +83,9 @@ test-simple.exe: TestSimple.obj $(LIB_PRODUCT)
 test-extract.exe: TestExtract.obj $(LIB_PRODUCT)
 	$(link) $(ldebug) TestExtract.obj -out:$@ $(NUFXSRCDIR)\nufxlib.lib $(LIB_FLAGS)
 
+test-twirl.exe: TestTwirl.obj $(LIB_PRODUCT)
+	$(link) $(ldebug) TestTwirl.obj -out:$@ $(NUFXSRCDIR)\nufxlib.lib $(LIB_FLAGS)
+
 clean:
 	-del *.obj
 	-del *.pdb
@@ -94,6 +97,7 @@ clean:
 	-del test-basic.exe
 	-del test-simple.exe
 	-del test-extract.exe
+	-del test-twirl.exe
 
 Exerciser.obj: Exerciser.c Common.h $(NUFXSRCDIR)\NufxLib.h $(NUFXSRCDIR)\SysDefs.h
 ImgConv.obj: ImgConv.c Common.h $(NUFXSRCDIR)\NufxLib.h $(NUFXSRCDIR)\SysDefs.h
@@ -101,4 +105,5 @@ Launder.obj: Launder.c Common.h $(NUFXSRCDIR)\NufxLib.h $(NUFXSRCDIR)\SysDefs.h
 TestBasic.obj: TestBasic.c Common.h $(NUFXSRCDIR)\NufxLib.h $(NUFXSRCDIR)\SysDefs.h
 TestSimple.obj: TestSimple.c Common.h $(NUFXSRCDIR)\NufxLib.h $(NUFXSRCDIR)\SysDefs.h
 TestExtract.obj: TestExtract.c Common.h $(NUFXSRCDIR)\NufxLib.h $(NUFXSRCDIR)\SysDefs.h
+TestTwirl.obj: TestTwirl.c Common.h $(NUFXSRCDIR)\NufxLib.h $(NUFXSRCDIR)\SysDefs.h
 

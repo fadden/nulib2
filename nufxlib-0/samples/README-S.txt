@@ -96,3 +96,15 @@ Simple test program.  Give it the name of an archive, and it will write
 all filename threads into "out.buf", "out.fp", and "out.file" using three
 different kinds of NuDataSinks.
 
+
+test-twirl
+==========
+
+Like "launder", but not meant to be useful.  This recompresses the file "in
+place", deleting and adding threads within existing records several times.
+The changes are periodically flushed, but the archive is never closed.
+The goal is to test repeated updates on an open archive.
+
+This will leave a file called "TwirlCopy678" in the current directory, and
+overwrite "TwirlTmp789" during processing.
+

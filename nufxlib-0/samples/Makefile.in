@@ -19,12 +19,13 @@ GCC_FLAGS	= -Wall -Wwrite-strings -Wstrict-prototypes -Wpointer-arith -Wshadow
 CFLAGS		= @BUILD_FLAGS@ -I. -I.. @DEFS@
 
 #ALL_SRCS	= $(wildcard *.c *.cpp)
-ALL_SRCS	= Exerciser.c Launder.c ImgConv.c TestBasic.c TestExtract.c \
-			  TestSimple.c
+ALL_SRCS	= Exerciser.c ImgConv.c Launder.c TestBasic.c \
+			  TestExtract.c TestSimple.c TestTwirl.c
 
 NUFXLIB		= -L.. -lnufx
 
-PRODUCTS	= exerciser imgconv launder test-basic test-extract test-simple
+PRODUCTS	= exerciser imgconv launder test-basic test-extract test-simple \
+				test-twirl
 
 #ifdef PURIFY_BUILD
 #  PURIFY	= purify
@@ -63,6 +64,9 @@ test-simple: TestSimple.o $(LIB_PRODUCT)
 
 test-extract: TestExtract.o $(LIB_PRODUCT)
 	$(PURIFY) $(QUANTIFY) $(CC) -o $@ TestExtract.o $(NUFXLIB) @LIBS@
+
+test-twirl: TestTwirl.o $(LIB_PRODUCT)
+	$(PURIFY) $(QUANTIFY) $(CC) -o $@ TestTwirl.o $(NUFXLIB) @LIBS@
 
 tags::
 	ctags --totals -R ../*

@@ -4,7 +4,7 @@
  * This is free software; you can redistribute it and/or modify it under the
  * terms of the GNU Library General Public License, see the file COPYING.LIB.
  *
- * Common functions for NuLib tests
+ * Common functions for NuLib tests.
  */
 #ifndef __Common__
 #define __Common__
