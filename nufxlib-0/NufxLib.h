@@ -715,13 +715,13 @@ NUFXLIB_API NuError NuStreamOpenRO(FILE* infp, NuArchive** ppArchive);
 NUFXLIB_API NuError NuContents(NuArchive* pArchive, NuCallback contentFunc);
 NUFXLIB_API NuError NuExtract(NuArchive* pArchive);
 NUFXLIB_API NuError NuTest(NuArchive* pArchive);
-NUFXLIB_API NuError NuTestRecord(NuArchive* pArchive, NuRecordIdx recordIdx);
 
 /* strictly non-streaming read-only interfaces */
 NUFXLIB_API NuError NuOpenRO(const char* archivePathname,NuArchive** ppArchive);
 NUFXLIB_API NuError NuExtractRecord(NuArchive* pArchive, NuRecordIdx recordIdx);
 NUFXLIB_API NuError NuExtractThread(NuArchive* pArchive, NuThreadIdx threadIdx,
             NuDataSink* pDataSink);
+NUFXLIB_API NuError NuTestRecord(NuArchive* pArchive, NuRecordIdx recordIdx);
 NUFXLIB_API NuError NuGetRecord(NuArchive* pArchive, NuRecordIdx recordIdx,
             const NuRecord** ppRecord);
 NUFXLIB_API NuError NuGetRecordIdxByName(NuArchive* pArchive, const char* name,
