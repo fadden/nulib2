@@ -378,8 +378,8 @@ Nu_CopyArchiveRecord(NuArchive* pArchive, NuRecord* pRecord)
     BailError(err);
     offsetAdjust = outputOffset - pRecord->fileOffset;
 
-    DBUG(("--- Copying record '%s' (adj=%ld)\n", pRecord->filename,
-        offsetAdjust));
+    DBUG(("--- Copying record '%s' (curOff=%ld adj=%ld)\n", pRecord->filename,
+        outputOffset, offsetAdjust));
 
     /* seek to the start point in the source file, and copy the whole thing */
     err = Nu_FSeek(pArchive->archiveFp, pRecord->fileOffset, SEEK_SET);
@@ -399,6 +399,7 @@ Nu_CopyArchiveRecord(NuArchive* pArchive, NuRecord* pRecord)
 
     Assert(outputOffset + pRecord->recHeaderLength + pRecord->totalCompLength ==
         (ulong)ftell(pArchive->tmpFp));
+    Assert(pRecord->fileOffset == outputOffset);
 
 bail:
     return err;
@@ -1210,6 +1211,11 @@ Nu_ConstructArchiveRecord(NuArchive* pArchive, NuRecord* pRecord)
      */
     err = Nu_FSeek(pArchive->tmpFp, finalOffset, SEEK_SET);
     BailError(err);
+
+    /* update the record's fileOffset to reflect its new position */
+    DBUG(("+++ record shifted by %ld bytes\n",
+        initialOffset - pRecord->fileOffset));
+    pRecord->fileOffset = initialOffset;
 
 bail:
     if (err == kNuErrSkipped) {

@@ -1,3 +1,7 @@
+2003/02/22  fadden
+    - Turn off EOL conversion when extracting disk images.
+    - Added NuTestRecord().
+
 2003/02/18  fadden
     - Added "original pathname" fields to NuFileDetails and NuErrorStatus.
     - Changed callback setters to return NuCallback instead of NuError.
