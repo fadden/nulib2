@@ -834,6 +834,10 @@ Nu_OpenTempFile(char* fileName, FILE** pFp)
         int fd;
 
         fd = open(fileName, O_RDWR|O_CREAT|O_EXCL|O_BINARY, 0600);
+        if (fd < 0) {
+            err = errno ? errno : kNuErrFileOpen;
+            goto bail;
+        }
 
         *pFp = fdopen(fd, kNuFileOpenReadWriteCreat);
         if (*pFp == nil) {
