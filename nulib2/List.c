@@ -223,8 +223,8 @@ ShowContentsVerbose(NuArchive* pArchive, void* vpRecord)
     }
     switch (recordKind) {
     case kRecordKindUnknown:
-        printf("???  $%04lX  ",
-            /*GetFileTypeString(pRecord->recFileType),*/
+        printf("%s- $%04lX  ",
+            GetFileTypeString(pRecord->recFileType),
             pRecord->recExtraType);
         break;
     case kRecordKindDisk:
