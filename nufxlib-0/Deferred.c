@@ -1172,7 +1172,7 @@ Nu_ConstructArchiveRecord(NuArchive* pArchive, NuRecord* pRecord)
     /* verify that all threads and threadMods have been touched */
     if (!Nu_VerifyAllTouched(pArchive, pRecord)) {
         err = kNuErrInternal;
-		Assert(0);
+        Assert(0);
         goto bail;
     }
 
