@@ -266,7 +266,7 @@ DoHelp(const NulibState* pState)
 
     printf("Compression algorithms supported by this copy of NufxLib:\n");
     printf("  Huffman SQueeze ...... %s\n",
-        NuTestFeature(kNuFeatureCompressHuffmanSQ) == kNuErrNone? "yes" : "no");
+        NuTestFeature(kNuFeatureCompressSQ) == kNuErrNone? "yes" : "no");
     printf("  LZW/1 and LZW/2 ...... %s\n",
         NuTestFeature(kNuFeatureCompressLZW) == kNuErrNone ? "yes" : "no");
     printf("  12- and 16-bit LZC ... %s\n",

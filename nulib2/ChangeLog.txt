@@ -1,3 +1,6 @@
+2002/10/09  fadden
+    - added "-zz" flag to specify libbz2's "bzip2" compression
+
 2002/10/08  fadden
     - added Binary II support
 
