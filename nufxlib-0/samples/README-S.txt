@@ -52,27 +52,34 @@ lists are stripped out, etc).
 
 The basic usage is:
 
-  % launder [-crfa] infile.shk outfile.shk
+  % launder [-crfa] [-m method] infile.shk outfile.shk
 
 The flags are:
 
-  -c  Just copy threads rather than recompressing them
+  -c  Just copy data threads rather than recompressing them
   -r  Add threads in reverse order
   -f  Call NuFlush after every record
   -a  Call NuAbort after every record, then re-do the record and call NuFlush
   -t  Write to temp file, instead of writing directly into outfile.shk
 
-If you use the "-c" flag with an archive created by P8 ShrinkIt or NuLib,
-the laundered archive may have CRC failures.  This is because "launder"
-creates version 3 records, which are expected to have a valid CRC in the
-thread header.  The only way to compute the CRC is to uncompress the data,
-which "launder" doesn't do when "-c" is set.  The data itself is fine,
-it's just the thread CRC that's wrong (if the data were hosed, the LZW/1
-CRC would be bad too).  "launder" will issue a warning when it detects
-this situation.
+The "-m method" flag allows you to specify the compression method.  Valid
+values are sq (SQueeze), lzw1 (ShrinkIt LZW/1), lzw2 (ShrinkIt LZW/2),
+lzc12 (12-bit UNIX "compress"), lzc16 (16-bit UNIX "compress"), deflate
+(zlib deflate), and bzip2 (libbz2 compression).  The default is lzw2.
 
-If you find that you're running out of memory on very large archives, you
-can reduce the memory requirements by specifying the "-f" flag.
+If you use the "-c" flag with an archive created by P8 ShrinkIt or NuLib,
+the laundered archive may have CRC failures when you try to extract
+from it.  This is because "launder" creates version 3 records, which
+are expected to have a valid CRC in the thread header.  The only way
+to compute the CRC is to uncompress the data, which "launder" doesn't
+do when "-c" is set.  The data itself is fine, it's just the thread CRC
+that's wrong (if the data were hosed, the LZW/1 CRC would be bad too).
+"launder" will issue a warning when it detects this situation.
+
+By default, launder will try to keep the entire archive in memory and flush
+all of the operations at the end.  If you find that you're running out
+of memory on very large archives, you can reduce the memory requirements
+by specifying the "-f" flag.
 
 
 test-simple

@@ -543,7 +543,7 @@ Usage(const char* argv0)
     fprintf(stderr, "\t-r : copy threads in reverse order to test ordering\n");
     fprintf(stderr, "\t-f : call Flush frequently to reduce memory usage\n");
     fprintf(stderr, "\t-a : exercise nufxlib Abort code frequently\n");
-    fprintf(stderr, "\t-t : force use of temp file\n");
+    fprintf(stderr, "\t-t : write to temp file instead of directly to outfile.shk\n");
     fprintf(stderr,
         "\t[method] is one of {sq,lzw1,lzw2,lzc12,lzc16,deflate,bzip2}\n");
     fprintf(stderr, "\tIf not specified, method defaults to lzw2\n");
