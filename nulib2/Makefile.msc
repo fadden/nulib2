@@ -22,7 +22,7 @@
 TARGETOS = BOTH
 !include <ntwin32.mak>
 
-VERSION=201
+VERSION=202
 NUFXSRCDIR = ..\nufxlib-$(VERSION)
 
 # object files

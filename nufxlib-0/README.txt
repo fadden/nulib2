@@ -1,4 +1,4 @@
-NufxLib README, updated 2003/03/18
+NufxLib README, updated 2004/03/18
 http://www.nulib.com/
 
 See "COPYING-LIB" for distribution restrictions.
@@ -118,7 +118,7 @@ Legalese
 ========
 
 NufxLib, a NuFX archive manipulation library.
-Copyright (C) 2000-2003 by Andy McFadden, All Rights Reserved.
+Copyright (C) 2000-2004 by Andy McFadden, All Rights Reserved.
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public

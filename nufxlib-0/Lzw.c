@@ -1,6 +1,6 @@
 /*
  * NuFX archive manipulation library
- * Copyright (C) 2000-2003 by Andy McFadden, All Rights Reserved.
+ * Copyright (C) 2000-2004 by Andy McFadden, All Rights Reserved.
  * This is free software; you can redistribute it and/or modify it under the
  * terms of the GNU Library General Public License, see the file COPYING-LIB.
  *
@@ -10,7 +10,10 @@
  * Unisys holds US patent #4,558,302 (filed June 20, 1983 and issued December
  * 10, 1985).  A policy set in 1995 specifies the lifetime of a patent as
  * the longer of 20 years from the date of application or 17 years from the
- * date of grant, so the Unisys LZW patent will expire on June 20, 2003.
+ * date of grant, so the Unisys LZW patent expired on June 20, 2003 in the
+ * USA.  Patents in some other countries expire after July 7, 2004.
+ *
+ * An older note:
  *
  * The Unisys patent is one of many that covers LZW compression, but Unisys
  * is the only company actively attacking anyone who uses it. The statement
