@@ -12,6 +12,10 @@
 # in this directory or in a standard location that the compiler can find.
 #
 
+!ifdef DLL
+ERROR -- use makefile.dll to build the DLL
+!endif
+
 # Windows magic
 TARGETOS = BOTH
 !include <ntwin32.mak>
@@ -24,10 +28,10 @@ OBJS4 = Squeeze.obj Thread.obj Value.obj Version.obj
 OBJS = $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4)
 
 !ifdef NODEBUG
-#OPT = $(cdebug) /D NDEBUG /ML
-OPT = $(cdebug) /ML
+#OPT = $(cdebug) /D NDEBUG /ML /O2
+OPT = $(cdebug) /ML /O2
 !else
-OPT = $(cdebug) /MLd
+OPT = $(cdebug) /MLd /Od
 !endif
 
 BUILD_FLAGS = /W3 /GX /D "WIN32"
@@ -71,8 +75,8 @@ nufxlib.lib: $(OBJS)
 	$(link) -lib /out:$(PRODUCT) $(OBJS) /nologo
 
 clean::
-        del *.obj
-        del $(PRODUCT)
+        -del *.obj
+        -del $(PRODUCT)
 
 Archive.obj: Archive.c NufxLibPriv.h NufxLib.h MiscStuff.h SysDefs.h
 ArchiveIO.obj: ArchiveIO.c NufxLibPriv.h NufxLib.h MiscStuff.h SysDefs.h

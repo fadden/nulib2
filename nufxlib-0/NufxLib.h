@@ -649,91 +649,119 @@ typedef enum NuFeature {
  * ===========================================================================
  */
 
+/*
+ * Win32 dll magic.
+ */
+#if defined(_WIN32)
+# include <windows.h>
+# if defined(NUFXLIB_EXPORTS)
+   /* building the NufxLib DLL */
+#  define NUFXLIB_API __declspec(dllexport)
+# elif defined (NUFXLIB_DLL)
+   /* building to link against the NufxLib DLL */
+#  define NUFXLIB_API __declspec(dllimport)
+# else
+   /* using static libs */
+#  define NUFXLIB_API
+# endif
+#else
+  /* not using Win32... hooray! */
+# define NUFXLIB_API
+#endif
+
 /* streaming and non-streaming read-only interfaces */
-NuError NuStreamOpenRO(FILE* infp, NuArchive** ppArchive);
-NuError NuContents(NuArchive* pArchive, NuCallback contentFunc);
-NuError NuExtract(NuArchive* pArchive);
-NuError NuTest(NuArchive* pArchive);
+NUFXLIB_API NuError NuStreamOpenRO(FILE* infp, NuArchive** ppArchive);
+NUFXLIB_API NuError NuContents(NuArchive* pArchive, NuCallback contentFunc);
+NUFXLIB_API NuError NuExtract(NuArchive* pArchive);
+NUFXLIB_API NuError NuTest(NuArchive* pArchive);
 
 /* strictly non-streaming read-only interfaces */
-NuError NuOpenRO(const char* archivePathname, NuArchive** ppArchive);
-NuError NuExtractRecord(NuArchive* pArchive, NuRecordIdx recordIdx);
-NuError NuExtractThread(NuArchive* pArchive, NuThreadIdx threadIdx,
+NUFXLIB_API NuError NuOpenRO(const char* archivePathname,NuArchive** ppArchive);
+NUFXLIB_API NuError NuExtractRecord(NuArchive* pArchive, NuRecordIdx recordIdx);
+NUFXLIB_API NuError NuExtractThread(NuArchive* pArchive, NuThreadIdx threadIdx,
             NuDataSink* pDataSink);
-NuError NuGetRecord(NuArchive* pArchive, NuRecordIdx recordIdx,
+NUFXLIB_API NuError NuGetRecord(NuArchive* pArchive, NuRecordIdx recordIdx,
             const NuRecord** ppRecord);
-NuError NuGetRecordIdxByName(NuArchive* pArchive, const char* name,
+NUFXLIB_API NuError NuGetRecordIdxByName(NuArchive* pArchive, const char* name,
             NuRecordIdx* pRecordIdx);
-NuError NuGetRecordIdxByPosition(NuArchive* pArchive, unsigned long position,
-            NuRecordIdx* pRecordIdx);
+NUFXLIB_API NuError NuGetRecordIdxByPosition(NuArchive* pArchive,
+            unsigned long position, NuRecordIdx* pRecordIdx);
 
 /* read/write interfaces */
-NuError NuOpenRW(const char* archivePathname, const char* tempPathname,
-            unsigned long flags, NuArchive** ppArchive);
-NuError NuFlush(NuArchive* pArchive, long* pStatusFlags);
-NuError NuAddRecord(NuArchive* pArchive, const NuFileDetails* pFileDetails,
-            NuRecordIdx* pRecordIdx);
-NuError NuAddThread(NuArchive* pArchive, NuRecordIdx recordIdx,
+NUFXLIB_API NuError NuOpenRW(const char* archivePathname,
+            const char* tempPathname, unsigned long flags,
+            NuArchive** ppArchive);
+NUFXLIB_API NuError NuFlush(NuArchive* pArchive, long* pStatusFlags);
+NUFXLIB_API NuError NuAddRecord(NuArchive* pArchive,
+            const NuFileDetails* pFileDetails, NuRecordIdx* pRecordIdx);
+NUFXLIB_API NuError NuAddThread(NuArchive* pArchive, NuRecordIdx recordIdx,
             NuThreadIdx threadID, NuDataSource* pDataSource,
             NuThreadIdx* pThreadIdx);
-NuError NuAddFile(NuArchive* pArchive, const char* pathname,
+NUFXLIB_API NuError NuAddFile(NuArchive* pArchive, const char* pathname,
             const NuFileDetails* pFileDetails, short fromRsrcFork,
             NuRecordIdx* pRecordIdx);
-NuError NuRename(NuArchive* pArchive, NuRecordIdx recordIdx,
+NUFXLIB_API NuError NuRename(NuArchive* pArchive, NuRecordIdx recordIdx,
             const char* pathname, char fssep);
-NuError NuSetRecordAttr(NuArchive* pArchive, NuRecordIdx recordIdx,
+NUFXLIB_API NuError NuSetRecordAttr(NuArchive* pArchive, NuRecordIdx recordIdx,
             const NuRecordAttr* pRecordAttr);
-NuError NuUpdatePresizedThread(NuArchive* pArchive, NuThreadIdx threadIdx,
-            NuDataSource* pDataSource, long* pMaxLen);
-NuError NuDelete(NuArchive* pArchive);
-NuError NuDeleteRecord(NuArchive* pArchive, NuRecordIdx recordIdx);
-NuError NuDeleteThread(NuArchive* pArchive, NuRecordIdx threadIdx);
+NUFXLIB_API NuError NuUpdatePresizedThread(NuArchive* pArchive,
+            NuThreadIdx threadIdx, NuDataSource* pDataSource, long* pMaxLen);
+NUFXLIB_API NuError NuDelete(NuArchive* pArchive);
+NUFXLIB_API NuError NuDeleteRecord(NuArchive* pArchive, NuRecordIdx recordIdx);
+NUFXLIB_API NuError NuDeleteThread(NuArchive* pArchive, NuRecordIdx threadIdx);
 
 /* general interfaces */
-NuError NuClose(NuArchive* pArchive);
-NuError NuAbort(NuArchive* pArchive);
-NuError NuGetMasterHeader(NuArchive* pArchive,
+NUFXLIB_API NuError NuClose(NuArchive* pArchive);
+NUFXLIB_API NuError NuAbort(NuArchive* pArchive);
+NUFXLIB_API NuError NuGetMasterHeader(NuArchive* pArchive,
             const NuMasterHeader** ppMasterHeader);
-NuError NuGetExtraData(NuArchive* pArchive, void** ppData);
-NuError NuSetExtraData(NuArchive* pArchive, void* pData);
-NuError NuGetValue(NuArchive* pArchive, NuValueID ident, NuValue* pValue);
-NuError NuSetValue(NuArchive* pArchive, NuValueID ident, NuValue value);
-NuError NuGetAttr(NuArchive* pArchive, NuAttrID ident, NuAttr* pAttr);
-NuError NuDebugDumpArchive(NuArchive* pArchive);
+NUFXLIB_API NuError NuGetExtraData(NuArchive* pArchive, void** ppData);
+NUFXLIB_API NuError NuSetExtraData(NuArchive* pArchive, void* pData);
+NUFXLIB_API NuError NuGetValue(NuArchive* pArchive, NuValueID ident,
+            NuValue* pValue);
+NUFXLIB_API NuError NuSetValue(NuArchive* pArchive, NuValueID ident,
+            NuValue value);
+NUFXLIB_API NuError NuGetAttr(NuArchive* pArchive, NuAttrID ident,
+            NuAttr* pAttr);
+NUFXLIB_API NuError NuDebugDumpArchive(NuArchive* pArchive);
 
 /* sources and sinks */
-NuError NuCreateDataSourceForFile(NuThreadFormat threadFormat, short doClose,
-            unsigned long otherLen, const char* pathname, short isFromRsrcFork,
-            NuDataSource** ppDataSource);
-NuError NuCreateDataSourceForFP(NuThreadFormat threadFormat, short doClose,
-            unsigned long otherLen, FILE* fp, long offset, long length,
-            NuDataSource** ppDataSource);
-NuError NuCreateDataSourceForBuffer(NuThreadFormat threadFormat, short doClose,
-            unsigned long otherLen, const unsigned char* buffer, long offset,
+NUFXLIB_API NuError NuCreateDataSourceForFile(NuThreadFormat threadFormat,
+            short doClose, unsigned long otherLen, const char* pathname,
+            short isFromRsrcFork, NuDataSource** ppDataSource);
+NUFXLIB_API NuError NuCreateDataSourceForFP(NuThreadFormat threadFormat,
+            short doClose, unsigned long otherLen, FILE* fp, long offset,
             long length, NuDataSource** ppDataSource);
-NuError NuFreeDataSource(NuDataSource* pDataSource);
-NuError NuDataSourceSetRawCrc(NuDataSource* pDataSource, unsigned short crc);
-NuError NuCreateDataSinkForFile(short doExpand, NuValue convertEOL,
+NUFXLIB_API NuError NuCreateDataSourceForBuffer(NuThreadFormat threadFormat,
+            short doClose, unsigned long otherLen, const unsigned char* buffer,
+            long offset, long length, NuDataSource** ppDataSource);
+NUFXLIB_API NuError NuFreeDataSource(NuDataSource* pDataSource);
+NUFXLIB_API NuError NuDataSourceSetRawCrc(NuDataSource* pDataSource,
+            unsigned short crc);
+NUFXLIB_API NuError NuCreateDataSinkForFile(short doExpand, NuValue convertEOL,
             const char* pathname, char fssep, NuDataSink** ppDataSink);
-NuError NuCreateDataSinkForFP(short doExpand, NuValue convertEOL,
+NUFXLIB_API NuError NuCreateDataSinkForFP(short doExpand, NuValue convertEOL,
             FILE* fp, NuDataSink** ppDataSink);
-NuError NuCreateDataSinkForBuffer(short doExpand, NuValue convertEOL,
-            unsigned char* buffer, unsigned long bufLen,
+NUFXLIB_API NuError NuCreateDataSinkForBuffer(short doExpand,
+            NuValue convertEOL, unsigned char* buffer, unsigned long bufLen,
             NuDataSink** ppDataSink);
-NuError NuFreeDataSink(NuDataSink* pDataSink);
-NuError NuDataSinkGetOutCount(NuDataSink* pDataSink, unsigned long* pOutCount);
+NUFXLIB_API NuError NuFreeDataSink(NuDataSink* pDataSink);
+NUFXLIB_API NuError NuDataSinkGetOutCount(NuDataSink* pDataSink,
+            unsigned long* pOutCount);
 
 /* miscellaneous non-archive operations */
-NuError NuGetVersion(long* pMajorVersion, long* pMinorVersion,
+NUFXLIB_API NuError NuGetVersion(long* pMajorVersion, long* pMinorVersion,
             long* pBugVersion, const char** ppBuildDate,
             const char** ppBuildFlags);
-const char* NuStrError(NuError err);
-NuError NuTestFeature(NuFeature feature);
-void NuRecordCopyAttr(NuRecordAttr* pRecordAttr, const NuRecord* pRecord);
-NuError NuRecordCopyThreads(const NuRecord* pRecord, NuThread** ppThreads);
-unsigned long NuRecordGetNumThreads(const NuRecord* pRecord);
-const NuThread* NuThreadGetByIdx(const NuThread* pThread, long idx);
-short NuIsPresizedThreadID(NuThreadID threadID);
+NUFXLIB_API const char* NuStrError(NuError err);
+NUFXLIB_API NuError NuTestFeature(NuFeature feature);
+NUFXLIB_API void NuRecordCopyAttr(NuRecordAttr* pRecordAttr,
+            const NuRecord* pRecord);
+NUFXLIB_API NuError NuRecordCopyThreads(const NuRecord* pRecord,
+            NuThread** ppThreads);
+NUFXLIB_API unsigned long NuRecordGetNumThreads(const NuRecord* pRecord);
+NUFXLIB_API const NuThread* NuThreadGetByIdx(const NuThread* pThread, long idx);
+NUFXLIB_API short NuIsPresizedThreadID(NuThreadID threadID);
 
 #define NuGetThread(pRecord, idx) ( (const NuThread*)                       \
         ((unsigned long) (idx) < (unsigned long) (pRecord)->recTotalThreads ? \
@@ -742,13 +770,16 @@ short NuIsPresizedThreadID(NuThreadID threadID);
 
 
 /* callback setters */
-NuError NuSetSelectionFilter(NuArchive* pArchive, NuCallback filterFunc);
-NuError NuSetOutputPathnameFilter(NuArchive* pArchive, NuCallback filterFunc);
-NuError NuSetProgressUpdater(NuArchive* pArchive, NuCallback updateFunc);
-NuError NuSetErrorHandler(NuArchive* pArchive, NuCallback errorFunc);
-NuError NuSetErrorMessageHandler(NuArchive* pArchive,
+NUFXLIB_API NuError NuSetSelectionFilter(NuArchive* pArchive,
+            NuCallback filterFunc);
+NUFXLIB_API NuError NuSetOutputPathnameFilter(NuArchive* pArchive,
+            NuCallback filterFunc);
+NUFXLIB_API NuError NuSetProgressUpdater(NuArchive* pArchive,
+            NuCallback updateFunc);
+NUFXLIB_API NuError NuSetErrorHandler(NuArchive* pArchive,NuCallback errorFunc);
+NUFXLIB_API NuError NuSetErrorMessageHandler(NuArchive* pArchive,
             NuCallback messageHandlerFunc);
-NuError NuSetGlobalErrorMessageHandler(NuCallback messageHandlerFunc);
+NUFXLIB_API NuError NuSetGlobalErrorMessageHandler(NuCallback messageHandlerFunc);
 
 
 #ifdef __cplusplus

@@ -8,6 +8,8 @@
 # To build without debugging info, use "nmake nodebug=1".
 # To build with libz, use "nmake libz=1".
 # To build with libbz2, use "nmake libbz2=1".
+# If you're linking against nufxlib as a DLL, add "DLL=1", and don't
+#   specify libz or libbz2.
 #
 # For libz/libbz2, you need to have the appropriate library either
 # in this directory or in a standard location that the linker can find.
@@ -20,13 +22,25 @@ TARGETOS = BOTH
 NUFXSRCDIR = ..
 LIB_PRODUCT = $(NUFXSRCDIR)\nufxlib.lib
 
+!ifdef DLL
+### build against the DLL
 !ifdef NODEBUG
-#OPT = /D NDEBUG /ML /Ogityb2
-OPT = /D DEBUG_MSGS /ML /Ogityb2
+OPT = /D NUFXLIB_DLL /MD /Ogityb2
+LIB_FLAGS = /nodefaultlib:libcd.lib /nologo setargv.obj
+!else
+OPT = /D NUFXLIB_DLL /D DEBUG_MSGS /MDd /Od
+LIB_FLAGS = /nodefaultlib:libc.lib /nologo setargv.obj
+!endif
+
+!else
+### build against static lib
+!ifdef NODEBUG
+OPT = /ML /Ogityb2
 LIB_FLAGS = /nodefaultlib:libcd.lib /nologo libc.lib setargv.obj
 !else
 OPT = /D DEBUG_MSGS /MLd /Od
 LIB_FLAGS = /nodefaultlib:libc.lib /nologo libcd.lib setargv.obj
+!endif
 !endif
 
 BUILD_FLAGS = /W3 /GX /D "WIN32" /D "_CONSOLE" /I "$(NUFXSRCDIR)"
@@ -66,13 +80,16 @@ test-extract.exe: TestExtract.obj $(LIB_PRODUCT)
 	$(link) $(ldebug) TestExtract.obj -out:$@ $(NUFXSRCDIR)\nufxlib.lib $(LIB_FLAGS)
 
 clean:
-	del *.obj
-	del exerciser.exe
-	del imgconv.exe
-	del launder.exe
-	del test-basic.exe
-	del test-simple.exe
-	del test-extract.exe
+	-del *.obj
+	-del *.pdb
+	-del *.ilk
+	-del *.exp
+	-del exerciser.exe
+	-del imgconv.exe
+	-del launder.exe
+	-del test-basic.exe
+	-del test-simple.exe
+	-del test-extract.exe
 
 Exerciser.obj: Exerciser.c Common.h $(NUFXSRCDIR)\NufxLib.h $(NUFXSRCDIR)\SysDefs.h
 ImgConv.obj: ImgConv.c Common.h $(NUFXSRCDIR)\NufxLib.h $(NUFXSRCDIR)\SysDefs.h

@@ -78,8 +78,29 @@ to build with debugging info, or
     nmake -f makefile.msc nodebug=1
 to build optimized.
 
+See the makefile for comments about including zlib or libbz2.  These
+need to be enabled at compile time and linked into the sample apps.
+
 Once the library has been built, "cd samples" and run the same command there.
 When it finishes, run "test-basic.exe".
+
+If you want to build NufxLib as a DLL, use "makefile.dll" instead.
+If you're using zlib or libbz2, these will need to be linked into the DLL.
+You will probably need to set the application that links against it to
+use the "multithreaded DLL" version of the C library.  (In Visual C++,
+go to Project->Settings...->C/C++ tab, select Category: Code Generation,
+and in the "Use run-time library" box choose "Multithreaded DLL" for
+Release and "Debug Multithreaded DLL" for Debug.)
+
+You have to use the DLL version because NufxLib allows certain calls to
+pass in a malloc()ed pointer which the library then takes ownership of.
+If nufxlib.dll and the application are using different heaps, the memory
+is being allocated on one and freed from another, which doesn't work.
+Debug versions of the DLL will halt with an assertion failure, most
+likely in a NuFlush or NuClose call.  Non-debug versions will silently
+leak memory, or possibly corrupt other structures.  You can test this
+easily by running the "test-basic" application after linking it against
+the DLL without specifying "DLL=1" on the makefile line.
 
 
 Other Notes

@@ -37,7 +37,9 @@ typedef int FLAG;
 #endif
 
 #define CONST       const
-#define FAR
+#ifndef FAR
+# define FAR
+#endif
 #define NULLPTR(type)   ((type FAR *) NULL)
 #define ALLOCTYPE   void
 

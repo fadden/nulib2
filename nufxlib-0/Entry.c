@@ -104,7 +104,7 @@ Nu_ValidateNuArchive(const NuArchive* pArchive)
  * ===========================================================================
  */
 
-NuError
+NUFXLIB_API NuError
 NuStreamOpenRO(FILE* infp, NuArchive** ppArchive)
 {
     NuError err;
@@ -117,7 +117,7 @@ NuStreamOpenRO(FILE* infp, NuArchive** ppArchive)
     return err;
 }
 
-NuError
+NUFXLIB_API NuError
 NuContents(NuArchive* pArchive, NuCallback contentFunc)
 {
     NuError err;
@@ -134,7 +134,7 @@ NuContents(NuArchive* pArchive, NuCallback contentFunc)
     return err;
 }
 
-NuError
+NUFXLIB_API NuError
 NuExtract(NuArchive* pArchive)
 {
     NuError err;
@@ -151,7 +151,7 @@ NuExtract(NuArchive* pArchive)
     return err;
 }
 
-NuError
+NUFXLIB_API NuError
 NuTest(NuArchive* pArchive)
 {
     NuError err;
@@ -175,7 +175,7 @@ NuTest(NuArchive* pArchive)
  * ===========================================================================
  */
 
-NuError
+NUFXLIB_API NuError
 NuOpenRO(const char* filename, NuArchive** ppArchive)
 {
     NuError err;
@@ -185,7 +185,7 @@ NuOpenRO(const char* filename, NuArchive** ppArchive)
     return err;
 }
 
-NuError
+NUFXLIB_API NuError
 NuExtractRecord(NuArchive* pArchive, NuRecordIdx recordIdx)
 {
     NuError err;
@@ -199,7 +199,7 @@ NuExtractRecord(NuArchive* pArchive, NuRecordIdx recordIdx)
     return err;
 }
 
-NuError
+NUFXLIB_API NuError
 NuExtractThread(NuArchive* pArchive, NuThreadIdx threadIdx,
     NuDataSink* pDataSink)
 {
@@ -214,7 +214,7 @@ NuExtractThread(NuArchive* pArchive, NuThreadIdx threadIdx,
     return err;
 }
 
-NuError
+NUFXLIB_API NuError
 NuGetRecord(NuArchive* pArchive, NuRecordIdx recordIdx,
     const NuRecord** ppRecord)
 {
@@ -229,7 +229,7 @@ NuGetRecord(NuArchive* pArchive, NuRecordIdx recordIdx,
     return err;
 }
 
-NuError
+NUFXLIB_API NuError
 NuGetRecordIdxByName(NuArchive* pArchive, const char* name,
     NuRecordIdx* pRecordIdx)
 {
@@ -244,7 +244,7 @@ NuGetRecordIdxByName(NuArchive* pArchive, const char* name,
     return err;
 }
 
-NuError
+NUFXLIB_API NuError
 NuGetRecordIdxByPosition(NuArchive* pArchive, unsigned long position,
     NuRecordIdx* pRecordIdx)
 {
@@ -266,7 +266,7 @@ NuGetRecordIdxByPosition(NuArchive* pArchive, unsigned long position,
  * ===========================================================================
  */
 
-NuError
+NUFXLIB_API NuError
 NuOpenRW(const char* archivePathname, const char* tmpPathname,
     unsigned long flags, NuArchive** ppArchive)
 {
@@ -278,7 +278,7 @@ NuOpenRW(const char* archivePathname, const char* tmpPathname,
     return err;
 }
 
-NuError
+NUFXLIB_API NuError
 NuFlush(NuArchive* pArchive, long* pStatusFlags)
 {
     NuError err;
@@ -292,7 +292,7 @@ NuFlush(NuArchive* pArchive, long* pStatusFlags)
     return err;
 }
 
-NuError
+NUFXLIB_API NuError
 NuAbort(NuArchive* pArchive)
 {
     NuError err;
@@ -306,7 +306,7 @@ NuAbort(NuArchive* pArchive)
     return err;
 }
 
-NuError
+NUFXLIB_API NuError
 NuAddRecord(NuArchive* pArchive, const NuFileDetails* pFileDetails,
     NuRecordIdx* pRecordIdx)
 {
@@ -321,7 +321,7 @@ NuAddRecord(NuArchive* pArchive, const NuFileDetails* pFileDetails,
     return err;
 }
 
-NuError
+NUFXLIB_API NuError
 NuAddThread(NuArchive* pArchive, NuRecordIdx recordIdx, NuThreadID threadID,
     NuDataSource* pDataSource, NuThreadIdx* pThreadIdx)
 {
@@ -337,7 +337,7 @@ NuAddThread(NuArchive* pArchive, NuRecordIdx recordIdx, NuThreadID threadID,
     return err;
 }
 
-NuError
+NUFXLIB_API NuError
 NuAddFile(NuArchive* pArchive, const char* pathname,
     const NuFileDetails* pFileDetails, short isFromRsrcFork,
     NuRecordIdx* pRecordIdx)
@@ -354,7 +354,7 @@ NuAddFile(NuArchive* pArchive, const char* pathname,
     return err;
 }
 
-NuError
+NUFXLIB_API NuError
 NuRename(NuArchive* pArchive, NuRecordIdx recordIdx, const char* pathname,
     char fssep)
 {
@@ -370,7 +370,7 @@ NuRename(NuArchive* pArchive, NuRecordIdx recordIdx, const char* pathname,
 }
 
 
-NuError
+NUFXLIB_API NuError
 NuSetRecordAttr(NuArchive* pArchive, NuRecordIdx recordIdx,
     const NuRecordAttr* pRecordAttr)
 {
@@ -385,7 +385,7 @@ NuSetRecordAttr(NuArchive* pArchive, NuRecordIdx recordIdx,
     return err;
 }
 
-NuError
+NUFXLIB_API NuError
 NuUpdatePresizedThread(NuArchive* pArchive, NuThreadIdx threadIdx,
     NuDataSource* pDataSource, long* pMaxLen)
 {
@@ -401,7 +401,7 @@ NuUpdatePresizedThread(NuArchive* pArchive, NuThreadIdx threadIdx,
     return err;
 }
 
-NuError
+NUFXLIB_API NuError
 NuDelete(NuArchive* pArchive)
 {
     NuError err;
@@ -415,7 +415,7 @@ NuDelete(NuArchive* pArchive)
     return err;
 }
 
-NuError
+NUFXLIB_API NuError
 NuDeleteRecord(NuArchive* pArchive, NuRecordIdx recordIdx)
 {
     NuError err;
@@ -429,7 +429,7 @@ NuDeleteRecord(NuArchive* pArchive, NuRecordIdx recordIdx)
     return err;
 }
 
-NuError
+NUFXLIB_API NuError
 NuDeleteThread(NuArchive* pArchive, NuThreadIdx threadIdx)
 {
     NuError err;
@@ -450,7 +450,7 @@ NuDeleteThread(NuArchive* pArchive, NuThreadIdx threadIdx)
  * ===========================================================================
  */
 
-NuError
+NUFXLIB_API NuError
 NuClose(NuArchive* pArchive)
 {
     NuError err;
@@ -466,7 +466,7 @@ NuClose(NuArchive* pArchive)
     return err;
 }
 
-NuError
+NUFXLIB_API NuError
 NuGetMasterHeader(NuArchive* pArchive, const NuMasterHeader** ppMasterHeader)
 {
     NuError err;
@@ -477,7 +477,7 @@ NuGetMasterHeader(NuArchive* pArchive, const NuMasterHeader** ppMasterHeader)
     return err;
 }
 
-NuError
+NUFXLIB_API NuError
 NuGetExtraData(NuArchive* pArchive, void** ppData)
 {
     NuError err;
@@ -490,7 +490,7 @@ NuGetExtraData(NuArchive* pArchive, void** ppData)
     return err;
 }
 
-NuError
+NUFXLIB_API NuError
 NuSetExtraData(NuArchive* pArchive, void* pData)
 {
     NuError err;
@@ -501,7 +501,7 @@ NuSetExtraData(NuArchive* pArchive, void* pData)
     return err;
 }
 
-NuError
+NUFXLIB_API NuError
 NuGetValue(NuArchive* pArchive, NuValueID ident, NuValue* pValue)
 {
     NuError err;
@@ -512,7 +512,7 @@ NuGetValue(NuArchive* pArchive, NuValueID ident, NuValue* pValue)
     return err;
 }
 
-NuError
+NUFXLIB_API NuError
 NuSetValue(NuArchive* pArchive, NuValueID ident, NuValue value)
 {
     NuError err;
@@ -523,7 +523,7 @@ NuSetValue(NuArchive* pArchive, NuValueID ident, NuValue value)
     return err;
 }
 
-NuError
+NUFXLIB_API NuError
 NuGetAttr(NuArchive* pArchive, NuAttrID ident, NuAttr* pAttr)
 {
     NuError err;
@@ -534,7 +534,7 @@ NuGetAttr(NuArchive* pArchive, NuAttrID ident, NuAttr* pAttr)
     return err;
 }
 
-NuError
+NUFXLIB_API NuError
 NuDebugDumpArchive(NuArchive* pArchive)
 {
 #if defined(DEBUG_MSGS)
@@ -554,7 +554,7 @@ NuDebugDumpArchive(NuArchive* pArchive)
  * ===========================================================================
  */
 
-NuError
+NUFXLIB_API NuError
 NuCreateDataSourceForFile(NuThreadFormat threadFormat, short doClose,
     unsigned long otherLen, const char* pathname, short isFromRsrcFork,
     NuDataSource** ppDataSource)
@@ -563,7 +563,7 @@ NuCreateDataSourceForFile(NuThreadFormat threadFormat, short doClose,
             otherLen, pathname, (Boolean)(isFromRsrcFork != 0), ppDataSource);
 }
 
-NuError
+NUFXLIB_API NuError
 NuCreateDataSourceForFP(NuThreadFormat threadFormat, short doClose,
     unsigned long otherLen, FILE* fp, long offset, long length,
     NuDataSource** ppDataSource)
@@ -572,7 +572,7 @@ NuCreateDataSourceForFP(NuThreadFormat threadFormat, short doClose,
             otherLen, fp, offset, length, ppDataSource);
 }
 
-NuError
+NUFXLIB_API NuError
 NuCreateDataSourceForBuffer(NuThreadFormat threadFormat, short doClose,
     unsigned long otherLen, const unsigned char* buffer, long offset,
     long length, NuDataSource** ppDataSource)
@@ -581,13 +581,13 @@ NuCreateDataSourceForBuffer(NuThreadFormat threadFormat, short doClose,
             otherLen, buffer, offset, length, ppDataSource);
 }
 
-NuError
+NUFXLIB_API NuError
 NuFreeDataSource(NuDataSource* pDataSource)
 {
     return Nu_DataSourceFree(pDataSource);
 }
 
-NuError
+NUFXLIB_API NuError
 NuDataSourceSetRawCrc(NuDataSource* pDataSource, unsigned short crc)
 {
     if (pDataSource == nil)
@@ -596,7 +596,7 @@ NuDataSourceSetRawCrc(NuDataSource* pDataSource, unsigned short crc)
     return kNuErrNone;
 }
 
-NuError
+NUFXLIB_API NuError
 NuCreateDataSinkForFile(short doExpand, NuValue convertEOL,
     const char* pathname, char fssep, NuDataSink** ppDataSink)
 {
@@ -604,7 +604,7 @@ NuCreateDataSinkForFile(short doExpand, NuValue convertEOL,
             fssep, ppDataSink);
 }
 
-NuError
+NUFXLIB_API NuError
 NuCreateDataSinkForFP(short doExpand, NuValue convertEOL, FILE* fp,
     NuDataSink** ppDataSink)
 {
@@ -612,7 +612,7 @@ NuCreateDataSinkForFP(short doExpand, NuValue convertEOL, FILE* fp,
             ppDataSink);
 }
 
-NuError
+NUFXLIB_API NuError
 NuCreateDataSinkForBuffer(short doExpand, NuValue convertEOL,
     unsigned char* buffer, unsigned long bufLen, NuDataSink** ppDataSink)
 {
@@ -620,13 +620,13 @@ NuCreateDataSinkForBuffer(short doExpand, NuValue convertEOL,
             bufLen, ppDataSink);
 }
 
-NuError
+NUFXLIB_API NuError
 NuFreeDataSink(NuDataSink* pDataSink)
 {
     return Nu_DataSinkFree(pDataSink);
 }
 
-NuError
+NUFXLIB_API NuError
 NuDataSinkGetOutCount(NuDataSink* pDataSink, ulong* pOutCount)
 {
     if (pDataSink == nil || pOutCount == nil)
@@ -643,13 +643,13 @@ NuDataSinkGetOutCount(NuDataSink* pDataSink, ulong* pOutCount)
  * ===========================================================================
  */
 
-const char*
+NUFXLIB_API const char*
 NuStrError(NuError err)
 {
     return Nu_StrError(err);
 }
 
-NuError
+NUFXLIB_API NuError
 NuGetVersion(long* pMajorVersion, long* pMinorVersion, long* pBugVersion,
     const char** ppBuildDate, const char** ppBuildFlags)
 {
@@ -657,7 +657,7 @@ NuGetVersion(long* pMajorVersion, long* pMinorVersion, long* pBugVersion,
             ppBuildDate, ppBuildFlags);
 }
 
-NuError
+NUFXLIB_API NuError
 NuTestFeature(NuFeature feature)
 {
     NuError err = kNuErrUnsupFeature;
@@ -696,7 +696,7 @@ NuTestFeature(NuFeature feature)
     return err;
 }
 
-void
+NUFXLIB_API void
 NuRecordCopyAttr(NuRecordAttr* pRecordAttr, const NuRecord* pRecord)
 {
     pRecordAttr->fileSysID = pRecord->recFileSysID;
@@ -709,7 +709,7 @@ NuRecordCopyAttr(NuRecordAttr* pRecordAttr, const NuRecord* pRecord)
     pRecordAttr->archiveWhen = pRecord->recArchiveWhen;
 }
 
-NuError
+NUFXLIB_API NuError
 NuRecordCopyThreads(const NuRecord* pNuRecord, NuThread** ppThreads)
 {
     if (pNuRecord == nil || ppThreads == nil)
@@ -727,7 +727,7 @@ NuRecordCopyThreads(const NuRecord* pNuRecord, NuThread** ppThreads)
     return kNuErrNone;
 }
 
-unsigned long
+NUFXLIB_API unsigned long
 NuRecordGetNumThreads(const NuRecord* pNuRecord)
 {
     if (pNuRecord == nil)
@@ -736,7 +736,7 @@ NuRecordGetNumThreads(const NuRecord* pNuRecord)
     return pNuRecord->recTotalThreads;
 }
 
-const NuThread*
+NUFXLIB_API const NuThread*
 NuThreadGetByIdx(const NuThread* pNuThread, long idx)
 {
     if (pNuThread == nil)
@@ -744,7 +744,7 @@ NuThreadGetByIdx(const NuThread* pNuThread, long idx)
     return &pNuThread[idx];     /* can't range-check here */
 }
 
-short
+NUFXLIB_API short
 NuIsPresizedThreadID(NuThreadID threadID)
 {
     return Nu_IsPresizedThreadID(threadID);
@@ -757,7 +757,7 @@ NuIsPresizedThreadID(NuThreadID threadID)
  * ===========================================================================
  */
 
-NuError
+NUFXLIB_API NuError
 NuSetSelectionFilter(NuArchive* pArchive, NuCallback filterFunc)
 {
     NuError err;
@@ -770,7 +770,7 @@ NuSetSelectionFilter(NuArchive* pArchive, NuCallback filterFunc)
     return err;
 }
 
-NuError
+NUFXLIB_API NuError
 NuSetOutputPathnameFilter(NuArchive* pArchive, NuCallback filterFunc)
 {
     NuError err;
@@ -783,7 +783,7 @@ NuSetOutputPathnameFilter(NuArchive* pArchive, NuCallback filterFunc)
     return err;
 }
 
-NuError
+NUFXLIB_API NuError
 NuSetProgressUpdater(NuArchive* pArchive, NuCallback updateFunc)
 {
     NuError err;
@@ -796,7 +796,7 @@ NuSetProgressUpdater(NuArchive* pArchive, NuCallback updateFunc)
     return err;
 }
 
-NuError
+NUFXLIB_API NuError
 NuSetErrorHandler(NuArchive* pArchive, NuCallback errorFunc)
 {
     NuError err;
@@ -809,7 +809,7 @@ NuSetErrorHandler(NuArchive* pArchive, NuCallback errorFunc)
     return err;
 }
 
-NuError
+NUFXLIB_API NuError
 NuSetErrorMessageHandler(NuArchive* pArchive, NuCallback messageHandlerFunc)
 {
     NuError err;
@@ -822,7 +822,7 @@ NuSetErrorMessageHandler(NuArchive* pArchive, NuCallback messageHandlerFunc)
     return err;
 }
 
-NuError
+NUFXLIB_API NuError
 NuSetGlobalErrorMessageHandler(NuCallback messageHandlerFunc)
 {
     /*Assert(!((ulong)messageHandlerFunc % 4));*/
