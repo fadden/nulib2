@@ -541,13 +541,9 @@ Nu_RecordSet_MoveAllRecords(NuArchive* pArchive, NuRecordSet* pDstSet,
     Assert(pDstSet != nil);
     Assert(pSrcSet != nil);
 
-    #if 0   /* this is bogus -- empty set != unloaded set */
-    if (!Nu_RecordSet_GetNumRecords(pSrcSet))   /* nothing to do? */
-        return kNuErrNone;
-    #endif
-
     /* move records over */
     if (Nu_RecordSet_GetNumRecords(pSrcSet)) {
+        Assert(pSrcSet->loaded);
         Assert(pSrcSet->nuRecordHead != nil);
         Assert(pSrcSet->nuRecordTail != nil);
         if (pDstSet->nuRecordHead == nil) {
@@ -569,6 +565,9 @@ Nu_RecordSet_MoveAllRecords(NuArchive* pArchive, NuRecordSet* pDstSet,
         /* no records in src set */
         Assert(pSrcSet->nuRecordHead == nil);
         Assert(pSrcSet->nuRecordTail == nil);
+
+        if (pSrcSet->loaded)
+            pDstSet->loaded = true;
     }
 
     /* nuke all pointers in original list */

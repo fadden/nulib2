@@ -1218,7 +1218,7 @@ Nu_ConstructArchiveRecord(NuArchive* pArchive, NuRecord* pRecord)
     err = Nu_WriteRecordHeader(pArchive, pRecord, pArchive->tmpFp);
     BailError(err);
 
-    Assert(newHeaderSize == pRecord->recHeaderLength);
+    Assert(newHeaderSize == (int) pRecord->recHeaderLength);
 
     /*
      * Seek forward once again, so we are positioned at the correct

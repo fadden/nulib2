@@ -1,3 +1,7 @@
+2004/09/25  fadden
+    - Fixed: attempting to add files after deleting *all* entries in an
+      archive would fail.
+
 2004/09/20  fadden
     - Corrected behavior after flush when original archive can't be
       deleted.
