@@ -343,7 +343,7 @@ Nu_GetFileInfo(NuArchive* pArchive, const char* pathname,
                                 proType = 0xB3;
                                 proAux = 0x0000;
                             } else {
-                                if ((fileType >> 24) & 0xFF == 'p') {
+                                if (((fileType >> 24) & 0xFF) == 'p') {
                                     proType = (fileType >> 16) & 0xFF;
                                     proAux = fileType & 0xFFFF;
                                 } else {
@@ -600,7 +600,7 @@ Nu_SetFileAccess(NuArchive* pArchive, const NuRecord* pRecord,
         //    (S_IRUSR | S_IRGRP | S_IROTH) & ~mask, mask));
         if (chmod(pathname, (S_IRUSR | S_IRGRP | S_IROTH) & ~mask) < 0) {
             Nu_ReportError(NU_BLOB, errno,
-                "unable to set access for '%s' to %03o", pathname, mask);
+                "unable to set access for '%s' to %03o", pathname, (int) mask);
             err = kNuErrFileSetAccess;
             goto bail;
         }
