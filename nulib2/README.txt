@@ -69,6 +69,9 @@ to build with debugging info, or
     nmake -f makefile.msc nodebug=1
 to build optimized.
 
+See the notes in Makefile.msc for building with zlib, libbz2, and against
+NufxLib as a DLL.
+
 
 Other Notes
 ===========
