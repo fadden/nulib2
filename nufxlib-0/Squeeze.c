@@ -6,9 +6,9 @@
  *
  * Huffman/RLE "squeeze" compression, based on SQ/USQ.  This format is
  * listed in the NuFX documentation, but to my knowledge has never
- * actually been used (until now).  Not surprisingly, P8 ShrinkIt v3.2
- * doesn't handle the format correctly, so this is really only useful
- * as an experiment.
+ * actually been used (until now).  Neither P8 ShrinkIt v3.4 nor II Unshrink
+ * handle the format correctly, so this is really only useful as an
+ * experiment.
  *
  * The algorithm appears to date back to the CP/M days.  This implementation
  * is based on "xsq"/"xusq" v1.7u by Richard Greenlaw (from December 1982).
@@ -483,7 +483,7 @@ Nu_SQScale(SQState* pSqState, int ceiling)
             sum += pSqState->node[i].weight;
         }
 
-        divisor = ovflw + 1;
+        divisor = ovflw + 1;    /* use the high 16 bits of the sum */
 
         /* Ensure no non-zero values are lost */
         increased = false;
@@ -497,7 +497,7 @@ Nu_SQScale(SQState* pSqState, int ceiling)
         }
     } while(increased);
 
-    /* Scaling factor choosen, now scale */
+    /* scaling factor choosen and minimums are set; now do the downscale */
     if (divisor > 1) {
         for (i = 0; i < kNuSQNumVals; i++)
             pSqState->node[i].weight /= divisor;
@@ -789,7 +789,7 @@ Nu_CompressHuffmanSQ(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
         BailError(err);
         compressedLen += 4;
 
-        //DBUG(("TREE %d: %d %d\n", j, l, r));
+        /*DBUG(("TREE %d: %d %d\n", j, l, r));*/
     }
 
     /*
@@ -943,8 +943,10 @@ Nu_ExpandHuffmanSQ(NuArchive* pArchive, const NuRecord* pRecord,
     /*
      * Read the header.  We assume that the header is less than
      * kNuGenCompBufSize bytes, which is pretty fair since the buffer is
-     * currently a hundred times larger than the longest possible header.
+     * currently 20x larger than the longest possible header (sq allowed
+     * 300+ for the filename, plus 257*2 for the tree, plus misc).
      */
+    Assert(kNuGenCompBufSize > 1200);
 #ifdef FULL_SQ_HEADER
     err = Nu_USQReadShort(&usqState, &magic);
     BailError(err);
@@ -1008,7 +1010,6 @@ Nu_ExpandHuffmanSQ(NuArchive* pArchive, const NuRecord* pRecord,
         int val;
         uchar lastc;
 
-//        printf("dib=%ld cr=%ld\n", usqState.dataInBuffer, compRemaining);
         if (usqState.dataInBuffer < 65 && compRemaining) {
             /*
              * Less than 256 bits, but there's more in the file.
