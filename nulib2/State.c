@@ -123,6 +123,8 @@ NState_DebugDump(const NulibState* pState)
         printf("    junkPaths\n");
     if (pState->modNoCompression)
         printf("    noCompression\n");
+    if (pState->modCompressDeflate)
+        printf("    compressDeflate\n");
     if (pState->modComments)
         printf("    comments\n");
     if (pState->modConvertText)
@@ -411,6 +413,18 @@ void
 NState_SetModNoCompression(NulibState* pState, Boolean val)
 {
     pState->modNoCompression = val;
+}
+
+Boolean
+NState_GetModCompressDeflate(const NulibState* pState)
+{
+    return pState->modCompressDeflate;
+}
+
+void
+NState_SetModCompressDeflate(NulibState* pState, Boolean val)
+{
+    pState->modCompressDeflate = val;
 }
 
 Boolean

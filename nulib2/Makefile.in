@@ -90,7 +90,7 @@ purify:
 	@$(MAKE) PURIFY_BUILD=1
 
 $(PRODUCT): $(OBJS) $(NUFXLIB)
-	$(PURIFY) $(QUANTIFY) $(CC) -o $@ $(OBJS) -L$(NUFXSRCDIR) -L$(libdir) -lnufx @DMALLOC@
+	$(PURIFY) $(QUANTIFY) $(CC) -o $@ $(OBJS) -L$(NUFXSRCDIR) -L$(libdir) -lnufx @LIBS@
 
 clean:
 	-rm -f *.o core

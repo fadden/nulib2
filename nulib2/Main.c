@@ -27,7 +27,7 @@ typedef struct ValidCombo {
 } ValidCombo;
 
 static const ValidCombo gValidCombos[] = {
-    { kCommandAdd,              false,  true,   "ufrj0cke" },
+    { kCommandAdd,              false,  true,   "ufrj0zcke" },
     { kCommandDelete,           false,  true,   "r" },
     { kCommandExtract,          true,   false,  "ufrjclse" },
     { kCommandExtractToPipe,    true,   false,  "rl" },
@@ -149,7 +149,7 @@ Usage(const NulibState* pState)
         NState_GetProgramVersion(pState),
         majorVersion, minorVersion, bugVersion, nufxLibFlags);
     printf("This software is distributed under terms of the GNU General Public License.\n");
-    printf("Written by Andy McFadden, http://www.nulib.com/.\n\n");
+    printf("Written by Andy McFadden.  See http://www.nulib.com/ for full manual.\n\n");
     printf("Usage: %s -command[modifiers] archive [filename-list]\n\n",
         gProgName);
     printf(
@@ -161,10 +161,15 @@ Usage(const NulibState* pState)
         " modifiers:\n"
         "  -u  update files (add + keep newest)  -f  freshen (update, no add)\n"
         "  -r  recurse into subdirs              -j  junk (don't record) directory names\n"
-        "  -0  don't use compression             -c  add one-line comments\n"
+    #ifdef HAVE_LIBZ
+        "  -0  don't use compression             -z  compress with gzip-style 'deflate'\n"
+    #else
+        "  -0  don't use compression             -z  use zlib [not included]\n"
+    #endif
         "  -l  auto-convert text files           -ll auto-convert ALL files\n"
         "  -s  stomp existing files w/o asking   -k  store files as disk images\n"
-        "  -e  preserve ProDOS file types        -ee extend preserved names\n"
+        "  -e  preserve ProDOS file types        -ee preserve types and extend names\n"
+        "  -c  add one-line comments\n"
         );
 }
 
@@ -220,7 +225,7 @@ ProcessOptions(NulibState* pState, int argc, char* const* argv)
             case 'p': NState_SetCommand(pState, kCommandExtractToPipe); break;
             case 't': NState_SetCommand(pState, kCommandListShort);     break;
             case 'v': NState_SetCommand(pState, kCommandListVerbose);   break;
-            case 'z': NState_SetCommand(pState, kCommandListDebug);     break;
+            case 'g': NState_SetCommand(pState, kCommandListDebug);     break;
             case 'i': NState_SetCommand(pState, kCommandTest);          break;
             case 'd': NState_SetCommand(pState, kCommandDelete);        break;
             default:
@@ -241,6 +246,14 @@ ProcessOptions(NulibState* pState, int argc, char* const* argv)
             case 'c': NState_SetModComments(pState, true);              break;
             case 's': NState_SetModOverwriteExisting(pState, true);     break;
             case 'k': NState_SetModAddAsDisk(pState, true);             break;
+            case 'z':
+                #ifdef HAVE_LIBZ
+                NState_SetModCompressDeflate(pState, true);
+                #else
+                fprintf(stderr, "%s: WARNING: zlib support not compiled in\n",
+                    gProgName);
+                #endif
+                break;
             case 'e':
                 if (*(cp-1) == 'e')     /* should never point at invalid */
                     NState_SetModPreserveTypeExtended(pState, true);

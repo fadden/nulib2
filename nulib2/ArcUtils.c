@@ -903,6 +903,11 @@ OpenArchiveReadWrite(NulibState* pState)
         err = NuSetValue(pArchive, kNuValueDataCompression, kNuCompressNone);
         BailError(err);
     }
+    /* handle "-9" flag */
+    if (NState_GetModCompressDeflate(pState)) {
+        err = NuSetValue(pArchive, kNuValueDataCompression, kNuCompressDeflate);
+        BailError(err);
+    }
 
     /* handle "-f" and "-u" flags */
     /* (BUG: if "-f" is set, creating a new archive is impossible) */

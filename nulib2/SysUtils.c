@@ -610,7 +610,7 @@ DoAddFile(NulibState* pState, NuArchive* pArchive, const char* pathname,
 
 bail:
     if (err != kNuErrNone)
-        ReportError(err, "Unable to add file");
+        ReportError(err, "unable to add file");
 bail_quiet:
     return err;
 }
@@ -744,7 +744,7 @@ UNIXAddFile(NulibState* pState, NuArchive* pArchive, const char* pathname)
 
 bail:
     if (err != kNuErrNone)
-        ReportError(err, "Unable to add file");
+        ReportError(err, "unable to add file");
 bail_quiet:
     return err;
 }
@@ -975,7 +975,7 @@ Win32AddFile(NulibState* pState, NuArchive* pArchive, const char* pathname)
 
 bail:
     if (err != kNuErrNone)
-        ReportError(err, "Unable to add file");
+        ReportError(err, "unable to add file");
 bail_quiet:
     return err;
 }

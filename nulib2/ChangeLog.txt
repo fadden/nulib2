@@ -1,3 +1,7 @@
+2002/09/30  fadden
+    - added "-z" flag to specify zlib's "deflate" compression (the
+      "secret" debug dump command is now -g)
+
 2002/09/26  fadden
     - progress updater now shows "analyzing" for scan pass of SQ
 
