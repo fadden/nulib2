@@ -1365,6 +1365,9 @@ main(void)
      *
      * This environment variable must be set when the program is launched.
      * Tweaking the environment within the program has no effect.
+     *
+     * Now that the Linux world has "valgrind", this is probably
+     * unnecessary.
      */
     {
         char* debugSet = getenv("MALLOC_CHECK_");

@@ -191,6 +191,10 @@ CopyThreadUncompressed(NuArchive* pInArchive, NuArchive* pOutArchive,
      * already compressed will remain that way, and stuff that isn't
      * compressed won't be.  (We really only need to do this once, at
      * the start of the program, but it's illustrative to do it here.)
+     *
+     * [ I don't understand this comment.  It's necessary to disable
+     *   compression, but I don't see why uncompressed files are
+     *   special. ++ATM 20040821 ]
      */
     err = NuSetValue(pOutArchive, kNuValueDataCompression, kNuCompressNone);
     if (err != kNuErrNone) {
@@ -439,6 +443,14 @@ LaunderArchive(const char* inFile, const char* outFile, NuValue compressMethod,
     if (err != kNuErrNone) {
         fprintf(stderr, "ERROR: couldn't open output archive '%s' (err=%d)\n",
             outFile, err);
+        goto bail;
+    }
+
+    /* turn off "mimic GSHK" */
+    err = NuSetValue(pInArchive, kNuValueMimicSHK, true);
+    if (err != kNuErrNone) {
+        fprintf(stderr, "ERROR: unable to disable GSHK quirks (err=%d)\n",
+            err);
         goto bail;
     }
 
