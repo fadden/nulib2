@@ -572,8 +572,15 @@ Nu_FunnelWrite(NuArchive* pArchive, NuFunnel* pFunnel, const uchar* buffer,
          * blow out what we were just given or put it at the start of
          * the buffer.
          */
-        err = Nu_FunnelFlush(pArchive, pFunnel);
-        BailError(err);
+        if (pFunnel->bufCount) {
+            err = Nu_FunnelFlush(pArchive, pFunnel);
+            BailError(err);
+        } else {
+            err = Nu_FunnelSendProgressUpdate(pArchive, pFunnel);
+            BailError(err);
+        }
+
+        Assert(pFunnel->bufCount == 0);
 
         if (count >= kNuFunnelBufSize / 4) {
             /* it's more than 25% of the buffer, just write it now */
