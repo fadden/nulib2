@@ -107,9 +107,13 @@
 # endif
 #endif
 
+#if defined(__APPLE__) && defined(__MACH__)     /* OS X */
+# define MAC_LIKE
+# define UNIX_LIKE
+#endif
 
 #if defined(__unix__) || defined(__unix) || defined(__BEOS__) || \
-    defined(__hpux) || defined(_AIX) || defined(__APPLE__)
+    defined(__hpux) || defined(_AIX)
 # define UNIX_LIKE      /* standardize */
 #endif
 
@@ -124,7 +128,7 @@
 /*# define HAS_RESOURCE_FORKS*/
 /*#endif*/
 
-#ifdef __ORCAC__
+#if defined(__ORCAC__) || defined(MAC_LIKE)
 # define HAS_RESOURCE_FORKS
 #endif
 

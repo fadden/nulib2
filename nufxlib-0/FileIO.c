@@ -18,6 +18,10 @@
  */
 #include "NufxLibPriv.h"
 
+#ifdef MAC_LIKE
+# include <Carbon/Carbon.h>
+#endif
+
 /*
  * For systems (e.g. Visual C++ 6.0) that don't have these standard values.
  */
@@ -39,7 +43,6 @@
 # define S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
 # define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
 #endif
-
 
 /*
  * ===========================================================================
@@ -301,6 +304,98 @@ Nu_GetFileInfo(NuArchive* pArchive, const char* pathname,
         pFileInfo->rsrcEof = 0;
         pFileInfo->fileType = kDefaultFileType;
         pFileInfo->auxType = kDefaultAuxType;
+# if defined(MAC_LIKE)
+        if (!pFileInfo->isDirectory) {
+            char path[4096];
+            struct stat res_sbuf;
+            OSErr result;
+            OSType fileType, creator;
+            FSCatalogInfo catalogInfo;
+            FSRef ref;
+            unsigned long proType, proAux;
+            
+            strcpy(path, pathname);
+            strcat(path, "/rsrc");
+            cc = stat(path, &res_sbuf);
+            if (cc) {
+                if (!errno) {
+                    pFileInfo->rsrcEof = res_sbuf.st_size;
+                }
+            }
+            
+            result = FSPathMakeRef(pathname, &ref, NULL);
+            if (!result) {
+                result = FSGetCatalogInfo(&ref, kFSCatInfoFinderInfo, &catalogInfo,
+                                NULL, NULL, NULL);
+                if (!result) {
+                    fileType = ((FileInfo *) &catalogInfo.finderInfo)->fileType;
+                    creator = ((FileInfo *) &catalogInfo.finderInfo)->fileCreator;
+                    
+                    /* This actually is probably more efficient than a weird table, for
+                       so few values */
+                    
+                    switch(creator) {
+                        case 'pdos':
+                            if (fileType == 'PSYS') {
+                                proType = 0xFF;
+                                proAux = 0x0000;
+                            } else if (fileType == 'PS16') {
+                                proType = 0xB3;
+                                proAux = 0x0000;
+                            } else {
+                                if ((fileType >> 24) & 0xFF == 'p') {
+                                    proType = (fileType >> 16) & 0xFF;
+                                    proAux = fileType & 0xFFFF;
+                                } else {
+                                    proType = 0x00;
+                                    proAux = 0x0000;
+                                }
+                            }
+                            break;
+                        case 'dCpy':
+                            if (fileType == 'dImg') {
+                                proType = 0xE0;
+                                proAux = 0x0005;
+                            } else {
+                                proType = 0x00;
+                                proAux = 0x0000;
+                            }
+                            break;
+                        default:
+                            switch(fileType) {
+                                case 'BINA':
+                                    proType = 0x06;
+                                    proAux = 0x0000;
+                                    break;
+                                case 'TEXT':
+                                    proType = 0x04;
+                                    proAux = 0x0000;
+                                    break;
+                                case 'MIDI':
+                                    proType = 0xD7;
+                                    proAux = 0x0000;
+                                    break;
+                                case 'AIFF':
+                                    proType = 0xD8;
+                                    proAux = 0x0000;
+                                    break;
+                                case 'AIFC':
+                                    proType = 0xD8;
+                                    proAux = 0x0001;
+                                    break;
+                                default:
+                                    proType = 0x00;
+                                    proAux = 0x0000;
+                                    break;
+                            }
+                            break;
+                    }
+                    pFileInfo->fileType = proType;
+                    pFileInfo->auxType = proAux;
+                }
+            }
+        }
+# endif
         Nu_GMTSecondsToDateTime(&sbuf.st_mtime, &pFileInfo->modWhen);
         pFileInfo->unixMode = sbuf.st_mode;
         pFileInfo->isValid = true;
@@ -335,10 +430,45 @@ Nu_FileForkExists(NuArchive* pArchive, const char* pathname,
     Assert(pExists != nil);
     Assert(pFileInfo != nil);
 
-#if defined(UNIX_LIKE) || defined(WINDOWS_LIKE)
+#if defined(MAC_LIKE)
     /*
-     * We ignore "isForkedFile" and "checkRsrcFork".  The file must not
-     * exist at all.
+     * On Mac OS X, we do much like on Unix, but we do need to look for
+     * a resource fork.
+     */
+    *pExists = true;
+    if (!checkRsrcFork) {
+        /*
+         * Check the data fork.
+         */
+        Assert(pArchive->lastFileCreated == nil);
+        err = Nu_GetFileInfo(pArchive, pathname, pFileInfo);
+        if (err == kNuErrFileNotFound) {
+            err = kNuErrNone;
+            *pExists = false;
+        }
+/*      DBUG(("Data fork %s: %d (err %d)\n", pathname, *pExists, err));*/
+    } else {
+        /*
+         * Check the resource fork.
+         */
+        char path[4096];
+        strncpy(path, pathname, 4089);
+        strcat(path, "/rsrc");
+        err = Nu_GetFileInfo(pArchive, path, pFileInfo);
+        if (err == kNuErrFileNotFound) {
+            err = kNuErrNone;
+            *pExists = false;
+        } else if (!err && !pFileInfo->rsrcEof) {
+            err = kNuErrNone;
+            *pExists = false;
+        }
+/*      DBUG(("Rsrc fork %s: %d (err %d)\n", path, *pExists, err));*/
+    }
+    
+#elif defined(UNIX_LIKE) || defined(WINDOWS_LIKE)
+    /*
+     * On Unix and Windows we ignore "isForkedFile" and "checkRsrcFork".
+     * The file must not exist at all.
      */
     Assert(pArchive->lastFileCreated == nil);
 
@@ -496,6 +626,9 @@ Nu_PrepareForWriting(NuArchive* pArchive, const char* pathname,
     Boolean prepRsrc, NuFileInfo* pFileInfo)
 {
     NuError err = kNuErrNone;
+#if defined(MAC_LIKE)
+    char path[4096];
+#endif
 
     Assert(pArchive != nil);
     Assert(pathname != nil);
@@ -509,6 +642,13 @@ Nu_PrepareForWriting(NuArchive* pArchive, const char* pathname,
         return kNuErrNotRegularFile;
 
 #if defined(UNIX_LIKE) || defined(WINDOWS_LIKE)
+# if defined(MAC_LIKE)
+    if (prepRsrc) {
+        strcpy(path, pathname);
+        strcat(path, "/rsrc");
+        pathname = path;
+    }
+# endif
     if (!(pFileInfo->unixMode & S_IWUSR)) {
         /* make it writable by owner, plus whatever it was before */
         if (chmod(pathname, S_IWUSR | pFileInfo->unixMode) < 0) {
@@ -636,8 +776,11 @@ Nu_CreatePathIFN(NuArchive* pArchive, const char* pathname, char fssep)
     Assert(fssep != '\0');
 
     pathStart = pathname;
+    
+#if !defined(MAC_LIKE)          /* On the Mac, if it's a full path, treat it like one */
     if (pathname[0] == fssep)
         pathStart++;
+#endif
 
     /* NOTE: not expecting names like "foo/bar/ack/", with terminating fssep */
     pathEnd = strrchr(pathStart, fssep);
@@ -683,6 +826,14 @@ static NuError
 Nu_OpenFileForWrite(NuArchive* pArchive, const char* pathname,
     Boolean openRsrc, FILE** pFp)
 {
+#if defined(MAC_LIKE)
+    char path[4096];
+    if (openRsrc) {
+        strcpy(path, pathname);
+        strcat(path, "/rsrc");
+        pathname = path;
+    }
+#endif
     *pFp = fopen(pathname, kNuFileOpenWriteTrunc);
     if (*pFp == nil)
         return errno ? errno : -1;
@@ -965,6 +1116,35 @@ Nu_CloseOutputFile(NuArchive* pArchive, const NuRecord* pRecord, FILE* fp,
     err = Nu_SetFileAccess(pArchive, pRecord, pathname);
     BailError(err);
 
+#ifdef MAC_LIKE
+    OSErr result;
+    OSType fileType;
+    FSCatalogInfo catalogInfo;
+    FSRef ref;
+    
+    result = FSPathMakeRef(pathname, &ref, NULL);
+    BailError(result);
+    
+    result = FSGetCatalogInfo(&ref, kFSCatInfoNodeFlags|kFSCatInfoFinderInfo, &catalogInfo,
+                    NULL, NULL, NULL);
+    if (result) {
+        BailError(kNuErrFileStat);
+    }
+    
+    /* Build the type and creator */
+    
+    fileType = 0x70000000;
+    fileType |= (pRecord->recFileType & 0xFF) << 16;
+    fileType |= (pRecord->recExtraType & 0xFFFF);
+    
+    /* Set the type and creator */
+        
+    ((FileInfo *) &catalogInfo.finderInfo)->fileType = fileType;
+    ((FileInfo *) &catalogInfo.finderInfo)->fileCreator = 'pdos';
+    result = FSSetCatalogInfo(&ref, kFSCatInfoFinderInfo, &catalogInfo);
+    BailError(result);
+#endif
+
 bail:
     return kNuErrNone;
 }
@@ -1007,6 +1187,15 @@ Nu_OpenInputFile(NuArchive* pArchive, const char* pathname,
     Assert(pArchive != nil);
     Assert(pathname != nil);
     Assert(pFp != nil);
+
+#if defined(MAC_LIKE)
+    char path[4096];
+    if (openRsrc) {
+        strcpy(path, pathname);
+        strcat(path, "/rsrc");
+        pathname = path;
+    }
+#endif
 
 retry:
     /*
