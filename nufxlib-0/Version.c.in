@@ -11,8 +11,12 @@
 #include "NufxLibPriv.h"
 
 /* executable was build on or after this date (inserted automatically) */
-/* (some compilers e.g. MSC have __DATE__; use that?) */
-static const char gNuBuildDate[] = "BUILT"; /* approximate */
+#ifdef __DATE__
+static const char gNuBuildDate[] = __DATE__;
+#else
+static const char gNuBuildDate[] = "BUILT";
+#endif
+
 static const char gNuBuildFlags[] = "OPTFLAGS";
 
 
