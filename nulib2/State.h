@@ -38,6 +38,7 @@ typedef struct NulibState {
 
     /* system-specific values */
     char            systemPathSeparator;
+    char            altSystemPathSeparator;
 
     /* pointer to archive we're working with */
     NuArchive*      pArchive;
@@ -88,6 +89,7 @@ void NState_DebugDump(const NulibState* pState);
 #endif
 
 char NState_GetSystemPathSeparator(const NulibState* pState);
+char NState_GetAltSystemPathSeparator(const NulibState* pState);
 const char* NState_GetProgramVersion(const NulibState* pState);
 NuArchive* NState_GetNuArchive(const NulibState* pState);
 void NState_SetNuArchive(NulibState* pState, NuArchive* pArchive);

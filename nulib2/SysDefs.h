@@ -94,7 +94,7 @@
 
 #if defined(WINDOWS_LIKE)
 # ifndef F_OK
-#  define F_OK  02
+#  define F_OK  00
 # endif
 # ifndef R_OK
 #  define R_OK  04

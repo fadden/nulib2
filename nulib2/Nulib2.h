@@ -20,6 +20,9 @@
 /* replace unsupported chars with '%xx' */
 #define kForeignIndic       '%'
 
+/* use this to separate path components in stored filenames */
+#define kStorageFssep       ':'
+
 /* make our one-line comments this big */
 #define kDefaultCommentLen  200
 

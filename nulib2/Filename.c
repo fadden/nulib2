@@ -20,7 +20,7 @@
 #define kFilenameExtDelim   '.'     /* separates extension from filename */
 #define kResourceFlag   'r'
 #define kDiskImageFlag  'i'
-#define kMaxExtLen      4       /* ".123" */
+#define kMaxExtLen      5       /* ".1234" */
 #define kResourceStr    "_rsrc_"
 
 /* must be longer then strlen(kResourceStr)... no problem there */
@@ -182,7 +182,7 @@ AddPreservationString(NulibState* pState,
             pExt = nil;
         else
             pExt = FindExtension(pState, pathBuf);
-        if (pExt != nil && strlen(pExt+1) <= kMaxExtLen) {
+        if (pExt != nil && strlen(pExt+1) < kMaxExtLen) {
             pExt++; /* skip past the '.' */
 
             /* if it's strictly decimal-numeric, don't use it (.1, .2, etc) */
@@ -250,6 +250,7 @@ NormalizePath(NulibState* pState, NuPathnameProposal* pPathProposal)
     const char* endp;
     char* dstp;
     char localFssep;
+    int newBufLen;
 
     Assert(pState != nil);
     Assert(pPathProposal != nil);
@@ -262,8 +263,8 @@ NormalizePath(NulibState* pState, NuPathnameProposal* pPathProposal)
      * requires converting all chars to '%' codes and adding the longest
      * possible preservation string.
      */
-    NState_SetTempPathnameLen(pState,
-        strlen(pPathProposal->pathname)*3 + kMaxPathGrowth +1);
+    newBufLen = strlen(pPathProposal->pathname)*3 + kMaxPathGrowth +1;
+    NState_SetTempPathnameLen(pState, newBufLen);
     pathBuf = NState_GetTempPathnameBuf(pState);
     Assert(pathBuf != nil);
     if (pathBuf == nil)
@@ -316,8 +317,7 @@ NormalizePath(NulibState* pState, NuPathnameProposal* pPathProposal)
     pPathProposal->newFilenameSeparator = localFssep;
 
     /* check for overflow */
-    Assert(dstp - pathBuf <=
-                    (int)(strlen(pPathProposal->pathname) + kMaxPathGrowth));
+    Assert(dstp - pathBuf <= newBufLen);
 
     /*
      * If "junk paths" is set, drop everything but the last component.
@@ -543,7 +543,8 @@ DenormalizePath(NulibState* pState, char* pathBuf)
                 if (isxdigit((int)*srcp)) {
                     /* valid, output char */
                     ch += HexDigit(*srcp);
-                    *dstp++ = ch;
+                    if (ch != '\0')     /* used by Win32 converter */
+                        *dstp++ = ch;
                     srcp++;
                 } else {
                     /* bogus '%' with trailing hex digit found! */

@@ -80,9 +80,10 @@ UNIXNormalizeFileName(NulibState* pState, const char* srcp, long srcLen,
     while (srcLen--) {      /* don't go until null found! */
         Assert(*srcp != '\0');
 
-        if (*srcp == '%') {
+        if (*srcp == kForeignIndic) {
             /* change '%' to "%%" */
-            *dstp++ = *srcp;
+            if (NState_GetModPreserveType(pState))
+                *dstp++ = *srcp;
             *dstp++ = *srcp++;
         } else if (*srcp == '/') {
             /* change '/' to "%2f" */
@@ -110,7 +111,9 @@ UNIXNormalizeFileName(NulibState* pState, const char* srcp, long srcLen,
 #elif defined(WINDOWS_LIKE)
 /*
  * You can't create files or directories with these names on a FAT filesystem,
- * because they're MS-DOS "device special files".
+ * because they're MS-DOS "device special files".  So, we either prepend
+ * a '_' (if we're not preserving filenames) or "%00" (if we are).  The
+ * "%00" sequence gets stripped off during denormalization.
  *
  * The list comes from the Linux kernel's fs/msdos/namei.c.
  */
@@ -139,7 +142,12 @@ Win32NormalizeFileName(NulibState* pState, const char* srcp, long srcLen,
         for (ppcch = fatReservedNames3; *ppcch != nil; ppcch++) {
             if (strncasecmp(srcp, *ppcch, srcLen) == 0) {
                 DBUG(("--- fixing '%s'\n", *ppcch));
-                *dstp++ = '_';
+                if (NState_GetModPreserveType(pState)) {
+                    *dstp++ = kForeignIndic;
+                    *dstp++ = '0';
+                    *dstp++ = '0';
+                } else
+                    *dstp++ = '_';
                 break;
             }
         }
@@ -149,7 +157,12 @@ Win32NormalizeFileName(NulibState* pState, const char* srcp, long srcLen,
         for (ppcch = fatReservedNames4; *ppcch != nil; ppcch++) {
             if (strncasecmp(srcp, *ppcch, srcLen) == 0) {
                 DBUG(("--- fixing '%s'\n", *ppcch));
-                *dstp++ = '_';
+                if (NState_GetModPreserveType(pState)) {
+                    *dstp++ = kForeignIndic;
+                    *dstp++ = '0';
+                    *dstp++ = '0';
+                } else
+                    *dstp++ = '_';
                 break;
             }
         }
@@ -159,9 +172,10 @@ Win32NormalizeFileName(NulibState* pState, const char* srcp, long srcLen,
     while (srcLen--) {      /* don't go until null found! */
         Assert(*srcp != '\0');
 
-        if (*srcp == '%') {
+        if (*srcp == kForeignIndic) {
             /* change '%' to "%%" */
-            *dstp++ = *srcp;
+            if (NState_GetModPreserveType(pState))
+                *dstp++ = *srcp;
             *dstp++ = *srcp++;
         } else if (strchr(kInvalid, *srcp) != nil) {
             /* change invalid char to "%2f" or '_' */
@@ -398,6 +412,22 @@ UNIXTimeToDateTime(const time_t* pWhen, NuDateTime *pDateTime)
 
 #if defined(UNIX_LIKE) || defined(WINDOWS_LIKE)
 /*
+ * Replace "oldc" with "newc".  If we find an instance of "newc" already
+ * in the string, replace it with "newSubst".
+ */
+static void
+ReplaceFssep(char* str, char oldc, char newc, char newSubst)
+{
+    while (*str != '\0') {
+        if (*str == oldc)
+            *str = newc;
+        else if (*str == newc)
+            *str = newSubst;
+        str++;
+    }
+}
+
+/*
  * Set the contents of a NuFileDetails structure, based on the pathname
  * and characteristics of the file.
  */
@@ -407,6 +437,7 @@ SetFileDetails(NulibState* pState, const char* pathname, struct stat* psb,
 {
     Boolean wasPreserved;
     Boolean doJunk = false;
+    Boolean adjusted;
     char* livePathStr;
     char slashDotDotSlash[5] = "_.._";
     time_t now;
@@ -421,12 +452,20 @@ SetFileDetails(NulibState* pState, const char* pathname, struct stat* psb,
     Assert(livePathStr != nil);
     strcpy(livePathStr, pathname);
 
+    /* under Win32, both '/' and '\' work... we want to settle on one */
+    if (NState_GetAltSystemPathSeparator(pState) != '\0') {
+        ReplaceFssep(livePathStr,
+            NState_GetAltSystemPathSeparator(pState),
+            NState_GetSystemPathSeparator(pState),
+            NState_GetSystemPathSeparator(pState));
+    }
+
     /* init to defaults */
     memset(pDetails, 0, sizeof(*pDetails));
     pDetails->threadID = kNuThreadIDDataFork;
     pDetails->storageName = livePathStr;    /* point at temp buffer */
     pDetails->fileSysID = kNuFileSysUnknown;
-    pDetails->fileSysInfo = NState_GetSystemPathSeparator(pState);
+    pDetails->fileSysInfo = kStorageFssep;
     pDetails->fileType = 0;
     pDetails->extraType = 0;
     pDetails->storageType = kNuStorageUnknown;  /* let NufxLib worry about it */
@@ -483,23 +522,40 @@ SetFileDetails(NulibState* pState, const char* pathname, struct stat* psb,
     }
 
     /*
-     * Check for other unpleasantness, such as a leading fssep.
+     * Strip bad chars off the front of the pathname.  Every time we
+     * remove one thing we potentially expose another, so we have to
+     * loop until it's sanitized.
+     *
+     * The outer loop isn't really necessary under Win32, because you'd
+     * need to do something like ".\\foo", which isn't allowed.  UNIX
+     * silently allows ".//foo", so this is a problem there.  (We could
+     * probably do away with the inner loops, but those were already
+     * written when I saw the larger problem.)
      */
-    Assert(NState_GetSystemPathSeparator(pState) != '\0');
-    while (livePathStr[0] == NState_GetSystemPathSeparator(pState)) {
-        /* slide it down, len is strlen +1 (for null) -1 (dropping first char)*/
-        memmove(livePathStr, livePathStr+1, strlen(livePathStr));
-    }
+    do {
+        adjusted = false;
 
-    /*
-     * Remove leading "./".
-     */
-    while (livePathStr[0] == '.' &&
-        livePathStr[1] == NState_GetSystemPathSeparator(pState))
-    {
-        /* slide it down, len is strlen +1 (for null) -2 (dropping two chars) */
-        memmove(livePathStr, livePathStr+2, strlen(livePathStr)-1);
-    }
+        /*
+         * Check for other unpleasantness, such as a leading fssep.
+         */
+        Assert(NState_GetSystemPathSeparator(pState) != '\0');
+        while (livePathStr[0] == NState_GetSystemPathSeparator(pState)) {
+            /* slide it down, len is (strlen +1), -1 (dropping first char)*/
+            memmove(livePathStr, livePathStr+1, strlen(livePathStr));
+            adjusted = true;
+        }
+
+        /*
+         * Remove leading "./".
+         */
+        while (livePathStr[0] == '.' &&
+            livePathStr[1] == NState_GetSystemPathSeparator(pState))
+        {
+            /* slide it down, len is (strlen +1) -2 (dropping two chars) */
+            memmove(livePathStr, livePathStr+2, strlen(livePathStr)-1);
+            adjusted = true;
+        }
+    } while (adjusted);
 
     /*
      * If there's a "/../" present anywhere in the name, junk everything
@@ -518,6 +574,13 @@ SetFileDetails(NulibState* pState, const char* pathname, struct stat* psb,
     }
 
     /*
+     * Scan for and remove "/./" and trailing "/.".  They're filesystem
+     * no-ops that work just fine under Win32 and UNIX but could confuse
+     * a IIgs.  (Of course, the user could just omit them from the pathname.)
+     */
+    /* TO DO 20030208 */
+
+    /*
      * If "junk paths" is set, drop everything before the last fssep char.
      */
     if (NState_GetModJunkPaths(pState) || doJunk) {
@@ -528,6 +591,16 @@ SetFileDetails(NulibState* pState, const char* pathname, struct stat* psb,
             memmove(livePathStr, lastFssep+1, strlen(lastFssep+1)+1);
         }
     }
+
+    /*
+     * Finally, substitute our generally-accepted path separator in place of
+     * the local one, stomping on anything with a ':' in it as we do.  The
+     * goal is to avoid having "subdir:foo/bar" turn into "subdir/foo/bar".
+     * Were we a general-purpose archiver, this might be a mistake, but
+     * we're not.  NuFX doesn't really give us a choice.
+     */
+    ReplaceFssep(livePathStr, NState_GetSystemPathSeparator(pState),
+        kStorageFssep, 'X');
 
 /*bail:*/
     return kNuErrNone;

@@ -9,7 +9,7 @@
 #include "Nulib2.h"
 
 
-static const char* gProgramVersion = "1.1.0";
+static const char* gProgramVersion = "2.0.0";
 
 
 /*
@@ -28,6 +28,11 @@ NState_Init(NulibState** ppState)
      * Initialize the contents to default values.
      */
     (*ppState)->systemPathSeparator = PATH_SEP;
+#ifdef PATH_SEP2
+    (*ppState)->altSystemPathSeparator = PATH_SEP2;
+#else
+    (*ppState)->altSystemPathSeparator = '\0';
+#endif
     (*ppState)->programVersion = gProgramVersion;
 
     return kNuErrNone;
@@ -108,6 +113,9 @@ NState_DebugDump(const NulibState* pState)
     printf("NState:\n");
     printf("  programVersion: '%s'\n", pState->programVersion);
     printf("  systemPathSeparator: '%c'\n", pState->systemPathSeparator);
+    if (pState->altSystemPathSeparator != '\0')
+        printf("  altSystemPathSeparator: '%c'\n",
+            pState->altSystemPathSeparator);
     printf("  archiveFilename: '%s'\n", pState->archiveFilename);
     printf("  filespec: %ld (%s ...)\n", pState->filespecCount,
         !pState->filespecCount ? "<none>" : *pState->filespecPointer);
@@ -158,6 +166,12 @@ char
 NState_GetSystemPathSeparator(const NulibState* pState)
 {
     return pState->systemPathSeparator;
+}
+
+char
+NState_GetAltSystemPathSeparator(const NulibState* pState)
+{
+    return pState->altSystemPathSeparator;
 }
 
 const char*
