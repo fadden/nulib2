@@ -757,77 +757,94 @@ NuIsPresizedThreadID(NuThreadID threadID)
  * ===========================================================================
  */
 
-NUFXLIB_API NuError
+NUFXLIB_API NuCallback
 NuSetSelectionFilter(NuArchive* pArchive, NuCallback filterFunc)
 {
     NuError err;
+    NuCallback oldFunc = kNuInvalidCallback;
 
     /*Assert(!((ulong)filterFunc % 4));*/
 
-    if ((err = Nu_ValidateNuArchive(pArchive)) == kNuErrNone)
+    if ((err = Nu_ValidateNuArchive(pArchive)) == kNuErrNone) {
+        oldFunc = pArchive->selectionFilterFunc;
         pArchive->selectionFilterFunc = filterFunc;
+    }
 
-    return err;
+    return oldFunc;
 }
 
-NUFXLIB_API NuError
+NUFXLIB_API NuCallback
 NuSetOutputPathnameFilter(NuArchive* pArchive, NuCallback filterFunc)
 {
     NuError err;
+    NuCallback oldFunc = kNuInvalidCallback;
 
     /*Assert(!((ulong)filterFunc % 4));*/
 
-    if ((err = Nu_ValidateNuArchive(pArchive)) == kNuErrNone)
+    if ((err = Nu_ValidateNuArchive(pArchive)) == kNuErrNone) {
+        oldFunc = pArchive->outputPathnameFunc;
         pArchive->outputPathnameFunc = filterFunc;
+    }
 
-    return err;
+    return oldFunc;
 }
 
-NUFXLIB_API NuError
+NUFXLIB_API NuCallback
 NuSetProgressUpdater(NuArchive* pArchive, NuCallback updateFunc)
 {
     NuError err;
+    NuCallback oldFunc = kNuInvalidCallback;
 
     /*Assert(!((ulong)updateFunc % 4));*/
 
-    if ((err = Nu_ValidateNuArchive(pArchive)) == kNuErrNone)
+    if ((err = Nu_ValidateNuArchive(pArchive)) == kNuErrNone) {
+        oldFunc = pArchive->progressUpdaterFunc;
         pArchive->progressUpdaterFunc = updateFunc;
+    }
 
-    return err;
+    return oldFunc;
 }
 
-NUFXLIB_API NuError
+NUFXLIB_API NuCallback
 NuSetErrorHandler(NuArchive* pArchive, NuCallback errorFunc)
 {
     NuError err;
+    NuCallback oldFunc = kNuInvalidCallback;
 
     /*Assert(!((ulong)errorFunc % 4));*/
 
-    if ((err = Nu_ValidateNuArchive(pArchive)) == kNuErrNone)
+    if ((err = Nu_ValidateNuArchive(pArchive)) == kNuErrNone) {
+        oldFunc = pArchive->errorHandlerFunc;
         pArchive->errorHandlerFunc = errorFunc;
+    }
 
-    return err;
+    return oldFunc;
 }
 
-NUFXLIB_API NuError
+NUFXLIB_API NuCallback
 NuSetErrorMessageHandler(NuArchive* pArchive, NuCallback messageHandlerFunc)
 {
     NuError err;
+    NuCallback oldFunc = kNuInvalidCallback;
 
     /*Assert(!((ulong)messageHandlerFunc % 4));*/
 
-    if ((err = Nu_ValidateNuArchive(pArchive)) == kNuErrNone)
+    if ((err = Nu_ValidateNuArchive(pArchive)) == kNuErrNone) {
+        oldFunc = pArchive->messageHandlerFunc;
         pArchive->messageHandlerFunc = messageHandlerFunc;
+    }
 
-    return err;
+    return oldFunc;
 }
 
-NUFXLIB_API NuError
+NUFXLIB_API NuCallback
 NuSetGlobalErrorMessageHandler(NuCallback messageHandlerFunc)
 {
+    NuCallback oldFunc = kNuInvalidCallback;
     /*Assert(!((ulong)messageHandlerFunc % 4));*/
 
+    oldFunc = gNuGlobalErrorMessageHandler;
     gNuGlobalErrorMessageHandler = messageHandlerFunc;
-    return kNuErrNone;
+    return oldFunc;
 }
 

@@ -540,16 +540,11 @@ CloseFunc(ExerciserState* pState, int argc, char** argv)
 static NuError
 DeleteFunc(ExerciserState* pState, int argc, char** argv)
 {
-    NuError err;
-
     (void) pState, (void) argc, (void) argv;    /* shut up, gcc */
     assert(ExerciserState_GetNuArchive(pState) != nil);
     assert(argc == 1);
 
-    err = NuSetSelectionFilter(ExerciserState_GetNuArchive(pState),
-            SelectionFilter);
-    if (err != kNuErrNone)
-        return err;
+    NuSetSelectionFilter(ExerciserState_GetNuArchive(pState), SelectionFilter);
 
     return NuDelete(ExerciserState_GetNuArchive(pState));
 }
@@ -588,16 +583,11 @@ DeleteThreadFunc(ExerciserState* pState, int argc, char** argv)
 static NuError
 ExtractFunc(ExerciserState* pState, int argc, char** argv)
 {
-    NuError err;
-
     (void) pState, (void) argc, (void) argv;    /* shut up, gcc */
     assert(ExerciserState_GetNuArchive(pState) != nil);
     assert(argc == 1);
 
-    err = NuSetSelectionFilter(ExerciserState_GetNuArchive(pState),
-            SelectionFilter);
-    if (err != kNuErrNone)
-        return err;
+    NuSetSelectionFilter(ExerciserState_GetNuArchive(pState), SelectionFilter);
 
     return NuExtract(ExerciserState_GetNuArchive(pState));
 }
@@ -926,7 +916,8 @@ SetErrorCallbackFunc(ExerciserState* pState, int argc, char** argv)
     assert(ExerciserState_GetNuArchive(pState) != nil);
     assert(argc == 1);
 
-    return NuSetErrorHandler(ExerciserState_GetNuArchive(pState), ErrorHandler);
+    NuSetErrorHandler(ExerciserState_GetNuArchive(pState), ErrorHandler);
+    return kNuErrNone;
 }
 
 /*

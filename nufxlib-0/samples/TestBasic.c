@@ -480,9 +480,10 @@ Test_Verify(NuArchive* pArchive)
 
     printf("... verifying CRCs\n");
 
-    err = NuSetSelectionFilter(pArchive, VerifySelectionCallback);
-    if (err != kNuErrNone) {
-        fprintf(stderr, "ERROR: unable to set selection filter (err=%d)\n",err);
+    if (NuSetSelectionFilter(pArchive, VerifySelectionCallback) ==
+        kNuInvalidCallback)
+    {
+        fprintf(stderr, "ERROR: unable to set selection filter\n");
         goto failed;
     }
 
@@ -982,9 +983,10 @@ DoTests(void)
         fprintf(stderr, "ERROR: NuOpenRW failed (err=%d)\n", err);
         goto failed;
     }
-    err = NuSetErrorMessageHandler(pArchive, ErrorMessageHandler);
-    if (err != kNuErrNone) {
-        fprintf(stderr, "ERROR: couldn't set message handler (err=%d)\n", err);
+    if (NuSetErrorMessageHandler(pArchive, ErrorMessageHandler) ==
+        kNuInvalidCallback)
+    {
+        fprintf(stderr, "ERROR: couldn't set message handler\n");
         goto failed;
     }
 
@@ -1017,9 +1019,10 @@ DoTests(void)
         fprintf(stderr, "ERROR: NuOpenRO failed (err=%d)\n", err);
         goto failed;
     }
-    err = NuSetErrorMessageHandler(pArchive, ErrorMessageHandler);
-    if (err != kNuErrNone) {
-        fprintf(stderr, "ERROR: couldn't set message handler (err=%d)\n", err);
+    if (NuSetErrorMessageHandler(pArchive, ErrorMessageHandler) ==
+        kNuInvalidCallback)
+    {
+        fprintf(stderr, "ERROR: couldn't set message handler\n");
         goto failed;
     }
 
@@ -1058,9 +1061,10 @@ DoTests(void)
         fprintf(stderr, "ERROR: re-NuOpenRW failed (err=%d)\n", err);
         goto failed;
     }
-    err = NuSetErrorMessageHandler(pArchive, ErrorMessageHandler);
-    if (err != kNuErrNone) {
-        fprintf(stderr, "ERROR: couldn't set message handler (err=%d)\n", err);
+    if (NuSetErrorMessageHandler(pArchive, ErrorMessageHandler) ==
+        kNuInvalidCallback)
+    {
+        fprintf(stderr, "ERROR: couldn't set message handler\n");
         goto failed;
     }
 
@@ -1156,7 +1160,9 @@ main(void)
            "  %s with [%s]\n\n",
         major, minor, bug, pBuildDate, pBuildFlags);
 
-    if (NuSetGlobalErrorMessageHandler(ErrorMessageHandler) != kNuErrNone) {
+    if (NuSetGlobalErrorMessageHandler(ErrorMessageHandler) ==
+        kNuInvalidCallback)
+    {
         fprintf(stderr, "ERROR: can't set the global message handler");
         exit(1);
     }
