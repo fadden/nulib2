@@ -1,4 +1,4 @@
-NuLib2 README, updated 2000/05/18
+NuLib2 README, updated 2002/10/09
 http://www.nulib.com/
 
 See "COPYING" for distribution restrictions.
@@ -20,10 +20,16 @@ Run the "configure" script.  Read through "INSTALL" if you haven't used
 one of these before, especially if you want to use a specific compiler
 or a particular set of compiler flags.
 
+If you have diabled deflate or enabled bzip2 support in libnufx.a, you
+will need to provide the same --enable-METHOD or --disable-METHOD flag
+to configure here.  If you're using shared libraries then the link
+dependencies are taken care of and you don't need to worry.
+
 Run "make depend" if you have makedepend, and then type "make".
 This should leave you with an executable called "nulib2".  If you like,
 "make install" will put things into your install directory, usually
-/usr/local/bin/ and /usr/local/man/.
+/usr/local/bin/ and /usr/local/man/.  You can change this by using
+"./configure --prefix=directory".
 
 You may want to fiddle with the "OPT" setting in Makefile to enable or
 disable optimizations and assertions.  Because almost all of the hard

@@ -65,6 +65,7 @@ typedef struct NulibState {
     Boolean         modJunkPaths;
     Boolean         modNoCompression;
     Boolean         modCompressDeflate;
+    Boolean         modCompressBzip2;
     Boolean         modComments;
     Boolean         modBinaryII;
     Boolean         modConvertText;
@@ -132,6 +133,8 @@ Boolean NState_GetModNoCompression(const NulibState* pState);
 void NState_SetModNoCompression(NulibState* pState, Boolean val);
 Boolean NState_GetModCompressDeflate(const NulibState* pState);
 void NState_SetModCompressDeflate(NulibState* pState, Boolean val);
+Boolean NState_GetModCompressBzip2(const NulibState* pState);
+void NState_SetModCompressBzip2(NulibState* pState, Boolean val);
 Boolean NState_GetModComments(const NulibState* pState);
 void NState_SetModComments(NulibState* pState, Boolean val);
 Boolean NState_GetModBinaryII(const NulibState* pState);

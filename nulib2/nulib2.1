@@ -1,12 +1,12 @@
 .\" nulib2.1
-.\" Copyright (C) 2000 by Andy McFadden.  All Rights Reserved.
+.\" Copyright (C) 2002 by Andy McFadden.  All Rights Reserved.
 .\" This is free software; you can redistribute it and/or modify it under the
 .\" terms of the GNU General Public License, see the file COPYING.
 .\"
 .\" The general structure of this man page was borrowed from "zip.1" in
 .\" the Red Hat Linux 6.0 distribution.
 .\"
-.TH NULIB2 1L "17 Jan 2000"
+.TH NULIB2 1L "09 Oct 2002"
 .SH NAME
 nulib2 \- package and compress (archive) files
 .SH SYNOPSIS
@@ -23,10 +23,15 @@ to and extract files from
 .IR .SEA
 (as created by GS/ShrinkIt), and
 .I .BSE
-files.
+files.  In addition, it can extract files from
+.IR .BNY
+and
+.IR .BQY
+Binary II archives.
 .LP
 When extracting, testing, or listing the contents of an archive, you can
 specify "-" for the archive name.  The archive will be read from stdin.
+(If the archive is Binary II, you must specify the "-b" flag.)
 .LP
 Filenames are considered case-sensitive.
 .\" .LP
@@ -39,6 +44,9 @@ Filenames are considered case-sensitive.
 This man page contains a summary of available options.  For full
 documentation and the latest versions, visit http://www.nulib.com/.
 .SH "OPTIONS"
+.TP
+.B \-h
+Get verbose help output.
 .TP
 .B \-a
 Add files to an archive.  If the archive does not exist, a new one
@@ -66,12 +74,9 @@ shown.
 .B \-x
 Extract files from an archive.  If no files are listed, all files in
 the archive are extracted.
-.\" There's also a '-z' command that does a verbose archive dump, but it's
+.\" There's also a '-g' command that does a verbose archive dump, but it's
 .\" only available if NufxLib was built with debugging enabled.
 .SH "MODIFIERS"
-.TP
-.B \-0
-Don't use compression.  Files added will be stored without compression.
 .TP
 .B \-c
 Comments.  When extracting, comments will be displayed.  When adding,
@@ -127,6 +132,25 @@ or delete entire subdirectories from the archive.
 Update files.  When adding, files in the archive that are older than files
 on disk are updated.  Files in the archive that are the same age or newer
 aren't touched.  New files will be added.  Works similarly when extracting.
+.TP
+.B \-b
+Binary II.  Forces NuLib2 to treat the archive as Binary II.  Useful for
+opening NuFX-in-BNY archives (.BXY) if you want to strip the wrapper off.
+You must specify this for Binary II archives on stdin.
+.TP
+.B \-0
+Don't use compression.  Files added will be stored without compression.
+(Note that's dash-zero, not dash-oh.)
+.TP
+.B \-z
+Use "deflate" compression.  This option is only available if libz was
+linked against.  Archives created with this algorithm will not be
+usable on an Apple II.
+.TP
+.B \-zz
+Use "bzip2" compression.  This option is only available if libbz2 was
+linked against.  Archives created with this algorithm will not be
+usable on an Apple II.
 .SH "EXAMPLES"
 A simple example:
 .IP
@@ -172,7 +196,7 @@ zip(1L),
 unzip(1L),
 nulib(1L)
 .SH BUGS
-Probably.
+Nah.
 .SH AUTHOR
-Copyright (C) 2000 by Andy McFadden.  All Rights Reserved.
+Copyright (C) 2002 by Andy McFadden.  All Rights Reserved.
 .\" end of file

@@ -18,7 +18,7 @@ enum RecordKind {
 };
 
 static const char* gShortFormatNames[] = {
-    "unc", "squ", "lz1", "lz2", "u12", "u16", "dfl"
+    "unc", "squ", "lz1", "lz2", "u12", "u16", "dfl", "bzp"
 };
 
 

@@ -104,9 +104,6 @@
 /* Define if you have the <unistd.h> header file.  */
 #undef HAVE_UNISTD_H
 
-/* Define if you have libz.a or libz.so */
-#undef HAVE_LIBZ
-
 /* Define if we want to use the dmalloc library (--enable-dmalloc).  */
 #undef USE_DMALLOC
 

@@ -77,7 +77,9 @@ install-shared:
 	LIB_PRODUCT="libnufx.so" $(MAKE) -e install
 
 # Link against the shared version of libnufx.  This is only needed so
-# the dependency checking does the right thing.
+# the dependency checking does the right thing during development.  Note
+# we probably don't need to link against all of LIBS, especially -lz -lbz2,
+# but there's little harm in doing so.
 shared::
 	LIB_PRODUCT="libnufx.so" $(MAKE) -e
 

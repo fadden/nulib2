@@ -162,17 +162,16 @@ Usage(const NulibState* pState)
         " modifiers:\n"
         "  -u  update files (add + keep newest)  -f  freshen (update, no add)\n"
         "  -r  recurse into subdirs              -j  junk (don't record) directory names\n"
-        "  -0  don't use compression             -c  add one-line comments\n"
-    #ifdef HAVE_LIBZ
-        "  -z  use gzip 'deflate' compression    "
-    #else
-        "  -z  use zlib [not included]           "
-    #endif
-    #ifdef HAVE_LIBBZ2
-                                                "-zz use bzip2 'BWT' compression\n"
-    #else
-                                                "-zz use BWT [not included]\n"
-    #endif
+        "  -0  don't use compression             -c  add one-line comments\n");
+    if (NuTestFeature(kNuFeatureCompressDeflate) == kNuErrNone)
+        printf("  -z  use gzip 'deflate' compression    ");
+    else
+        printf("  -z  use zlib [not included]           ");
+    if (NuTestFeature(kNuFeatureCompressBzip2) == kNuErrNone)
+        printf("-zz use bzip2 'BWT' compression\n");
+    else
+        printf("-zz use BWT [not included]\n");
+    printf(
         "  -l  auto-convert text files           -ll convert CR/LF on ALL files\n"
         "  -s  stomp existing files w/o asking   -k  store files as disk images\n"
         "  -e  preserve ProDOS file types        -ee preserve types and extend names\n"
@@ -263,8 +262,20 @@ DoHelp(const NulibState* pState)
 
         printf("\n%s", help[i].longDescr);
     }
-
     putchar('\n');
+
+    printf("Compression algorithms supported by this copy of NufxLib:\n");
+    printf("  Huffman SQueeze ...... %s\n",
+        NuTestFeature(kNuFeatureCompressHuffmanSQ) == kNuErrNone? "yes" : "no");
+    printf("  LZW/1 and LZW/2 ...... %s\n",
+        NuTestFeature(kNuFeatureCompressLZW) == kNuErrNone ? "yes" : "no");
+    printf("  12- and 16-bit LZC ... %s\n",
+        NuTestFeature(kNuFeatureCompressLZC) == kNuErrNone ? "yes" : "no");
+    printf("  Deflate .............. %s\n",
+        NuTestFeature(kNuFeatureCompressDeflate) == kNuErrNone ? "yes" : "no");
+    printf("  bzip2 ................ %s\n",
+        NuTestFeature(kNuFeatureCompressBzip2) == kNuErrNone ? "yes" : "no");
+
 
     return kNuErrNone;
 }
@@ -354,22 +365,20 @@ ProcessOptions(NulibState* pState, int argc, char* const* argv)
             case 'b': NState_SetModBinaryII(pState, true);              break;
             case 'z':
                 if (*(cp+1) == 'z') {
-                    #ifdef HAVE_LIBBZ2
-                    NState_SetModCompressBWT(pState, true);
-                    #else
-                    fprintf(stderr,
-                        "%s: WARNING: libbzip2 support not compiled in\n",
-                        gProgName);
-                    #endif
+                    if (NuTestFeature(kNuFeatureCompressBzip2) == kNuErrNone)
+                        NState_SetModCompressBzip2(pState, true);
+                    else
+                        fprintf(stderr,
+                            "%s: WARNING: libbz2 support not compiled in\n",
+                            gProgName);
                     cp++;
                 } else {
-                    #ifdef HAVE_LIBZ
-                    NState_SetModCompressDeflate(pState, true);
-                    #else
-                    fprintf(stderr,
-                        "%s: WARNING: zlib support not compiled in\n",
-                        gProgName);
-                    #endif
+                    if (NuTestFeature(kNuFeatureCompressDeflate) == kNuErrNone)
+                        NState_SetModCompressDeflate(pState, true);
+                    else
+                        fprintf(stderr,
+                            "%s: WARNING: zlib support not compiled in\n",
+                            gProgName);
                 }
                 break;
             case 'e':

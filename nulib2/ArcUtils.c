@@ -911,9 +911,14 @@ OpenArchiveReadWrite(NulibState* pState)
         err = NuSetValue(pArchive, kNuValueDataCompression, kNuCompressNone);
         BailError(err);
     }
-    /* handle "-9" flag */
+    /* handle "-z" flag */
     if (NState_GetModCompressDeflate(pState)) {
         err = NuSetValue(pArchive, kNuValueDataCompression, kNuCompressDeflate);
+        BailError(err);
+    }
+    /* handle "-zz" flag */
+    if (NState_GetModCompressBzip2(pState)) {
+        err = NuSetValue(pArchive, kNuValueDataCompression, kNuCompressBzip2);
         BailError(err);
     }
 

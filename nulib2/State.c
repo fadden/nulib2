@@ -126,6 +126,8 @@ NState_DebugDump(const NulibState* pState)
         printf("    noCompression\n");
     if (pState->modCompressDeflate)
         printf("    compressDeflate\n");
+    if (pState->modCompressBzip2)
+        printf("    compressBzip2\n");
     if (pState->modComments)
         printf("    comments\n");
     if (pState->modBinaryII)
@@ -428,6 +430,18 @@ void
 NState_SetModCompressDeflate(NulibState* pState, Boolean val)
 {
     pState->modCompressDeflate = val;
+}
+
+Boolean
+NState_GetModCompressBzip2(const NulibState* pState)
+{
+    return pState->modCompressBzip2;
+}
+
+void
+NState_SetModCompressBzip2(NulibState* pState, Boolean val)
+{
+    pState->modCompressBzip2 = val;
 }
 
 Boolean
