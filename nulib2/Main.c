@@ -149,8 +149,9 @@ Usage(const NulibState* pState)
     printf("\nNulib2 v%s, linked with NufxLib v%ld.%ld.%ld [%s]\n",
         NState_GetProgramVersion(pState),
         majorVersion, minorVersion, bugVersion, nufxLibFlags);
+    printf("Copyright (C) 2000-2003 by Andy McFadden.  All Rights Reserved.\n");
     printf("This software is distributed under terms of the GNU General Public License.\n");
-    printf("Written by Andy McFadden.  See http://www.nulib.com/ for source and docs.\n\n");
+    printf("See http://www.nulib.com/ for source code and documentation.\n\n");
     printf("Usage: %s -command[modifiers] archive [filename-list]\n\n",
         gProgName);
     printf(
@@ -251,6 +252,7 @@ DoHelp(const NulibState* pState)
 
     printf("%s",
 "\n"
+"Copyright (C) 2000-2003 by Andy McFadden.  All Rights Reserved.\n\n"
 "NuLib2 is free software, distributed under terms of the GNU General\n"
 "Public License.  NuLib2 uses NufxLib, a complete library of functions\n"
 "for accessing NuFX (ShrinkIt) archives.  NufxLib is also free software,\n"
@@ -562,7 +564,17 @@ int
 main(int argc, char** argv)
 {
     NulibState* pState = nil;
+    long majorVersion, minorVersion, bugVersion;
     int result = 0;
+
+    (void) NuGetVersion(&majorVersion, &minorVersion, &bugVersion, nil, nil);
+    if (majorVersion != kNuVersionMajor || minorVersion < kNuVersionMinor) {
+        fprintf(stderr, "ERROR: wrong version of NufxLib --"
+                        " wanted %d.%d.x, got %ld.%ld.%ld.\n",
+            kNuVersionMajor, kNuVersionMinor,
+            majorVersion, minorVersion, bugVersion);
+        goto bail;
+    }
 
     #if 0
     extern NuResult ErrorMessageHandler(NuArchive* pArchive,

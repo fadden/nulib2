@@ -840,6 +840,12 @@ OpenArchiveReadOnly(NulibState* pState)
     err = NuSetValue(pArchive, kNuValueMimicSHK, true);
     BailError(err);
 
+/*
+    DBUG(("--- enabling 'mask threadless' mode\n"));
+    err = NuSetValue(pArchive, kNuValueMaskDataless, true);
+    BailError(err);
+*/
+
     if (strcmp(SYSTEM_DEFAULT_EOL, "\r") == 0)
         err = NuSetValue(pArchive, kNuValueEOL, kNuEOLCR);
     else if (strcmp(SYSTEM_DEFAULT_EOL, "\n") == 0)
