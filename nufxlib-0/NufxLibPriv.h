@@ -724,6 +724,7 @@ NuError Nu_Contents(NuArchive* pArchive, NuCallback contentFunc);
 NuError Nu_Extract(NuArchive* pArchive);
 NuError Nu_ExtractRecord(NuArchive* pArchive, NuRecordIdx recIdx);
 NuError Nu_Test(NuArchive* pArchive);
+NuError Nu_TestRecord(NuArchive* pArchive, NuRecordIdx recIdx);
 NuError Nu_GetRecord(NuArchive* pArchive, NuRecordIdx recordIdx,
     const NuRecord** ppRecord);
 NuError Nu_GetRecordIdxByName(NuArchive* pArchive, const char* name,

@@ -168,6 +168,20 @@ NuTest(NuArchive* pArchive)
     return err;
 }
 
+NUFXLIB_API NuError
+NuTestRecord(NuArchive* pArchive, NuRecordIdx recordIdx)
+{
+    NuError err;
+
+    if ((err = Nu_ValidateNuArchive(pArchive)) == kNuErrNone) {
+        Nu_SetBusy(pArchive);
+        err = Nu_TestRecord(pArchive, recordIdx);
+        Nu_ClearBusy(pArchive);
+    }
+
+    return err;
+}
+
 
 /*
  * ===========================================================================

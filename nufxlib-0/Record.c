@@ -554,6 +554,7 @@ Nu_RecordSet_MoveAllRecords(NuArchive* pArchive, NuRecordSet* pDstSet,
     } else {
         /* append to dst list */
         Assert(pDstSet->loaded);
+		Assert(pDstSet->nuRecordTail != nil);
         pDstSet->nuRecordTail->pNext = pSrcSet->nuRecordHead;
         pDstSet->nuRecordTail = pSrcSet->nuRecordTail;
         pDstSet->numRecords += pSrcSet->numRecords;
@@ -1837,6 +1838,35 @@ Nu_Test(NuArchive* pArchive)
     return err;
 }
 
+/*
+ * Test a single record.
+ */
+NuError
+Nu_TestRecord(NuArchive* pArchive, NuRecordIdx recIdx)
+{
+    NuError err;
+    NuRecord* pRecord;
+
+    if (Nu_IsStreaming(pArchive))
+        return kNuErrUsage;
+    err = Nu_GetTOCIfNeeded(pArchive);
+    BailError(err);
+
+    /* find the correct record by index */
+    err = Nu_RecordSet_FindByIdx(&pArchive->origRecordSet, recIdx, &pRecord);
+    BailError(err);
+    Assert(pRecord != nil);
+
+    /* extract whatever looks promising */
+    pArchive->testMode = true;
+    err = Nu_ExtractRecordByPtr(pArchive, pRecord);
+    pArchive->testMode = false;
+    BailError(err);
+
+bail:
+    return err;
+}
+
 
 /*
  * Return a pointer to a NuRecord.
@@ -2475,7 +2505,14 @@ bail:
  * We don't actually check to see if the filename is changing.  If you
  * want to rename something to the same thing, go right ahead.  (This
  * provides a way for applications to "filter" records that have filenames
- * in the headers.)
+ * in the headers instead of a thread.)
+ *
+ * BUG: we shouldn't allow a disk image to be renamed to have a complex
+ * path name (e.g. "dir1:dir2:foo").  However, we may not be able to catch
+ * that here depending on pending operations.
+ *
+ * We might also want to screen out trailing fssep chars, though the NuFX
+ * spec doesn't say they're illegal.
  */
 NuError
 Nu_Rename(NuArchive* pArchive, NuRecordIdx recIdx, const char* pathname,

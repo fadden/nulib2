@@ -161,9 +161,9 @@ typedef unsigned long NuThreadIdx;
  */
 typedef unsigned long NuThreadID;
 #define NuMakeThreadID(class, kind) /* construct a NuThreadID */ \
-            ((unsigned long)class << 16 | (unsigned long)kind)
+            ((unsigned long)(class) << 16 | (unsigned long)(kind))
 #define NuGetThreadID(pThread)      /* pull NuThreadID out of NuThread */ \
-            (NuMakeThreadID(pThread->thThreadClass, pThread->thThreadKind))
+            (NuMakeThreadID((pThread)->thThreadClass, (pThread)->thThreadKind))
 #define NuThreadIDGetClass(threadID) /* get threadClass from NuThreadID */ \
             ((unsigned short) ((unsigned long)(threadID) >> 16))
 #define NuThreadIDGetKind(threadID) /* get threadKind from NuThreadID */ \
@@ -386,6 +386,9 @@ typedef struct NuDateTime {
 
 /*
  * NuFX "thread" definition.
+ *
+ * Guaranteed not to have pointers in it.  Can be copied with memcpy or
+ * assignment.
  */
 typedef struct NuThread {
     /* from the archive */
@@ -399,7 +402,7 @@ typedef struct NuThread {
     /* extra goodies */
     NuThreadIdx         threadIdx;
     unsigned long       actualThreadEOF;    /* disk images might be off */
-    long                fileOffset;         /* fseek offset to data in file */
+    long                fileOffset;         /* fseek offset to data in shk */
 
     /* internal use only */
     unsigned short      used;               /* mark as uninteresting */
@@ -712,6 +715,7 @@ NUFXLIB_API NuError NuStreamOpenRO(FILE* infp, NuArchive** ppArchive);
 NUFXLIB_API NuError NuContents(NuArchive* pArchive, NuCallback contentFunc);
 NUFXLIB_API NuError NuExtract(NuArchive* pArchive);
 NUFXLIB_API NuError NuTest(NuArchive* pArchive);
+NUFXLIB_API NuError NuTestRecord(NuArchive* pArchive, NuRecordIdx recordIdx);
 
 /* strictly non-streaming read-only interfaces */
 NUFXLIB_API NuError NuOpenRO(const char* archivePathname,NuArchive** ppArchive);
@@ -733,7 +737,7 @@ NUFXLIB_API NuError NuFlush(NuArchive* pArchive, long* pStatusFlags);
 NUFXLIB_API NuError NuAddRecord(NuArchive* pArchive,
             const NuFileDetails* pFileDetails, NuRecordIdx* pRecordIdx);
 NUFXLIB_API NuError NuAddThread(NuArchive* pArchive, NuRecordIdx recordIdx,
-            NuThreadIdx threadID, NuDataSource* pDataSource,
+            NuThreadID threadID, NuDataSource* pDataSource,
             NuThreadIdx* pThreadIdx);
 NUFXLIB_API NuError NuAddFile(NuArchive* pArchive, const char* pathname,
             const NuFileDetails* pFileDetails, short fromRsrcFork,
@@ -746,7 +750,7 @@ NUFXLIB_API NuError NuUpdatePresizedThread(NuArchive* pArchive,
             NuThreadIdx threadIdx, NuDataSource* pDataSource, long* pMaxLen);
 NUFXLIB_API NuError NuDelete(NuArchive* pArchive);
 NUFXLIB_API NuError NuDeleteRecord(NuArchive* pArchive, NuRecordIdx recordIdx);
-NUFXLIB_API NuError NuDeleteThread(NuArchive* pArchive, NuRecordIdx threadIdx);
+NUFXLIB_API NuError NuDeleteThread(NuArchive* pArchive, NuThreadIdx threadIdx);
 
 /* general interfaces */
 NUFXLIB_API NuError NuClose(NuArchive* pArchive);
