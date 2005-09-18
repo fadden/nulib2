@@ -96,6 +96,7 @@ Nu_NuArchiveNew(NuArchive** ppArchive)
     (*ppArchive)->valStripHighASCII = false;
     /* bug: this can't be set by application! */
     (*ppArchive)->valJunkSkipMax = kDefaultJunkSkipMax;
+    (*ppArchive)->valIgnoreLZW2Len = false;
 
     (*ppArchive)->messageHandlerFunc = gNuGlobalErrorMessageHandler;
 

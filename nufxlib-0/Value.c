@@ -62,6 +62,9 @@ Nu_GetValue(NuArchive* pArchive, NuValueID ident, NuValue* pValue)
     case kNuValueJunkSkipMax:
         *pValue = pArchive->valJunkSkipMax;
         break;
+    case kNuValueIgnoreLZW2Len:
+        *pValue = pArchive->valIgnoreLZW2Len;
+        break;
     default:
         err = kNuErrInvalidArg;
         Nu_ReportError(NU_BLOB, err, "Unknown ValueID %d requested", ident);
@@ -185,6 +188,14 @@ Nu_SetValue(NuArchive* pArchive, NuValueID ident, NuValue value)
             goto bail;
         }
         pArchive->valJunkSkipMax = value;
+        break;
+    case kNuValueIgnoreLZW2Len:
+        if (value != true && value != false) {
+            Nu_ReportError(NU_BLOB, err,
+                "Invalid kNuValueIgnoreLZW2Len value %ld", value);
+            goto bail;
+        }
+        pArchive->valIgnoreLZW2Len = value;
         break;
     default:
         Nu_ReportError(NU_BLOB, err, "Unknown ValueID %d requested", ident);

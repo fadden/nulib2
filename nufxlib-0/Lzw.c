@@ -1200,7 +1200,7 @@ main_loop:
 
 bail:
     /*DBUG_LZW(("### end of block\n"));*/
-    if (inbuf != inbufend) {
+    if (expectedInputUsed != (unsigned int) -1 && inbuf != inbufend) {
         /* data was corrupted; if we keep going this will get worse */
         DBUG(("--- inbuf != inbufend in ExpandLZW2 (diff=%d)\n",
             inbufend - inbuf));
@@ -1481,7 +1481,11 @@ Nu_ExpandLZW(NuArchive* pArchive, const NuRecord* pRecord,
             if (!isType2) {
                 err = Nu_ExpandLZW1(lzwState, rleLen);
             } else {
-                if (lzwState->dataInBuffer < lzwLen) {
+                if (pArchive->valIgnoreLZW2Len) {
+                    /* some badly-formed archives need this -- not sure
+                       what's creating them, possibly a Mac program */
+                    lzwLen = (unsigned int) -1;
+                } else if (lzwState->dataInBuffer < lzwLen) {
                     /* rare -- GSHK will do this if you don't let it finish */
                     err = kNuErrBufferUnderrun;
                     Nu_ReportError(NU_BLOB, err, "not enough compressed data "

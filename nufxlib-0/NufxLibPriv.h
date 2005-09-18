@@ -156,6 +156,7 @@ struct NuArchive {
     NuValue         valOnlyUpdateOlder;     /* modify original arc in place? */
     NuValue         valStripHighASCII;      /* during EOL conv, strip hi bit? */
     NuValue         valJunkSkipMax;         /* scan this far for header */
+    NuValue         valIgnoreLZW2Len;       /* don't verify LZW/II len field */
 
     /* callback functions */
     NuCallback      selectionFilterFunc;
