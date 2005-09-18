@@ -1,6 +1,6 @@
 /*
  * NuFX archive manipulation library
- * Copyright (C) 2000-2004 by Andy McFadden, All Rights Reserved.
+ * Copyright (C) 2000-2005 by Andy McFadden, All Rights Reserved.
  * This is free software; you can redistribute it and/or modify it under the
  * terms of the GNU Library General Public License, see the file COPYING-LIB.
  *
@@ -367,7 +367,7 @@ Nu_DebugDumpAll(NuArchive* pArchive)
     printf("*Archive pathname: '%s'\n", pArchive->archivePathname);
     printf("*Archive type: %d\n", pArchive->archiveType);
     printf("*Header offset: %ld (junk offset=%ld)\n",
-		pArchive->headerOffset, pArchive->junkOffset);
+        pArchive->headerOffset, pArchive->junkOffset);
     printf("*Num records: %ld orig, %ld copy, %ld new\n",
         Nu_RecordSet_GetNumRecords(&pArchive->origRecordSet),
         Nu_RecordSet_GetNumRecords(&pArchive->copyRecordSet),

@@ -140,7 +140,7 @@ Legalese
 ========
 
 NuLib2, a NuFX and Binary II archive application.
-Copyright (C) 2000-2004 by Andy McFadden, All Rights Reserved.
+Copyright (C) 2000-2005 by Andy McFadden, All Rights Reserved.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
