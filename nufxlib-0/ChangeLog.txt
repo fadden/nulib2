@@ -1,3 +1,5 @@
+2005/09/17  ***** v2.1.0 shipped *****
+
 2005/09/17  fadden
     - Added "kNuValIgnoreLZW2Len" flag, which enables NuLib2 to handle
       archives created by an unknown but badly broken program.
