@@ -673,7 +673,7 @@ NuError Nu_ExpandLZW(NuArchive* pArchive, const NuRecord* pRecord,
     const NuThread* pThread, FILE* infp, NuFunnel* pFunnel, ushort* pThreadCrc);
 
 /* MiscUtils.c */
-extern const char* kNufxLibName;
+/*extern const char* kNufxLibName;*/
 extern NuCallback gNuGlobalErrorMessageHandler;
 const char* Nu_StrError(NuError err);
 void Nu_ReportError(NuArchive* pArchive, const char* file, int line,
