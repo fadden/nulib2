@@ -29,11 +29,11 @@ extern "C" {
  * application will not be affected by them.)
  *
  * The "bug" version can usually be ignored, since it represents minor
- * fixes.
+ * fixes.  Unless, of course, your code depends upon that fix.
  */
 #define kNuVersionMajor     2
 #define kNuVersionMinor     1
-#define kNuVersionBug       0
+#define kNuVersionBug       1
 
 
 /*
