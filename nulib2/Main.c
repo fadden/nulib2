@@ -1,6 +1,6 @@
 /*
  * Nulib2
- * Copyright (C) 2000-2005 by Andy McFadden, All Rights Reserved.
+ * Copyright (C) 2000-2006 by Andy McFadden, All Rights Reserved.
  * This is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License, see the file COPYING.
  *
@@ -149,7 +149,7 @@ Usage(const NulibState* pState)
     printf("\nNulib2 v%s, linked with NufxLib v%ld.%ld.%ld [%s]\n",
         NState_GetProgramVersion(pState),
         majorVersion, minorVersion, bugVersion, nufxLibFlags);
-    printf("Copyright (C) 2000-2005 by Andy McFadden.  All Rights Reserved.\n");
+    printf("Copyright (C) 2000-2006 by Andy McFadden.  All Rights Reserved.\n");
     printf("This software is distributed under terms of the GNU General Public License.\n");
     printf("See http://www.nulib.com/ for source code and documentation.\n\n");
     printf("Usage: %s -command[modifiers] archive [filename-list]\n\n",
@@ -252,7 +252,7 @@ DoHelp(const NulibState* pState)
 
     printf("%s",
 "\n"
-"Copyright (C) 2000-2005 by Andy McFadden.  All Rights Reserved.\n\n"
+"Copyright (C) 2000-2006 by Andy McFadden.  All Rights Reserved.\n\n"
 "NuLib2 is free software, distributed under terms of the GNU General\n"
 "Public License.  NuLib2 uses NufxLib, a complete library of functions\n"
 "for accessing NuFX (ShrinkIt) archives.  NufxLib is also free software,\n"
