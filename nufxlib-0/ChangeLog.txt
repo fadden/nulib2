@@ -1,3 +1,8 @@
+2006/02/18  fadden
+    - Correct a wayward assert.  (Changing the filetype of a file from an
+      HFS disk, which has zero-length data fork, falsely triggered the
+      assert.)
+
 2005/09/17  ***** v2.1.0 shipped *****
 
 2005/09/17  fadden

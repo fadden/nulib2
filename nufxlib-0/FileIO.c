@@ -1412,7 +1412,7 @@ Nu_CopyFileSection(NuArchive* pArchive, FILE* dstFp, FILE* srcFp, long length)
     Assert(pArchive != nil);
     Assert(dstFp != nil);
     Assert(srcFp != nil);
-    Assert(length);
+    Assert(length >= 0);    /* can be == 0, e.g. empty data fork from HFS */
 
     /* nice big buffer, for speed... could use getc/putc for simplicity */
     err = Nu_AllocCompressionBufferIFN(pArchive);
