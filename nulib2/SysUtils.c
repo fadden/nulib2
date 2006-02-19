@@ -115,6 +115,9 @@ UNIXNormalizeFileName(NulibState* pState, const char* srcp, long srcLen,
  * a '_' (if we're not preserving filenames) or "%00" (if we are).  The
  * "%00" sequence gets stripped off during denormalization.
  *
+ * For some reason FAT is actually even more picky than that, insisting
+ * that files like "CON.FOO.TXT" are also illegal.
+ *
  * The list comes from the Linux kernel's fs/msdos/namei.c.
  */
 static const char* fatReservedNames3[] = {
@@ -135,12 +138,14 @@ Win32NormalizeFileName(NulibState* pState, const char* srcp, long srcLen,
     const char* startp = srcp;
     static const char* kInvalid = "\\/:*?\"<>|";
 
-    /* look for an exact match */
-    if (srcLen == 3) {
+    /* look for a match on "aux" or "aux\..*" */
+    if (srcLen >= 3) {
         const char** ppcch;
 
         for (ppcch = fatReservedNames3; *ppcch != nil; ppcch++) {
-            if (strncasecmp(srcp, *ppcch, srcLen) == 0) {
+            if (strncasecmp(srcp, *ppcch, 3) == 0 &&
+                srcp[3] == '.' || srcLen == 3)
+            {
                 DBUG(("--- fixing '%s'\n", *ppcch));
                 if (NState_GetModPreserveType(pState)) {
                     *dstp++ = kForeignIndic;
@@ -151,11 +156,14 @@ Win32NormalizeFileName(NulibState* pState, const char* srcp, long srcLen,
                 break;
             }
         }
-    } else if (srcLen == 4) {
+    }
+    if (srcLen >= 4) {
         const char** ppcch;
 
         for (ppcch = fatReservedNames4; *ppcch != nil; ppcch++) {
-            if (strncasecmp(srcp, *ppcch, srcLen) == 0) {
+            if (strncasecmp(srcp, *ppcch, 4) == 0 &&
+                srcp[4] == '.' || srcLen == 4)
+            {
                 DBUG(("--- fixing '%s'\n", *ppcch));
                 if (NState_GetModPreserveType(pState)) {
                     *dstp++ = kForeignIndic;

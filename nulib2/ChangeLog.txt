@@ -1,3 +1,9 @@
+2006/02/18  ***** v2.1.1 shipped *****
+
+2006/02/18  fadden
+    - Fix handling of MS-DOS reserved names.  Besides handling names like
+      "con", we also need to handle "con.foo.txt".
+
 2005/09/17  ***** v2.1.0 shipped *****
 
 2004/10/11  ***** v2.0.3 shipped *****

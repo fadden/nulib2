@@ -683,7 +683,7 @@ BNYUnSqueeze(BNYArchive* pBny, BNYEntry* pEntry, FILE* outfp)
      */
     Assert(kSqBufferSize > 1200);
 #ifdef FULL_SQ_HEADER
-    err = USQReadShort(&usqState, &magic);
+    err = USQReadShort(&usqState, (short*) &magic);
     if (err != kNuErrNone)
         goto bail;
     if (magic != kNuSQMagic) {
@@ -692,7 +692,7 @@ BNYUnSqueeze(BNYArchive* pBny, BNYEntry* pEntry, FILE* outfp)
         goto bail;
     }
 
-    err = USQReadShort(&usqState, &fileChecksum);
+    err = USQReadShort(&usqState, (short*) &fileChecksum);
     if (err != kNuErrNone)
         goto bail;
 
