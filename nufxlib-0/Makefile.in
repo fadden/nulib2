@@ -107,10 +107,12 @@ distclean: clean
 	-rm -f config.log config.cache config.status config.h
 	-rm -f tags
 
+# Make a tarfile with a backup of the essential files.  We include "Makefile" 
+# so that we can do a "make distclean" during packaging.
 baktar:
 	@tar cvf nufxlib.tar *.txt COPYING-LIB INSTALL configure *.in Makefile \
-		Makefile.msc install-sh config.guess config.sub mkinstalldirs *.[ch] \
-		samples/*.txt samples/Makefile* samples/*.[ch]
+		Makefile.msc Makefile.dll install-sh config.guess config.sub \
+		mkinstalldirs *.[ch] samples/*.txt samples/Makefile* samples/*.[ch]
 	@gzip -9 nufxlib.tar
 	@mv -i nufxlib.tar.gz /home/fadden/BAK/
 
