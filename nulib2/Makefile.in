@@ -134,6 +134,8 @@ distbin: $(PRODUCT)
 		tar -cf - $$builddir | compress > $$builddir.tar.Z; \
 		rm -rf $$builddir
 
+# Make a tarfile with a backup of the essential files.  We include "Makefile"
+# so that we can do a "make distclean" during packaging.
 baktar:
 	@tar cvf nulib2.tar *.txt COPYING INSTALL nulib2.1 configure *.in Makefile \
 		Makefile.msc install-sh config.guess config.sub mkinstalldirs *.[ch]
