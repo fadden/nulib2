@@ -1248,6 +1248,11 @@ Nu_ExpandRLE(LZWExpandState* lzwState, const uchar* inbuf,
         if (uch == rleEscape) {
             uch = *inbuf++;
             count = *inbuf++;
+            if (outbuf + count >= outbufend) {
+                /* don't overrun buffer */
+                Assert(outbuf != outbufend);
+                break;
+            }
             while (count-- >= 0)
                 *outbuf++ = uch;
         } else {
