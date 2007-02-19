@@ -1,8 +1,8 @@
 /*
  * NuFX archive manipulation library
- * Copyright (C) 2000-2006 by Andy McFadden, All Rights Reserved.
+ * Copyright (C) 2000-2007 by Andy McFadden, All Rights Reserved.
  * This is free software; you can redistribute it and/or modify it under the
- * terms of the GNU Library General Public License, see the file COPYING.LIB.
+ * terms of the BSD License, see the file COPYING.LIB.
  *
  * Test extraction of individual threads in various ways.  The net result
  * of this is three files (out.file, out.fp, out.buf) that contain the

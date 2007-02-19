@@ -1,7 +1,7 @@
 dnl NuFX archive manipulation library
-dnl Copyright (C) 2000-2006 by Andy McFadden, All Rights Reserved.
+dnl Copyright (C) 2000-2007 by Andy McFadden, All Rights Reserved.
 dnl This is free software; you can redistribute it and/or modify it under the
-dnl terms of the GNU Library General Public License, see the file COPYING-LIB.
+dnl terms of the BSD License, see the file COPYING-LIB.
 dnl
 dnl Process this file with autoconf to produce a configure script.
 

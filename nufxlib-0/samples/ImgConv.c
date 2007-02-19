@@ -1,8 +1,8 @@
 /*
  * NuFX archive manipulation library
- * Copyright (C) 2000-2006 by Andy McFadden, All Rights Reserved.
+ * Copyright (C) 2000-2007 by Andy McFadden, All Rights Reserved.
  * This is free software; you can redistribute it and/or modify it under the
- * terms of the GNU Library General Public License, see the file COPYING.LIB.
+ * terms of the BSD License, see the file COPYING.LIB.
  *
  * 2IMG <-> SHK converter.  This is a practical example of using the
  * NufxLib Thread functions to add and extract data in the middle of a file.

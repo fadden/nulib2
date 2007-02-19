@@ -1,8 +1,8 @@
 /*
  * NuFX archive manipulation library
- * Copyright (C) 2000-2006 by Andy McFadden, All Rights Reserved.
+ * Copyright (C) 2000-2007 by Andy McFadden, All Rights Reserved.
  * This is free software; you can redistribute it and/or modify it under the
- * terms of the GNU Library General Public License, see the file COPYING-LIB.
+ * terms of the BSD License, see the file COPYING-LIB.
  *
  * ShrinkIt LZW functions.  The original code was developed by Kent Dickey
  * and Andy Nicholas.
@@ -29,7 +29,7 @@
  *    circumstances. They will have a license agreement for your application of
  *    their LZW algorithm.
  *
- * According to this, the use of LZW in NufxLib does not require a license.
+ * According to this, the use of LZW in NufxLib has never required a license.
  */
 #include "NufxLibPriv.h"
 
