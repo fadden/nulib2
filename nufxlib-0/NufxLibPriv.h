@@ -157,6 +157,7 @@ struct NuArchive {
     NuValue         valStripHighASCII;      /* during EOL conv, strip hi bit? */
     NuValue         valJunkSkipMax;         /* scan this far for header */
     NuValue         valIgnoreLZW2Len;       /* don't verify LZW/II len field */
+    NuValue         valHandleBadMac;        /* handle "bad Mac" archives */
 
     /* callback functions */
     NuCallback      selectionFilterFunc;

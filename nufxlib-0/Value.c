@@ -65,6 +65,9 @@ Nu_GetValue(NuArchive* pArchive, NuValueID ident, NuValue* pValue)
     case kNuValueIgnoreLZW2Len:
         *pValue = pArchive->valIgnoreLZW2Len;
         break;
+    case kNuValueHandleBadMac:
+        *pValue = pArchive->valHandleBadMac;
+        break;
     default:
         err = kNuErrInvalidArg;
         Nu_ReportError(NU_BLOB, err, "Unknown ValueID %d requested", ident);
@@ -196,6 +199,14 @@ Nu_SetValue(NuArchive* pArchive, NuValueID ident, NuValue value)
             goto bail;
         }
         pArchive->valIgnoreLZW2Len = value;
+        break;
+    case kNuValueHandleBadMac:
+        if (value != true && value != false) {
+            Nu_ReportError(NU_BLOB, err,
+                "Invalid kNuValueHandleBadMac value %ld", value);
+            goto bail;
+        }
+        pArchive->valHandleBadMac = value;
         break;
     default:
         Nu_ReportError(NU_BLOB, err, "Unknown ValueID %d requested", ident);

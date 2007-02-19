@@ -52,7 +52,7 @@ static const char* gMonths[] = {
 /* file_sys_id values */
 static const char* gFileSysIDs[] = {
     "Reserved/unknown ($00)", "ProDOS/SOS", "DOS 3.3", "DOS 3.2",
-    "Apple II Pascal", "Macintosh (MFS)", "Macintosh (HFS)",
+    "Apple II Pascal", "Macintosh (HFS)", "Macintosh (MFS)",
     "LISA file system", "Apple CP/M", "Reserved 0x09", "MS-DOS",
     "High-Sierra", "ISO 9660", "AppleShare"
 };

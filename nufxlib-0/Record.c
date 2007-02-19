@@ -43,6 +43,7 @@ Nu_InitRecordContents(NuArchive* pArchive, NuRecord* pRecord)
     pRecord->pThreadMods = nil;
     pRecord->dirtyHeader = false;
     pRecord->dropRecFilename = false;
+    pRecord->isBadMac = false;
 
     return kNuErrNone;
 }
@@ -1074,6 +1075,17 @@ Nu_ReadRecordHeader(NuArchive* pArchive, NuRecord* pRecord)
 
     err = Nu_ComputeThreadData(pArchive, pRecord);
     BailError(err);
+
+    /* check for "bad Mac" archives */
+    if (pArchive->valHandleBadMac) {
+        if (pRecord->recFileSysInfo == '?' &&
+            pRecord->recFileSysID == kNuFileSysMacMFS)
+        {
+            DBUG(("--- using 'bad mac' handling\n"));
+            pRecord->isBadMac = true;
+            pRecord->recFileSysInfo = ':';
+        }
+    }
 
 bail:
     if (err != kNuErrNone)

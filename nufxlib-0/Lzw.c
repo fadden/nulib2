@@ -1073,6 +1073,9 @@ bail:
  * is cleared explicitly.
  *
  * Reads from lzwState->dataPtr, writes to lzwState->lzwOutBuf.
+ *
+ * In some cases, "expectedInputUsed" will be -1 to indicate that the
+ * value is not known.
  */
 static NuError
 Nu_ExpandLZW2(LZWExpandState* lzwState, uint expectedLen,
@@ -1486,9 +1489,8 @@ Nu_ExpandLZW(NuArchive* pArchive, const NuRecord* pRecord,
             if (!isType2) {
                 err = Nu_ExpandLZW1(lzwState, rleLen);
             } else {
-                if (pArchive->valIgnoreLZW2Len) {
-                    /* some badly-formed archives need this -- not sure
-                       what's creating them, possibly a Mac program */
+                if (pRecord->isBadMac || pArchive->valIgnoreLZW2Len) {
+                    /* might be big-endian, might be okay; just ignore it */
                     lzwLen = (unsigned int) -1;
                 } else if (lzwState->dataInBuffer < lzwLen) {
                     /* rare -- GSHK will do this if you don't let it finish */

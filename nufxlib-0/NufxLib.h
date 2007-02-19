@@ -32,8 +32,8 @@ extern "C" {
  * fixes.  Unless, of course, your code depends upon that fix.
  */
 #define kNuVersionMajor     2
-#define kNuVersionMinor     1
-#define kNuVersionBug       1
+#define kNuVersionMinor     2
+#define kNuVersionBug       0
 
 
 /*
@@ -270,7 +270,8 @@ typedef enum NuValueID {
     kNuValueMaskDataless        = 11,
     kNuValueStripHighASCII      = 12,
     kNuValueJunkSkipMax         = 13,
-    kNuValueIgnoreLZW2Len       = 14
+    kNuValueIgnoreLZW2Len       = 14,
+    kNuValueHandleBadMac        = 15
 } NuValueID;
 typedef unsigned long NuValue;
 
@@ -461,6 +462,7 @@ typedef struct NuRecord {
     unsigned long       recHeaderLength; /* size of rec hdr, incl thread hdrs */
     unsigned long       totalCompLength; /* total len of data in archive file */
     long                fakeThreads;    /* used by "MaskDataless" */
+    int                 isBadMac;       /* malformed "bad mac" header */
 
     long                fileOffset;     /* file offset of record header */
 

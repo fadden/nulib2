@@ -838,9 +838,10 @@ Nu_LZCPutcCRC(LZCState* pLzcState, char c)
 {
     NuError err;
 
-    err = Nu_FunnelWrite(pLzcState->pArchive, pLzcState->pFunnel, &c, 1);
+    err = Nu_FunnelWrite(pLzcState->pArchive, pLzcState->pFunnel,
+            (uchar*) &c, 1);
     if (pLzcState->doCalcCRC)
-        pLzcState->crc = Nu_CalcCRC16(pLzcState->crc, &c, 1);
+        pLzcState->crc = Nu_CalcCRC16(pLzcState->crc, (uchar*) &c, 1);
 
     return err;
 }

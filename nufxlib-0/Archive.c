@@ -97,6 +97,7 @@ Nu_NuArchiveNew(NuArchive** ppArchive)
     /* bug: this can't be set by application! */
     (*ppArchive)->valJunkSkipMax = kDefaultJunkSkipMax;
     (*ppArchive)->valIgnoreLZW2Len = false;
+    (*ppArchive)->valHandleBadMac = false;
 
     (*ppArchive)->messageHandlerFunc = gNuGlobalErrorMessageHandler;
 
