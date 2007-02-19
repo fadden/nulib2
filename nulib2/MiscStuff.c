@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2000-2006 by Andy McFadden, All Rights Reserved.
+ * Copyright (C) 2000-2007 by Andy McFadden, All Rights Reserved.
  * This is free software; you can redistribute it and/or modify it under the
- * terms of the GNU Library General Public License, see the file COPYING-LIB.
+ * terms of the BSD License, see the file COPYING-LIB.
  *
  * Misc stuff (shared between nufxlib and nulib2).  This is a collection
  * of standard functions that aren't available in libc on this system.

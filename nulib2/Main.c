@@ -1,8 +1,8 @@
 /*
  * Nulib2
- * Copyright (C) 2000-2006 by Andy McFadden, All Rights Reserved.
+ * Copyright (C) 2000-2007 by Andy McFadden, All Rights Reserved.
  * This is free software; you can redistribute it and/or modify it under the
- * terms of the GNU General Public License, see the file COPYING.
+ * terms of the BSD License, see the file COPYING.
  *
  * Main entry point and shell command argument processing.
  */
@@ -149,9 +149,9 @@ Usage(const NulibState* pState)
     printf("\nNulib2 v%s, linked with NufxLib v%ld.%ld.%ld [%s]\n",
         NState_GetProgramVersion(pState),
         majorVersion, minorVersion, bugVersion, nufxLibFlags);
-    printf("Copyright (C) 2000-2006 by Andy McFadden.  All Rights Reserved.\n");
-    printf("This software is distributed under terms of the GNU General Public License.\n");
-    printf("See http://www.nulib.com/ for source code and documentation.\n\n");
+    printf("Copyright (C) 2000-2007, Andy McFadden.  All Rights Reserved.\n");
+    printf("This software is distributed under terms of the BSD License.\n");
+    printf("Visit http://www.nulib.com/ for source code and documentation.\n\n");
     printf("Usage: %s -command[modifiers] archive [filename-list]\n\n",
         gProgName);
     printf(
@@ -252,13 +252,11 @@ DoHelp(const NulibState* pState)
 
     printf("%s",
 "\n"
-"Copyright (C) 2000-2006 by Andy McFadden.  All Rights Reserved.\n\n"
-"NuLib2 is free software, distributed under terms of the GNU General\n"
-"Public License.  NuLib2 uses NufxLib, a complete library of functions\n"
-"for accessing NuFX (ShrinkIt) archives.  NufxLib is also free software,\n"
-"distributed under terms of the GNU Library General Public License (LGPL).\n"
-"Source code for both is available from http://www.nulib.com/, and copies\n"
-"of the licenses are included.\n"
+"Copyright (C) 2000-2007 by Andy McFadden.  All Rights Reserved.\n\n"
+"NuLib2 uses NufxLib, a complete library of functions for accessing NuFX\n"
+"(ShrinkIt) archives.  Both NufxLib and NuLib2 are free software, distributed\n"
+"under terms of the BSD License.  Source code is available from\n"
+"http://www.nulib.com/, and copies of the licenses are included.\n"
 "\n"
 "This program is distributed in the hope that it will be useful,\n"
 "but WITHOUT ANY WARRANTY; without even the implied warranty of\n"

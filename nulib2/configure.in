@@ -1,7 +1,7 @@
 dnl Nulib2
-dnl Copyright (C) 2000-2006 by Andy McFadden, All Rights Reserved.
+dnl Copyright (C) 2000-2007 by Andy McFadden, All Rights Reserved.
 dnl This is free software; you can redistribute it and/or modify it under the
-dnl terms of the GNU General Public License, see the file COPYING.
+dnl terms of the BSD License, see the file COPYING.
 dnl
 dnl Process this file with autoconf to produce a configure script.
 

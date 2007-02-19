@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2000-2006 by Andy McFadden, All Rights Reserved.
+ * Copyright (C) 2000-2007 by Andy McFadden, All Rights Reserved.
  * This is free software; you can redistribute it and/or modify it under the
- * terms of the GNU Library General Public License, see the file COPYING-LIB.
+ * terms of the BSD License, see the file COPYING-LIB.
  *
  * This file was adapted from Devin Reade's "sunos4.h" in NuLib 3.2.5.
  * It is provided for compilation under SunOS 4.x, when an ANSI compiler
