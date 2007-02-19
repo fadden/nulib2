@@ -856,6 +856,10 @@ OpenArchiveReadOnly(NulibState* pState)
     err = NuSetValue(pArchive, kNuValueMimicSHK, true);
     BailError(err);
 
+    /* handy for some malformed archives */
+    err = NuSetValue(pArchive, kNuValueHandleBadMac, true);
+    BailError(err);
+
 /*
     DBUG(("--- enabling 'mask dataless' mode\n"));
     err = NuSetValue(pArchive, kNuValueMaskDataless, true);
