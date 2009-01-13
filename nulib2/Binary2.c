@@ -440,7 +440,8 @@ BNYNormalizePath(BNYArchive* pBny, BNYEntry* pEntry)
 
 /*
  * Copy all data from the Binary II file to "outfp", reading in 128-byte
- * blocks.
+ * blocks.  Some programs (like ProTERM) apply a 128-byte header without
+ * padding out the file length, so we do need to handle that here.
  *
  * Uses pEntry->blockBuf, which already has the first 128 bytes in it.
  */
@@ -471,7 +472,8 @@ BNYCopyBlocks(BNYArchive* pBny, BNYEntry* pEntry, FILE* outfp)
         bytesLeft -= toWrite;
 
         if (bytesLeft) {
-            err = BNYRead(pBny, pEntry->blockBuf, kBNYBlockSize);
+            err = BNYRead(pBny, pEntry->blockBuf,
+			bytesLeft < kBNYBlockSize ? bytesLeft : kBNYBlockSize);
             if (err != kNuErrNone) {
                 ReportError(err, "BNY read failed");
                 goto bail;
