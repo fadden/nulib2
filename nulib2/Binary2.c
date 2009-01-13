@@ -440,8 +440,11 @@ BNYNormalizePath(BNYArchive* pBny, BNYEntry* pEntry)
 
 /*
  * Copy all data from the Binary II file to "outfp", reading in 128-byte
- * blocks.  Some programs (like ProTERM) apply a 128-byte header without
- * padding out the file length, so we do need to handle that here.
+ * blocks.  We need to read multiples of 128 bytes so that we're ready to
+ * read the next entry without additional seeking.
+ *
+ * Some programs (like ProTERM) apply a 128-byte header without padding
+ * out the file length, so we may come up short at the end of the file.
  *
  * Uses pEntry->blockBuf, which already has the first 128 bytes in it.
  */
@@ -472,11 +475,19 @@ BNYCopyBlocks(BNYArchive* pBny, BNYEntry* pEntry, FILE* outfp)
         bytesLeft -= toWrite;
 
         if (bytesLeft) {
-            err = BNYRead(pBny, pEntry->blockBuf,
-			bytesLeft < kBNYBlockSize ? bytesLeft : kBNYBlockSize);
-            if (err != kNuErrNone) {
-                ReportError(err, "BNY read failed");
-                goto bail;
+            size_t actual;
+
+            errno = 0;
+            actual = fread(pEntry->blockBuf, 1, kBNYBlockSize, pBny->fp);
+            if (actual != kBNYBlockSize) {
+                /* failure or partial read */
+                if (actual != bytesLeft) {
+                    err = errno ? errno : kNuErrFileRead;
+                    ReportError(err, "BNY read failed");
+                    goto bail;
+                } else {
+                    DBUG(("+++ partial read %d/%d\n", actual, kBNYBlockSize));
+                }
             }
         }
     }
@@ -609,6 +620,7 @@ BNYUnSqueeze(BNYArchive* pBny, BNYEntry* pEntry, FILE* outfp)
 
     usqState.dataInBuffer = 0;
     usqState.dataPtr = tmpBuf;
+    usqState.bits = 0;
 
     compRemaining = pEntry->realEOF;
 #ifdef FULL_SQ_HEADER
