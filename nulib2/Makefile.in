@@ -20,8 +20,7 @@
 #
 
 # set this to where the NuFX library and ".h" file live
-VERSION		= 0
-NUFXSRCDIR	= ../nufxlib-$(VERSION)
+NUFXSRCDIR	= ../nufxlib
 NUFXLIB		= $(NUFXSRCDIR)/$(LIB_PRODUCT)
 
 # NuLib2 install location.  The man page will go into $(mandir)/man1.
@@ -111,13 +110,13 @@ distclean: clean
 	-rm -f Makefile Makefile.bak
 	-rm -f config.log config.cache config.status config.h
 	-rm -f tags
-	-rm -f nulib2-$(VERSION)-@host_alias@ nulib2-$(VERSION)-@host_alias@.tar.Z
+	-rm -f nulib2-@host_alias@ nulib2-@host_alias@.tar.Z
 
 # Copy all of the binaries into a directory and tar them up for distribution.
 # All binaries except "nulib2" are stripped to reduce their size.
 distbin: $(PRODUCT)
 	@ \
-		builddir="nulib2-$(VERSION)-@host_alias@"; \
+		builddir="nulib2-@host_alias@"; \
 		samples=$(NUFXSRCDIR)/samples; \
 		echo "building $$builddir.tar.Z"; \
 		rm -rf $$builddir; \
