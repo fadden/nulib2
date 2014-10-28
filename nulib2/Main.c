@@ -149,7 +149,7 @@ Usage(const NulibState* pState)
     printf("\nNulib2 v%s, linked with NufxLib v%ld.%ld.%ld [%s]\n",
         NState_GetProgramVersion(pState),
         majorVersion, minorVersion, bugVersion, nufxLibFlags);
-    printf("Copyright (C) 2000-2009, Andy McFadden.  All Rights Reserved.\n");
+    printf("Copyright (C) 2000-2014, Andy McFadden.  All Rights Reserved.\n");
     printf("This software is distributed under terms of the BSD License.\n");
     printf("Visit http://www.nulib.com/ for source code and documentation.\n\n");
     printf("Usage: %s -command[modifiers] archive [filename-list]\n\n",

@@ -33,7 +33,7 @@ extern "C" {
  */
 #define kNuVersionMajor     2
 #define kNuVersionMinor     2
-#define kNuVersionBug       0
+#define kNuVersionBug       2
 
 
 /*
