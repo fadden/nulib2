@@ -115,8 +115,9 @@ WriteLongLE(FILE* fp, unsigned long val)
 int
 ReadImgHeader(FILE* fp, ImgHeader* pHeader)
 {
-    fread(pHeader->magic, 4, 1, fp);
-    fread(pHeader->creator, 4, 1, fp);
+    size_t ignored;
+    ignored = fread(pHeader->magic, 4, 1, fp);
+    ignored = fread(pHeader->creator, 4, 1, fp);
     ReadShortLE(fp, &pHeader->headerLen);
     ReadShortLE(fp, &pHeader->version);
     ReadLongLE(fp, &pHeader->imageFormat);
@@ -133,6 +134,7 @@ ReadImgHeader(FILE* fp, ImgHeader* pHeader)
     ReadLongLE(fp, &pHeader->spare[2]);
     ReadLongLE(fp, &pHeader->spare[3]);
 
+    (void) ignored;
     if (feof(fp) || ferror(fp))
         return -1;
 
@@ -287,22 +289,24 @@ CreateDosSource(const ImgHeader* pHeader, FILE* fp,
      * to ProDOS ordering.
      */
     for (offset = 0; offset < pHeader->dataLen; offset += 4096) {
-        fread(diskBuffer + offset + 0x0000, 256, 1, fp);
-        fread(diskBuffer + offset + 0x0e00, 256, 1, fp);
-        fread(diskBuffer + offset + 0x0d00, 256, 1, fp);
-        fread(diskBuffer + offset + 0x0c00, 256, 1, fp);
-        fread(diskBuffer + offset + 0x0b00, 256, 1, fp);
-        fread(diskBuffer + offset + 0x0a00, 256, 1, fp);
-        fread(diskBuffer + offset + 0x0900, 256, 1, fp);
-        fread(diskBuffer + offset + 0x0800, 256, 1, fp);
-        fread(diskBuffer + offset + 0x0700, 256, 1, fp);
-        fread(diskBuffer + offset + 0x0600, 256, 1, fp);
-        fread(diskBuffer + offset + 0x0500, 256, 1, fp);
-        fread(diskBuffer + offset + 0x0400, 256, 1, fp);
-        fread(diskBuffer + offset + 0x0300, 256, 1, fp);
-        fread(diskBuffer + offset + 0x0200, 256, 1, fp);
-        fread(diskBuffer + offset + 0x0100, 256, 1, fp);
-        fread(diskBuffer + offset + 0x0f00, 256, 1, fp);
+        size_t ignored;
+        ignored = fread(diskBuffer + offset + 0x0000, 256, 1, fp);
+        ignored = fread(diskBuffer + offset + 0x0e00, 256, 1, fp);
+        ignored = fread(diskBuffer + offset + 0x0d00, 256, 1, fp);
+        ignored = fread(diskBuffer + offset + 0x0c00, 256, 1, fp);
+        ignored = fread(diskBuffer + offset + 0x0b00, 256, 1, fp);
+        ignored = fread(diskBuffer + offset + 0x0a00, 256, 1, fp);
+        ignored = fread(diskBuffer + offset + 0x0900, 256, 1, fp);
+        ignored = fread(diskBuffer + offset + 0x0800, 256, 1, fp);
+        ignored = fread(diskBuffer + offset + 0x0700, 256, 1, fp);
+        ignored = fread(diskBuffer + offset + 0x0600, 256, 1, fp);
+        ignored = fread(diskBuffer + offset + 0x0500, 256, 1, fp);
+        ignored = fread(diskBuffer + offset + 0x0400, 256, 1, fp);
+        ignored = fread(diskBuffer + offset + 0x0300, 256, 1, fp);
+        ignored = fread(diskBuffer + offset + 0x0200, 256, 1, fp);
+        ignored = fread(diskBuffer + offset + 0x0100, 256, 1, fp);
+        ignored = fread(diskBuffer + offset + 0x0f00, 256, 1, fp);
+        (void) ignored;
     }
     if (feof(fp) || ferror(fp)) {
         err = errno ? errno : -1;

@@ -215,7 +215,7 @@ Nu_ReportError(NuArchive* pArchive, const char* file, int line,
     va_list args;
     char buf[kNuHeftyBufSize];
     int count;
-    #if defined(HAVE_SNPRINTF) || defined(SPRINTF_RETURNS_INT)
+    #if !defined(HAVE_SNPRINTF) && defined(SPRINTF_RETURNS_INT)
     int cc;
     #endif
 
@@ -255,10 +255,10 @@ Nu_ReportError(NuArchive* pArchive, const char* file, int line,
 
         #if defined(HAVE_SNPRINTF) && defined(SNPRINTF_DECLARED)
         if (msg == nil)
-            cc = snprintf(buf+count, sizeof(buf) - count,
+            snprintf(buf+count, sizeof(buf) - count,
                         "(unknown err=%d)", err);
         else
-            cc = snprintf(buf+count, sizeof(buf) - count, "%s", msg);
+            snprintf(buf+count, sizeof(buf) - count, "%s", msg);
         #else
           #ifdef SPRINTF_RETURNS_INT
             if (msg == nil)

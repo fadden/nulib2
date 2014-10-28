@@ -919,6 +919,7 @@ Nu_ExpandHuffmanSQ(NuArchive* pArchive, const NuRecord* pRecord,
 
     usqState.dataInBuffer = 0;
     usqState.dataPtr = pArchive->compBuf;
+    usqState.bits = usqState.bitPosn = 0;
 
     compRemaining = pThread->thCompThreadEOF;
 #ifdef FULL_SQ_HEADER
