@@ -89,7 +89,6 @@ AddToArchive(NulibState* pState, NuArchive* pArchive)
 {
     NuError err = kNuErrNone;
     char* const* pSpec;
-    ulong fileCount;
     int i;
 
     Assert(pState != nil);
@@ -99,8 +98,6 @@ AddToArchive(NulibState* pState, NuArchive* pArchive)
         err = kNuErrSyntax;
         ReportError(err, "no files were specified");
     }
-
-    fileCount = 0;
 
     pSpec = NState_GetFilespecPointer(pState);
     for (i = NState_GetFilespecCount(pState); i > 0; i--, pSpec++) {
