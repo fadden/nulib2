@@ -3,21 +3,17 @@
  * Copyright (C) 2000-2007 by Andy McFadden, All Rights Reserved.
  * This is free software; you can redistribute it and/or modify it under the
  * terms of the BSD License, see the file COPYING-LIB.
- *
- * !!! NOTE !!!
- * The file Version.c is automatically generated from Version.c.in.  Don't
- * edit the .c file if you want your changes to be permanent.
  */
 #include "NufxLibPriv.h"
 
-/* executable was build on or after this date (inserted automatically) */
+/* executable was build on or after this date */
 #ifdef __DATE__
 static const char gNuBuildDate[] = __DATE__;
 #else
-static const char gNuBuildDate[] = "BUILT";
+static const char gNuBuildDate[] = "??? ?? ????";
 #endif
 
-static const char gNuBuildFlags[] = "OPTFLAGS";
+static const char gNuBuildFlags[] = OPTFLAGSTR;
 
 
 /*

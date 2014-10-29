@@ -31,7 +31,7 @@ OPT			= @CFLAGS@
 #OPT 		= @CFLAGS@ -DDEBUG_MSGS
 #OPT 		= @CFLAGS@ -DDEBUG_VERBOSE
 GCC_FLAGS	= -Wall -Wwrite-strings -Wstrict-prototypes -Wpointer-arith -Wshadow
-CFLAGS		= @BUILD_FLAGS@ -I. @DEFS@
+CFLAGS		= @BUILD_FLAGS@ -I. @DEFS@ -DOPTFLAGSTR="\"$(OPT)\""
 
 SRCS		= Archive.c ArchiveIO.c Bzip2.c Compress.c Crc16.c Debug.c \
 			  Deferred.c Deflate.c Entry.c Expand.c FileIO.c Funnel.c \
@@ -85,11 +85,6 @@ $(SHARED_PRODUCT): $(OBJS)
 	-rm -f $(STATIC_PRODUCT) $(SHARED_PRODUCT)
 	$(CC) @SHARE_FLAGS@ -o $@ $(OBJS) @LIBS@
 
-# The build date is approximate, the build flags are accurate so long
-# as they were changed by touching the makefile.
-Version.c: Version.c.in Makefile
-	(sed -e "s/BUILT/`date`/" -e "s/OPTFLAGS/$(OPT)/" < Version.c.in > Version.c)
-
 clean:
 	(cd samples; make clean)
 	-rm -f *.o core
@@ -119,6 +114,9 @@ baktar:
 depend:
 	makedepend -- $(CFLAGS) -I/usr/local/include -- $(SRCS)
 	@(cd samples; unset CFLAGS OBJS; @SET_MAKE@ $(MAKE) depend)
+
+# catch OPTFLAGSTR updates
+Version.o: Makefile
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
