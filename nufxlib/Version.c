@@ -13,7 +13,11 @@ static const char gNuBuildDate[] = __DATE__;
 static const char gNuBuildDate[] = "??? ?? ????";
 #endif
 
+#ifdef OPTFLAGSTR
 static const char gNuBuildFlags[] = OPTFLAGSTR;
+#else
+static const char gNuBuildFlags[] = "-";
+#endif
 
 
 /*
