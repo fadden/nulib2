@@ -1,3 +1,11 @@
 autom4te.cache
 *.o
+*.obj
 *.a
+*.lib
+*.dll
+*.exe
+*.exp
+*.pdb
+*~
+*.swp

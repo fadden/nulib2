@@ -1,95 +1,78 @@
+# Makefile for NuLib2 using Microsoft Visual C++.
 #
-# Makefile for Microsoft C compilers.  Tested against Visual C++ 6.0.
-# Not pretty but it seems to work.
+# Tested with VS 2013 Pro.
 #
-# Run with "nmake /f Makefile.msc".  Expects NufxLib to have been built
-# in "..\nufxlib-$(VERSION)".
-#
-# To build without debugging info, use "nmake nodebug=1".
-# To build with libz, use "nmake libz=1".
-# To build with libbz2, use "nmake libbz2=1".
-# If you're linking against nufxlib as a DLL, you don't need to specify
-#   libraries.  You probably need to specify DLL=1 and the same setting
-#   of the NODEBUG flag as you used when building the DLL.  If you don't,
-#   "test-extract" will fail in the fwrite() call in Nu_FWrite, because
-#   the non-debug /MD libc does something peculiar with FILE*.
-#
-# For libz/libbz2, you need to have the appropriate library either
-# in this directory or in a standard location that the linker can find.
+# If you're including zlib support, place a copy of the zlib
+# library in this directory.
 #
 
-# Windows magic
-TARGETOS = BOTH
-!include <ntwin32.mak>
-
-VERSION=220
-NUFXSRCDIR = ..\nufxlib-$(VERSION)
-
-# object files
-OBJS1 = Add.obj ArcUtils.obj Binary2.obj Delete.obj Extract.obj Filename.obj
-OBJS2 = List.obj Main.obj MiscStuff.obj MiscUtils.obj State.obj SysUtils.obj
-OBJS = $(OBJS1) $(OBJS2)
-
-!ifdef DLL
-### build using the same libc as the DLL
-!ifdef NODEBUG
-#OPT = $(cdebug) /D NDEBUG /MD
-OPT = $(cdebug) /MD
-LIB_FLAGS = /nodefaultlib:libcd.lib /nologo setargv.obj
-!else
-#OPT = $(cdebug) /MDd
-OPT = $(cdebug) /D DEBUG_MSGS /MDd
-LIB_FLAGS = /nodefaultlib:libc.lib /nologo setargv.obj
-!endif
-!else
-
-### build against static lib
-!ifdef NODEBUG
-#OPT = $(cdebug) /D NDEBUG /ML
-OPT = $(cdebug) /ML
-LIB_FLAGS = /nodefaultlib:libcd.lib /nologo libc.lib setargv.obj
-!else
-#OPT = $(cdebug) /MLd
-OPT = $(cdebug) /D DEBUG_MSGS /MLd
-LIB_FLAGS = /nodefaultlib:libc.lib /nologo libcd.lib setargv.obj
-!endif
-!endif
-
-BUILD_FLAGS = /W3 /GX /D "WIN32" /D "_CONSOLE" /I "$(NUFXSRCDIR)"
-
-!ifdef LIBZ
-LIB_FLAGS = zlib.lib $(LIB_FLAGS)
-!endif
-!ifdef LIBBZ2
-LIB_FLAGS = libbz2.lib $(LIB_FLAGS)
-!endif
-
-# how to compile sources
-.c.obj:
-	@$(cc) $(OPT) $(BUILD_FLAGS) $(cflags) $(cvars) -o $@ $<
-
+TOP = .
+NUFXSRCDIR = ..\nufxlib
 
 PRODUCT = nulib2.exe
 
+CC = cl
+LD = link
+
+# C compiler flags
+# -Ox: full optimization
+# -Oy-: disable frame pointer omission (for easier debugging)
+# -MD: create a multithreaded DLL using MSVCRT.lib; alternatively,
+#      use -MDd to create a debug executable with MSVCRTD.lib
+# -nologo: suppress display of copyright banner
+# -W3: set warning level to 3 (all production-level warnings)
+# -Zi: generate a PDB file with full debugging info
+CFLAGS = -nologo -MD -W3 -Ox -Oy- -Zi "-I$(NUFXSRCDIR)"
+
+# Warning suppression flags
+WFLAGS = -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE
+
+# Linker flags
+# -debug: creates debugging info for EXE or DLL in PDB file
+# -nologo: suppress display of copyright banner
+# -opt:ref: eliminates unreferenced functions and data (default for non-debug
+#    builds, but we've enabled debug info)
+LDFLAGS = -nologo -debug -opt:ref
+
+
+ZLIB=1
+!ifdef ZLIB
+# enable deflate support; requires zlib
+LDFLAGS = $(LDFLAGS) zlib.lib
+!endif
+
+
+# object files
+OBJS =	Add.obj ArcUtils.obj Binary2.obj Delete.obj Extract.obj Filename.obj \
+	List.obj Main.obj MiscStuff.obj MiscUtils.obj State.obj SysUtils.obj
+
+
+# build targets
 all: $(PRODUCT)
 
-nulib2.exe: $(OBJS) $(NUFXSRCDIR)\nufxlib2.lib
-	$(link) $(ldebug) $** -out:$@ $(NUFXSRCDIR)\nufxlib2.lib $(LIB_FLAGS)
+$(PRODUCT): $(OBJS) $(NUFXSRCDIR)\nufxlib2.lib
+	$(LD) $(LDFLAGS) -out:$@ $(OBJS) $(NUFXSRCDIR)\nufxlib2.lib
 
 clean:
-	del *.obj
-	del $(PRODUCT)
+	-del *.obj *.pdb *.exp
+	-del $(PRODUCT)
 
-Add.obj: Add.c NuLib2.h $(NUFXSRCDIR)\NufxLib.h SysDefs.h State.h MiscStuff.h
-ArcUtils.obj: ArcUtils.c NuLib2.h $(NUFXSRCDIR)\NufxLib.h SysDefs.h State.h MiscStuff.h
-Binary2.obj: Binary2.c NuLib2.h $(NUFXSRCDIR)\NufxLib.h SysDefs.h State.h MiscStuff.h
-Delete.obj: Delete.c NuLib2.h $(NUFXSRCDIR)\NufxLib.h SysDefs.h State.h MiscStuff.h
-Extract.obj: Extract.c NuLib2.h $(NUFXSRCDIR)\NufxLib.h SysDefs.h State.h MiscStuff.h
-Filename.obj: Filename.c NuLib2.h $(NUFXSRCDIR)\NufxLib.h SysDefs.h State.h MiscStuff.h
-List.obj: List.c NuLib2.h $(NUFXSRCDIR)\NufxLib.h SysDefs.h State.h MiscStuff.h
-Main.obj: Main.c NuLib2.h $(NUFXSRCDIR)\NufxLib.h SysDefs.h State.h MiscStuff.h
-MiscStuff.obj: MiscStuff.c NuLib2.h $(NUFXSRCDIR)\NufxLib.h SysDefs.h State.h MiscStuff.h
-MiscUtils.obj: MiscUtils.c NuLib2.h $(NUFXSRCDIR)\NufxLib.h SysDefs.h State.h MiscStuff.h
-State.obj: State.c NuLib2.h $(NUFXSRCDIR)\NufxLib.h SysDefs.h State.h MiscStuff.h
-SysUtils.obj: SysUtils.c NuLib2.h $(NUFXSRCDIR)\NufxLib.h SysDefs.h State.h MiscStuff.h
+# generic rules
+.c.obj:
+	$(CC) -c $(WFLAGS) $(CFLAGS) $<
+
+# dependency info
+COMMON_HDRS = NuLib2.h $(NUFXSRCDIR)\NufxLib.h SysDefs.h State.h MiscStuff.h
+Add.obj: Add.c $(COMMON_HDRS)
+ArcUtils.obj: ArcUtils.c $(COMMON_HDRS)
+Binary2.obj: Binary2.c $(COMMON_HDRS)
+Delete.obj: Delete.c $(COMMON_HDRS)
+Extract.obj: Extract.c $(COMMON_HDRS)
+Filename.obj: Filename.c $(COMMON_HDRS)
+List.obj: List.c $(COMMON_HDRS)
+Main.obj: Main.c $(COMMON_HDRS)
+MiscStuff.obj: MiscStuff.c $(COMMON_HDRS)
+MiscUtils.obj: MiscUtils.c $(COMMON_HDRS)
+State.obj: State.c $(COMMON_HDRS)
+SysUtils.obj: SysUtils.c $(COMMON_HDRS)
 

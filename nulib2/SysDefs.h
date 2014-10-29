@@ -27,7 +27,7 @@
 #include <assert.h>
 
 /* basic Win32 stuff -- info-zip has much more complete defs */
-#if defined(WIN32) || defined(MSDOS)
+#if defined(_WIN32) || defined(MSDOS)
 # define WINDOWS_LIKE
 
 # ifndef HAVE_CONFIG_H
