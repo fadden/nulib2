@@ -1,6 +1,7 @@
 # Makefile for NuLib2 using Microsoft Visual C++.
 #
-# Tested with VS 2013 Pro.
+# Tested with VS 2013 Pro.  From the "VS2013 x86 Native Tools Command
+# Prompt", run "nmake -f makefile.msc".
 #
 # If you're including zlib support, place a copy of the zlib
 # library in this directory.
@@ -8,6 +9,7 @@
 
 TOP = .
 NUFXSRCDIR = ..\nufxlib
+NUFXLIB = $(NUFXSRCDIR)\nufxlib2.lib
 
 PRODUCT = nulib2.exe
 
@@ -50,8 +52,8 @@ OBJS =	Add.obj ArcUtils.obj Binary2.obj Delete.obj Extract.obj Filename.obj \
 # build targets
 all: $(PRODUCT)
 
-$(PRODUCT): $(OBJS) $(NUFXSRCDIR)\nufxlib2.lib
-	$(LD) $(LDFLAGS) -out:$@ $(OBJS) $(NUFXSRCDIR)\nufxlib2.lib
+$(PRODUCT): $(OBJS) $(NUFXLIB)
+	$(LD) $(LDFLAGS) -out:$@ $(OBJS) $(NUFXLIB)
 
 clean:
 	-del *.obj *.pdb *.exp
