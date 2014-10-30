@@ -829,8 +829,6 @@ NUFXLIB_API NuCallback NuSetOutputPathnameFilter(NuArchive* pArchive,
             NuCallback filterFunc);
 NUFXLIB_API NuCallback NuSetProgressUpdater(NuArchive* pArchive,
             NuCallback updateFunc);
-NUFXLIB_API NuCallback NuSetFreeHandler(NuArchive* pArchive,
-            NuCallback freeFunc);
 NUFXLIB_API NuCallback NuSetErrorHandler(NuArchive* pArchive,
             NuCallback errorFunc);
 NUFXLIB_API NuCallback NuSetErrorMessageHandler(NuArchive* pArchive,
