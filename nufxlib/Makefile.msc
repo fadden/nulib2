@@ -2,7 +2,8 @@
 # as a static lib and as a DLL, and builds all samples.  The test-basic
 # sample is built twice, once with the static lib, and once with the DLL.
 #
-# Tested with VS 2013 Pro.
+# Tested with VS 2013 Pro.  From the "VS2013 x86 Native Tools Command
+# Prompt", run "nmake -f makefile.msc".
 #
 # If you're including zlib support, place copies of zlib.h, zconf.h,
 # and the zlib library in this directory.
@@ -35,8 +36,9 @@ AR = lib
 # built.  Defining NUFXLIB_EXPORTS enables the __declspec(dllexport)
 # macros that are required for creating the DLL.
 OPTFLAGS = -Ox -Oy-
-CFLAGS = -nologo -MD -W3 $(OPTFLAGS) -Zi -Fd"nufxlib" \
-	-DOPTFLAGSTR="\"$(OPTFLAGS)\"" -DNUFXLIB_EXPORTS
+CFLAGS = -nologo -MD -W3 $(OPTFLAGS) -Zi -Fd"nufxlib"
+
+LIB_CFLAGS = -DOPTFLAGSTR="\"$(OPTFLAGS)\"" #-DNUFXLIB_EXPORTS
 
 # Warning suppression flags
 WFLAGS = -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE
@@ -84,7 +86,8 @@ $(STATICLIB): $(OBJS)
 $(IMPLIB): $(SHAREDLIB)
 
 $(SHAREDLIB): $(OBJS)
-	$(LD) $(LDFLAGS) -dll -implib:$(IMPLIB) -out:$@ $(OBJS)
+	$(LD) $(LDFLAGS) -dll -def:nufxlib.def -implib:$(IMPLIB) -out:$@ \
+	  $(OBJS)
 
 exerciser.exe: Exerciser.obj $(STATICLIB)
 	$(LD) $(LDFLAGS) -out:$@ Exerciser.obj $(STATICLIB)
@@ -112,7 +115,7 @@ test-twirl.exe: TestTwirl.obj $(STATICLIB)
 
 # generic rules
 {$(TOP)}.c.obj:
-	$(CC) -c $(WFLAGS) $(CFLAGS) $<
+	$(CC) -c $(WFLAGS) $(CFLAGS) $(LIB_CFLAGS) $<
 
 {$(TOP)/samples}.c.obj:
 	$(CC) -c -I$(TOP) $(WFLAGS) $(CFLAGS) $<
