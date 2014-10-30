@@ -9,3 +9,4 @@ autom4te.cache
 *.pdb
 *~
 *.swp
+tags

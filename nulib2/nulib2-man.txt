@@ -1,0 +1,162 @@
+NULIB2(1L)							    NULIB2(1L)
+
+
+
+NAME
+       nulib2 - package and compress (archive) files
+
+SYNOPSIS
+       nulib2 -command[modifiers] archive [ filenames ]
+
+DESCRIPTION
+       nulib2  is  a disk and file archiver for NuFX (ShrinkIt) files.	It can
+       add files to and extract files from .SHK, .BXY,	.SEA  (as  created  by
+       GS/ShrinkIt),  and  .BSE files.	In addition, it can extract files from
+       .BNY and .BQY Binary II archives.
+
+       When extracting, testing, or listing the contents of  an  archive,  you
+       can  specify  "-"  for the archive name.  The archive will be read from
+       stdin.  (If the archive is Binary II, you must specify the "-b" flag.)
+
+       Filenames are considered case-sensitive.
+
+       This man page contains a summary of available options.  For full  docu-
+       mentation and the latest versions, visit http://www.nulib.com/.
+
+OPTIONS
+       -h     Get verbose help output.
+
+       -a     Add  files  to an archive.  If the archive does not exist, a new
+	      one will be created.  The list of files to add must be given.
+
+       -d     Delete files from an archive.  The set of files to  delete  must
+	      be provided.
+
+       -i     Integrity  test.	 If  no files are listed, all files in the ar-
+	      chive are tested.
+
+       -p     Pipe extraction.	All extracted  files  are  written  to	stdout
+	      instead of a file on disk.  Normal archive progress messages are
+	      suppressed.
+
+       -t     Table of contents.  Provides a simple list of files in  the  ar-
+	      chive, one per line.
+
+       -v     Verbose table of contents.  Output similar to what ShrinkIt dis-
+	      plays is shown.
+
+       -x     Extract files from an archive.  If  no  files  are  listed,  all
+	      files in the archive are extracted.
+
+MODIFIERS
+       -c     Comments.   When	extracting,  comments will be displayed.  When
+	      adding, you will be prompted to enter  a	one-line  comment  for
+	      every file.
+
+       -e     Preserve	ProDOS file types.  See the ProDOS File Type Preserva-
+	      tion document on http://www.nulib.com/ for details on  how  this
+	      works.
+
+       -ee    Preserve	file types, using extended names.  A file extension is
+	      appended to extracted files.  Useful on operating  systems  like
+	      Windows,	where  filename extensions are important.  When adding
+	      files, nulib2 will try to guess at correct file types by examin-
+	      ing the filename extension.
+
+       -f     Freshen files.  When adding, files in the archive that are older
+	      than files on disk are "freshened", meaning that	no  new  files
+	      are  added,  and	files  that  are  the same age or newer aren't
+	      touched.	Works similarly when extracting.
+
+       -j     Junk directory names.  Only the filename is kept;  the  rest  of
+	      the  pathname  is thrown away.  Empty directories aren't stored.
+	      Works when adding or extracting.
+
+       -k     Store files as disk images.  Files that are a  multiple  of  512
+	      bytes  will  be  added  as disk images rather than normal files.
+	      This does not override the "-e" flag.
+
+       -l     Auto-convert text files.	A reasonably smart algorithm  is  used
+	      to identify which files are text and which aren't during extrac-
+	      tion.  It then converts whatever EOL indicator is being used  by
+	      the text file into something appropriate for the current system.
+
+       -ll    Auto-convert  all  files.  All files being extracted are consid-
+	      ered text, and will be converted.  Don't use this unless	you're
+	      sure you need it.
+
+       -r     Recurse into subdirectories.  When adding, this causes nulib2 to
+	      descend into subdirectories and store all of  the  files	found.
+	      When  extracting,  testing,  or  deleting, this causes the files
+	      listed to match against all records whose prefix matches, allow-
+	      ing  you	to extract, test, or delete entire subdirectories from
+	      the archive.
+
+       -u     Update files.  When adding, files in the archive that are  older
+	      than  files  on disk are updated.  Files in the archive that are
+	      the same age or newer aren't touched.  New files will be	added.
+	      Works similarly when extracting.
+
+       -b     Binary  II.   Forces  NuLib2  to treat the archive as Binary II.
+	      Useful for opening NuFX-in-BNY archives (.BXY) if  you  want  to
+	      strip  the wrapper off.  You must specify this for Binary II ar-
+	      chives on stdin.
+
+       -0     Don't use compression.  Files added will be stored without  com-
+	      pression.  (Note that's dash-zero, not dash-oh.)
+
+       -z     Use  "deflate"  compression.   This  option is only available if
+	      libz was linked against.	Archives created with  this  algorithm
+	      will not be usable on an Apple II.
+
+       -zz    Use  "bzip2"  compression.   This  option  is  only available if
+	      libbz2 was linked against.  Archives created with this algorithm
+	      will not be usable on an Apple II.
+
+EXAMPLES
+       A simple example:
+
+	      nulib2 a foo.shk *
+
+       creates	the archive foo.shk (assuming it doesn't exist) and stores all
+       of the files in the current directory in it, in compressed form.
+
+       If you wanted to add all the files in the current directory, as well as
+       all files in all subdirectories, you could use:
+
+	      nulib2 ar foo.shk *
+
+       to recursively descend into the directory tree.
+
+       Using the command:
+
+	      nulib2 xe foo.shk
+
+       would extract all files from foo.shk, preserving ProDOS file types.  If
+       you then used the command:
+
+	      nulib2 aer foo.shk *
+
+       you would add the files, preserving the file types of anything that was
+       extracted with the "-e" flag set.
+
+       A handy way to look at text documents is to use:
+
+	      nulib2 xeel foo.shk
+
+       to  convert  end-of-line terminators (e.g. CRLF to LF) as the files are
+       being extracted.  The "-ee" flag adds ".TXT" to all files with a ProDOS
+       file type of TXT ($04).
+
+SEE ALSO
+       compress(1), tar(1), zip(1L), unzip(1L), nulib(1L)
+
+BUGS
+       Nah.
+
+AUTHOR
+       Copyright (C) 2007 by Andy McFadden.  All Rights Reserved.
+
+
+
+				  08 Feb 2003			    NULIB2(1L)
