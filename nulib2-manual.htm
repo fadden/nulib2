@@ -1,0 +1,699 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<meta name="GENERATOR" content="Microsoft FrontPage 4.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>NuLib2 Manual</title>
+<meta name="Microsoft Border" content="t, default">
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000"><!--msnavigation--><table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td>
+
+<p align="center"><font size="6"><strong>NuLib2 Manual</strong></font><br>
+<nobr>[&nbsp;<a href="index.htm">Home</a>&nbsp;]</nobr> <nobr>[&nbsp;<a href="downloads/index.htm">NuLib&nbsp;Downloads</a>&nbsp;]</nobr> <nobr>[&nbsp;<a href="library/index.htm">NuLib&nbsp;Library</a>&nbsp;]</nobr> <nobr>[&nbsp;NuLib2&nbsp;Manual&nbsp;]</nobr> <nobr>[&nbsp;<a href="nufxlibapi.htm">NufxLib&nbsp;API</a>&nbsp;]</nobr> <nobr>[&nbsp;<a href="bugs.htm">Bugs&nbsp;&amp;&nbsp;Features</a>&nbsp;]</nobr></p>
+<hr>
+
+</td></tr><!--msnavigation--></table><!--msnavigation--><table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><!--msnavigation--><td valign="top">
+
+<h6>&nbsp;</h6>
+<h6>NuLib2 v2.1.1 Manual - By Andy McFadden - Last revised 2006/02/18</h6>
+
+<h2>Table of Contents</h2>
+
+<ul>
+  <li><a href="#introduction">Introduction</a></li>
+  <li><a href="#overview">Command Overview</a></li>
+  <li><a href="#list">Listing Archive Contents (-v, -t)</a></li>
+  <li><a href="#createadd">Creating Archives and Adding Files (-a)</a></li>
+  <li><a href="#extract">Extracting Files (-x, -p)</a></li>
+  <li><a href="#verify">Verifying Archive Integrity (-i)</a></li>
+  <li><a href="#delete">Deleting Files (-d)</a></li>
+  <li><a href="#diskimages">Disk Images</a></li>
+  <li><a href="#binary2">Binary II Archives</a></li>
+  <li><a href="#miscellaneous">Miscellaneous</a></li>
+  <li><a href="#acknowledgments">Acknowledgments</a></li>
+</ul>
+
+<h2>&nbsp;</h2>
+
+<h2><a name="introduction"></a>Introduction</h2>
+
+<p>NuLib2 is a command-line archive utility, along the lines of &quot;PKZIP&quot;.&nbsp;
+It allows you to perform many common operations on NuFX archives, such as those
+created by the Apple II &quot;ShrinkIt&quot; utility, as well as Binary II
+archives.&nbsp; Files with extensions
+&quot;SHK&quot;, &quot;SDK&quot;, &quot;BXY&quot;, &quot;BSE&quot;, &quot;SEA&quot;,
+&quot;BNY&quot;, and &quot;BQY&quot; are handled.</p>
+
+<p>You can add, delete, extract, test, and list files in a NuFX archive.&nbsp;
+Compressed disk images can be extracted to files, and vice-versa, making it a
+handy utility to have when using an Apple II emulator.</p>
+
+<p>NuLib2 is the successor to NuLib, which did many of the same things.&nbsp;
+NuLib2 is not meant to set a new standard or fight for supremacy on the PC
+desktop; rather, it is intended to help people working with Apple IIs and Apple II
+emulators.&nbsp; All compression algorithms specified in the NuFX specification
+are fully supported.</p>
+
+<p>NuLib2 has a number of features not found in NuLib:</p>
+
+<ul>
+  <li>Supports filetype preservation (on systems with "long" filenames).</li>
+  <li>Supports resource forks.</li>
+  <li>Archive integrity test actually does something useful.</li>
+  <li>ShrinkIt-style table of contents listing formats filenames correctly.</li>
+  <li>Support for adding and viewing comments.</li>
+  <li>Allows streaming input (i.e. read from stdin) for most
+    &quot;read-only&quot; operations.</li>
+  <li>Can operate on large archives while using very little memory (with
+    streaming mode).</li>
+  <li>Transparently handles .BXY, .SEA, and .BSE wrappers.</li>
+  <li>Automatically recognizes and handles Binary II archives.</li>
+  <li>EOL conversions (e.g. CRLF to CR) are more automatic.</li>
+  <li>Deals with some Y2K issues.</li>
+  <li>Comes with an auto-configuration script for UNIX-like platforms.</li>
+  <li>Creates &quot;version 3&quot; records, and uses LZW/2.&nbsp; Most of
+    GS/ShrinkIt's quirks are emulated, so the archives created by NuLib2 are
+    nearly identical to those created by GSHK.</li>
+  <li>Optionally supports gzip-style &quot;deflate&quot; compression and bzip2
+    BWT (as an
+    extension to the NuFX standard).</li>
+  <li>Source code is cleaner and command-line options are simpler.</li>
+  </ul>
+ 
+<p>All features of the original NuLib are supported, except for a couple of
+really obscure ones.&nbsp; NuLib2 is built on top of NufxLib, a NuFX archive manipulation library.</p>
+
+<p>&nbsp;</p>
+
+<h2><a name="overview"></a>Command Overview</h2>
+
+<p>Commands are specified like this:</p>
+
+<blockquote>
+  <p><code> nulib2 -command[modifiers] archive [filename-list]</code></p>
+
+</blockquote>
+
+<p>There are seven commands: add files, list files (two variations), extract
+files (two variations), delete files, and verify archive integrity.&nbsp; There
+are ten modifiers, discussed in later sections.</p>
+
+<p>If you run nulib2 without any arguments, you will be presented with an
+identification banner and a command summary.&nbsp; The identification banner describes the current version of the NuLib2 application, and the version of
+NufxLib upon which it was built.&nbsp; The latest version of NuLib2 can always
+be found at <a href="http://www.nulib.com/">http://www.nulib.com/</a>.&nbsp; If
+you want a more detailed command summary, use:</p>
+
+<blockquote>
+  <p><code>nulib2 -h</code></p>
+
+</blockquote>
+
+<p>If you wish to specify modifiers, you may lump them together with the
+command, like this:</p>
+
+<blockquote>
+  <code>nulib2 -xel archive.shk</code>
+
+</blockquote>
+<p>or specify each independently, like this:</p>
+
+<blockquote>
+  <code>nulib2 -x -e -l archive.shk</code>
+
+</blockquote>
+<p>If you want to give your archive a name that starts with a hyphen, you will
+have to specify it as a full or partial path, e.g. &quot;<code>./-archive.shk</code>&quot;.&nbsp;
+Otherwise, NuLib2 will think you are trying to specify more modifiers.&nbsp; One
+exception to this is that you can specify stdin as the archive for list and
+extract operations:</p>
+
+<blockquote>
+<p><code>nulib2 -v - &lt; archive.shk</code></p>
+
+</blockquote>
+
+<p>Some commands require a list of filenames.&nbsp; These must be listed
+after the archive name, e.g.:</p>
+
+<blockquote>
+
+<p><code>nulib2 -x archive.shk foo ack:splat bar</code></p>
+
+</blockquote>
+
+<p>The names given will be compared with records in a case-insensitive fashion, so
+asking NuLib2 to extract &quot;foo&quot; or &quot;FOO&quot; would match on &quot;foo&quot;,
+&quot;FOO&quot;, and &quot;fOo&quot;.</p>
+
+<p>The commands are explained next.</p>
+
+<p>&nbsp;</p>
+
+<h2><a name="list"></a>Listing Archive Contents (-v, -t)</h2>
+
+<p>The contents of NuFX archives are listed in a format similar to what ProDOS 8
+ShrinkIt 2.x displays.&nbsp; If you use the command:</p>
+
+<blockquote>
+
+<code>nulib2 v archive.shk</code>
+
+</blockquote>
+<p>you will see output similar to this:</p>
+<pre> archive.shk     Created:22-Aug-90 15:33   Mod:22-Aug-90 15:33     Recs:    4
+
+ Name                        Type Auxtyp Archived         Fmat Size Un-Length
+-----------------------------------------------------------------------------
+ BUG.REPORTS                 TXT  $0003  22-Aug-90 15:33  lz2   32%      3089
+ FINDER.DATA                 FND  $0000  22-Aug-90 15:33  unc  100%       458
++HELLO                       BAS  $0801  22-Aug-90 15:33  lz2   86%       605
+ GIF.SYS16                   S16+ $0000  22-Aug-90 15:33  lz2   31%     39165
+-----------------------------------------------------------------------------
+ Uncomp: 4152  Comp: 1988  %of orig: 47%</pre>
+
+For each file, the display includes the&nbsp;filename, ProDOS file type, ProDOS
+&quot;aux&quot; type, the date and time when the file was added to the archive,
+the compression format, a compression ratio percentage, and the length of the
+file before it was compressed.&nbsp; The first line has some information about
+the archive, and the last line has a summary of file sizes and compression
+performance.
+<p>A &quot;+&quot; in the leftmost column, in front of the filename, indicates
+that the file is &quot;locked&quot;.&nbsp; NuLib2 considers a file to be locked
+when it has the ProDOS write, rename, and delete permissions disabled, but still
+has read permission enabled.&nbsp; All other files are considered to be
+unlocked.</p>
+<p>A &quot;+&quot; is shown next to the file type if the file is
+&quot;extended&quot;, meaning it has a resource fork.&nbsp; A &quot;-&quot; next
+to the file type indicates that it's an empty file stored improperly due to a
+bug in GSHK.</p>
+<p>The listing for a disk image is similar:</p>
+<pre> prodisk.shk     Created:21-Apr-90 15:11   Mod:21-Apr-90 15:11     Recs:    1
+
+ Name                        Type Auxtyp Archived         Fmat Size Un-Length
+-----------------------------------------------------------------------------
+ TEST                        Disk 140k   21-Apr-90 15:11  lz1   37%    143360
+-----------------------------------------------------------------------------
+ Uncomp: 143360  Comp: 53051  %of orig: 37%</pre>
+The file type is displayed as &quot;Disk&quot;, the &quot;aux&quot; type is the
+size of the disk image in KBytes, and -- if the image is for a ProDOS disk --
+the filename is the disk volume name.
+<p>The &quot;Fmat&quot; column will be one of &quot;lz1&quot;, &quot;lz2&quot;,
+or &quot;unc&quot;, indicating ShrinkIt LZW/1, LZW/2, or uncompressed.&nbsp;
+Files added to archives by NuLib2 always use LZW/2 or, if compression fails, are
+stored uncompressed.&nbsp; LZW/1 is used by P8 ShrinkIt and the original NuLib.</p>
+<p>The filename field will show the full name, including all subdirectories
+leading up to the file.&nbsp; If there isn't enough room to display the entire
+filename, it will be truncated on the left, replaced with two dots.&nbsp; The
+following example has five files from the &quot;gno:user:man:man2&quot;
+directory, one of which was too long to fit in the display:</p>
+<pre> Name                        Type Auxtyp Archived         Fmat Size Un-Length
+-----------------------------------------------------------------------------
+ gno:usr:man:man2:sigblock.2 GWP  $8010  01-Dec-97 00:07  lz2   58%      2667
+ gno:usr:man:man2:signal.2   GWP  $8010  01-Dec-97 00:07  lz2   56%      7036
+ gno:usr:man:man2:sigpause.2 GWP  $8010  01-Dec-97 00:07  lz2   61%      2358
+ ..usr:man:man2:sigsetmask.2 GWP  $8010  01-Dec-97 00:07  lz2   56%      3046
+ gno:usr:man:man2:wait.2     GWP  $8010  01-Dec-97 00:07  lz2   51%      6577
+-----------------------------------------------------------------------------</pre>
+You can also list the contents of an archive like this:
+<blockquote>
+  <p><code>nulib2 t archive.shk</code></p>
+</blockquote>
+<p>The 't' command generates a simple list of filenames:</p>
+
+<pre>BUG.REPORTS
+FINDER.DATA
+HELLO
+GIF.SYS16</pre>
+The filenames are never truncated or embellished, which makes this command
+useful when you're searching for a specific file.
+<p>&nbsp;</p>
+
+<h2><a name="createadd"></a>Creating Archives and Adding Files (-a)</h2>
+
+<p>You can add files to a new or existing archive with the &quot;-a&quot;
+command.&nbsp; If the archive you specify does not exist, a new one will be
+created.</p>
+
+<p>All files will be added to the end of the archive.&nbsp; If the name of the
+file being added matches the name of a file already present in the archive, you
+will be allowed to replace the existing file or skip adding the new file:</p>
+
+<blockquote>
+  <p><code>Replace BASIC.System? [y]es, [n]o, [A]ll, [N]one:</code></p>
+
+</blockquote>
+<p>If you respond with &quot;y&quot;, the existing file will be deleted
+when the archive is updated.&nbsp; If you say &quot;n&quot;, the new file will
+be skipped.&nbsp; Entering &quot;A&quot; or &quot;N&quot; will cause NuLib2 to
+automatically enter &quot;y&quot; or &quot;n&quot; respectively on any future
+conflicts.&nbsp; (You may also hit 'q' here to abort the operation and quit.)</p>
+
+<p>Files in subdirectories will be added with whatever path separator is
+appropriate for the current system.&nbsp; On a UNIX-like system that would be
+'/', while under Win32 it's '\'.&nbsp; GS/OS follows the Mac OS convention and uses ':'.</p>
+
+<p>There are a number of modifiers that can be used with this command.</p>
+
+<dl>
+  <dt>-u</dt>
+  <dd>Update files.&nbsp; If a matching file is found in the archive, it will
+    only be replaced if the file on disk is newer.&nbsp; Files that don't
+    already exist in the archive will be added.&nbsp; The
+    &quot;Replace...?&quot; dialog will not appear.</dd>
+  <dt>-f</dt>
+  <dd>Freshen files.&nbsp; If a matching file is found in the archive, it will
+    only be replaced if the file on disk is newer.&nbsp; Files that don't
+    already exist in the archive will <b>not</b> be added.&nbsp; The
+    &quot;Replace...?&quot; dialog will not appear.</dd>
+  <dt>-r</dt>
+  <dd>Recursively descend into subdirectories.&nbsp; The standard behavior for
+    NuLib2 is to ignore directories.&nbsp; When this flag is set, it will add
+    all of the files in a specified subdirectory.&nbsp; (Note: empty directories
+    will not be added.)</dd>
+  <dt>-j</dt>
+  <dd>Junk paths.&nbsp; If you add a file called &quot;foo/bar/myfile&quot;,
+    when this flag is set it will be stored simply as &quot;myfile&quot;.</dd>
+  <dt>-0</dt>
+  <dd>Don't compress.&nbsp; Files will be stored without compression.&nbsp;
+    (Note that's &quot;dash zero&quot;, not the letter 'O'.)</dd>
+  <dt>-z</dt>
+  <dd>Use &quot;deflate&quot; compression, equivalent to &quot;gzip
+    -9&quot;.&nbsp; Both NufxLib and NuLib2 must be built with <a href="http://www.zlib.org/">zlib</a>
+    support, or the flag will be disabled.&nbsp; Note that &quot;deflated&quot;
+    files can only be opened by applications based on NufxLib, so don't use this
+    for files that will be opened on an Apple II.&nbsp; If you specify &quot;-zz&quot;,
+    compression equivalent to &quot;bzip2 -8&quot; will be used instead.&nbsp;
+    (Support for bzip2 compression is disabled by default, so it may not be
+    available.)</dd>
+  <dt>-c</dt>
+  <dd>Add one-line comments.&nbsp; NuLib2 will prompt you for a comment on every
+    new file.&nbsp; Hitting return ends the comment.&nbsp; (Hint: on most UNIX
+    systems, you can use Ctrl-V Ctrl-M to insert a carriage return.&nbsp; NuLib2
+    automatically converts carriage returns in comments to whatever is
+    appropriate for the current system, so you can &quot;sneak&quot; multi-line
+    comments in this way.)&nbsp; Maximum length is 200 characters.</dd>
+  <dt>-k</dt>
+  <dd>Store files as disk images.&nbsp; All files will be processed as ProDOS-ordered
+    disk images.&nbsp; See <a href="#diskimages"> Disk Images</a> for more information.</dd>
+  <dt>-e</dt>
+  <dd>Preserve ProDOS file types.&nbsp; Files with preservation information will
+    be added with their file type and aux type intact, and resource forks and
+    disk images will be processed correctly.&nbsp; For this to work, the files
+    must have been extracted with the &quot;-e&quot; flag set.&nbsp; If you
+    specify &quot;-ee&quot;, NuLib2 will attempt to guess the file types of
+    common files by their extensions (e.g. &quot;file.txt&quot; would be stored
+    as type $04 (TXT)).&nbsp; See the <a href="library/nulib2-preserve.htm">ProDOS
+    Attribute Preservation</a> document for more information.</dd>
+</dl>
+
+<p>While adding files, NuLib2 displays the name of the file as it will appear in
+the archive, along with a completion percentage:</p>
+<pre>DONE compressing  BASIC.System
+DONE storing      BOOT.GSOS
+DONE compressing  BOOTU3
+DONE storing      COMM/FINDER.DATA
+DONE compressing  COMM/ProTERM/PT3.SYSTEM
+DONE compressing  COMM/ProTERM/PT3
+DONE compressing  COMM/ProTERM/PT3.GLOBAL
+DONE storing      COMM/ProTERM/PT3.WELCOME
+ 15% compressing  COMM/ProTERM/PT3.CODE0</pre>
+<p>Files stored without compression will say &quot;stored&quot;, while files
+compressed with LZW/2 will say &quot;compressing&quot;.&nbsp; NuLib2 tries to
+mimic GS/ShrinkIt as closely as possible, so files shorter than 512 bytes are
+never compressed, and files that don't get smaller are stored uncompressed.</p>
+
+<p>&nbsp;</p>
+
+<h2><a name="extract"></a>Extracting Files (-x, -p)</h2>
+
+<p>Files can be extracted with the &quot;-x&quot; and &quot;-p&quot;
+commands.&nbsp; You may specify a list of files to extract, or specify none and
+extract all files.</p>
+
+<p>A simple example that extracts all files from an archive:</p>
+
+<blockquote>
+
+<p><code>nulib2 x archive.shk</code></p>
+
+</blockquote>
+
+<p>If you wanted to extract a file called &quot;fubar&quot; and a file called
+&quot;ack:splat&quot;, you would use:</p>
+
+<blockquote>
+
+<p><code>nulib2 x archive.shk fubar ack:splat</code></p>
+
+</blockquote>
+
+<p>The directory hierarchy is always preserved unless &quot;-j&quot; is
+set.&nbsp; In the above example, the files would be extracted as &quot;fubar&quot;
+in the current directory and &quot;splat&quot; in a subdirectory called &quot;ack&quot;
+(assuming that the file was archived on a system where ':' separates directory
+names).</p>
+
+<p>Using the &quot;-r&quot; flag (described below), you could extract all of the
+files in the &quot;ack&quot; subdirectory, like this:</p>
+
+<blockquote>
+
+<p><code>nulib2 xr archive.shk ack:</code></p>
+
+</blockquote>
+
+<p>The &quot;-r&quot; flag does a prefix string match, meaning it just compares
+the first part of the name in the archive against the name you specify.&nbsp; So
+if you had entered:</p>
+
+<blockquote>
+  <p><code>nulib2 xr archive.shk ack</code></p>
+
+</blockquote>
+<p>above, it would have extracted &quot;acknowledge&quot; and &quot;acksent&quot;
+as well as &quot;ack:foo&quot; and &quot;ack:bar&quot;.&nbsp; Specifying the
+filesystem separation character (usually '/' or ':') allows you to grab just the
+directory you want.</p>
+
+<p>If you try to extract a file with the same name as an existing file, you will
+be prompted for instructions:</p>
+
+<blockquote>
+
+<p><code>Replace BASIC.System? [y]es, [n]o, [A]ll, [N]one, [r]ename:</code></p>
+
+</blockquote>
+
+<p>You can choose (from left to right) to overwrite the existing file, skip the
+extraction of this file, overwrite all existing files, never overwrite an
+existing file, or rename the current file.&nbsp; If you elect to rename, you
+will be prompted for a new name for the file.&nbsp; (You may also hit 'q' here
+to quit immediately.)</p>
+
+<p>The modifiers usable with the &quot;-x&quot; command are:</p>
+
+<dl>
+  <dt>-u</dt>
+  <dd>Update files.&nbsp; If a matching file is found on disk, it will
+    only be replaced if the file in the archive is newer.&nbsp; Files that don't
+    already exist on disk will be extracted.&nbsp; The
+    &quot;Replace...?&quot; dialog will not appear.</dd>
+  <dt>-f</dt>
+  <dd>Freshen files.&nbsp; If a matching file is found on disk, it will
+    only be replaced if the file in the archive is newer.&nbsp; Files that don't
+    already exist on disk will <b>not</b> be extracted.&nbsp; The
+    &quot;Replace...?&quot; dialog will not appear.</dd>
+  <dt>-r</dt>
+  <dd>Recursively describe the set of files to extract.&nbsp; This allows you to
+    extract an entire subdirectory tree from the archive.&nbsp; (Perhaps someday
+    NuLib2 will support extraction by regular expression, and this modifier can
+    go away.)</dd>
+  <dt>-j</dt>
+  <dd>Junk paths.&nbsp; The pathname is stripped off of the file.&nbsp; If you
+    extract &quot;foo&quot; and &quot;ack:splat&quot;, you will end up with a
+    file called &quot;foo&quot; and a file called &quot;splat&quot; in the
+    current directory.</dd>
+  <dt>-l</dt>
+  <dd>Convert EOL.&nbsp; When set, NuLib2 tries to identify which files in the
+    archive are text files and which have binary data.&nbsp; It then converts
+    the text file end-of-line markers to whatever is appropriate on the current system.&nbsp; If you
+    specify &quot;-ll&quot;, NuLib2 will convert <b>all</b>  files except disk
+    images.&nbsp; High-ASCII files, such as DOS text files and Merlin 8 source
+    files, are automatically stripped.</dd>
+  <dt>-c</dt>
+  <dd>Display comments while extracting.&nbsp; If a comment was stored with the
+    record, it will be displayed on the screen.&nbsp; End-of-line markers (e.g.
+    CR, LF, or CRLF) used in the comment are automatically converted.</dd>
+  <dt>-s</dt>
+  <dd>Stomp existing files.&nbsp; When set, NuLib2 will overwrite existing files
+    without prompting you for confirmation.</dd>
+  <dt>-e</dt>
+  <dd>Preserve ProDOS file types.&nbsp; Extracted files will have the ProDOS
+    file type and aux type appended to the name (e.g. &quot;foo.txt#040000&quot;).&nbsp;
+    Resource forks and disk images will be labeled.&nbsp; If you specify &quot;-ee&quot;,
+    NuLib2 will append the file's extension to the end of the file, so that
+    systems like Win32 that rely on filename extensions can recognize the file
+    type (e.g. &quot;foo.txt#040000.txt&quot;).&nbsp; See the <a href="library/nulib2-preserve.htm">ProDOS
+    Attribute Preservation</a> document for more information.&nbsp;</dd>
+</dl>
+
+<p>While extracting files, NuLib2 displays progress information:</p>
+
+<pre>DONE expanding   BASIC.System
+DONE extracting  BOOT.GSOS
+DONE expanding   BOOTU3
+DONE extracting  COMM/FINDER.DATA
+DONE expanding   COMM/ProTERM/PT3.SYSTEM
+DONE expanding   COMM/ProTERM/PT3
+DONE expanding   COMM/ProTERM/PT3.GLOBAL
+DONE extracting  COMM/ProTERM/PT3.WELCOME
+ 90% expanding   COMM/ProTERM/PT3.CODE0</pre>
+
+The filenames shown are the names as they are being written to disk.  For example,
+if you extracted files with &quot;-e&quot; (preserve types) and &quot;-l&quot;
+(convert end-of-line character) set:&nbsp;
+<blockquote>
+  <p>
+<code>nulib2 -xle archive.shk</code>
+  </p>
+</blockquote>
+<p>You would see something like:</p>
+<pre>DONE expanding   BASIC.System#ff2000
+DONE extracting  BOOT.GSOS#fc0801
+DONE expanding   BOOTU3#060800
+DONE extracting  COMM/FINDER.DATA#c90000
+DONE expanding   COMM/ProTERM/PT3.SYSTEM#ff2000
+DONE expanding   COMM/ProTERM/PT3#ff2000
+DONE expanding + COMM/ProTERM/PT3.GLOBAL#040000
+DONE extracting+ COMM/ProTERM/PT3.WELCOME#040000
+ 90% expanding   COMM/ProTERM/PT3.CODE0#060000</pre>
+The &quot;+&quot; sign indicates that an EOL conversion was performed on the
+file.
+<p>&nbsp;</p>
+
+<p>The &quot;-p&quot; command extracts the files to a pipe.&nbsp; The contents
+of the extracted files are written to stdout.&nbsp; The normal status messages are suppressed.</p>
+
+<p>Only the &quot;-r&quot; and &quot;-l&quot; modifiers can be used with
+&quot;-p&quot;.</p>
+
+<p>This command is useful for examining the contents of individual files.&nbsp;
+For example, the command:</p>
+
+<blockquote>
+  <code>nulib2 -pl archive.shk document.txt | more</code>
+
+</blockquote>
+<p>will dump the contents of &quot;document.txt&quot;, with text automatically
+converted, and pipe the results into &quot;more&quot;.&nbsp; If you specify more
+than one file, they will be sent to the output one after the other.</p>
+
+<p>&nbsp;</p>
+
+<h2><a name="verify"></a>Verifying Archive Integrity (-i)</h2>
+
+<p>If you want to verify that an archive is undamaged, use this command.&nbsp;
+NuLib2 does the same processing that it does when extracting files from the
+archive, but no output is produced.&nbsp; Every CRC (Cyclic Redundancy Check - a
+checksum computed when the data was added to the archive) is tested.</p>
+
+<p>The progress information shown when testing an archive looks like this:</p>
+
+<pre>DONE verifying  BASIC.System
+DONE verifying  BOOT.GSOS
+DONE verifying  BOOTU3
+DONE verifying  COMM/FINDER.DATA
+DONE verifying  COMM/ProTERM/PT3.SYSTEM
+DONE verifying  COMM/ProTERM/PT3
+DONE verifying  COMM/ProTERM/PT3.GLOBAL
+DONE verifying  COMM/ProTERM/PT3.WELCOME
+ 90% verifying  COMM/ProTERM/PT3.CODE0</pre>
+<p>If a problem is found, you will see a message like this one:</p>
+
+<pre>  Found a bad CRC in BASIC.System
+  Archive may be damaged, continue anyway?  [y]es, [n]o:</pre>
+
+<p>If you choose 'y', NuLib2 will pick up where it left off, and continue
+processing the archive.&nbsp; If you choose 'n', NuLib2 stops immediately.</p>
+
+<p>If you don't specify a list of files:</p>
+
+<blockquote>
+  <p><code>nulib2 -i archive.shk</code></p>
+
+</blockquote>
+<p>then NuLib2 will test every file in the archive.&nbsp; If you use a list:</p>
+
+<blockquote>
+  <p><code>nulib2 -i archive.shk foo ack:splat</code></p>
+
+</blockquote>
+<p>it will only test the files you told it to.</p>
+
+<p>You may use the &quot;-r&quot; modifier when specifying files to test, in the
+same fashion as when extracting files.</p>
+
+<p>&nbsp;</p>
+
+<h2><a name="delete"></a>Deleting Files (-d)</h2>
+
+<p>This command deletes entire records from an archive.&nbsp; A list of
+filenames must be specified.  If you manage to delete all of the files,
+the archive itself will be removed.
+
+<p>An example of this command:</p>
+
+<blockquote>
+
+<code>nulib2 -d archive.shk foo ack:splat</code>
+
+</blockquote>
+
+<p>A progress report will be displayed during processing, e.g.</p>
+
+<pre>Deleting foo
+Deleting bar
+Deleting ack/splat</pre>
+
+<p>The &quot;-r&quot; modifier may be used to select entire
+subdirectories.&nbsp; See the notes in the <a href="#extract">section on
+extraction</a>, above.</p>
+
+<p>&nbsp;</p>
+
+<h2><a name="diskimages"></a>Disk Images</h2>
+
+<p>NuLib2 doesn't try to write floppy disk images onto a floppy the way ShrinkIt
+does.&nbsp;
+Instead, it extracts disk images as ProDOS-ordered files, suitable for use with
+your favorite Apple II emulator.</p>
+
+<p>When adding disk images, NuLib2 assumes that the file is in ProDOS block
+order.&nbsp; If you want the archive to work correctly with ShrinkIt on an Apple
+II, don't add DOS-ordered disk image files.</p>
+
+<p>The NufxLib library comes with a sample program called &quot;imgconv&quot; that can
+convert between 2IMG (&quot;.2mg&quot;) images and NuFX (&quot;.shk&quot;)
+archives.&nbsp; It is able to convert DOS-ordered .2mg files to ProDOS order
+before adding them to the NuFX archive.</p>
+
+<p>NuLib2 will only accept files that are a multiple of 512 bytes.&nbsp; If you
+insist on trying to add odd-sized files as disk images, NuLib2 will print a warning
+and add it as an ordinary file.</p>
+
+<p>&nbsp;</p>
+
+<h2><a name="binary2"></a>Binary II Archives</h2>
+
+<p>NuLib2 supports Binary II (.BNY, .BQY) archives in a more or less transparent
+fashion.&nbsp; For all operations except adding and deleting files you can
+specify a .BNY file in place of a .SHK and get more or less the same results.</p>
+
+<p>A few modifier flags aren't currently supported for Binary II archives.&nbsp;
+You can't specify EOL conversion with &quot;-l&quot;, freshen or update with
+&quot;-f&quot; or &quot;-u&quot;, or extract comments (there are no such things)
+with &quot;-c&quot;.&nbsp; You can, however, specify filenames using
+&quot;-r&quot; for partial matches, use &quot;-e&quot; and &quot;-ee&quot; to
+extend filenames, and use &quot;-j&quot; to truncate paths.</p>
+
+<p>The default behavior is to refuse to overwrite existing files.&nbsp; NuLib2
+currently just stops if it encounters a file that already exists.&nbsp; You can
+use the &quot;-s&quot; flag to tell NuLib2 to overwrite any existing
+files.&nbsp; It will not, however, overwrite directories with files or files
+with directories.</p>
+
+<p>Files that were compressed with &quot;Squeeze&quot; compression (via BLU
+v2.27 or SQ3) will be automatically un-squeezed.&nbsp; If the filenames end in
+&quot;.QQ&quot;, the extension will be stripped.&nbsp; Programs like ShrinkIt
+and BLU use the filename embedded within the SQ format as the output name when
+extracting, but NuLib2 ignores that because it tends to leave you with a
+filename you weren't expecting.</p>
+
+<p>In some cases you will need to explicitly tell NuLib2 that a file is a Binary
+II archive with the &quot;-b&quot; flag.&nbsp; If you want to strip the Binary
+II header off of a .BXY file, you will need to use &quot;<code>nulib2 -xb
+file.BXY</code>&quot;.&nbsp; Otherwise, NuLib2 defaults to extracting from the
+NuFX archive embedded in the BXY file.&nbsp; You will also need to use the
+&quot;-b&quot; modifier for a streaming archive (e.g. &quot;<code>nulib2 -xb -
+&lt; file.BQY</code>&quot;), because the stream can't be rewound after the test
+for NuFX fails.</p>
+
+<p>&nbsp;</p>
+
+<h2><a name="miscellaneous"></a>Miscellaneous</h2>
+
+<p>Files that were somehow archived without a filename will be referred to as &quot;UNKNOWN&quot;.&nbsp; Rumor has it some older versions of ShrinkIt omitted
+the file name for DOS 3.3 disk images.</p>
+
+<p>On Win32 and UNIX-like systems, the ProDOS access permissions are not preserved
+precisely.&nbsp; ProDOS has read, write, rename, and delete permission, as well
+as &quot;backup needed&quot; and &quot;invisible&quot; flags.&nbsp; If NuLib2
+believes the file is locked, it will disable write permission on the file.&nbsp;
+When adding files, &quot;locked&quot; files will have read and &quot;backup
+needed&quot; enabled and the other flags disabled, while &quot;unlocked&quot;
+flags will have all the flags except &quot;invisible&quot; enabled.&nbsp; In
+other words, the basic concepts of &quot;locked&quot; and &quot;unlocked&quot;
+are preserved, but the full set of flags is not.</p>
+<p>The NuFX specification forbids filenames that start with the filename
+separator character, i.e. you can't put &quot;/foo/bar&quot; in an
+archive.&nbsp; If you specify a full pathname, the leading '/' will be dropped.</p>
+<p>On Win32 and UNIX-like systems, a leading &quot;./&quot; in the filename is redundant
+and will be stripped.&nbsp; If &quot;..&quot; is used as a path component, the
+pathname will be reduced to just the filename.</p>
+<p>When making changes to an archive, a new archive is constructed in a
+temporary file (&quot;nulibtmpXXXXX&quot;) in the current directory.&nbsp; When
+everything completes successfully, the temp file is renamed over the original
+archive.&nbsp; The exception to this is that newly-created archives are written
+in place.&nbsp; If NuLib2 crashes or is killed with signal while modifying an archive, the temp file may
+be left lying around.</p>
+<p>Filenames with invalid characters will be converted to something palatable
+for the current system (e.g. &quot;/&quot; is set to &quot;_&quot; on UNIX-like
+systems).&nbsp; If file type preservation is enabled, the character will be
+preserved exactly (e.g. '/' becomes &quot;%2f&quot;).</p>
+<p>NuFX archives store three dates with every file: creation, modification, and when
+it was archived.&nbsp; On systems that don't have creation dates, the
+modification date will be substituted.</p>
+<p>There are certain filenames you can't use on a Windows &quot;FAT&quot;
+filesystem, such as &quot;AUX&quot; and &quot;PRN&quot;.&nbsp;
+Neither Win98 nor Linux's vfat driver will allow it.&nbsp; Standard utilities
+like WinZip fail with a mysterious error message.&nbsp; As a workaround, the Win32 version of NuLib2 will consistently
+prefix all MS-DOS device entries with '_', so &quot;AUX&quot; and &quot;aux.foo.txt&quot;
+will be extracted
+as &quot;_AUX&quot; and &quot;_aux.foo.txt&quot;.&nbsp; If filetype preservation is enabled, the name used
+will be &quot;%00AUX&quot; (the %00 is removed when the file is added with -e,
+thus preserving the original name).&nbsp; This handling does not apply to
+versions built for other systems, so attempting
+to extract a file named &quot;AUX&quot; onto a FAT filesystem under Linux will cause NuLib2 to
+fail.</p>
+<p>No attempt is made to extract and preserve comments, even in
+&quot;preserve&quot; mode.&nbsp; This is probably a bug.</p>
+<p>Archive files that start with junk -- such as a vestigal MacBinary header or
+HTTP headers -- appear occasionally on FTP sites.&nbsp; NuLib2 will search
+through the first 1024 bytes of the file to find the actual archive start.</p>
+<p>Silly benchmark of the day: creating a 14MB archive containing the contents
+of my hard drive took about 40 minutes on an accelerated IIgs.&nbsp; NuLib2
+accomplished the same feat in about six seconds on a 500MHz Pentium-III running
+Linux.</p>
+<p>&nbsp;</p>
+
+<h2><a name="acknowledgments"></a>Acknowledgments</h2>
+<p>NuLib2 would not have been possible without all the lessons learned from
+NuLib.&nbsp; Andy Nicholas, Kent Dickey, Frank Petroski, Robert B. Hess, Bruce
+Kahn, and Devin Reade contributed code to NuLib's development.</p>
+<p>My original plan for preserving ProDOS file types was, in retrospect, mighty
+screwed up.&nbsp; My thanks to Bill North for setting me straight.</p>
+Eric Shepherd spent a bunch of time messing around with early versions of NuLib2
+on BeOS, and helped me get all the configuration stuff in order.<p>Devin Reade
+built it on several different platforms, and made a repository for binary
+distributions.</p>
+<hr>
+<p>This document is Copyright © 2000-2006 by <a href="http://www.fadden.com/">Andy
+McFadden</a>.&nbsp; All Rights Reserved.</p>
+<p>The latest version can be found on the NuLib web site at
+<a href="http://www.nulib.com/">http://www.nulib.com/</a>.</p>
+<!--msnavigation--></td></tr><!--msnavigation--></table></body>
+
+</html>

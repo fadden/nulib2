@@ -1,0 +1,1873 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<meta name="GENERATOR" content="Microsoft FrontPage 4.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>NuFX Spec Final Rev 3</title>
+<meta name="Microsoft Border" content="t, default">
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000"><!--msnavigation--><table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td>
+
+<p align="center"><font size="6"><strong></strong></font><br>
+</p>
+<hr>
+
+</td></tr><!--msnavigation--></table><!--msnavigation--><table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><!--msnavigation--><td valign="top">
+<h2>NuFX Specification -- Final Revision 3</h2>
+<p><a href="index.htm">Back to nulib.com library</a></p>
+<p>This is an older version of the specification.  Please use the
+<a href="FTN.e08002.htm">File Type Note</a> instead.</p>
+<hr><pre>
+ -------------------------------------------------------------------------------
+ |   The New Archive Standard for the Apple II -- "NuFX" -- NuFile eXchange    |
+ -------------------------------------------------------------------------------
+ 
+                 NuFX Documentation - 12/2/88 by Andy Nicholas
+                       Final Revision Three - 2/3/89
+ 
+                   Please distribute as widely as possible
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ Send questions/comments to:
+ 
+ Paper Bag Productions          CSNET: nicholaA@moravian.edu
+ c/o Andy Nicholas           InterNET: nicholaA%batman.moravian.edu@relay.cs.net
+ Box 435                               nicholaA@batman.moravian.edu.csnet
+ Moravian College             ProLine: andyn@pro-sol.cts.com     [619-670-5379]
+ Bethlehem, PA  18018    AppleLink PE: ShrinkIt
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ NuFX Documentation  2/3/89                             - Page 2 -
+ 
+ 
+ Preface
+ -------
+ 
+ The first copy of this proposal that was circulated was preliminary
+ revision 10.   Since then I have had many requests for a more flexible
+ solution to the archival problem.  To do so meant the removal of such
+ features as the alignment to 128-byte boundaries of all data blocks and
+ so forth, and the re-definition of the header block so that it is less rigid
+ in its format (extensible).
+ 
+ To do this makes it at least a factor more complex for programs which can
+ extract records from NuFX archives on-the-fly (such as telecommunications
+ programs).  While this may be seen as a hardship by some, I believe the
+ additional power provided by all formats after revision 10 justifies the
+ additional complexity.  Standalone utility programs should have no problems
+ adjusting to the new format.
+ 
+ This final revision of the documentation fixes the master_header's size
+ at 48 bytes, eliminates the archive_create_program and archive_mod_program
+ fields, increases the size of the access field to a longword, and introduces
+ a new name for the archive, NFX, or NuFX, for "NuFile eXchange."
+ 
+ I am also almost finished an archive program which places files or disks
+ into NuFX archives using dynamic LZW compression, ShrinkIt.  Any reference
+ to ShrinkIt in the text is a reference to this program.
+ 
+ Final Rev 2 corrects the all the algorithms to include the length of the
+ thread list in their calculations, includes some notes on how to properly
+ include threads and directories, and standardizes on the use of "NuFX" to
+ describe the archive name so as to distinguish it from Sun Microsystems'
+ "NFS" network product.
+ 
+ Final Rev 3 changes some of the terminology used, changes the date labels
+ to xx_when instead of xxx_date_time, assigns the resource_fork of a file
+ to be stored as a thread_kind in a data_thread instead of having it's own
+ thread available.  An attempt at further clarity has been undertaken.
+ 
+ andy (2/3/89)
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ NuFX Documentation  2/3/89                             - Page 3 -
+ 
+ 
+ History
+ -------
+ 
+ The Apple II community has always been sorely lacking a well-defined method
+ for archiving files.  NuFX is an attempt to rectify the situation by providing
+ for a flexible, consistent standard for archiving files, disks, and other
+ computer medium.
+ 
+ The Binary II standard, authored by Gary B. Little, for placing multiple files
+ within a single file has been rendered obsolete by the (now) recent release of
+ GS/OS(tm) which provides access to multiple filing systems.  Since GS/OS can
+ (or will) use HFS files, Binary II does NOT provide for:
+ 
+ o  filenames larger than 64 characters
+    (GS/OS can create 8000 character filenames)
+ 
+ o  a convenient way to add to, remove from, and other ways work on an archive.
+ 
+ o  including HFS-style files which contain resource forks.
+ 
+ o  including of entire disk images.
+ 
+ o  including messages along with a file.
+ 
+ o  a convenient way to represent that a file is compressed or encrypted by
+     a specific application.  (an excess secondary header must be attached to
+     the beginning of files, such is the case with SQueezed files)
+ 
+ o  a true archive standard.  Binary II's original intent was to make transfer
+     of Apple II files from local machines to large information services like
+     The Source, Delphi, CompuServe, and GEnie, possible.  Otherwise, a file's
+     attribute information would be lost.  Binary II is now being stretched
+     beyond what it was originally meant to do.
+ 
+ o  no support for multiple data threads or structures.
+ 
+ Adding all of these features to the existing Binary II standard would not only
+ be nerve-racking, but nearly impossible without violating the existing standard
+ and causing a great deal of confusion (ie, "did you say it was Binary II, first
+ revision or the second one?")  Although Binary II is flexible, it is simply
+ unable to address all of these concerns without alienating existing Binary II
+ extraction programs.
+ 
+ So, to provide some differentiation between standards and provide a better
+ functioning format, I have defined a new standard called "NuFX" (NuFile
+ eXchange for the Apple II).  NuFX fixes the problems that Apple IIgs(tm)
+ users would soon be experiencing as other filing systems become available for
+ GS/OS(tm).  I am trying to stop a set of problems before they have a chance to
+ develop.  NuFX provides all of the features of Binary II, but doesn't stop
+ there...  it goes farther to allow the user the ultimate in flexibility,
+ usefulness and performance.
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ NuFX Documentation  2/3/89                             - Page 4 -
+ 
+ 
+ Implementation
+ --------------
+ 
+ The basic structure of a NuFX archive is as follows:
+ 
+                 [First record]                    [Next Record]
+ +---------------------------------------------------------------------------+
+ | Master Header | Header | Data  . . . . . . . .  | Header | Data  . . . .  |
+ +---------------------------------------------------------------------------+
+ 
+ A single master header block contains values which describe the entire archive
+ (those of you who are into structured programming can consider them archive
+ globals).  Each of the succeeding header blocks contain only information about
+ the record they precede (consider them archive locals).
+ 
+ Each header block may be followed by a series of "threads."  Each thread may
+ be a portion of data, a message, the resource part of an extended file, a
+ control sequence for a NuFX utility program, or almost any sort of
+ sequential data.  The number of threads is described as a longword (32-bit
+ word), so it is also possible to properly archive and store the data
+ portions of sparse files.
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ NuFX Documentation  2/3/89                             - Page 5 -
+ 
+ 
+ Master header block contents:
+ 
+ All word and double-word values are byte-reversed.
+ 
+ Offset  Length  Content
+ ------  ------  ---------------------------------------------------------------
+ +0      1       $4E  Master ID Byte #1
+ +1      1       $F5  Master ID Byte #2
+ +2      1       $46  Master ID Byte #3   spells the word "NuFile" in
+ +3      1       $E9  Master ID Byte #4   alternating ASCII (high, low) for
+ +4      1       $6C  Master ID Byte #5   uniqueness.
+ +5      1       $E5  Master ID Byte #6
+ 
+ +6      2       master_crc
+ 
+                 16-bit CRC of the remaining fields in this block.
+                 (bytes +8 through +47)
+ 
+                 Any programs which modify the master header block *MUST*
+                 recalculate the CRC for the master header.
+ 
+ +8      4       total_records
+ 
+                 Total number of records in this archive file.
+ 
+                 It is possible to chain multiple records (Files or
+                 Disks) together.  It is also possible to chain
+                 different types of records together (Files and
+                 Disks mixed).
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ NuFX Documentation  2/3/89                             - Page 6 -
+ 
+ 
+ +12     8       archive_create_when
+ 
+                 The date and time on which this archive was initially
+                 created.  This field should never be changed once initially
+                 written.
+ 
+                 The format of this field is as follows:
+ 
+                 +12     second - 0 through 59
+                 +13     minute - 0 through 59
+                 +14     hour - 0 through 23
+                 +15     current Year minus 1900
+                 +16     day - 0 through 30
+                 +17     month - 0 through 11, with 0=January
+                 +18     filler byte - reserved must be null (00).
+                 +19     weekDay - 1 through 7, with 1=Sunday
+ 
+                 The format of this field is identical to that described
+                 in the _ReadTimeHex ($0D03) call described on page 14-14
+                 of the Apple_IIgs_Toolbox_Reference:_Volume_1.
+ 
+                 If the date is not known, or is unable to be calculated, this
+                 field should be set to null (00).  If the weekDay is not
+                 known, or is unable to be calculated, this field should be
+                 set to null (00).
+ 
+ 
+ +20     8       archive_mod_when
+ 
+                 The date of the last modification to this archive. This field
+                 should be changed every time a change is made to any of the
+                 records in the archive.
+ 
+                 The format of this field is as follows:
+ 
+                 +20     second - 0 through 59
+                 +21     minute - 0 through 59
+                 +22     hour - 0 through 23
+                 +23     current Year minus 1900
+                 +24     day - 0 through 30
+                 +25     month - 0 through 11, with 0=January
+                 +26     filler byte - reserved, must be null (00).
+                 +27     weekDay - 1 through 7, with 1=Sunday
+ 
+                 The format of this field is identical to that described
+                 in the _ReadTimeHex ($0D03) call described on page 14-14
+                 of the Apple_IIgs_Toolbox_Reference:_Volume_1.
+ 
+                 If the date is not known, or is unable to be calculated, this
+                 field should be set to null (00).  If the weekDay is not
+                 known, or is unable to be calculated, this field should be
+                 set to null (00).
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ NuFX Documentation  2/3/89                             - Page 7 -
+ 
+ 
+ +28
+  .
+  .              *** RESERVED, MUST BE SET TO NULL (00) ***
+  .              Do NOT use any of these fields.
+  .
+ +47
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ NuFX Documentation  2/3/89                             - Page 8 -
+ 
+ 
+ The following header block must precede each record within the NuFX archive.
+ The cyclic redundancy check (CRC) has been provided to detect archives which
+ have possibly been corrupted.  The only time the CRC should be included in
+ in a block is for the master header and for each of the regular header blocks.
+ The CRC functions to ensure reliability and record integrity.
+ 
+ Header Block contents:
+ 
+ All word and double-word values are byte-reversed.
+ 
+ Offset  Length  Content
+ ------  ------  ---------------------------------------------------------------
+ +0      1       $4E - Header ID Byte #1
+ +1      1       $F5 - Header ID Byte #2  Spells "NuFX" in alternating ascii
+ +2      1       $46 - Header ID Byte #3  (high/low) for uniqueness.
+ +3      1       $D8 - Header ID Byte #4
+ 
+ +4      2       header_crc
+ 
+                 16-bit CRC of the remaining fields of this block.
+                 (bytes 6 through the end of the attributes, filename, and
+                  any threads.)
+ 
+                 This field is used to verify the integrity of the rest of the
+                 block.
+ 
+                 Programs which make NuFX archives *MUST* include this
+                 in every header.  It is up to the discretion of the extracting
+                 program to check the validity of these bytes.  Any programs
+                 which might modify the header of a particular record *MUST*
+                 recalculate the CRC for the header block.
+ 
+ 
+ +6      2       attrib_count
+ 
+                 This field describes the length of the attribute section of each
+                 header in bytes.  This count measures the distance in bytes
+                 from the first field (offset +0) to and including the
+                 filename_length field.  By convention, the filename_length
+                 field will always be the last 2 bytes of the attribute
+                 section regardless of what has preceded it.
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ NuFX Documentation  2/3/89                             - Page 9 -
+ 
+ 
+ +8      2       version_number
+ 
+                 Minimum NuFX version number needed for extraction.
+                 (Currently $0000)
+ 
+                 This field is used to detect the possible existence of
+                 other as-of-yet undefined fields and features.  Utility
+                 programs should check this value to be certain that they
+                 are capable of extracting a record with this minimum version.
+ 
+ 
+ +10     4       total_threads
+ 
+                 The number of thread sub-records which should be expected
+                 immediately following the end of the file/path name.  This
+                 field is extremely important because it contains the
+                 information about the length of the last 1/3 of the header.
+ 
+ 
+ +14     2       file_sys_id
+ 
+                 Native file system identifier:
+ 
+                 $0000   reserved
+                 $0001   ProDOS/SOS
+                 $0002   DOS 3.3
+                 $0003   DOS 3.2
+                 $0004   Apple II Pascal
+                 $0005   Macintosh(tm) (HFS)
+                 $0006   Macintosh (MFS)
+                 $0007   LISA(tm) file system
+                 $0008   Apple CP/M
+                 $0009   reserved, do not use
+                 $000A   MS-DOS
+                 $000B   High-Sierra/ISO 9660
+ 
+                 $000C
+                 .
+                 .       reserved
+                 .
+                 $FFFF
+ 
+                 Disk: if the file system of a disk is not known, then
+                  this field should be set to null (0000).
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ NuFX Documentation  2/3/89                            - Page 10 -
+ 
+ 
+ +16     2       file_sys_info
+ 
+                 Information about the current filing system:
+ 
+                 [$00xx]
+ 
+                 Native file system separator.  Under Prodos, the "/" ($2F)
+                 character is used to separate paths.  Under HFS, the
+                 ":" ($3A) character is used to separate paths.  Under
+                 MS-DOS, the "\" ($5C) character is used to separate paths.
+                 The low byte of this word is used to store the file system's
+                 separator.
+ 
+                 The primary reason for including this field is that the
+                 receiving file system (say, to Prodos 8 from GS/OS running an
+                 HFS File System Translator) must know how to parse a valid
+                 file/path name from the filename field for the receiving file
+                 system.
+ 
+                 [$xx00]
+ 
+                 Sparse byte.  If the high-byte of this word is $01, then
+                 the image which follows is a sparse file (and the threads
+                 should have been filled in properly to indicate this).  If
+                 a more "normal" image follows, this byte will be null (00).
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ NuFX Documentation  2/3/89                            - Page 11 -
+ 
+ 
+ +18     4       access          [0000 0000 0000 0000 DRB00IWR]
+ 
+                 bits 31-8       reserved, must be zero
+                 bit 7           D=0, destroy disabled
+                                 D=1, destroy enabled
+                 bit 6           R=0, rename disabled
+                                 R=1, rename enabled
+                 bit 5           B=0, backup not needed
+                                 B=1, backup needed
+                 bits 4-3        reserved, must be zero
+                 bit 2           I=0, file is visible
+                                 I=1, file is invisible
+                 bit 1           W=0, write disabled
+                                 W=1, write enabled
+                 bit 0           R=0, read disabled
+                                 R=1, read enabled
+ 
+                 Disk: this field should be set to null (00).
+ 
+ 
+ +22     4       file_type
+ 
+                 Disk: this field should be set to null (00).
+ 
+ 
+ +26     4       extra_type
+ 
+                 ProDOS aux_type or HFS creator_type
+ 
+                 Disk: this field *MUST* be set to the total number of blocks
+                   on the device.  This information must be present so that
+                   the extracting program can place the record on the proper
+                   type of device.
+ 
+ 
+ +30     2       storage_type
+ 
+                 $0 - $3 = standard file
+                 $5      = extended (gs/os) file
+                 $d      = subdirectory
+ 
+          Disk:  file_sys_block_size
+ 
+                 This should only be used if a disk is being archived. The block
+                 size used by the device should be placed in this field.  For
+                 example, under Prodos, this field will be 512, while HFS
+                 would set it to 524.
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ NuFX Documentation  2/3/89                            - Page 12 -
+ 
+ 
+ +32     8       create_when
+ 
+                 The date and time on which this record was initially created.
+                 If the creation date and time is available from a disk device,
+                 this information should be included.
+ 
+                 The format of this field is as follows:
+ 
+                 +32     second - 0 through 59
+                 +33     minute - 0 through 59
+                 +34     hour - 0 through 23
+                 +35     current Year minus 1900
+                 +36     day - 0 through 30
+                 +37     month - 0 through 11, with 0=January
+                 +38     filler byte - reserved, must be set to null (00).
+                 +39     weekDay - 1 through 7, with 1=Sunday
+ 
+                 The format of this field is identical to that described
+                 in the _ReadTimeHex ($0D03) call described on page 14-14
+                 of the Apple_IIgs_Toolbox_Reference:_Volume_1.
+ 
+                 If the date is not known, or is unable to be calculated, this
+                 field should be set to null (00).  If the weekDay is not
+                 known, or is unable to be calculated, this field should be
+                 set to null (00).
+ 
+ 
+ +40     8       mod_when
+ 
+                 The date and time on which this record was last modified.
+                 If the modification date is available from a disk device,
+                 this information should be included.
+ 
+                 The format of this field is as follows:
+ 
+                 +40     second - 0 through 59
+                 +41     minute - 0 through 59
+                 +42     hour - 0 through 23
+                 +43     current Year minus 1900
+                 +44     day - 0 through 30
+                 +45     month - 0 through 11, with 0=January
+                 +46     filler byte - reserved, must be set to null (00).
+                 +47     weekDay - 1 through 7, with 1=Sunday
+ 
+                 The format of this field is identical to that described
+                 in the _ReadTimeHex ($0D03) call described on page 14-14
+                 of the Apple_IIgs_Toolbox_Reference:_Volume_1.
+ 
+                 If the date is not known, or is unable to be calculated, this
+                 field should be set to null (00).  If the weekDay is not
+                 known, or is unable to be calculated, this field should be
+                 set to null (00).
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ NuFX Documentation  2/3/89                            - Page 13 -
+ 
+ 
+ +48     8       archive_when
+ 
+                 The date and time on which this record was placed in this
+                 archive.
+ 
+                 The format of this field is as follows:
+ 
+                 +48     second - 0 through 59
+                 +49     minute - 0 through 59
+                 +50     hour - 0 through 23
+                 +51     current Year minus 1900
+                 +52     day - 0 through 30
+                 +53     month - 0 through 11, with 0=January
+                 +54     filler byte - reserved, must be set to null (00).
+                 +55     weekDay - 1 through 7, with 1=Sunday
+ 
+                 The format of this field is identical to that described
+                 in the _ReadTimeHex ($0D03) call described on page 14-14
+                 of the Apple_IIgs_Toolbox_Reference:_Volume_1.
+ 
+                 If the date is not known, or is unable to be calculated, this
+                 field should be set to null (00).  If the weekDay is not
+                 known, or is unable to be calculated, this field should be
+                 set to null (00).
+ 
+ Any other attributes which are needed may be added at the discretion of the
+ NuFX application programmer.  The attrib_count field should be modified
+ accordingly.
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ NuFX Documentation  2/3/89                            - Page 14 -
+ 
+ 
+ attrib_count-2  filename_length (xx bytes)
+ 
+                 Length of filename.  Under Prodos, this will not exceed 64
+                 characters.  If HFS or another filing system is used, this
+                 field may exceed 64 characters.  This is the last field
+                 considered included in the attributes section.  To allow the
+                 inclusion of future additional parameters in the attributes
+                 section,  NuFX utility programs should rely on the
+                 attribs_count field to find the filename_length field.
+ 
+ -------------------------
+ End of attributes section
+ 
+ 
+      xx Bytes   Filename or partial pathname if applicable.
+ 
+ 
+ 
+                 If this is a disk which is being archived, then the
+                 volume_name should be included in this field.  If a volume
+                 name is included in this field, a separator ("/" or ":")
+                 should *NOT* be included in, or precede the name.  If a volume
+                 name is not available, then this field should be set to nulls.
+                 (00's)
+ 
+                 If a partial pathname is specified, the directories to which
+                 the current pathname refers need not have preceded this
+                 particular record.  The extraction program must test each
+                 referenced directory individually.  If the directory in
+                 question does not exist, the extracting program should create
+                 it.
+ 
+                 Any utility which extracts files from a NuFX archive *MUST NOT*
+                 assume that this field will be in a format it is able to
+                 handle.  In particular, extraction programs should check for
+                 mixed case text in a file/path name and do whatever
+                 conversions are necessary to parse a legal file/path name.
+                 In general, assume nothing.
+ 
+ -----------------------
+ End of filename section
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ NuFX Documentation  2/3/89                            - Page 15 -
+ 
+ 
+ Threads
+ -------
+ 
+ Thread records are 16 byte records which immediately follow the filename and
+ describe the types of data structures which are included with a given record.
+ The number of thread records is described in the attribute section by a
+ longword, total_threads.
+ 
+ Each thread record should be checked for the type of information that a given
+ utility program can extract.  If a utility is incapable of extracting a
+ particular thread, that thread should be skipped.  If a utility finds a
+ redundancy in a thread_record, it must decide whether to skip the record or to
+ do something with that particular thread (ie, if a utility finds 2
+ message_threads it can either ignore the second thread or display it. Likewise,
+ if a utility finds 2 resource threads, it can either overwrite the first thread
+ which was extracted, or warn the user and skip the errant thread).
+ 
+ 
+ A thread record can be represented as follows:
+ 
+ Offset  Length  Content
+ ------  ------  ---------------------------------------------------------------
+ +0      2       thread_class
+ +2      2       thread_format
+ +4      2       thread_kind
+ +6      2       reserved
+ +8      4       thread_eof
+ +12     4       comp_thread_eof
+ 
+ 
+ "thread_class" describes the classification of the thread
+ ---------------------------------------------------------
+ 
+ $0000   =       message_thread
+ $0001   =       control_thread
+ $0002   =       data_thread
+ $0003   =       sparse_thread
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ NuFX Documentation  2/3/89                            - Page 16 -
+ 
+ 
+ "thread_format" is the format of the data within the thread.
+ ------------------------------------------------------------
+ 
+ $0000   =       Uncompressed                    [Not application specific]
+ $0001   =       SQueezed (SQ/USQ)               [Not application specific]
+ 
+ $0002   =       Dynamic LZW                     [ShrinkIt]
+ 
+ $0003
+  .
+  .      RESERVED, contact the author
+  .
+ 
+ $FFFF
+ 
+ 
+ "thread_kind" describes the kind of data which is contained in the thread
+ -------------------------------------------------------------------------
+ 
+ if thread_class
+    $0000   =       message_thread
+                    thread_kind $0000 = ASCII text
+                                $xxxx = all others undefined
+ 
+    $0001   =       control_thread
+                    thread_kind $0000 = create directory
+                                $xxxx = all others undefined
+ 
+    $0002   =       data_thread
+                    thread_kind $0000 = data_fork of file
+                    thread_kind $0001 = disk image
+                    thread_kind $0002 = resource_fork of file
+                                $xxxx = all others undefined
+ 
+ 
+ "thread_eof" is the length of the uncompressed thread
+ -----------------------------------------------------
+ 
+ 
+ "comp_thread_eof" is the length of the compressed thread
+ --------------------------------------------------------
+ 
+ 
+ Current ideas for messages include static pictures, sounds, sound & pictures,
+ animations, and possibly executable files.  I encourage writers of NuFX
+ utility programs to be able to handle messages of the lowest common
+ denominator, ASCII text.
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ NuFX Documentation  2/3/89                            - Page 17 -
+ 
+ 
+ Finding the start of the thread list
+ ------------------------------------
+ 
+ The beginning of the thread records can be found by using the following
+ algorithm:
+ 
+ Threads := (mark at beginning of header) + (attrib_count) +
+             (filename_length)
+ 
+ 
+ Finding the end of the thread list
+ ----------------------------------
+ 
+ The end of the thread records can be found by applying the following
+ algorithm:
+ 
+ endOfThreads := (mark at beginning of header) + (attrib_count) +
+                  (filename_length) + (16 * total_threads)
+ 
+ 
+ Finding the start of a data_thread
+ ----------------------------------
+ 
+ The beginning of a data_thread can be found using the following algorithm:
+ 
+ Data Mark := (mark at beginning of header) + (attrib_count) +
+                (filename_length) + (16 * total_threads) +
+                  (comp_thread_eof of all threads in the thread list which
+                   are not data prior to finding a data_thread)
+ 
+ 
+ Finding the start of a resource_thread
+ --------------------------------------
+ 
+ The beginning of a resource_thread can be found using the following algorithm:
+ 
+ Resource Mark := (mark at beginning of header) + (attrib_count) +
+                    (filename_length) + (16 * total_threads) +
+                      (comp_thread_eof of all the threads in the thread list
+                       which are not resources prior to finding a
+                       resource_thread)
+ 
+ 
+ Finding the next record
+ -----------------------
+ 
+ The next record can be found using the following algorithm:
+ 
+ Next Mark := (mark at beginning of header) + (attrib_count) +
+               (filename_length) + (16 * total_threads) +
+                (comp_thread_eof of each thread)
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ NuFX Documentation  2/3/89                            - Page 18 -
+ 
+ 
+ Misc notes on threads
+ ---------------------
+ 
+ There must *ALWAYS* be at least 1 thread attached to each record, whether
+ the thread has any physical length or not.  Phantom files and directories will
+ have both the thread_eof and comp_thread_eof fields set to null (00).
+ 
+ If a control_thread indicates that a directory should be created on the
+ destination device, the path to be created must take the form of a prodos
+ partial pathname.  That is, the path must *NOT* be preceded with a volume
+ name.  ie, /STUFF/SUBDIR is an invalid path, while SUBDIR/ANOTHERSUB is
+ a legal path.
+ 
+ If a control_thread indicates that a directory is to be created, *ALL*
+ the subdirectories that are contained in the pathname must be created.
+ 
+ Control_threads will be eventually used to control the execution of utility
+ programs by allowing for directory creation, renaming, deleting, moving,
+ or modifying files.  A form of scripting language will eventually be available
+ to allow utility programs to perform these actions automatically.
+ Control_threads will allow extraction programs to perform operations akin to
+ Apple's GS/OS installer program, allowing updates to program sets dependent
+ upon such things as date of creation or modification, version number, etc.
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ NuFX Documentation  2/3/89                            - Page 19 -
+ 
+ 
+ Normal Files
+ ------------
+ 
+ Normal Prodos files (sub_types $01,$02,$03) should be handled in the
+ following manner: the data portion of the file will occupy the first
+ data_thread.
+ 
+ Sample header block for a normal file record:
+ 
+       00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F
+     +-------------------------------------------------+  created 01:10:00
+  00 | 4E F5 46 D8 55 34 3A 00 00 00 01 00 00 00 01 00 |          10/22/88
+  10 | 2f 00 00 00 c3 00 04 00 00 00 00 00 00 00 01 00 |          saturday
+  20 | 00 0a 01 58 16 0a 00 07 00 10 0b 58 11 0b 00 05 |
+  30 | 00 0c 01 28 16 0a 00 07 05 00 53 54 55 46 46 02 | last mod 11:16:00
+  40 | 00 02 00 00 00 00 00 00 20 00 00 00 10 00 00    |          11/17/88
+     +-------------------------------------------------+          thursday
+ 
+                                                         archived 01:12:00
+     header_id             = "NuFX"                               10/22/88
+     header_crc            = $3455                                saturday
+     attrib_count          = $003A (58 bytes in attrib section)
+     version               = $0000
+     total_threads         = $00000001
+     file_sys_id           = $0001 (Prodos)
+     file_sys_info         = $002f (not sparse, / = separator)
+     access                = $000000C3 (full access, not invis)
+     filetype              = $00000004 (Prodos BIN)
+     aux_type              = $00000000
+     storage_type          = $0001 (Prodos sapling file)
+     create_when           = 00 0a 01 58 16 0a 00 07
+     mod_when              = 00 10 0b 58 11 0b 00 05
+     archive_when          = 00 0c 01 58 16 0a 00 07
+ 
+     filename_length       = $0005
+     filename              = "STUFF"
+ 
+     thread_class          = $0002 (data_thread)
+     thread_format         = $0002 (compressed with ShrinkIt)
+     thread_kind           = $0000 (file)
+     reserved              = $0000
+     thread_eof            = $00002000
+     comp_thread_eof       = $00001000 (file is 50% of original size)
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ NuFX Documentation  2/3/89                            - Page 20 -
+ 
+ 
+ Extended Files
+ --------------
+ 
+ Sample header block for an extended file record:
+ 
+       00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F
+     +-------------------------------------------------+  created 01:10:00
+  00 | 4E F5 46 D8 65 78 3A 00 00 00 02 00 00 00 01 00 |          10/22/88
+  10 | 2f 00 00 00 c3 00 b3 00 00 00 00 00 00 00 05 00 |          saturday
+  20 | 00 0a 01 58 16 0a 00 07 00 10 0b 58 11 0b 00 05 |
+  30 | 00 0c 01 58 16 0a 00 07 09 00 45 58 54 2e 53 54 | last mod 11:16:00
+  40 | 55 46 46 02 00 02 00 00 00 00 00 00 20 00 00 00 |          11/17/88
+  50 | 08 00 00 02 00 02 00 00 00 00 00 00 10 00 00 00 |          thursday
+  60 | 08 00 00                                        |
+     +-------------------------------------------------+ archived 01:12:00
+                                                                  10/22/88
+     header_id             = "NuFX"                               saturday
+     header_crc            = $7865
+     attrib_count          = $003A (58 bytes in attrib section)
+     version               = $0000
+     total_threads         = $00000002
+     file_sys_id           = $0001 (Prodos)
+     file_sys_info         = $002f (not sparse, / = separator)
+     access                = $000000C3 (full access, not invis)
+     filetype              = $000000B3 (Prodos S16)
+     aux_type              = $00000000
+     storage_type          = $0005 (extended file)
+     create_when           = 00 0a 01 58 16 0a 00 07
+     mod_when              = 00 10 0b 58 11 0b 00 05
+     archive_when          = 00 0c 01 58 16 0a 00 07
+ 
+     filename_length       = $0009
+     filename              = "EXT.STUFF"
+ 
+     thread_class          = $0002 (data_thread)
+     thread_format         = $0002 (compressed by ShrinkIt)
+     thread_kind           = $0000 (file)
+     reserved              = $0000
+     thread_length         = $00002000
+     comp_thread_length    = $00000800 (data_fork is 25% of original size)
+ 
+     thread_class          = $0002 (data_thread)
+     thread_format         = $0002 (compressed by ShrinkIt)
+     thread_kind           = $0002 (resource_fork)
+     reserved              = $0000
+     thread_eof            = $00001000
+     comp_thread_eof       = $00000800 (resource is 50% of original size)
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ NuFX Documentation  2/3/89                            - Page 21 -
+ 
+ 
+ Disks
+ -----
+ 
+ If the file system of a particular disk is not known, the file_sys_id field
+ should be set to null, the volume name should also be set to null, and all
+ the other fields pertaining only to files should be set to null.
+ 
+ If the file system of a particular disk *IS* known, as many of the fields
+ as possible should be filled with the correct information.  Fields which do not
+ pertain to an archived disk should remain set to null.
+ 
+ If an entire disk is added to the archive without some form of compression
+ (ie, record_format = uncompressed), then the blocks which comprise the disk
+ image *MUST* be added sequentially from the first through the last block.
+ Since there will be no character included in the data stream to mark the
+ end/beginning of a block, extraction programs should rely on the
+ file_sys_block_size field to determine how many bytes to read from the record
+ to properly fill a block.
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ NuFX Documentation  2/3/89                            - Page 22 -
+ 
+ 
+ Sample header block for a disk record:
+ 
+       00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F
+     +-------------------------------------------------+  created 01:10:00
+  00 | 4E F5 46 D8 67 05 3A 00 00 00 01 00 00 00 01 00 |          10/22/88
+  10 | 2f 00 00 00 00 00 00 00 00 00 40 06 00 00 00 02 |          saturday
+  20 | 00 0a 01 58 16 0a 00 07 00 10 0b 58 11 0b 00 05 |
+  30 | 00 0c 01 58 16 0a 00 07 04 00 44 49 53 4B 02 00 | last mod 11:16:00
+  40 | 02 00 01 00 00 00 00 00 00 00 51 45 07 00       |          11/17/88
+     +-------------------------------------------------+          thursday
+ 
+                                                         archived 01:12:00
+     header_id             = "NuFX"                               10/22/88
+     header_crc            = $0567                                saturday
+     attrib_count          = $003A (58 bytes in attrib section)
+     version               = $0000
+     total_threads         = $00000001 (one thread)
+     file_sys_id           = $0001 (Prodos)
+     file_sys_info         = $002f (not sparse, / = separator)
+     access                = $00000000 (none)
+     filetype              = $00000000 (none)
+     aux_type/creator_type = $00000640 (1600 blocks on device -- 3.5" disk)
+     storage_type          = $0200 (block size = 512 bytes)
+     create_when           = 00 0a 01 58 16 0a 00 07
+     mod_when              = 00 10 0b 58 11 0b 00 05
+     archive_when          = 00 0c 01 58 16 0a 00 07
+ 
+     filename_length       = $0004
+     filename              = "DISK"
+ 
+     thread_class          = $0002 (data_thread)
+     thread_format         = $0002 (compressed with ShrinkIt)
+     thread_kind           = $0001 (disk image)
+     reserved              = $0000
+     thread_eof            = $00000000 (unknown size before compressing)
+     comp_thread_eof       = $00074551 (size after compression)
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ NuFX Documentation  2/3/89                            - Page 23 -
+ 
+ 
+ Directories
+ -----------
+ 
+ Directories are handled almost the same way that normal files are handled with
+ the exception that there will be no data in the thread which follows the entry.
+ A thread_record *MUST* exist to inform a utility that a directory is to be
+ created through the use of the proper control_thread value.
+ 
+ Directories do not necessarily have to precede a record which references a
+ directory.  ie, if a record contains STUFF/MY.STUFF, the directory "STUFF"
+ need not exist for the extracting program to properly extract the record.  The
+ extracting program must check to see if each of the directories referenced
+ exist, and if they do not exist, create them.  While this method places a great
+ burden on the abilities of the extraction program, it avoids the anomalies
+ associated with the deletion of directories within an archive.
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ NuFX Documentation  2/3/89                            - Page 24 -
+ 
+ 
+ Cyclic Redundancy Checks (CRC's)
+ --------------------------------
+ 
+ Many people are not aware of how to calculate a CRC, so to provide this
+ function, I am providing source code to a very fast routine which does the crc
+ calculation.  The routine "makeLookup" needs to be called only once.  After
+ this, the routine "doByte" should be called repeatedly with each new byte in
+ succession to generate the cumulative CRC for the block.  The CRC word should
+ be reset to null (0000) before beginning each new CRC.
+ 
+ This is the same CRC calculation which is done for CRC/Xmodem, and Ymodem.  The
+ code is easily portable to a 16-bit environment like the Apple IIgs.  The only
+ detrimental factor with this routine is that it requires 512 bytes of main
+ memory to operate.  If you can spare the space, this is one of the fastest
+ routines I know to generate a CRC-16 on a 6502-type machine.
+ 
+ 
+ *-------------------------------
+ * fast crc routine based on table lookups by
+ * Andy Nicholas - 03/30/88 - merlin 'c02 - easily portable to nmos 6502 also.
+ * easily portable into orca/m format, just snip and save.
+ 
+          xc                             turn 65c02 opcodes on
+ 
+ *-------------------------------
+ * routine to make the lookup tables
+ *-------------------------------
+ 
+ makeLookup
+          LDX   #0                       zero first page
+ zeroLoop STZ   crclo,x                  zero crc lo bytes
+          STZ   crchi,x                  zero crc hi bytes
+          INX
+          BNE   zeroLoop
+ 
+ *-------------------------------
+ * the following is the normal bitwise computation
+ * tweeked a little to work in the table-maker
+ 
+ docrc
+          LDX   #0                       number to do crc for
+ 
+ fetch    TXA
+          EOR   crchi,x                  add byte into high
+          STA   crchi,x                  of crc
+ 
+          LDY   #8                       do 8 bits
+ loop     ASL   crclo,x                  shift current crc-16 left
+          ROL   crchi,x
+          BCC   loop1
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ NuFX Documentation  2/3/89                            - Page 25 -
+ 
+ 
+ * if previous high bit wasn't set, then don't add crc
+ * polynomial ($1021) into the cumulative crc.  else add it.
+ 
+          LDA   crchi,x                  add hi part of crc poly into
+          EOR   #$10                     cumulative crc hi
+          STA   crchi,x
+ 
+          LDA   crclo,x                  add lo part of crc poly into
+          EOR   #$21                     cumulative crc lo
+          STA   crclo,x
+ loop1    DEY                            do next bit
+          BNE   loop                     done? nope, loop
+ 
+          INX                            do next number in series (0-255)
+          BNE   fetch                    didn't roll over, so fetch more
+          RTS                            done
+ 
+ crclo    ds    256                      space for low byte of crc table
+ crchi    ds    256                      space for high bytes of crc table
+ 
+ 
+ *-------------------------------
+ * do a crc on 1 byte/fast
+ * on initial entry, CRC should be initialized to 0000
+ * on entry, A = byte to be included in CRC
+ * on exit, CRC = new CRC
+ *-------------------------------
+ 
+ doByte
+          EOR   crc+1                    add byte into crc hi byte
+          TAX                            to make offset into tables
+ 
+          LDA   crc                      get previous lo byte back
+          EOR   crchi,x                  add it to the proper table entry
+          STA   crc+1                    save it
+ 
+          LDA   crclo,x                  get new lo byte
+          STA   crc                      save it back
+ 
+          RTS                            all done
+ 
+ crc      dw    0000                     cumulative crc for all data
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ NuFX Documentation  2/3/89                            - Page 26 -
+ 
+ 
+ Possible Block Combinations
+ ---------------------------
+ 
+ The blocks *MUST* occur in the following fashion:
+ 
+         Master Header block containing N entries
+ 
+         Header block
+         threads (message, control, data, or resource)
+ 
+         .
+         .
+         .
+ 
+         Next Header block (notice no second Master Header block)
+         threads (message, control, data, or resource)
+ 
+         .
+         .
+         .
+ 
+         Nth Header Block
+         threads (message, control, data, or resource)
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ NuFX Documentation  2/3/89                            - Page 27 -
+ 
+ 
+ Known NuFX utility programs:
+ ---------------------------
+ 
+ Name           Author          Description                          Current Ver
+ -------------  --------------  ------------------------------------ -----------
+ ShrinkIt       Andy Nicholas   Compresses files/disks, provides        0.95
+                                 archive and file utilities.
+ NuList         Andy Nicholas   Lists contents of NuFX files for        1.1
+                                 the GBBS "Pro" (tm) BBS, online.
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ NuFX Documentation  2/3/89                            - Page 28 -
+ 
+ 
+ Legal Stuff
+ -----------
+ 
+ Apple, Apple IIGS, AppleLink, GS/OS, Macintosh, and Lisa are registered
+  trademarks of Apple Computer, Inc.
+ 
+ GBBS "Pro" is a registered trademark of L&L Productions.
+ 
+ 
+ About the Author
+ ----------------
+ 
+ I am currently a Junior attending Moravian College in Bethlehem, Pennsylvania,
+ majoring in Computer Science.
+ 
+ Any comments or suggestions you have about NuFX are more than welcome, or if
+ you wish to request that any of the fields be assigned your own value, or if
+ you would like to inform me of a NuFX utility you have written, you can contact
+ me at:
+ 
+ 
+         Paper Bag Productions
+         c/o Andy Nicholas
+         Box 435
+         Moravian College
+         Bethlehem, PA  18018
+ 
+         CSNET       :  nicholaA@moravian.edu
+         InterNET    :  nicholaA%batman.moravian.edu@relay.cs.net
+                        nicholaA@batman.moravian.edu.csnet
+         ProLine     :  andyn@pro-sol.cts.com      [619-670-5379]
+         AppleLink PE:  ShrinkIt
+ 
+ 
+ I would like to thank the following people for their help and input during the
+ design phase of the NuFX proposal:
+ 
+ Jason Blochowiak, Morgan Davis, Don Elton, Dave Lyons, Jon Davidson,
+ Vince Cooper, Lance Taylor-Warren, Floyd Zink, Kent Dickey, John Brooks,
+ Doug Brandon, Todd South, Larry Hawkins, Kevin Keller
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+</pre><hr>
+
+<!--msnavigation--></td></tr><!--msnavigation--></table></body>
+
+</html>

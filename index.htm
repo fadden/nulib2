@@ -1,0 +1,167 @@
+
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<meta http-equiv="Content-Language" content="en-us">
+<title>NuLib Home Page</title>
+<meta name="GENERATOR" content="Microsoft FrontPage 4.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta name="Microsoft Border" content>
+
+<meta name="description"
+  content="Home page for NuLib, NuLib2, NufxLib, ShrinkIt, and NuFX (SHK) archives">
+  <meta name="keywords"
+    content="nulib, nulib2, nufxlib, shk, sdk, bxy, bse, shrinkit, nufx, apple, apple2, emulator">
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000">
+<h1 align="center">NuLib Home Page</h1>
+<p align="center"><u><b>Shortcuts</b></u><br>
+go to the <a href="downloads/index.htm">downloads</a> area<br>
+read the <a href="nulib2-manual.htm"> NuLib2 manual</a><br>
+see the <a href="nufxlibapi.htm">NufxLib library API</a>  documentation<br>
+<a href="bugs.htm">report a bug</a> in NufxLib or NuLib2<br>
+check <a href="library/index.htm">the library</a> for old programs and misc docs</p>
+<p>&nbsp;</p>
+<p>This is the home page for NuLib, NuLib2, NufxLib, and various items related
+to ShrinkIt and NuFX archives.</p>
+<p>&nbsp;</p>
+<h2>What is NuLib?</h2>
+<p>NuLib is a disk and file archive program, similar in principle to PKZIP.&nbsp; Instead of ZIP
+archives, it manipulates NuFX archives, which are usually identified with
+&quot;.SHK&quot;, &quot;.SDK&quot;, or &quot;.BXY&quot;.</p>
+<p>The &quot;.SHK&quot; file extension is derived from ShrinkIt, the de facto
+archiving standard for Apple II computers.&nbsp; Both NuFX and ShrinkIt were developed by Andy Nicholas,
+and were initially released in January of 1989.</p>
+<p>In mid-1989, while a sophomore in college, I started playing around
+with the file format.&nbsp; My goal was to write a simple program that could
+list the contents of a NuFX file.&nbsp; I had recently finished my first class
+on C programming, and wanted a small project to play around with.&nbsp; I never
+intended to go any further with it than just being able to list files.</p>
+<p>Three name changes (NuView to NuARC to CShrink to NuLib) and more than three
+years later, NuLib was a full-featured archiver, and the code had finally settled down to where it could be left
+alone.&nbsp; Except for a major overhaul by Devin Reade in late 1996, NuLib
+hasn't changed much since.</p>
+<h2>What is NuLib2?</h2>
+<p>NuLib was functional, but had a number of flaws.&nbsp; It couldn't handle
+resource forks, it was clumsy to use with BXY (ShrinkIt wrapped in Binary II)
+archives, it used more memory than it needed to, and some features -- notably
+the archive integrity test -- were entirely broken.&nbsp; Due to generally poor
+architecture, it was difficult to fix problems and add features.</p>
+<p>NuLib2 is a replacement for NuLib.&nbsp; It does pretty much everything the
+original NuLib did, and adds a number of new features.&nbsp; NuLib2 is
+distributed as source code, under the terms of the BSD License.</p>
+<p>The <a href="nulib2-manual.htm">NuLib2 manual</a> has a quick comparison of
+the two programs.</p>
+ 
+<p>One additional &quot;feature&quot; of NuLib2: it was built on top of NufxLib.</p>
+<h2>What is NufxLib?</h2>
+<p>NufxLib is a NuFX file archive manipulation library.&nbsp; Unlike most other
+compression library products, NufxLib goes beyond extracting and listing files.&nbsp;
+Full support for additions, deletions, and renaming of archived files is
+supported, with a transaction-oriented interface for maximum efficiency and
+reliability.</p>
+<p>A thorough description of the library's features and interface is available <a href="nufxlibapi.htm">here</a>.&nbsp;
+NufxLib is distributed as source code under the terms of the BSD License.</p>
+<p>Possible uses for NufxLib:</p>
+<ul>
+  <li>Command-line applications like NuLib2.</li>
+  <li>GUI applications like <a href="http://www.faddensoft.com/ciderpress/">CiderPress</a>,
+    which can isolate ShrinkIt code in a DLL.</li>
+  <li>Automatic handling of .SHK archives in Apple II emulators and 2IMG
+    converters.</li>
+  <li>Possible inclusion of NuFX support in mainstream applications like WinZip.</li>
+  <li>Embedded applications, such as a filesystem driver that transparently
+    unpacks NuFX archives (a la &quot;zipfolders&quot;).</li>
+</ul>
+<h2>Why did I do this?</h2>
+<p>In late 1997, I cranked up my Apple IIgs for the first time in a long
+while.&nbsp; It failed to boot.&nbsp; The old 100MB hard drive had seized up
+from &quot;stiction&quot;.&nbsp; A friend of mine and I managed to resurrect
+that drive and a second 80MB hard drive that had also seized up, but it was
+clear the drives' days were numbered.</p>
+<p>I replaced the old ones with a new 2GB drive, which was the smallest I could
+find in retail stores at the time.&nbsp; It occurred to me then that it would be
+useful, as well as prudent, to have a complete file archive of the contents of
+my hard drive.&nbsp; GS/ShrinkIt was capable of constructing such a thing, but
+couldn't extract from it because the archive was too large.&nbsp; YankIt and NuLib could do the extraction, but
+were too clumsy to be useful.</p>
+<p>I resolved to write a program that could handle these archives.&nbsp; I
+thought it would be best to write it as a Win32 GUI application.&nbsp; However,
+I also wanted a better version of NuLib for UNIX.&nbsp; The NuLib sources are a
+pile of dung, so adding the features I wanted would be most easily accomplished
+by rewriting the whole thing from scratch.</p>
+<p>Around the middle of 1998, I started fleshing out the API for something I
+called &quot;NufxLib&quot;.&nbsp; The library would do all the hard work for
+both command line and GUI applications, and perhaps would be embedded into Apple
+II emulators as well, allowing seamless access to ShrinkIt-compressed disk
+images.</p>
+<p>For the next 1.5 years, I would occasionally pick up the project and then
+leave it alone for weeks at a time.&nbsp; This continued until I left a big
+company for a small startup, and knew that my free time was about to evaporate
+entirely.&nbsp; I decided to finish up what I could and make it available.&nbsp;
+Version 1.0 was released in May of 2000.</p>
+<p>In December of 2002, I decided it was time to learn how to write Windows
+software.&nbsp; Learning a new system is easier when you're working with
+something you know, so I decided to use NufxLib as the foundation of a Win32
+application.&nbsp; The result, CiderPress, is available from the <a href="http://www.faddensoft.com/">faddenSoft</a>
+web site.</p>
+<h2>Visible Changes in v1.1</h2>
+<p>New stuff in NufxLib v1.1:</p>
+<ul>
+  <li>Support for SQueeze and LZC compression.&nbsp; NufxLib now fully supports
+    all compression formats described in the NuFX specification.</li>
+  <li>Support for zlib &quot;deflate&quot; compression and libbz2 BWT
+    compression as extensions to the
+    NuFX standard.</li>
+  <li>Compression code may be disabled to reduce the size of the library.&nbsp;
+    A new &quot;feature test&quot; interface allows applications to determine
+    which methods are supported.</li>
+  <li>The &quot;launder&quot; program has been updated to allow selection of the
+    compression format to convert to.&nbsp; (&quot;Launder&quot; converts all
+    files and disks in an archive from one compression format to another.)</li>
+</ul>
+<p>New stuff in NuLib2 v1.1:</p>
+<ul>
+  <li>Support for listing, testing, and extracting files from Binary II archives.</li>
+  <li>New &quot;-z&quot; flag to use &quot;deflate&quot; or &quot;bzip2&quot;.</li>
+  <li>Extended help output with &quot;-h&quot; command.</li>
+</ul>
+<h2>Visible Changes in v2.0</h2>
+<p>Version 2.0 is actually a rather small release.&nbsp; Some changes in NufxLib broke
+binary compatibility, so it was necessary to increment the major version.</p>
+<p>New stuff in NufxLib v2.0:</p>
+<ul>
+  <li>Can be built as a Windows DLL.</li>
+  <li>NufxLib no longer tries to free memory allocated by the application (a
+    callback is used instead).</li>
+  <li>A high-ASCII text stripper is now available (useful for DOS text files and
+    Merlin 8 source code).</li>
+</ul>
+<p>New stuff in NuLib2 v2.0:</p>
+<ul>
+  <li>Filename comparisons are now case-insensitive.</li>
+  <li>Can be built with NufxLib in a DLL.</li>
+  <li>Changed handling of reserved names like &quot;AUX&quot; so that the
+    original names are better preserved.&nbsp; This creates filenames with
+    &quot;%00&quot; in them, which could confuse older versions of NuLib2 (e.g.
+    &quot;nulib2 -ae %00aux&quot; will not work well in v1.x).</li>
+  <li>Files are now added with ':' as the pathname separator, regardless of
+    OS.&nbsp; Win32 handling now recognizes both '/' and '\' as path separators.</li>
+  <li>Disk images extracted with &quot;-ee&quot; now have &quot;.PO&quot; add to
+    their filenames.&nbsp; This should make it easier to load them in an Apple
+    II emulator.</li>
+</ul>
+<h2>Future Directions</h2>
+<p>The code appears to be stable, so I'm going to leave it alone for a while.&nbsp;
+If you're interested in developing applications with NufxLib, send a message to
+fadden -at- fadden.com.</p>
+<hr>
+<p>NuLib, NuLib2, and NufxLib were written by <a href="http://www.fadden.com/">Andy
+McFadden</a>.&nbsp; Please see the documentation for each product to
+see a list of contributors.</p>
+
+</body>
+
+</html>

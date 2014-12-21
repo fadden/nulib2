@@ -1,0 +1,389 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<meta name="GENERATOR" content="Microsoft FrontPage 4.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>NuLib2's ProDOS Attribute Preservation</title>
+<meta name="Microsoft Border" content="t, default">
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000"><!--msnavigation--><table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td>
+
+<p align="center"><font size="6"><strong>ProDOS Attribute Preservation</strong></font><br>
+<nobr>[&nbsp;<a href="../index.htm">Home</a>&nbsp;]</nobr> <nobr>[&nbsp;<a href="index.htm">Up</a>&nbsp;]</nobr> <nobr>[&nbsp;<a href="nufx-addendum.htm">NuFX&nbsp;Addendum</a>&nbsp;]</nobr> <nobr>[&nbsp;ProDOS&nbsp;Attribute&nbsp;Preservation&nbsp;]</nobr></p>
+<hr>
+
+</td></tr><!--msnavigation--></table><!--msnavigation--><table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><!--msnavigation--><td valign="top">&nbsp;
+<h6>NuLib2's ProDOS Attribute Preservation - By Andy McFadden - Last revised
+2003/02/08</h6>
+<P>This document describes how NuLib2 preserves file types and identifies
+resource forks and disk images when such things aren't handled by the filesystem.
+<P>&nbsp;
+<h2>
+File Type Preservation</h2>
+<P>
+The overriding goal is to provide a way to preserve filetypes and auxtypes
+when extracting files to "typeless" filesystems like those supported by
+UNIX or Windows.  A secondary goal is to make the preservation attractive.
+As it turns out, these goals tend to conflict.
+<P>
+First, a simple example of a ProDOS text file named "fubar".  Here's a
+trivial way of preserving the file type when extracting the file from an
+archive:
+<pre>Archive      :  FUBAR           TXT $0000
+Extract to   :  FUBAR.TXT
+</pre>
+
+When adding files to the archive, we'd just do the opposite:
+<pre>Original     :  FUBAR.TXT
+Rearchive to :  FUBAR           TXT $0000
+</pre>
+
+This works out pretty well under Windows, since "fubar.txt" is recognized with
+the correct file type.&nbsp; (It might get confused by the carriage returns, but
+that's a different problem.)&nbsp; If we happened to find a file called &quot;fubar.txt&quot;
+that didn't come from an archive, we still do the right thing, and store it as a
+file with type &quot;TXT&quot;.&nbsp; All well and good.
+<P>Now suppose we have an auxtype that we don't want to lose.  We have to
+make things a little more ugly.
+<pre>Archive      :  FUBAR           TXT $0100
+Extract to   :  FUBAR.TXT#0100
+</pre>
+This isn't going to open with a double-click under Win95, but at least
+we're not losing the type.
+<P>
+Now imagine we have something that doesn't use a standard type, like:
+<pre>Archive      :  FUBAR           LBR $8002
+Extract to   :  FUBAR.SHK
+Rearchive to :  FUBAR           LBR $8002
+</pre>
+We happen to know that $E0 (LBR) with auxtype of $8002 is a ShrinkIt
+archive.  So, when we extract it, instead of making it FUBAR.LBR#8002, we
+change it to FUBAR.SHK.  When we archive such a file, we apply the same
+process in reverse.  We don't *have* to do this, but it certainly makes
+the results more attractive, and would allow a Windows-based ShrinkIt
+application to identify the file.
+<P>
+Now things start to get a little ugly.  Suppose, like most ShrinkIt
+archives, it <b>already</b> ends with ".SHK"?  Now we have:
+<pre>Archive      :  FUBAR.SHK       LBR $8002
+Extract to   :  FUBAR.SHK.SHK
+Rearchive to :  FUBAR.SHK       LBR $8002
+</pre>
+This is annoying, but it won't stop anything from working (unless the file
+extension is too long!).  The alternative would be to realize that there's
+already a ".SHK" extension on the file, and not add another one, but then
+when we went to rearchive it we'd end up with something different:
+<pre>Archive      :  FUBAR.SHK       LBR $8002
+Extract to   :  FUBAR.SHK
+Rearchive to :  FUBAR           LBR $8002
+</pre>
+We've lost the file extension.&nbsp; For a ShrinkIt archive this wouldn't be so bad, but for a library or
+executable launched with a hardcoded path ("foo.s16") it could be fatal.
+<P><BR>
+In some cases we just want to be "nice" and put file types on things
+that weren't extracted from a ShrinkIt archive.  For example, suppose
+we're archiving a bunch of source code ("foo.c" and "foo.h").  We can
+give them specific file types, e.g. the APW "SRC" type $b0/$000a.  We
+can't convert <b>back</b> from those types though, since *.c and *.h are
+both $b0/$000a.  With .txt files we could strip off ".txt" and give them
+a unique type, but with source files we have to leave ".c" and ".h" on
+them.
+<P>
+The situation gets more confusing when we re-extract the files from the new
+archive.  If their types are NON/$0000, then they will get extracted as
+"foo.c" and "foo.h".  If we were nice and gave them file types, then when
+we extracted them from the new archive they'd come out with preserved file
+types, named "foo.c.SRC#000a" and "foo.h.SRC#000a".  We may actually make
+things more ugly by trying to be nice!
+<P>
+There are also cases where we may want to be "mean" and lose information,
+such as when extracting a BIN file called "foo.gif" or "foo.jpg".  In most
+cases, these are GIF or JPEG images that should not have type information
+appended.  Storing the file as "foo.gif.BIN" is counterproductive if we
+want to use the file, but it's the right thing to do if we want to
+re-archive the files in the same way that we extracted them.
+<P><BR>
+One other bit of difficulty arises if the archiver application gets
+updated.  Maybe a file type was misnamed, so what used to be type "AST"
+becomes "AJT".  Now, when we try to add "FUBAR.AST#0100", we don't recognize
+the file type.  To avoid problems recognizing file types written by older
+versions of NuLib2, we always want to use the numeric file type values.  However,
+this prevents us from ever being able to double-click on an extracted file in
+Windows, unless we set up mappings for the numeric types (e.g. associate
+&quot;$04&quot; with the same thing &quot;.TXT&quot; uses).
+<P>
+Bill North gave me some interesting ideas about how to preserve the
+file type and still keep extension-oriented operating systems like Windows
+happy.  The format proposed below is based largely on his ideas.
+<P><BR>
+There are three levels of file type preservation:
+<dl>
+<dt><b>None</b> (equivalent to the original NuLib):</dt>
+<dd>
+  When extracting, no file type information is stored in the name extension.<br>
+</dd>
+
+<dd>
+  When adding, file type information in the extension is ignored (in fact,
+  it's regarded as part of the filename).</dd>
+
+</dl>
+<dl>
+<dt><b>Basic</b> (preserves reliably):</dt>
+<dd>
+  When extracting, all files have their type and auxtype appended at the
+  end of the filename, in hexadecimal.  "fubar.txt" becomes &quot;fubar.txt#040000&quot;.&nbsp;
+  Resource forks and disk images are annotated with
+  single-letter codes.<br>
+</dd>
+<dd>
+  When adding in "basic" mode, all files are checked for file type
+  information, and (if found) everything after the last '#' is removed.
+  If a full type isn't found ("foo.c"), the file is added as NON/$0000.
+  Care is taken to treat files like "blah#123" and &quot;foo#040000xyz&quot; as
+  typeless, so we don't get confused by files that legitimately have a '#' in
+  the filename.
+</dd>
+</dl>
+<dl>
+<dt><b>Extended</b> (preserves reliably, works better with Windows)</dt>
+<dd>
+  This works like &quot;basic&quot;, but a redundant file extension is added to
+  the filename.  "fubar.txt" becomes "fubar.txt#040000.txt".  Special
+  care is taken to preserve existing extensions, so "foo.c" would become
+  "foo.c#b0000a.c", not "foo.c#b0000a.src".  If no extension is present
+  on the original, and no ProDOS three-letter extension is known
+  (e.g. $f7), then no redundant extension is added.&nbsp; Type TXT is
+  special-cased, so text files are always &quot;.TXT&quot;.<br>
+</dd>
+<dd>
+  Adding of preserved files works like "basic" mode, where everything after the last '#'
+  is removed.  The redundant file extension is simply ignored.&nbsp; If a file
+  was not preserved, but it has a
+  file extension, an attempt is made to determine the file type based
+  solely on the extension (e.g. &quot;fubar.jpeg&quot; gets stored as BIN rather
+  than NON).
+</dd>
+</dl>
+<h2>Examples</h2>
+<pre>Extracting &quot;fubar&quot;, type=TXT, auxtype=$0000
+  none:     fubar
+  basic:    fubar#040000
+  extended: fubar#040000.txt
+
+Extracting &quot;fubar.txt&quot;, type=TXT, auxtype=$0000
+  none:     fubar.txt
+  basic:    fubar.txt#040000
+  extended: fubar.txt#040000.txt
+  
+Extracting &quot;fubar.doc&quot;, type=TXT, auxtype=$0000
+  none:     fubar.doc
+  basic:    fubar.doc#040000
+  extended: fubar.doc#040000.txt
+
+Extracting &quot;fubar.doc&quot;, type=BIN, auxtype=$0000
+  none:     fubar.doc
+  basic:    fubar.doc#060000
+  extended: fubar.doc#060000.doc
+
+Extracting &quot;fubar&quot;, type=S16, auxtype=$0100
+  none:     fubar
+  basic:    fubar#b30100
+  extended: fubar#b30100.s16
+
+Extracting &quot;fubar.gif&quot;, type=BIN, auxtype=$2000
+  none:     fubar.gif
+  basic:    fubar.gif#062000
+  extended: fubar.gif#062000.gif
+
+Extracting &quot;fubar.c&quot;, type=SRC, auxtype=$000a
+  none:     fubar.c
+  basic:    fubar.c#b0000a
+  extended: fubar.c#b0000a.c
+
+Extracting &quot;fubar&quot;, type=LBR, auxtype=$8002
+  none:     fubar
+  basic:    fubar#e08002
+  extended: fubar#e08002.lbr
+
+Extracting &quot;fubar.shk&quot;, type=LBR, auxtype=$8002
+  none:     fubar.shk
+  basic:    fubar.shk#e08002
+  extended: fubar.shk#e08002.shk
+
+</pre>
+<pre>Adding file &quot;fubar&quot;
+  none:     fubar/NON/$0000
+  basic:    fubar/NON/$0000
+  extended: (same as basic)
+
+Adding file &quot;fubar.txt&quot;
+  none:     fubar.txt/NON/$0000
+  basic:    fubar.txt/NON/$0000
+  extended: fubar.txt/TXT/$0000
+
+Adding file &quot;fubar#B30100&quot;
+  none:     fubar#B30100/NON/$0000
+  basic:    fubar/S16/$0100
+  extended: (same as basic)
+
+Adding file &quot;fubar.c&quot;
+  none:     fubar.c/NON/$0000
+  basic:    fubar.c/NON/$0000
+  extended: fubar.c/SRC/$000a
+
+Adding file &quot;fubar.gif&quot;
+  none:     fubar.gif/NON/$0000
+  basic:    fubar.gif/NON/$0000
+  extended: fubar.gif/PNT/$8006
+
+Adding file &quot;fubar.gif#060000.txt&quot;
+  none:     fubar.gif#060000/NON/$0000
+  basic:    fubar.gif/BIN/$0000
+  extended: (same as basic)
+
+Adding file &quot;fubar.shk#045678.s16-wahoo&quot;
+  none:     fubar.shk/TXT/$5678
+  basic:    fubar.shk/TXT/$5678
+  extended: (same as basic)
+</pre>
+
+<p>
+Files extracted in either &quot;basic&quot; or &quot;extended&quot; mode can be re-added in
+&quot;basic&quot; mode.  Files extracted in &quot;none&quot; mode shouldn't be re-added if you
+care about file types.  Files that didn't originate from a NuFX archive,
+such as text files or source code on disk, can be added in &quot;extended&quot;
+mode if you'd like to have NuLib2 guess at their file types.
+
+<P>
+Because GS/OS supports the HFS filesystem, we may have items in an
+archive that have full Macintosh HFS types rather than ProDOS types.
+If the file type is larger than 0xff, or the auxtype is larger than 0xffff,
+then the type will be a 16-digit hex value (#1234567812345678) instead of
+the usual 6-digit value.  This may strain the limits on some filesystems,
+so preserving the types of Mac files may not be practical everywhere.
+<p>&nbsp;</p>
+<hr>
+<h2>
+Special Characters and Long Names</h2>
+<P>
+Filesystems don't generally allow every possible byte value to be included
+in a filename.  The typical UNIX filesystem is very forgiving, but it
+won't allow '/' or '\0'.  Win32 won't accept \/:*?"&lt;&gt;| .  If we are to
+preserve the filenames as well as the filetypes, we have to provide a
+way to include special characters.  ProDOS only uses A-Z, 1-9, and '.',
+so preserving special characters may not be possible.
+<P>
+Some filesystems, such as MS-DOS and ISO-9660 (level 1), restrict the
+filename format as well as the character set, e.g. names limited to
+"8.3" form.  It's not generally possible to preserve complex names on
+such systems, so we don't even try.  Hybrid CD-ROMs can be created with
+Joliet, Rock Ridge, and HFS filenames, so the appropriate target system
+can see the correct name.  (Of course, stuff written to a CD-ROM should
+be inside an SHK archive anyway, not expanded into separate files.)
+<P>
+In the "none" preservation mode, filenames will be converted into something
+acceptable for the target filesystem.  No effort will be made to create
+something that can be converted back.  When files are added in the "none"
+mode, no conversion will take place.
+<P>
+In "basic" and "extended" modes, characters invalid on the current
+filesystem will be written as "%xx", where "xx" is the two-digit hex
+value for the character.  If the '%' character appears in a filename,
+it will be stored as "%%".&nbsp; The &quot;%00&quot; sequence, added in some
+unusual circumstances, should be removed entirely rather than converted to '\0'.<P>Character
+preservation shouldn't often be necessary, unless the files were archived
+from an HFS or UNIX volume, and the archive creator used characters like "/" or
+"*".  Win32, HFS, and UNIX can all handle the short names and restricted
+set of characters that ProDOS filesystems support.
+<P><BR>
+Another situation where filenames can be twisted is when they are too
+long to fit on a filesystem.  The character escaping and addition of type
+information can make a filename much longer than it was originally, so
+a name that was kinda long before will be really long when it's extracted.
+<P>
+In the "none" mode, filenames will be truncated silently.  In the "basic"
+and "extended" modes, an error will be returned, and you will be given
+the opportunity to skip or rename the file.
+<P><BR>
+Another problem area has to do with the path separators.&nbsp; Consider a file
+named &quot;foo/bar&quot; in a folder called &quot;subdir&quot; on an HFS
+volume.&nbsp; It would be archived as &quot;subdir:foo/bar&quot;.&nbsp; When
+extracted to a UNIX volume, you would get a file called &quot;foo%2fbar&quot; in
+&quot;subdir&quot;.&nbsp; When added back to an archive, however, if '/' is used
+as the path separator, you would get &quot;subdir/foo/bar&quot;, which is not
+what was intended.&nbsp; Similar examples can be created for other pathname
+separators.<P>In general, restoring a filename to its original status requires
+encoding not only the special characters but also the path separators.&nbsp;
+Ideally the gunk added to the filename would include some indication, either an
+enumerated value or a two-digit hex ASCII value.&nbsp; In practice, ':' is
+illegal on all Apple II filesytems (except DOS 3.3) as well as Win32, so using
+it as the default path separator should work well.&nbsp; Only files created on a
+UNIX system will have problems, and these can be screened (replacing ':' with,
+say, 'X').<P> Since NuLib2 isn't intended to be a general-purpose file
+archiver, there's not much need to support all possible UNIX filenames.&nbsp;
+There's little advantage to adding an additional character to every filename for
+this rare case.
+<P>
+&nbsp;
+<hr>
+<h2>
+Resource Forks, Disk Images, and Comments</h2>
+<P>
+A forked file "FINDER.SYS16" with filetype S16/$0100 would be extracted
+into "FINDER.SYS16#b30100" and "FINDER.SYS16#b30100r".  The "r" is
+added in both "extended" and "basic" modes, but as with everything else
+is unused in "none" mode.  This used to result in "file already exists,
+overwrite?" messages when the resource fork was extracted, because both
+the data and resource forks will be written to "FINDER.SYS16".&nbsp; The current
+version of NuLib2 appends the rather obvious &quot;_rsrc_&quot; to resource
+forks in &quot;none&quot; mode.
+<P><BR>
+The earlier discussion on file type preservation has meaning for disk
+archive preservation as well.  In general, people don't combine file and
+disk archives, or have more than one disk image in an archive, but there's
+nothing in the NuFX format that prevents it.  It is useful to transparently
+handle disk images as well.
+<P>
+The trouble is with identifying disk image files as such.  Formats with
+unique extensions, such as 2IMG (.2MG) are fairly safe, but a raw disk
+image entitled "system.raw" could be confused with other forms of data.
+This can make it tricky to do the right thing.
+<P>
+The presence of an explicit "this file is a disk" option, which treats all
+files as disk images no matter what they're called, guarantees that we can
+always do *something* useful with a disk image file.  Even when this option
+isn't being used, we can identify .2MG files by the extension and (to be
+rigorous) the file contents.  Extracting and re-adding a .2MG file multiple
+times shouldn't result in any degradation, unless we try to convert the
+sector interleave from DOS to ProDOS, but even that is a reversible
+transformation.
+<P>
+The explicit flag for a disk image works similarly to the flag for a
+resource fork.  After the type info, which for a disk is always $00 with
+the number of blocks in the auxtype, we add 'i'.  A 5.25" disk image
+stored as "SYSTEM" would be extracted in "none" mode as "SYSTEM", and in
+"basic" or "extended" mode as "SYSTEM#000118i".
+<P>
+No flag is added for a data fork.  If a flag were added, it probably
+wouldn't be 'd', since that could be confused with "disk" and also happens
+to be a valid hexadecimal digit.
+</p>
+<P>Comments are another special case.&nbsp; Preserving archive comments requires
+extracting them into separate files.&nbsp; NuLib2 doesn't currently do this, but
+if it were to do so the file would look like &quot;SYSTEM#0000c8n&quot;, where
+0x00c8 is the pre-allocated size for the comment thread.&nbsp; I'm using 'n' as
+the comment designator (for &quot;note&quot;) because 'c' is a valid hexadecimal
+digit.
+</p>
+<hr>
+<p>This document is Copyright © 2000-2003 by <a href="http://www.fadden.com/">Andy
+McFadden</a>.&nbsp; All Rights Reserved.</p>
+<p>The latest version can be found on the NuLib web site at
+<a href="http://www.nulib.com/">http://www.nulib.com/</a>.</p>
+<!--msnavigation--></td></tr><!--msnavigation--></table></body>
+
+</html>

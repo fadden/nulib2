@@ -1,0 +1,4 @@
+vti_encoding:SR|utf8-nl
+vti_timelastmodified:TR|23 Aug 2000 17:09:22 -0000
+vti_extenderversion:SR|4.0.2.2717
+vti_backlinkinfo:VX|library/ftn.e08002.htm

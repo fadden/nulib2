@@ -1,0 +1,889 @@
+
+
+NuFile eXchange (NuFX) Archive Utility
+NuLib v3.2 Documentation
+
+By Andy McFadden
+
+
+
+Updated September 23, 1992
+
+
+
+
+
+
+
+
+
+
+
+
+
+Overview
+--------
+
+NuLib is a shell-based NuFX archive utility, based loosely on "ARC"
+for the IBM PC and "ar" under UNIX.  It allows you to perform certain
+operations on the same archives used by ShrinkIt, including view
+archive contents, add to archive, extract from archive, and delete
+from archive.  In addition, it will list and unpack files from Binary
+II archives.
+
+This program is primarily targeted at users of non-Apple II computer
+systems, from IBM PC compatibles to Sun workstations to Amdahl
+mainframes.  It will also be of use to people who use a GS/OS shell on
+the Apple //gs, such as APW, ORCA, or ECP-16 (although it is
+considerably slower than ShrinkIt).  NuLib may require more than 256K
+of free RAM to function properly.  Apple //gs users can use YankIt
+instead, which is much smaller and many times faster (though
+considerably less powerful).
+
+
+Background
+----------
+
+For our purposes, an archive is simply a collection of one or more
+files stored as a single file.  This allows groups of related files to
+be stored under a single filename, reducing directory clutter, and
+makes it possible to transfer groups of files without the use of a
+batch transfer utility.
+
+To reduce the space required to store the archives and the time it
+takes to transfer archives, most popular archiving programs
+automatically compress files as they are stored.  Two popular
+compression methods are Huffman (variable-size codes are used, with
+smaller codes assigned to bytes that appear frequently) and
+Lempel-Ziv-Welch (LZW; finds common substrings in the file).
+
+Popular archiving programs include "BLU" (Apple II), "ShrinkIt" (Apple
+II), "GS/ShrinkIt" (Apple IIgs), "ARC"/"PKARC" (MS-DOS), "PKZIP"
+(MS-DOS), "lharc" (MS-DOS/Amiga), "zoo" (MS-DOS/Amiga), "PackIt"
+(Macintosh), "StuffIt" (Macintosh), "tar" (UNIX), and "ar" (UNIX).
+UNIX archivers don't generally compress files; a separate program
+(called "compress" of all things) is usually used.  NuLib works with
+archives that ShrinkIt produces (NuFX).
+
+
+New Features/Bug Fixes
+----------------------
+
+Major changes since last release:
+
++ Compression speed improvement
++ Can add a file as if it were a disk image
+
+
+How to Use NuLib
+----------------
+
+Usage: nulib option[suboption] archive [filespec1] [filespec2] [...]
+
+"option" is a single character, as specified below.
+"suboption" is one or more characters, which modify the performance of
+the option (see each specific option for details).
+"archive" is the name of a NuFX archive.  It doesn't need to exist for
+the add, create, and move options.
+"filespecN" is the name of a file, either on disk or in the archive.
+More than one file may be named on the command line.
+
+The option/suboption string may be entered in upper or lower case, and
+may be preceeded by a hyphen (ex: "nulib -XT0 ..." is equivalent to
+"nulib -xt0 ..." and "nulib xt0 ...").  Suboptions may be entered in
+any order.
+
+Side note: Under APW, both the archive filename and all file
+specifications relating to files ON DISK are expanded by NuLib (device
+names, wildcards, etc).  Under UNIX, all filename expansion and
+wildcards are handled by the shell or the kernal.  The filenames of
+files in the ARCHIVE do not undergo wildcard expansion on any system.
+
+Examples:
+$ nulib av foo.shk file1 subdir/file2
+Adds "file1" and "subdir/file2" to "foo.shk", listing each file as it
+is archived.
+$ nulib av foo.shk subdir
+Recursively adds all files in subdir and all files in subdirectories
+of subdir.
+$ nulib mv foo.shk =.doc    (APW)
+$ nulib mv foo.shk *.doc    (UNIX)
+$ nulib mv foo.shk *.doc    (MS-DOS)
+Adds all files with the suffix ".doc" to the archive "foo.shk",
+listing them as it goes, then deletes them from the disk.
+$ nulib d+ foo.shk work/
+Deletes all files in "foo.shk" that start with "work/"; this would
+likely be used to delete all files archived from the directory "work".
+No output is produced.
+
+
+The various options are:
+
+*** Add/Append files:
+    nulib A[V][U|C<val>|S<val>][R][F<type>[/<aux>]][D] archive files
+Quickly appends the specified files to the end of the archive.  This
+option does not scan the archive to see if the files already exist,
+and will create a new archive file if one is not found.  This option
+corresponds roughly to N)ew archive or A)dd files on the ShrinkIt
+menu.
+
+If you add files from the current directory or a subdirectory of the
+current directory, then the entire partial pathname is stored (ex:
+"nulib av fubar.shk foo/bar/filename" will store "foo/bar/filename" in
+the archive "fubar.shk.")  If you add files from directory that is not
+a subdirectory of the current directory, only the filename will be
+stored (ex: "nulib av fubar.shk ../zip/bang/filename" will store
+"filename" in the archive).  Unfortunately, this does not work under
+UNIX, since filenames are expanded by the kernel instead of by NuLib.
+
+Wildcards are allowed, and subdirectories are recursively descended
+(the depth is limited only by the maximum length of a pathname and the
+number of files in the subdirectories), unless the R suboption is
+used.  The R suboption will prevent subdirectories from being
+processed, so that "nulib avr fubar.shk *" under UNIX will add all
+files in the current directory, but will not descend into any
+subdirectories.  The V suboption displays the filenames as they are
+added.
+
+The U suboption adds a file without compressing it.  The C suboption
+allows you to insert a file in the archive with a specific compression
+algorithm (specified by the argument "value", which must immediately
+follow the suboption - no spaces between.  Ex: "nulib ac5v fubar.shk
+file1" would store "file1" in "fubar.shk" using 16-bit UNIX-style LZW
+compression).  "value" corresponds to the appopriate thread_format as
+specified in the section on compression methods.
+
+The S suboption does not compress the file, but will store it as if it
+were by setting the thread_format field to "value".  One use for this
+is adding compressed files without having to uncompress them first
+(ex: "nulib as1 foo.shk file1.qq" adds a squeezed file).  This
+suboption could conceivably cause a NuFX extractor to crash; please
+don't use it unless you are sure of what you are doing.  Note also
+that some compression methods (like ShrinkIt LZW) require both the
+"compressed length" and "uncompressed length" values to be correct;
+use of this suboption will (incorrectly) set them both to the current
+file length.
+
+Only one of U, C, or S may be specified.
+
+The F suboption allows specification of the filetype attribute.  It
+should be three characters long, and will be matched against a list of
+standard ProDOS file types.  Common ones are "BIN" (binary), "TXT"
+(text), "SRC" (source code), "OBJ" (object code), "EXE" (executable),
+and "NON" (typeless, the default).  Both upper and lower case letters
+will match.
+
+If the filetype is followed by a "/", then the auxtype field will also
+be set.  NuLib expects the auxtype to be a four-byte hexadecimal
+number; entering less than four digits could cause the auxtype to be
+misinterpreted.  A good example is storing APW C source files: "nulib
+cvfSRC/000a nulib.shk file1.c file2.c ...".
+
+If the D suboption is given, the entry will be tweaked to make it
+appear that the file is actually a disk image.  This may be useful
+somewhere.  Don't use it if you don't know what you're doing.
+
+Adding comments is not currently supported.
+
+
+*** Binary II Operations
+    nulib B[X][V][T<value>][I] binary2-archive [archived-files]
+This option is included for compatibility with the older Binary II
+standard, since it is still in use by many communications programs.
+
+With no suboptions, this will list the information on the archived
+files specified by "archived-files".  The X suboption extracts the
+named files from the archive, unsqueezing them if necessary.  If the
+archived-files parameter is omitted, then all files will be listed or
+extracted.  Note that matches are case-independent.
+
+When the V suboption is used in conjunction with the X suboption, the
+names of the archived files are printed as they are extracted.  The V
+suboption has no effect otherwise.
+
+The T suboption will perform a text substitution as it works; see the
+section of conversion of line terminators for more information.
+
+If the filename of an extracted file would conflict with an existing
+file, the file will be overwritten and a message will be printed.  If
+the "I" suboption is used, then NuLib will give an "overwrite (y/n)?"
+prompt.  An affirmative answer overwrites the file; a negative answer
+will skip the file and continue processing.
+
+Attempting to perform NuFX operations on a Binary II archive will
+fail.  If the file appears to be Binary II format, then a message
+indicating this will be printed.  Providing transparent support for
+Binary II archives is not impossible, but isn't needed often enough to
+be worth doing.
+
+
+*** Create Archive
+    nulib C[V][U|C<val>|S<val>][R][F<type>[/<aux>]][D] archive files
+This is identical to the A option, but the "creating archive" message
+is suppressed.  This behavior is similar to "ar".
+
+
+*** Delete from Archive
+    nulib D[V][+] archive archived-files
+Deletes the named files from the archive.  NuLib scans the archive,
+marking all records that match the names in the file specification
+(case-independent).  If all files are marked for deletion, then the
+archive file itself is deleted.  Otherwise, a new archive is created,
+the unmarked records are transferred, and the old archive is deleted.
+An error during this process will leave the original archive
+unmodified.
+
+Note that this does not require an exact match if the "+" suboption is
+used; "nulib d+ fubar.shk foo" will delete "foo", "Foozle",
+"food/recipies" and "food/stock."  The V suboption prints the list of
+marked records as it works.
+
+
+*** Freshen Archive
+    nulib F[V][U|C<val>|S<val>][R][F<type>[/<aux>]][D] archive files
+Updates files in the archive, but doesn't add any new files.  Creates
+a new archive file, and either transfers the old record or adds the
+file depending on which is more recent.  Only exact filename matches
+are allowed (case-independent), including partial paths.  The archive
+being updated must already exist.
+
+Wildcards are allowed, and subdirectories are automatically expanded
+unless the R suboption is used.  The V suboption displays the
+filenames as they are added.  The U/C/S/F suboptions, explained under
+A)dd, only apply to files being added to the archive or being updated
+(files that aren't updated are left unaltered).
+
+Files that are updated will retain their previous filetype.  New files
+will get either the default filetype, the filetype specified by the F
+suboption, or the actual filetype (under APW only) in that order.
+
+
+*** Command Help
+    nulib H[NWS]
+Displays a help screen.  Three screens are available.
+
+"nulib h" alone displays help on the options.  The N suboption gives
+help with numbers; it lists the known compression methods and text
+translation types.  The W suboption gives a brief listing of
+contributors, and how to contact me.  The S suboption gives help on
+the suboptions.
+
+
+*** Integrity Check
+    nulib I[V] archive
+Verifies that the archive is intact.  Does not modify the archive in
+any way.  The V suboption prints a list of CRCs for each entire record
+(this is different from those listed by the TZ option, which are only
+for the record headers and (sometimes) threads; this includes not only
+the headers but *all* data as well).
+
+Please note that this doesn't do much more than read the file, unless
+the record_version is $0002 or greater (which means that the data has
+a checksum stored; currently these records are only generated by
+GS/ShrinkIt), AND no compression was used.  This merely scans the
+records and verifies the header CRCs, NOT the data CRCs.  The main
+purpose of the V suboption is to make a list of CRCs that can be sent
+along with the archive.
+
+
+*** Move Files to Archive
+    nulib M[V][U|C<val>|S<val>][R][F<type>[/<aux>]][D] archive files
+This is identical to the A option, but the files are deleted after
+they are added to the archive.  Note that the actual directory files
+are NOT deleted, unless they were given distinct record entries.
+
+Care should be taken to avoid trying to M)ove an archive into itself.
+The act of adding may (depending on the OS and the archive) go into an
+infinite loop creating a huge file, and the coup de grace is when
+NuLib then deletes the archive you were adding to.
+
+
+*** Print an Archived File
+    nulib P[V][T<value>][+] archive files
+Print the contents of an archived file without extracting it.  Useful
+for viewing archived text files without having to actually unpack
+them.  Note this only allows viewing of data_threads; resource forks
+and disk images will not be displayed, and comments are not shown.  I
+take no responsibility for pagination or filtering of funky control
+characters...
+
+The V suboption will print the file's name right before it is
+extracted.  The + suboption allows you to specify the first part of a
+pathname; see the D or X options for details.
+
+The T suboption will perform a text substitution as it works; see the
+section on conversion of line terminators for more information.
+
+
+*** Table of Contents
+    nulib T[VAZ] archive
+With no suboptions, this lists only the filenames of the archived
+files.  Not only does this make it easier to view the archive contents
+(the ShrinkIt format filename field is about 20 characters wide; this
+is as wide as it has to be), but the output is suitable for
+transmission via a pipe to other utilities.
+
+Using the V suboption will make it use ShrinkIt v2.0 output format
+(same as using the V option); it is included as a suboption mainly for
+people used to "ar".  Using the A suboption will produce a list
+similar to the output of ARC or ZOO.
+
+Using the Z suboption will dump everything known about the archive,
+including all information in headers, CRCs, relative file position,
+sizes of individual threads, etc.
+
+
+*** Update Archive
+    nulib U[V][U|C<val>|S<val>][R][F<type>[/<aux>]][D] archive files
+Updates files in the archive, keeping the archived file or the file
+listed on the command line, whichever is most recent (or exists).
+Unlike freshen, this will add new files as necessary.  Creates a new
+archive file, and either transfers the old record or adds the file.
+Only exact filename matches are allowed (case-independent), including
+partial pathnames.  The archive being updated must already exist.
+
+Wildcards are allowed, and subdirectories are automatically expanded
+unless the R suboption is used.  The V suboption displays the
+filenames as they are added.  The U/C/S/F suboptions, explained under
+A)dd, only apply to files being added to the archive (files that
+aren't updated are left unaltered).  Note that the order of files in
+the archive will be preserved.
+
+Files that are updated will retain their previous filetype.  New files
+will get either the default filetype, the filetype specified by the F
+suboption, or the actual filetype (under APW only) in that order.
+
+
+*** Verbose Archive Listing
+    nulib V archive
+Lists the archive contents in a format indentical to that used by the
+ShrinkIt v2.0 L)ist archive contents option.  Same thing as "-tv".
+
+
+*** Extract from Archive
+    nulib X[V][T<value>][U][I][M][+] archive [archived-files]
+    nulib E...
+The X and E options are synonymous.  Extract the archived-files from
+the archive.  If the file already exists, you are asked if you want to
+overwrite it.  If part of a partial pathname does not exist, the
+subdirectory will be created.  Omitting the "archived-files"
+specification will cause the entire archive to be unpacked.
+
+When files are archived, a pathname separator is stored (e.g., "/" for
+ProDOS and UNIX, "\" for MS-DOS, ":" for Mac HFS).  During extraction,
+the pathnames are broken down into component file names, converted to
+names legal under the current operating system, and then recombined
+using the pathname separator for the current OS.  This facilitates
+extraction of files archived under any OS, but can lead to filename
+conflicts that didn't exist when the files were added (e.g., a UNIX
+file that contained a backslash is unpacked under MS-DOS).
+
+If the filename of an extracted file would conflict with an existing
+file, the file will be overwritten and a message will be printed.  If
+the "I" suboption is used, then NuLib will give an "overwrite (y/n)?"
+prompt.  An affirmative answer overwrites the file; a negative answer
+will skip the file and continue processing.
+
+Note that extraction does not require an exact match if the "+"
+suboption is specified; "nulib x+ fubar.shk foo" will extract "FOO",
+"Foozle", "food/recipies" and "food/stock."  This makes it possible to
+extract entire subdirectories at a time.  The V suboption prints the
+list of marked records.
+
+If comments are present, then the V suboption also prints those as it
+extracts.  Using the M suboption will cause the comments to be
+printed, but the files will not be extracted.  **NOTE**: the exact use
+of the M suboption has not been entirely settled.  Since it may be
+desirable to extract comments into a file, future versions of NuLib
+may use eXtract to put them in a file and Print to view them.
+Comments welcome, caveat emptor, have a nice day.
+
+The T suboption will perform a text substitution as it extracts; see
+the section on converson of line terminators for more information.
+
+The U suboption will extract the files without uncompressing them.
+This is rarely useful, but is easy to implement and is present for the
+curious.
+
+
+Non-NuFX files
+--------------
+
+NuLib will only work with Binary II and NuFX archives.  If you try to
+view some other kind of file, you will get an error message and an
+indication of what kind of file NuLib thinks it is.  NuLib can
+recognize files processed with compress, Zip, Zoo, StuffIt, ar, shar,
+GIF, and many others.
+
+
+Compression Methods
+-------------------
+
+The following methods are defined in the NuFX documentation:
+(# = method number, Name = method name [abbreviation], Pack? and
+Unpack? refer to the ability of NuLib to perform that operation using
+the given compression method.
+
+#    Name                             Pack?    Unpack?
+00   Uncompressed [unc]                 Y         Y
+01   SQueezed [squ]                     N         Y
+02   Dynamic LZW I (ShrinkIt) [shk]     Y         Y
+03   Dynamic LZW II (ShrinkIt) [sh2]    N         Y
+04   12-bit UNIX Compress [u12]         Y         Y
+05   16-bit UNIX Compress [u16]         Y         Y
+
+Attempting to use a compression method that does not exist will result
+in an error message like "[can't squeeze; storing]...".  This means
+that the compression method you requested is unavailable, and it
+simply stored the file without compression.
+
+If you try to extract a file that has been compressed with an
+algorithm that NuLib is not familiar with, an error message will be
+printed and the file will not be extracted.
+
+
+Converting Line Terminators
+---------------------------
+
+Different operating systems use different line terminators in text
+files.  The table below shows them for some popular systems:
+
+Operating System         Line Terminator
+Apple ProDOS             CR ($0d)
+UNIX                     LF ($0a)
+MS-DOS                   CRLF ($0d0a)
+
+While NuLib will know what kind of terminators the operating system it
+is running under uses, it cannot reliably determine what kind an
+archived file uses.  Thus, the terminator used on the system where the
+file was created must be specified.
+
+Note that text translation should *not* be performed on non-ASCII
+files (non-ASCII means anything other than pure text; word processing
+files and executables are two examples of files that should *never*
+have text translation performed on them).  Doing so will probably ruin
+the file, causing strange errors.  Because of the wide range of files
+that NuLib must handle, it is impossible to automatically determine
+which files are binaries and which are text.
+
+In order to tell NuLib what format to expect, you have to specify a
+value parameter (although it will default to zero if you don't).  The
+following examples illustrate their usage:
+
+nulib xt0 ...       Convert from CR   (Apple II -> current system)
+nulib xt1 ...       Convert from LF   (UNIX -> current system)
+nulib xt2 ...       Convert from CRLF (MS-DOS -> current system)
+
+
+Shell Variables
+---------------
+
+NuLib looks for a shell variable called "NULIBOPT" to get default
+values for certain things.  This must be an environment variable
+("setenv" using csh, "set" and "export" using sh or APW), and may
+contain the following:
+
+     verbose             Default to Verbose output (otherwise Silent).
+     type=xxx            Default type for storing files (under UNIX or
+                         MS-DOS).  "xxx" should match the 3-letter
+                         ProDOS abbreviation (NON, BIN, TXT, SRC).
+                         Normally "NON".
+     aux=xxxx            Default auxtype for storing files (under UNIX
+                         or MS-DOS).  "xxxx" is a four-character hex
+                         number (000a, 8002, abcd).  Normally "0000".
+     interactive         Default to Interactive mode (prompt before
+                         overwriting files).
+     compress=n          Set default compression to type n.  This is
+                         useful if you prefer 16-bit UNIX compress
+                         (which would be compress=5).
+
+Note that the type= and aux= settings do NOT apply when running under
+APW.  Files will be stored with their actual filetypes, regardless of
+the variable setting.
+
+Also, the 'F' suboption will override these settings.
+
+An example from csh:
+  setenv NULIBOPT type=BIN,compress=5,interactive
+
+** WARNING: As of this writing, GS/ShrinkIt 1.0.6 and ShrinkIt v3.4
+are not able to extract archived files compressed with UNIX compress.
+It is likely that GS/ShrinkIt will be able to in the future, but the
+//e version of ShrinkIt will probably never handle them.
+
+
+Error Handling
+--------------
+
+Many errors simply cause the program to exit, leaving the archive in
+an uncertain state (which sounds fairly evil).  If you were
+extracting, deleting, viewing, or updating when the error occurred,
+the worst that can happen is you will be left with a bogus temporary
+file in the current directory (something like "nulib.tmp5610").
+
+If you were adding to an existing archive, the files that were there
+will be unharmed, but additional files will not appear, and the
+archive will be oversized.  This is because the master header block
+(which keeps a count of the number of records in the archive) is
+written last.
+
+If you were creating a new archive, the file will be guano.  This is
+because, as mentioned before, the Master Header Block is not written
+until the very end.  Since NuLib identifies NuFX archives by looking
+at certain bytes in the MHB, the file will not be identifiable as
+NuFX.  Note that the M)ove option is safer than it looks, because
+files on disk are not deleted until the archive is safely closed.
+
+
+Revision History
+----------------
+
+NuLib v3.22 (September 1992)
+- improved speed of LZW-I compression
+- added ability to add files as if they were disks (patches provided
+by somebody whose name I've lost)
+- updated the list of 3-letter filetype abbreviations
+
+NuLib v3.21 (August 1992)
+- minor stuff
+
+NuLib v3.2 (April 1992)
+- fixed two bugs in the LZW-II uncompression.
+- made it compatible with SysV Expanded Fundamental Types (stuff like
+eight byte file offsets on lseek()s).
+
+NuLib v3.11 - v3.14 (November 1991)
+- fixed a problem with LZW-II uncompression.
+- added fixes to make it compile on a NeXT and with MS C 6.0.
+- fixed XENIX directory compatibility problems.
+
+NuLib v3.1 (October 1991)
+- added ability to uncompress LZW-II compression (GS/ShrinkIt).
+- improved speed of compression routines.
+- improved System V compatibility.
+- cleaned up code a bit and fixed minor bugs.
+
+Nulib v3.01 - v3.03 (February 1991)
+- fixed XENIX problems with includes and libs.
+- fixed bug in directory expansion.
+- silenced screaming about bad dates.
+- fixed glitches in nulib.lnk and nulib.mak
+- fixed non-compression bug in ShrinkIt LZW.
+
+NuLib v3.0 (Sep 1990):
+- added ability to compress files using ShrinkIt LZW-I compression
+(replaces "fake" compression used previously).
+- added "compress" parameter to NULIBOPT environment variable.
+- added ARCZOO output format for people used to MS-DOS archivers.
+- added M suboption for comment ("message") printing.
+
+NuLib v2.3 (May 1990 - not released):
+- addition of UNIX compress.
+- threw in some benchmarks.
+
+NuLib v2.2 - v2.22 (Apr 1990):
+- second release as NuLib (after a brief vacation).
+- fixed incompatibility problems with GS/ShrinkIt and ShrinkIt v3.0.
+- added some support for comments.
+- unpacks disk archives to files (good for the UNIX Apple ][+
+simulator).
+- fake compression correctly handles files that don't compress (it
+used to store them as compressed whether or not they got smaller).
+- various minor changes/improvements (more help screens, etc).
+
+NuLib v2.1.1 (Nov 1989):
+- first wide distribution as NuLib.
+- fixed command processing bugs.
+
+NuLib v2.1 (Nov 1989):
+- yet another name change (thanks loads, L&L).
+- ShrinkIt LZW uncompression added.
+- MS-DOS code added.
+- shell variable used for defaults.
+- CRLF translation.
+- added R, I, and F suboptions.
+
+CShrink v2.08 (Oct 1989):
+- altered help screens, some commands.
+- added recognition of other kinds of files (compressed, shar, etc).
+- switched to table lookups for calculating CRC (much faster).
+
+CShrink v2.07 (Sep 1989):
+- Another name change (legal reasons).
+- UNIX port completed.
+- Binary II operations are fully functional.
+- some compression code added (unSQueeze, fake ShrinkIt pack).
+- '+' suboption added.
+- text translation improved.
+- printing of archived files (P option) now works.
+
+NuARC v2.03 (Aug 1989):
+- first NuARC distribution (APW executable only).
+- added subdirectory expansion.
+- added suboption processing.
+- replaced buffered I/O (fopen(), fread(), etc) on files with
+lower-level read()/write() routines.
+- added automatic byte-order determination.
+- implemented move, extract all, and update/freshen.
+- added Print archived file option.
+- added Verbose, Text translation, and Uncompressed storage
+suboptions.
+- wrote this documentation.
+
+NuARC v2.0 (Aug 1989):
+- added archive manipulation routines (EXtract, Add and Delete for
+uncompressed archived files).
+- added filename-only output format.
+- added CRC verification.
+- added byte order and data element size checks.
+- removed the LAMESEEK option.
+
+NuView v1.2 (July 1989):
+- major overhaul of all source code to make it work under APW C.
+- new //gs-specific routines added.
+- minor alterations to output format.
+
+NuView v1.1 (June 1989):
+- major rewrite of the way archives are read (had problems with
+machines requiring word-alignment of data).
+- added thread file position storage to internal archive structure.
+- fixed non-(void) sprintf() bug.
+
+NuView v1.0 (May 1989):
+- initial release.
+- works only on a Sun 3/50 running BSD UNIX.
+
+
+Limitations
+-----------
+
+NuLib works just fine with records containing more than one thread
+(i.e., comments and resource forks).  However, while comments can be
+printed, they can't be added.
+
+The big problem this program has is speed.  Since it is meant to be
+portable first and efficient second, it won't run as fast as something
+like ShrinkIt (written entirely in assembly).  What I envision is
+people using ShrinkIt at home on their Apple //s, but NuLib on UNIX
+systems or other microcomputers.  This will facilitate transfers of
+large compressed files, which can then be quickly unpacked on the
+destination system (which will likely have greater computing power, or
+a C compiler more efficient than APW).
+
+
+System Dependencies
+-------------------
+
+When compiling this on a Sun 3/50, I noticed a problem: the byte
+ordering for the //gs (65816) and the Sun (68020) are backward.  The
+present version of NuLib will automatically determine the byte
+ordering and treat data appropriately (although this may fail if the
+data size definitions are wrong).
+
+There are definitions for one byte, two byte, and four byte variable
+types; my compiler uses char, short, and long.  If these are different
+for your compiler, be sure to change the typedefs in "nudefs.h".  If
+you don't have 8-bit bytes, though, it may not work (most machines
+do).
+
+Notes on UNIX implementation:
+If this is being run under UNIX, you should #define UNIX in
+"nudefs.h".  This will enable certain UNIX functions (like system()
+calls and time routines), and disable others (like file types and
+"binary mode" for file I/O).  If this is being run under BSD UNIX, you
+should also #define BSD43 in "nudefs.h"; certain small differences
+were unavoidable (strrchr() vs rindex()).  System V users should
+#define SYSV.  See "nudefs.h" for examples.
+
+Under APW, breaking down the full pathnames into relative pathnames is
+easy (and should be under MS-DOS as well...).  Under UNIX ".." is an
+actual directory link, so obtaining a fully expanded pathname with no
+redundancies is difficult.  Thus, storing "dir1/../dir1/foo" would
+appear as "dir1/foo" under APW but "dir1/../dir1/foo" under UNIX.
+Care must be taken when extracting such files on non-UNIX systems;
+they are best avoided entirely.  One nasty pitfall is using "~/foo"
+under the C shell...
+
+If the UNIX owner access permissions include write permission, the
+file will be stored as unlocked.  If write permission is denied, it
+will be stored as locked.  As far as dates are concerned, the
+modification and access times will both be set to the modification
+time.
+
+Notes on //gs implementation:
+There is very little //gs-specific code, except where absolutely
+necessary (time routines, file type handling, etc).  GS/OS support is
+absent (extended files are not handled yet, different file systems are
+not recognized, and pseudo-mixed-case ProDOS filenames are stored as
+upper case).  Some of the faults belong to APW...
+
+Unfortunately, the startup code (2/start) provided with APW and the
+methods of argument passing used by ECP-16 and ProSel-16 aren't
+compatible.  This means that you can run NuLib from ECP or ProSel, but
+you can't pass it any arguments (which pretty much defeats the
+purpose...).
+
+At any rate, the program is linked with the compression routines in
+dynamic load segments, so that simple operations should run faster.
+Additionally, it should be restartable from memory.  [actually, the
+ZapLink version doesn't have dynamic segments...]
+
+There is a bug (not my fault) when using the P option to print a file.
+The file gets printed on one line for some reason...  If you redirect
+the I/O to a file, everything comes out fine.  Weird.
+
+APW shell-specific code has been avoided where possible.  Places where
+I couldn't easily work around it include wildcard expansion and
+ERROR().  It was deliberately used in several places to allow the user
+to STOP() processing with Apple-period.
+
+NOTE: NuLib was written to work with APW C, ** NOT **  Orca/C.
+Attempting to compile it with Orca/C would be a major undertaking (as
+several people who have tried and failed can attest to).
+
+Notes on MS-DOS implementation:
+The user interface may be slightly different from the UNIX and APW
+versions, so that MS-DOS users will feel more at home when using the
+program.  The only major deviation is in the handling of subdirectory
+expansion.
+
+A future version may select the ARC/ZOO output format as default.
+
+
+Bugs / Glitches
+---------------
+
+UNIX lseek uses longs, which are usually four bytes.  Signed.  If an
+archive is larger than 2 gigabytes, there may be a problem (cough).
+This isn't a problem if the system has EFT.
+
+Pathnames longer than the #defined maximum (1024 bytes) will not be
+processed.  This is the limit on most machines, and is well in excess
+of most people's sanity.  Pathnames with a null ('\0') in them should
+generally be avoided.
+
+Some partial pathname comparisons may fail because pathname separators
+vary between operating systems.  File naming conventions can result in
+collisions (ex: "foo+" and "foo~" are unpacked under ProDOS, where
+both are translated to "foo.").  Also, you will probably need to be in
+the same directory each time you U)pdate an archive, or else the
+partial pathnames won't match (update requires an EXACT match), and
+you'll end up with two different copies of the same file.
+
+A maximum of 255 files may be added/deleted/whatever at at time.
+Expanded subdirectories count.  This is an arbitrary number and is
+easy to change if someone can convice me that you'd need to archive
+more than 255 files at a time.
+
+The same file may be added/extracted/whatever more than once if the
+user enters multiple file selectors on the command line ("nulib av
+foo.shk file1 file1 file1").  This means that U)pdate could insert the
+same file twice, etc.
+
+NuLib does not at present prevent an archive from being added to
+itself.  This can have unfortunate consequences, especially in
+conjunction with the M)ove option.
+
+The ProDOS three-letter filetype names may or may not be the offical
+Apple versions.  Some users may have problems with things like "$00"
+because '$' is a csh metacharacter (job control).
+
+Error output is informative but ugly (mostly debugging-type messages).
+Error handling is somewhat fatal in most cases.
+
+The code is fairly large, currently around 260K (around 7000 lines of
+C).  It takes a while to compile it, and can be difficult if you only
+have 1.25MB of RAM (kill your DAs and purge before you link!)
+
+
+In the Works
+------------
+
+This is a wishlist of sorts.  Don't hold your breath:
+- Allow CR <-> LF translation when ADDING files.
+- Improve GS/OS handling.  Need to handle resource forks and file
+system IDs. Would probably help if I had a GS/OS reference...
+- Add to thread methods (insert ASCII messages, etc).
+- Add different compression methods (LZH?).
+
+
+Author Info
+-----------
+
+I'm currently an Associate Software Engineer for Amdahl Corp. in Santa
+Clara, California.
+
+e-mail: fadden@uts.amdahl.com (Andy McFadden)
+
+No relation to the author of ShrinkIt and NuFX, Andy Nicholas.  This
+was and continues to be my idea; throw all kudos and blame in my
+general direction.  All code herein is mine, developed from the NuFX
+Documentation Revisions three through five (the latter from Call
+-A.P.P.L.E.), except as noted below.
+
+Dynamic LZW-I (ShrinkIt) by Kent Dickey.  LZW-II compression (LZW-I
+with table clears) designed by Andy Nicholas.  C implementation by
+Frank Petroski and Kent Dickey (independently and simultaneously).
+
+MS-DOS code by Robert B. Hess and Bruce Kahn.
+
+The Binary II routines and the unSQueeze code were adapted from the C
+source by Marcel J.E. Mol (usq.c based on usq2/sq3 by Don Elton).
+
+UNIX compress code from COMPRESS v4.3 (see source for detailed author
+information).
+
+If you have suggestions or comments and can't send mail to my Internet
+address, you can send US mail to:
+Andy McFadden
+1474 Saskatchewan Dr.
+Sunnyvale, CA  94087
+
+Andy Nicholas, the author of ShrinkIt and affiliated products
+(ShrinkIt ][+, UnshrinkIt ][+, GS/ShrinkIt), may be contacted at:
+     Internet    :  shrinkit@Apple.COM
+     CompuServe  :  70771,2615
+     GEnie and
+      America OL :  shrinkit
+
+
+Legal Stuff
+-----------
+
+(I'm not sure about all of these, but I'd like to cover all the
+bases):
+
+ShrinkIt is a trademark of L&L Productions, Inc (...or is it?).
+ARC is owned by SeaWare.
+Apple is a tradmark of Apple Computer, Inc.
+MS-DOS is (probably) a trademark of Microsoft, Inc.
+PKZIP is (probably) a trademark of PKWare.
+
+I have not seen source code for ShrinkIt(tm) or for the compression
+routines used within it, except as provided to me in C by Kent Dickey.
+
+Disclaimers, borrowed from Dave Whitney and Andy Nicholas:
+
+This program is FREEWARE; both source and binaries may be distributed
+freely, but not sold.  If you wish to include NuLib in the
+distribution of a commercial product, you will need to get my
+permission beforehand.
+
+Distribute as widely as possible, but please include this
+documentation with the binaries and/or sources.
+
+Copyright (C) 1989-1991 by Andy McFadden. All rights reserved.
+
+I (Andy McFadden) MAKE NO WARRANTY ON THIS MANUAL OR SOFTWARE, EITHER
+EXPRESS OR IMPLIED, WITH RESPECT TO QUALITY, MANUAL'S ACCURACY,
+MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
+
+IN NO EVENT WILL I BE HELD RESPONSIBLE FOR DIRECT, INDIRECT, SPECIAL,
+INCIDENTAL, OR CONSEQUENTIAL DAMAGES RESULTING FROM ANY DEFECT OF THE
+SOFTWARE OR INACCURACY IN THE MANUAL.
+
+In other words, I have tested the program to the best of my ability,
+and I find that as distributed by me, it is safe for general use. It
+isn't necessarily bug-free, and as a result, loss of data, however
+unlikely, is entirely possible. Use at your own risk, but also for
+your own enjoyment.

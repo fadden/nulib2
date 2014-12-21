@@ -1,0 +1,539 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<meta name="GENERATOR" content="Microsoft FrontPage 4.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>NuFX Addendum</title>
+<meta name="Microsoft Border" content="t, default">
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000"><!--msnavigation--><table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td>
+
+<p align="center"><font size="6"><strong>NuFX Addendum</strong></font><br>
+<nobr>[&nbsp;<a href="../index.htm">Home</a>&nbsp;]</nobr> <nobr>[&nbsp;<a href="index.htm">Up</a>&nbsp;]</nobr> <nobr>[&nbsp;NuFX&nbsp;Addendum&nbsp;]</nobr> <nobr>[&nbsp;<a href="nulib2-preserve.htm">ProDOS&nbsp;Attribute&nbsp;Preservation</a>&nbsp;]</nobr></p>
+<hr>
+
+</td></tr><!--msnavigation--></table><!--msnavigation--><table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><!--msnavigation--><td valign="top">
+
+<h6>&nbsp;</h6>
+
+<h6>NuFX Addendum - <b>By Andy McFadden - Last revised 2004/09/26</b></h6>
+<p align="left">This addendum clarifies and extends certain aspects of the <a href="FTN.e08002.htm"> NuFX
+specification</a>.&nbsp; This was developed by Andy McFadden, and is not an
+&quot;official&quot; modification of the original document.</p>
+<h2 align="left">Purpose</h2>
+<p align="left">The NuFX specification defines&nbsp;a very loose structure, and
+leaves much to the imagination of the implementer.&nbsp; For example, &quot;If a
+utility finds a redundancy in a Thread Record, it must decide whether to skip
+the record or to do something with that particular thread...&quot;.&nbsp;
+A strict specification would declare that the situation must never arise, and
+define a standard approach for dealing with the anomalous condition.&nbsp; The
+current specification declares that the situation may arise, and
+requires the application author to come up with a solution.</p>
+<p align="left">This document refines the NuFX specification and brings some of
+the &quot;fuzzy&quot; areas into sharper focus.&nbsp; Nothing in this document
+contravenes the original document.</p>
+<p align="left">In the text below, &quot;<b>must</b>&quot; is an imperative that
+has to be obeyed, and &quot;<b>should</b>&quot; is a recommendation that authors
+are strongly encouraged to follow.</p>
+<hr>
+<h2 align="left"> Clarifications</h2>
+<h3 align="left"> Pronunciation</h3>
+<p align="left">What's the correct way to pronounce &quot;NuFX&quot;?&nbsp; The
+specification doesn't say.&nbsp; There are two basic camps, letter-by-letter
+(&quot;en you eff ecks&quot;) and minimal-syllable (&quot;new fix&quot; or
+&quot;new fuchs&quot;).&nbsp; I don't recall how Andy Nicholas says it, so let
+it be &quot;new fix&quot;.</p>
+<p align="left">&nbsp;</p>
+<h3 align="left">Use of &quot;.SDK&quot; suffix</h3>
+<p align="left">Originally, only &quot;.SHK&quot; was used to represent a NuFX
+archive.&nbsp; Over time, a convention of using &quot;.SDK&quot; to represent
+archives with a single disk image in them has arisen.&nbsp; This is very
+convenient for emulators on systems that rely on the file extension (e.g.
+Windows), so use of &quot;.SDK&quot; is encouraged.</p>
+<p align="left">&nbsp;</p>
+<h3 align="left">Archives with no records</h3>
+<p align="left">An archive without records, i.e. nothing but a master header
+block, serves no purpose.</p>
+<p align="left"><b>Creating:</b> Archives without any records in them must never
+be created.&nbsp; All archives must have at least one record.</p>
+<p align="left"><b>Opening:</b> If asked to open a record-less archive,
+the application should recognize that the archive is empty and proceed as if it
+were a new archive.</p>
+<p align="left"><b>Modifying:</b> If all records in an archive are deleted, the
+archive file must be deleted as well.</p>
+<p align="left">&nbsp;</p>
+<h3 align="left"> Records with no threads</h3>
+<p align="left">A record without threads is pretty pointless.</p>
+<p align="left"><b>Creating:</b> Records without threads must never be
+created.&nbsp; All records must have at least one thread.</p>
+<p align="left"><b>Extracting: </b>Empty records should be ignored.</p>
+<p align="left">&nbsp;</p>
+<h3 align="left">Records with only a filename thread</h3>
+<p align="left">GS/ShrinkIt v1.1 has a bug that prevents it from creating an empty
+data thread when asked to add a zero-byte file.&nbsp; This results in a thread
+with a filename and nothing else.&nbsp; (If it was the first new record added,
+it will have an empty comment thread as well.)<p align="left">There is no valid
+reason for deliberately creating such a file.
+<p align="left"><b>Creating:</b> Records composed solely of a filename thread
+must not be created.
+<p align="left"><b>Extracting:</b> Records with nothing but a filename thread
+should be ignored.&nbsp; <i>For GSHK v1.1 bug compatibility</i>: if a record has a filename
+thread, and no other threads except &quot;message&quot; threads (i.e. no data
+threads or control threads), then a zero-byte data fork file should be
+created.&nbsp; Otherwise, the record should be ignored.&nbsp; If the ProDOS
+storage type field indicates an extended file, a zero-byte resource fork should
+also be created.
+<p align="left">&nbsp;
+<h3 align="left">Records with no filename</h3>
+<p align="left">A record without a filename thread is a curious beast.&nbsp;
+Ideally, there wouldn't be any such thing as a filename thread, since it doesn't
+really make sense to have a record without one.&nbsp; Expanding the record
+header to hold a pre-sized buffer would've made many things simpler.<p align="left">This
+particular situation occurred with older versions of ShrinkIt (e.g. v1.1) that failed to store
+a volume name when compressing a DOS 3.3 disk.&nbsp; There was no filename in
+the record header, nor one in a filename thread.<p align="left">The only
+situation where a record without a filename makes sense is if the record holds
+nothing but comments or other archive &quot;meta data&quot;, such as a
+&quot;create directory&quot; control thread.<p align="left"><b>Creating:
+</b>Records without filenames must not be created, unless the record is intended
+to contain
+nothing but archive meta-data.&nbsp; Deletion of the filename thread should only
+be done if a new filename thread is being added.&nbsp; If data threads are added
+to a record without a filename, then a filename thread must be added as well.<p align="left"><b>Extracting</b>:
+If the record contains file data, the application may either prompt the user for
+a filename to use, or supply a generated one.<p align="left">&nbsp;
+<h3 align="left">Records with more than one filename thread</h3>
+<p align="left">This is an unusual situation that should only arise if an
+application is buggy.&nbsp; Every record created by a modern application should
+have no more than one filename thread.<p align="left"><b>Creating:</b> Records
+with multiple filename threads must not be created.<p align="left"><b>Extracting:</b>
+ Applications must use the first filename thread.&nbsp; If a buggy application wants to
+append an additional filename thread, their buggy filename will be ignored.<p align="left">&nbsp;<h3 align="left">Records
+with filenames in two places</h3>
+<p align="left">The old way of storing filenames, used by NuLib and old versions of ShrinkIt, was to
+put the filename in the record header.&nbsp; To facilitate renaming, the
+filename was moved into a thread.&nbsp; Thus, there are two possible locations
+where the filename may live, and no guarantee that only one will be used..<p align="left"><b>Creating:</b>
+Never put the filename in the record header when creating a new record.&nbsp;
+It's okay to leave existing records alone, but if an application has the
+opportunity to rewrite the record header, the record filename must be removed.<p align="left"><b>Extracting:</b>
+The thread filename takes precedence over the record header filename.<p align="left">&nbsp;<h3 align="left">File
+system separator characters</h3>
+<p align="left">Every record header has a &quot;file system separator&quot;
+character (&quot;fssep&quot;) in the &quot;file_sys_info&quot; word.&nbsp; This
+is usually something like ':' for GS/OS or '/' for UNIX.&nbsp; It's necessary to
+know what the separator is in order to break a pathname down into its individual
+components.<p align="left">Not all filesystems support subdirectories, however,
+which means that not all filenames need to have a separator.&nbsp; The
+appropriate separator character for such a filesystem is not defined in the NuFX
+spec.&nbsp; Clearly it should be something illegal on the source filesystem, or
+we could inadvertently see pathnames where they don't exist (e.g. a file called
+&quot;foo:bar&quot; on DOS 3.3 if the fssep char were set to ':').<p align="left">The
+trouble is, DOS 3.3 doesn't actually have any illegal characters, just a field
+of 30 characters padded with spaces.&nbsp; Pascal disks are similar.&nbsp; Since
+we must define an fssep for every filename, our best choice is to use '\0'
+(0x00), because it's unlikely to occur, and any program that stores names in C
+strings will find it awkward to store and scan for '\0'.<p align="left">This
+situation also applies to archived disk images, which must be simple filenames.<p align="left">(NOTE:
+as of v2.0.3, NufxLib rejects 0x00 as an fssep character.&nbsp; This is a bug.)<p align="left"><b>Creating:</b>
+When adding files directly from filesystems without subdirectories, use 0x00 as
+the fssep char.<p align="left"><b>Extracting:</b> An fssep char of 0x00 means
+the pathname is just the filename.<p align="left">&nbsp;<h3 align="left">Disk
+image pathnames</h3>
+<p align="left">While files may have multiple path components (e.g.
+&quot;subdir:subdir2:filename&quot;), it makes no sense for disk images to have
+them.&nbsp; The stored filename for a disk is either the disk's ProDOS volume
+name, or for non-ProDOS disks, a simple label defined by the user.&nbsp; Since
+the eventual target is a disk device, specifying a subdirectory path makes no
+sense.<p align="left">The issue becomes a little more confusing when storage of
+disk images used for emulators is considered.&nbsp; At first glance, it seems
+useful to be able to store a hierarchy of disk images.&nbsp; In practice, such
+images would either be archived as a hierarchy of .PO files, or as an archive of
+.SDK archives.<p align="left"><b>Adding/renaming</b> Applications must
+strip any leading path components from disk image &quot;storage names&quot;.&nbsp;
+(The NuFX specification does explicitly forbid the use of a filesystem separator
+character in a disk volume name.)<p align="left"><b>Extracting:</b>
+Applications extracting directly to a disk must strip leading path components
+before assigning the ProDOS volume name.&nbsp; Applications extracting images to
+a file don't need to do anything unusual.<p align="left">&nbsp;<h3 align="left">Filename
+case sensitivity</h3>
+<p align="left">There isn't a &quot;filename is case-sensitive&quot; flag in
+NuFX archives.&nbsp; Since it was designed primarily for ProDOS and HFS
+filesystems, neither of which is case-sensitive, we should assume that case is
+not meant to be significant when determining whether two records have the same
+filename.&nbsp; This becomes important when adding files (to test for
+duplicates), extracting files by name, and when attempting
+to display archive contents as a hierarchical tree.<p align="left">Applications
+should try to recognize that &quot;foo/bar&quot;, &quot;foo/BAR&quot;, and
+&quot;FOO/bar&quot; are the same file, but it's probably not worth
+&quot;probing&quot; a case-sensitive filesystem like Linux ext2 to guarantee
+such.<p align="left">&nbsp;<h3 align="left">Duplicate filenames</h3>
+<p align="left">There is nothing in the NuFX specification that prevents having
+more than one file with the same name in an archive.&nbsp; In practice, this is
+inconvenient, especially for users with command-line tools.&nbsp; On the other
+hand, if the underlying filesystem is case-sensitive, the extracted files may
+not actually collide, so it may not make sense for all applications to treat
+this as an iron-clad rule.<p align="left">When comparing names, be sure to take
+the filesystem separator character into account.&nbsp; &quot;foo:bar&quot; could
+be a simple filename or a partial pathname depending on whether ':' is the
+separator.&nbsp; Two names should be considered identical if each distinct path
+component matches, so &quot;foo/bar&quot; and &quot;foo:bar&quot; are identical
+if the separators are '/' and ':', respectively.&nbsp; Comparisons should be
+case-insensitive.<p align="left"><b>Adding/renaming:</b> Applications
+should prevent multiple records from having the same filename.
+<p align="left">&nbsp;</p>
+<h3 align="left">Pre-sized or not pre-sized</h3>
+<p align="left">The specification declares that filename threads and comments
+use pre-sized buffers.&nbsp; It does not define what other members of the
+message and filename classes are, which makes it difficult to know what to do
+with a request to create a heretofore undefined thread type.&nbsp; The NuFX
+format does not provide any definitive clue as to whether a thread is pre-sized,
+so such decisions must be based on the thread class and thread kind.</p>
+<p align="left">Filename threads and comment threads are pre-sized.&nbsp; All
+other threads are not pre-sized (including other members of the
+&quot;filename&quot; and &quot;message&quot; classes).</p>
+<p align="left">&nbsp;</p>
+<h3 align="left">Proper pre-size for filename threads</h3>
+<p align="left">ShrinkIt allocates a 32-byte pre-sized buffer for the
+filename.&nbsp; If the filename is larger than 32 bytes, the buffer grows to fit
+the filename exactly.&nbsp; If renaming files is considered useful, then the
+buffer should always be slightly larger than is needed to hold the
+filename.&nbsp; (Filenames longer than 32 characters are most likely the result
+of nested directories, so renaming the file itself is inhibited if the buffer
+length is an exact match.)
+<p align="left">Side note: GSHK appears to have a bug where it can't deal with
+32-byte HFS filenames (e.g. &quot;foo:abcdefghijabcdefghijabcdefghijxy&quot;
+can't be added to an archive).&nbsp; Emulating this behavior is discouraged.
+<p align="left"><b>Creating:</b> If GS/ShrinkIt compatibility is not important,
+all filenames should have at least 8 bytes of free space in the filename thread.&nbsp;
+For GSHK compatibility, the filename thread compThreadEOF must be the greater of
+32 and the filename length.</p>
+<p align="left"><b>Renaming:</b> It is acceptable to have fewer than 8 bytes of
+free space remaining after a file is renamed.&nbsp; However, if the filename
+itself exceeds the buffer size and the thread must be rebuilt, the 8-byte
+padding should be added.</p>
+<p align="left">&nbsp;</p>
+<h3 align="left">Thread ordering</h3>
+<p align="left">The NuFX specification does not require that threads appear in
+any particular order.&nbsp; However, writing them in a certain order can make
+some operations significantly easier.</p>
+<p align="left">For example, if an archive is being unpacked as it is received,
+it is important to know the filename before receiving the data.&nbsp; If the
+filename thread comes after the data threads, the application has to write the
+incoming data into a temp file, and then rename it later when the filename
+thread finally shows up.&nbsp; It would also be nice to be able to display file
+comments as the file is being downloaded.</p>
+<p align="left"><b>Creating:</b> The filename thread must precede all other
+threads.&nbsp; The recommended (but not required) ordering for common thread
+types is:</p>
+<ul>
+  <li>
+    <p align="left">Filename</li>
+  <li>
+    <p align="left">Message(s) (i.e. comments)</li>
+  <li>
+    <p align="left">Data fork</li>
+  <li>
+    <p align="left">Disk image</li>
+  <li>
+    <p align="left">Resource fork</li>
+  <li>
+    <p align="left">all other threads</li>
+</ul>
+<p align="left"><b>Extracting:</b> If the filename thread does not appear before
+the first data-class thread, the record may be ignored.</p>
+<p align="left">&nbsp;</p>
+<h3 align="left">Incompatible thread types</h3>
+<p align="left">There are some combinations of threads that must never appear in
+a single record.</p>
+<p align="left"><b>Creating:</b></p>
+<ul>
+  <li>
+    <p align="left">If a <b>data fork</b> is present, the record must not
+    contain another data fork or a disk image.</li>
+  <li>
+    <p align="left">If a <b>resource fork</b> is present, the record must not
+    contain another resource fork or a disk image.</li>
+  <li>
+    <p align="left">If a <b>disk image</b> is present, the record must not
+    contain another disk image, a data fork, or a resource fork.</li>
+  <li>
+    <p align="left">If a <b>control-class thread</b> is present, the record must
+    not contain any data-class threads.</li>
+</ul>
+<p align="left"><b>Extracting:</b> When incompatible threads are found, they
+should be ignored in favor of the earlier threads.&nbsp; For example, if two
+data forks are found in the same record, only the first one should be extracted.&nbsp;
+If a data-class thread is found first, subsequent control-class threads should
+be ignored, and vice-versa.</p>
+<p align="left">&nbsp;</p>
+<h3 align="left">Compressed threads</h3>
+<p align="left">Some threads are compressed, some aren't.&nbsp; The
+specification isn't very specific.</p>
+<p align="left">All data-class threads may be compressed.&nbsp; All other
+classes of threads must not be compressed.</p>
+<p align="left">&nbsp;</p>
+<h3 align="left">ProDOS storage type</h3>
+<p align="left">The ProDOS storage type has little meaning on most
+systems.&nbsp; However, certain values are significant.</p>
+<ul>
+  <li>
+    <p align="left">For records with <b>only a data fork</b>, the storage type
+    must be one of 0, 1, 2, or 3.&nbsp; The value &quot;2&quot; is recommended
+    for applications that don't wish to mimic ProDOS behavior exactly.</li>
+  <li>
+    <p align="left">For records with <b>a resource fork</b>, the storage type
+    must be &quot;5&quot; (ProDOS extended file).</li>
+  <li>
+    <p align="left">For records with a <b>disk image</b> thread, the storage
+    type must be equal to the disk block size (typically 512).</li>
+  <li>
+    <p align="left">For records <b>without data-class threads</b>, the storage
+    type must be &quot;0&quot;.</li>
+</ul>
+<p align="left">Storage type 0x0d, which is used by ProDOS for directories, must
+not be used.</p>
+<p align="left">It is important to update the storage type as threads are added
+and deleted, so that it always accurately reflects the contents of the record.</p>
+<p align="left">&nbsp;</p>
+<h3 align="left">Disk block size and block count</h3>
+<p align="left">For a compressed disk image, the &quot;storage_type&quot; and
+&quot;extra_type&quot; fields take on a different meaning, notably the block
+size (typically 512) and block count (e.g. 280 for a 140K disk) of the disk.</p>
+<p align="left">These fields are more important than you might expect, because
+some older versions of ShrinkIt would set the thread EOF to a strange value like
+68096 (which, curiously enough, is 133 * 512).&nbsp; These same versions of
+ShrinkIt tended to leave the &quot;storage_type&quot; set to 2.&nbsp;
+Apparently, ShrinkIt just used extra_type * 512 as the uncompressed size when
+trying to figure out what sort of disk it had.&nbsp; An early version of
+GS/ShrinkIt went one step further: it used a block count of 280 with a block
+size of 256, resulting in archives that apparently held 70K disk images.</p>
+<p align="left">It is simple enough to disregard the thread EOF value, and
+replace the storage_type when it is absurdly small, but there is a deeper
+problem.&nbsp; If you delete a 140K disk image thread and replace it with an
+800K disk image thread, the block count stored in the extra_type no longer
+accurately reflects the contents of the record.&nbsp; (This linkage between the
+record header and the thread contents is the reason why this document forbids
+mixing of disk image threads with any other data-class thread, including other
+disk images.)</p>
+<p align="left"><b>Creating:</b> Applications must update the extra_type
+whenever a disk image thread is added.&nbsp; The value (storage_type *
+extra_type) must be equal to the uncompressed size.&nbsp; The application may
+wish to reject threads that are not a multiple of 512 bytes.</p>
+<p align="left"><b>Extracting:</b> The application must normalize storage_type
+to 512 if it is less than 16 (0x0f is the largest possible ProDOS storage
+type).&nbsp; The value storage_type * extra_type must then be used as the
+uncompressed size.&nbsp; If the uncompressed size is zero, the thread may be
+ignored.</p>
+<p align="left">&nbsp;</p>
+<h3 align="left">Access permissions</h3>
+<p align="left">NuFX supports four boolean access permission flags (read, write,
+destroy, rename) and two boolean attributes (backup needed, invisible) in the
+&quot;access&quot; field.&nbsp; This matches up with ProDOS capabilities nicely,
+but very few other operating systems support all six.</p>
+<p align="left">Applications authors should consider the following approaches:</p>
+<ol>
+  <li>
+    <p align="left"><b>Preserve all.</b>&nbsp; All flags in the access field
+    must be preserved.&nbsp; It is not required that the extracted files obey
+    the original semantics -- an &quot;invisible&quot; file might be visible,
+    and a file with &quot;rename&quot; disabled might still be rename-able --
+    but when the files are re-added, the permissions must match.</li>
+  <li>
+    <p align="left"><b>Locked/unlocked.</b>&nbsp; A file with read enabled, and
+    write, destroy, rename, and invisible disabled, is considered
+    &quot;locked&quot; (access 0x01 or 0x21).&nbsp; All other files are
+    considered &quot;unlocked&quot;.&nbsp; When a file is extracted and then
+    added to an archive, the locked/unlocked status must be preserved.&nbsp;
+    Locked files are added with access 0x21, and unlocked files are added with
+    access 0xe3.</li>
+</ol>
+<p align="left">It is acceptable for an application to find a middle ground
+between these two, and preserve more of the flags accurately than approach #2
+does, but approach #2 should be considered the minimum acceptable level of
+support.</p>
+<p align="left">&nbsp;</p>
+<h3 align="left">Empty directories</h3>
+<p align="left">Directories do not need to be stored explicitly unless they are
+empty.&nbsp; The NuFX specification manages to avoid describing how directories
+are actually supposed to be stored, saying only: &quot;A Thread Record must exist to inform a utility that a directory is to
+be created through the use of the proper control_thread value.&quot;</p>
+<p align="left">What is in a &quot;create directory&quot; control thread?&nbsp;
+It appears that the intent was to have the thread contain the pathname that
+needed to be created.&nbsp; In theory, you could have several of these things,
+and create an entire hierarchy from a single record.&nbsp; Such threads should
+not be compressed, but their compThreadEOF should always match their threadEOF
+(i.e. they're not pre-sized).</p>
+<p align="left">It's a little tricky to say, &quot;add a control thread whenever
+you find a directory with nothing in it&quot;.&nbsp; What if the directory has
+files in it, but you don't have the access permissions necessary to read the
+files?</p>
+<p align="left">Does such a record require a filename?&nbsp; Probably not.&nbsp;
+However, if it doesn't have a filename, ShrinkIt might not display the record,
+and you'd have no way to manipulate it.&nbsp; Adding a &quot;record label&quot;
+is easy and useful.</p>
+<p align="left">(I'm strongly tempted to punt on the control threads and just
+use storage type 0x0d to indicate that a directory should be created.&nbsp; This
+is in direct opposition to the NuFX specification, however, so I'm reluctant to
+do so.)</p>
+<p align="left"><b>Creating:</b> Applications not interested in preserving empty
+directories need do nothing.&nbsp; Otherwise, the application must add a
+&quot;create directory&quot; control thread whenever a directory is encountered
+for which no files are added to the archive.</p>
+<p align="left"><b>Extracting:</b> A directory must be created when a control
+thread is present.&nbsp; As noted in the NuFX specification, the application
+must also create any directories listed in the record's pathname that don't yet
+exist.</p>
+<p align="left">&nbsp;</p>
+<h3 align="left">Message thread format</h3>
+<p align="left">The specification says that message threads are ASCII text, but
+doesn't specify an EOL character.&nbsp; For the benefit of Apple II utilities,
+it's best to use a carriage return (ctrl-M).</p>
+<p align="left"><b>Creating:</b> Convert any EOL markers to CR.</p>
+<p align="left"><b>Extracting:</b> Assume that the comment may be using CR, LF,
+or CRLF, and convert as needed for display.&nbsp; GS/ShrinkIt used a
+proportional font, so there is no need to worry about &quot;ASCII art&quot; in
+comments.</p>
+<p align="left">&nbsp;</p>
+<h3 align="left">GS/OS option lists</h3>
+<p align="left">Files archived from HFS AppleShare volumes come with
+&quot;option lists&quot;, a GS/OS feature that provides a way for non-ProDOS
+filesystem information to be preserved.&nbsp; GS/ShrinkIt tries to save this
+information, but it doesn't seem to do a very good job.&nbsp; It appears to drop
+a big chunk of the data without altering the size (e.g. the size field says 36
+bytes, but there's only space for 18 bytes in the record header).</p>
+<p align="left">GS/ShrinkIt seems to work correctly whether the option list size
+is correct or not, so other applications should do the same.</p>
+<p align="left"><b>Opening:</b> Assume the option_size field is correct
+unless it exceeds attrib_count-2.&nbsp; If it's too large, clip it down to size.</p>
+<p align="left"><b>Updating:</b> Always use the actual size.&nbsp; Do not
+propagate incorrect values.&nbsp; Discarding existing option lists is
+discouraged but allowed.</p>
+<p align="left">&nbsp;</p>
+<h3 align="left">Master EOF</h3>
+<p align="left">For the most part, ShrinkIt correctly sets the MasterEOF field
+in the Master Header block.&nbsp; A very old version of ShrinkIt left it set to
+zero (this is the same version that completely omitted the filename for DOS 3.3
+disk images).&nbsp; GS/ShrinkIt appears to initialize it to 48 (the size of the
+MH block), and if the creation process is interrupted you can end up with a
+partial archive with a nonzero EOF.</p>
+<p align="left"><b>Opening:</b> Accept a MasterEOF of zero, but reject a
+MasterEOF of 48.&nbsp; Don't assume the MasterEOF is accurate.</p>
+<p align="left"><b>Updating:</b> Applications must write the correct MasterEOF
+value if an archive is modified.</p>
+<hr>
+<h2 align="left">Extensions</h2>
+<p align="left">Unofficial extensions to the NuFX specification.&nbsp; Anyone
+working with NuFX archives should take heed.</p>
+<h3 align="left">New compression formats</h3>
+<p align="left">Thread formats 0x0000 through 0x0005 are already defined.&nbsp; The
+following thread format values have been added:</p>
+<ul>
+  <li>
+    <p align="left">0x0006 - deflate.&nbsp; The thread contains data conforming
+    to RFC 1951 (deflate1.3 specification).&nbsp; A more practical way of
+    putting it is it contains exactly the data that zlib v1.1.4 outputs.&nbsp; Visit <a href="http://www.zlib.org/">http://www.zlib.org/</a>
+    for more details.</li>
+  <li>
+    <p align="left">0x0007 - bzip2.&nbsp; The thread contains BWT+Huffman
+    compressed data as output by Julian Seward's &quot;libbz2&quot; v1.0.2.&nbsp; Visit
+    <a href="http://sources.redhat.com/bzip2/">http://sources.redhat.com/bzip2/</a>
+    for more information.</li>
+</ul>
+<p align="left">Support for these formats is nonexistent on the Apple II, so
+they should not be used except in situations where compatibility is unimportant
+(e.g. collections of disk archives for use with A2 emulators).</p>
+
+<p align="left">I found that &quot;deflate&quot; generally does as well or
+better than &quot;bzip2&quot; on Apple II binaries, disk images, and small text
+files.&nbsp; Deflate is also faster and uses less memory, and you're more likely
+to find libz installed on a given system than you are libbz2&nbsp; For these
+reasons, use of deflate should be encouraged in favor of bzip2.</p>
+
+<hr>
+<h2 align="left">NuFX Quirks</h2>
+<p align="left">This section identifies some quirks in NuFX or ShrinkIt that,
+while not bugs, are worth noting.</p>
+<h3 align="left">Filename separator character</h3>
+<p align="left">Originally, the filename was stored in the record header, so it
+made sense that the filename separator character (&quot;fssep char&quot;) should
+also be there.&nbsp; When the filenames were moved into threads, the fssep char
+got left behind.&nbsp; If a record has two filenames, they'd better have the
+same fssep char, or interpreting one of them will be impossible.&nbsp; (This is
+one of the reasons why it's important to clearly define which filename takes
+precedence in all circumstances.)</p>
+<h3 align="left">Files with zero or two CRCs</h3>
+<p align="left">The &quot;threadCRC&quot; field in the thread header block can
+have one of three meanings: nothing (v0, v1), the CRC of the compressed data
+(v2), or the CRC of the uncompressed data (v3).&nbsp; The version 2 meaning
+wasn't used in anything significant, and can be ignored.</p>
+<p align="left">Version 1 records generally have threads compressed with LZW/1
+data.&nbsp; The LZW/1 compression format includes a 16-bit CRC at the start of
+the thread.&nbsp; Version 3 records generally have threads compressed with LZW/2
+data, which does not include a CRC.</p>
+<p align="left">Applications like P8 ShrinkIt and NuLib creation v1 records and
+compress with LZW/1, while GS/ShrinkIt and NuLib2 create v3 records and compress
+with LZW/2.&nbsp; This means that each compressed thread has exactly one CRC.&nbsp;
+So what happens if you tell NuLib2 to create a new record with
+LZW/1, or tell it to add a new LZW/2 thread to an existing v1 record?</p>
+<p align="left">In one case, you end up with two CRCS; in the other, you end up
+with no CRC on your data at all.&nbsp; For some bizarre reason, the v3 thread
+CRC is computed with a different initial value, so it is necessary to compute
+the CRC twice, not merely store the same value twice.</p>
+<p align="left">Please select your compression methods appropriately.&nbsp;
+Also, bear in mind that uncompressed data stored with P8 ShrinkIt has no CRC
+whatsoever.</p>
+<h3 align="left">Extra data in compressed threads</h3>
+<p align="left">ShrinkIt adds an extra byte at the end of all LZW compressed
+data, probably due to an off-by-one bug in the compression code.&nbsp; It turns
+out that it's possible to get even more &quot;extra&quot; bytes at the end.</p>
+<p align="left">ShrinkIt's LZW-I algorithm always operates on a 4K buffer,
+largely because it was originally designed for compressing 5.25&quot; disks with
+4K tracks.&nbsp;
+On small files, or at the end of a large one, the last bit of data is padded out
+to 4K and then compressed.&nbsp; Ordinarily this is barely noticeable, because
+the compression routines do an RLE (Run-Length Encoding) pass before applying
+LZW.</p>
+<p align="left">However, if both RLE and LZW fail to make the 4K block any
+smaller, it is stored without compression.&nbsp; This means the whole 4K,
+complete with padding, gets written to the archive.&nbsp; This doesn't cause any
+problems, but can make you wonder where all the extra bits came from.</p>
+<p align="left">The SQ compression algorithm, as implemented by Don Elton's SQ3,
+appears to add an extra 0xff to the end of the compressed data.&nbsp; It can
+safely be ignored.</p>
+<h3 align="left">Preserving BXY and SEA wrappers</h3>
+<p align="left">Preserving BXY wrappers is pretty easy, since the Binary II
+format is well documented.&nbsp; Updating block counts and file lengths is all
+that is required.</p>
+<p align="left">Preserving SEA wrappers is a little harder, since (as far as I
+can tell) there is no documentation on the format.&nbsp; A little
+experimentation shows that the SEA header is always 12005 bytes long, and the
+only part that changes from file to file is a short piece right before the NuFX
+archive begins.</p>
+<p align="left">It is necessary to update the file length in three different
+places, all right next to each other, one of which is offset by 64 bytes.&nbsp;
+I would guess the header allows for more than one archive to be present, but
+since such things have never actually been created, the possibility can be
+ignored.</p>
+<h3 align="left">Y2K</h3>
+<p align="left">The NuFX standard says that the Date/Time format is the same as
+that returned by the IIgs ReadTimeHex toolbox call.&nbsp; That call returns the
+year as (year - 1900), so the year 2000 is stored as &quot;100&quot;.&nbsp;
+ProDOS 8 clock drivers, on the other hand,&nbsp; return 40-99 for 1940-1999, and
+0-39 for 2000-2039.&nbsp; As a result, archives created with P8 ShrinkIt use 0
+for the year 2000 instead of 100.</p>
+<p align="left">When creating archives, always use 100 for the year 2000, but
+also accept the year 0.&nbsp; However, if you find a Date/Time with zero in all
+useful fields (second, minute, hour, day, month, year), treat it as an
+unspecified date rather than midnight of January 1, 2000.</p>
+<hr>
+<p>This document is Copyright © 2000-2004 by <a href="http://www.fadden.com/">Andy
+McFadden</a>.&nbsp; All Rights Reserved.</p>
+<p>The latest version can be found on the NuLib web site at
+<a href="http://www.nulib.com/">http://www.nulib.com/</a>.</p>
+<!--msnavigation--></td></tr><!--msnavigation--></table></body>
+
+</html>

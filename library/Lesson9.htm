@@ -1,0 +1,353 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<meta name="GENERATOR" content="Microsoft FrontPage 4.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>Hacking Data Compression - Lesson 9</title>
+<meta name="Microsoft Border" content="t, default">
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000"><!--msnavigation--><table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td>
+
+<p align="center"><font size="6"><strong></strong></font><br>
+</p>
+<hr>
+
+</td></tr><!--msnavigation--></table><!--msnavigation--><table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><!--msnavigation--><td valign="top">
+<h2>Hacking Data Compression - Lesson 9</h2>
+<p><a href="index.htm">Back to nulib.com library</a></p>
+<hr><pre>
+Hacking Data Compression  Lesson 9  NuFX and ShrinkIt
+By Andy McFadden
+GEnie A2Pro Apple II University - Copyright (C) 1992 GEnie
+
+
+This week's lesson is about the de facto archiving standard for the
+Apple II world: NuFX, as implemented by ShrinkIt and GS/ShrinkIt.
+There are a variety of other programs, like ][+ ShrinkIt,
+Auto-Unshrink, NuLib, NuPak, and YankIt, but they all handle the same
+archive format.
+
+The information covered here will be of interest to people who want to
+write software that works with NuFX archives.  If you're only
+interested in general data compression, you can probably skip this
+one.
+
+-=O=-     ShrinkIt
+
+Back in the Olden Days, the format for storage and transmission of
+data was Binary II (abbreviated &quot;BNY&quot;, and occasionally referred to as
+&quot;bunny&quot; format).  It arranged things on 128-byte boundaries for the
+convenience of terminal programs, and is still used today for that
+purpose.  Actually, it was primarily meant as a way to retain the
+filetype, auxtype, and other goodies associated with a file, much like
+MacBinary for the Macintosh, but it also worked okay as an archive
+format.
+
+What made it Really Cool was the Huffman + RLE compressor which was,
+well, almost built in to the Binary II Library Utility (BLU).  It did
+a reasonable job of making things smaller, and in a modest amount of
+time.  It was called SQueezed compression, which somehow got
+abbreviated &quot;.QQ&quot;.  Archives with squeezed files in them were &quot;.BQY&quot;.
+
+However, it was really depressing to log onto a UNIX system and watch
+UNIX compress crunch files into nothing.  So, one fine day, a skinny
+little college student named Andy Nicholas, and a taller but still
+rather slim guy named Kent Dickey decided it would be a really neat
+thing to do LZW on the Apple II.
+
+Since the IIgs and System 4.0 had been released, it was apparent that
+the old BNY format was missing a few pieces.  Specifically, it had no
+clear provision for forked files, file comments, other file systems,
+and the expanded size of the stuff that GS/OS was returning in
+GetFileInfo calls.  So, with some suggestions from a few dozen
+Apple II personalities, the NuFX format came into being.
+
+(Sounds pretty dramatic, huh?  Hmm, maybe I should write fiction...)
+
+And so it came to pass that ShrinkIt was born.  It took a little while
+to work all the kinks out, but before long it was recognized that the
+program worked faster and packed better than the old SQueezed format.
+When Binary II support was added, the fate of BLU and its ilk was
+sealed.
+
+One interesting bit of history is that the LZW routines were initially
+meant for a program like DDD (Dalton's Disk Disintegrator), i.e. a
+*disk* packer which happened to pack files as well.  This caused some
+interesting twists in the design.
+
+-=O=-     Details, Details
+
+The first implementation of LZW was designed around packing a 5.25&quot;
+disk using as little memory as possible.  The strategy was to grab 4K
+chunks (the size of a single track on a 5.25&quot; floppy), put it through
+an RLE pass (since tracks were often filled with zeros, this was very
+effective), and then an LZW pass.  If the RLE or LZW pass failed, it
+would be omitted.  If both failed, the block was stored without
+compression.  A few bits at the start of each chunk in the compressed
+output held the information.
+
+It turns out that putting a typical file through an RLE pass first
+doesn't really do you much good, though it isn't likely to do much
+harm.  Mostly it just slows things down, unless the file is filled
+with a single character.  In some cases it can make things slightly
+worse, because LZW is encoding the three-byte RLE codes instead of
+encoding long strings of zeros with a single 9 to 12-bit symbol.  If
+more or all of a *disk* track is empty, RLE is a win, but it just
+doesn't happen all that often in text files.
+
+The LZW encoder was reset after every 4K of *input*, which meant that
+it never had a chance to get completely full, and some of the 12-bit
+code space was wasted.  However, this limited the maximum height of
+the tree considerably.  For example, 4K of zeros can be compressed by
+a degenerate tree with 91 nodes in it.  Since RLE would compress such
+a chunk, to get the worst case you have to alternate characters, so
+the worst you can get is around 64.  This meant that the LZW stack
+required well under 100 bytes instead of 4096, and the loss in
+compression wasn't too unpleasant.
+
+The other nice feature is that, since the LZW table can't get
+completely full, there's no need for explicit (or implicit) table
+clears.  The whole thing just gets wiped on 4K boundaries.
+
+To find the end of the data, the size of the output was stored.
+(Recall there are three ways of knowing when to stop: an explicit stop
+character, knowing the size of the input, and knowing the size of the
+output.)  The LZW code given in lesson 8 used an explicit &quot;end of
+file&quot; code because I thought it was more interesting to do it that
+way, and because it works on a stream of data (you can't seek back and
+write the length bytes on a continuous stream... but since ShrinkIt
+knows the data will be &lt; 4K, it can just stuff the bytes in before it
+writes to disk).
+
+This scheme was eventually referred to as &quot;LZW-I&quot;, and is still used
+by the ][+ and //e versions of ShrinkIt.
+
+-=*=-
+
+When writing GS/ShrinkIt, Andy Nicholas decided to hunker down and do
+LZW with table clears and all the fancy nonsense.  However, he kept
+the 4K boundaries, which made things a bit confusing (and led to a bug
+which hung around in GSHK, NuLib, and YankIt until rather recently).
+
+Basically, the input was still read in 4K chunks, and the RLE pass was
+still done.  As before, the LZW pass was done on either the original
+4K or the RLE output, depending on whether or not RLE helped.  The
+difference was that the table clears were no longer done after the end
+of the input.  Instead, an explicit table clear code ($100) was sent
+whenever the table filled.  To avoid having to make a copy of the
+table on every chunk, the table was also cleared whenever LZW failed
+to compress a piece of the file.
+
+Of course, now the decoder stack had to be 4K, and all the fun with
+the table clears had to be added in.  The long-lasting bug mentioned
+earlier occurred whenever a chunk ended after a table clear plus one
+character - if you look at the LZW decoder, you'll see that it grabs
+the first character, sets the prefix to that, and then plows onward.
+So the decoder was grabbing the first character, reaching the end of
+input, and then restarting with the next chunk by grabbing the first
+character again.  This isn't an issue if you don't chop things into 4K
+pieces, which is why you don't see it mentioned in the class stuff.
+
+So, LZW-II has all the advantages of an encoder which doesn't break
+the input into pieces, and retains its heritage as a disk compressor.
+One nice feature of the &quot;chunking&quot; is that it enables files with tough
+spots in them to be compressed better.  Suppose you have a file with
+three pieces, call them A, B, and C.  Let A and C be squishy text-like
+substance, while B is essentially random digitized sound.  Even if we
+get 50% compression in A and C, B could expand by some amount (say,
+25%), reducing or even nullifying the compression of A and C.  By
+storing the tough parts without compression, the only increase in B's
+size is the few bits of overhead needed to identify it as
+uncompressed.
+
+This slightly anachronistic &quot;chunking&quot; behavior can help significantly
+for some kinds of files.  By reducing the overhead to only a few bytes
+per 4K chunk, ShrinkIt will almost always do better than the simple
+LZW encoder given in class.  The price is greater complexity in the
+compressor and decompressor, and a few bytes of overhead in the file.
+
+If you want to see what effect the improvements had, compress some
+files with ShrinkIt and then compress them with GS/ShrinkIt.  The
+difference tends to be small, which is counter to intuition, since LZW
+does poorly at the start.
+
+-=*=-
+
+This section explains the format of the LZW-I and LZW-II compressed
+threads. To find out what &quot;threads&quot; are, you'll need to consult the
+NuFX file type note.
+
+LZW-I looks like this:
+
++0   (word) 16-bit CRC for the uncompressed data
++2   (byte) disk volume # (remember, it started as a 5.25 disk packer)
++3   (byte) RLE escape char, usually 0xdb
+
++4   a series compressed chunks, each built from 4K of input.  Each
+     chunk starts with the following:
+
+++0  (word) size of data after RLE but before LZW (will be 4096
+     if RLE wasn't used)
+++2  (byte) LZW flag - zero if LZW not used
+++3  compressed data
+
+So something packed with only RLE would have a size != 4096 and an LZW
+flag of zero.  LZW only would have a size == 4096 and LZW flag not
+equal to zero.  RLE+LZW and storing without compression can be
+expressed by juggling things.  The value at ++0 is used to decide when
+the LZW uncompressor should stop.
+
+The CRC is computed on the uncompressed data.  If the last piece of
+the file doesn't fill an entire 4K chunk, then the rest of the 4K
+chunk is filled with zeros.  The ENTIRE chunk is compressed, zeros and
+all, and the CRC includes the extra zeros.
+
+The actual LZW compression works like it did in class, with the
+modifications described earlier.  Even though no explicit table clears
+are used, the codes begin at $101.
+
+
+LZW-II looks like this:
+
++0   (byte) disk volume #
++1   (byte) RLE escape char, usually 0xdb
+
++2   a series compressed chunks, each built from 4K of input.  Each
+     chunk starts with the following:
+
+++0  (word) size of data after RLE but before LZW (will be 4096
+     if RLE wasn't used).  The hi bit is used as the LZW flag,
+     i.e. $8000 is ORed in if LZW is used.
+++2  (word) if and only if LZW is used, an extra length word is added
+     here, which gives the total length of the compressed data after
+     BOTH RLE and LZW.
+++2  or
+++4  compressed data
+
+The reason for the extra length word is to provide a way to recover
+pieces of a file even if one of the chunks has been corrupted.  With
+LZW-I, there's no way to identify the start of a chunk; with LZW-II,
+you can seek from the current chunk header to the next.  The value
+isn't actually needed by the decompressor.  If only RLE is used, then
+the size at ++0 will be accurate, so it's omitted from the output.
+
+Notice that there's no CRC included in the header.  This is because
+the CRC was moved to the thread header.  It's computed with an initial
+seed of 0xffff (for historical reasons), and is computed on the
+original file.  It does NOT include the zeros used to pad things to 4K
+boundaries.
+
+-=O=-     Knowne Implementations of NuFX Programmes
+
+- ShrinkIt (a/k/a &quot;P8 ShrinkIt&quot;).  Runs on enhanced //e, //c, IIgs.
+Requires 65c02.  Packs with LZW-I, unpacks LZW-I and LZW-II.
+
+- GS/ShrinkIt.  Runs on IIgs only.  Packs with LZW-II, unpacks LZW-I
+and II.  Also handles several other file formats, including .Z (UNIX
+compress) and .ARC.
+
+- ShrinkIt ][+ and UnShrinkIt ][+.  Run on any Apple II, including
+Apple ][+.  One packs, the other unpacks.
+
+- Auto-Unshrink.  Runs on any Apple II (?).  Sort of a strange
+concept, but what the heck.  Notable feature is a certain amount of
+error recovery for damaged archives (it knows about and will use the
+extra length word included for LZW-II).
+
+- NuLib.  Shell-based, runs on darn near anything.  Packs with LZW-I,
+unpacks LZW-I, LZW-II, and UNIX compress (yes Virginia, you can have
+files packed with UNIX compress in a ShrinkIt archive... you just
+can't unpack them with anything else).
+
+- NuPak.  Started out like NuLib and GS/ShrinkIt slammed together at
+high speed, but never went anywhere.  The $15 shareware fee and the
+release of GSHK probably did it in.
+
+- YankIt.  Shell-based, IIgs only.  Unpacks LZW-I and II, does not
+pack at all.  Faster (and smaller) than the others.
+
+-=O=-     PROGRAM
+
+Being the author of both NuLib and YankIt, you'd figure I'd have some
+decent sample source code to give away.  However, it shapes up like
+this:
+
+- NuLib wasn't so much written as it was &quot;evolved.&quot;  It started out as
+an archive viewer, and expanded into a rather grotesque archiver.  It
+looks okay on the outside, but the innards are a mess.  Fortunately,
+it was written in C.
+
+- YankIt is a cute little bare-bones archive viewer and extractor.  It
+fit into about 6000 lines of assembly, and took under a month to
+design, implement, and test.  My original intent was to release the
+complete source code with this lesson, but some bugs have been found
+and I haven't had the time to fix them, test it, etc, etc.
+
+So, this means I'm going to flake and just point you at some useful
+stuff.  I'll get the YankIt sources out eventually.
+
+-=*=-
+
+First of all, the definitive reference on the NuFX format is the
+filetype note for $e0/8002, which can be found in GEnie's A2Pro
+library.  The not-quite-so-definitive-anymore reference is in the
+article AndyN wrote for the Winter 1990 Call-A.P.P.L.E.  The article
+also contains a bit of history about NuFX and ShrinkIt.
+
+The NuLib source code, which contains a bug in the stack declaration
+(only 100 bytes - correct for LZW-I, but not LZW-II, which should be
+4096), can be found in the A2Pro library on GEnie, and on the
+cco.caltech.edu anonymous FTP site.
+
+NuLib executables for the IIgs and MS-DOS can also be found on GEnie,
+in the appropriate sections.  Documentation for the MS-DOS version got
+renamed to &quot;NULIB.SHK&quot; or something equally meaningless.  The file
+comment is also wrong; use &quot;nulib xvt0 nulib.shk&quot; to convert the line
+terminators from CR to CRLF.  (It says to use &quot;xvt2&quot;, which would
+convert CRLF to CRLF - a slightly silly thing to do.)  NuLib has a
+whole pile of options, and would be a great program if the source code
+weren't so ugly.
+
+(Hey, I started it a year after I started learning C, and well before
+I figured out how LZW worked... be charitable.)
+
+The YankIt executable can be found in GEnie's A2 section.  This
+contains the same stack bug found in NuLib, but it's smart enough to
+complain about the archive being corrupted and bail without scrubbing
+itself.  It's got a nice &quot;integrity check&quot; feature which runs through
+and uncompresses every file, checking CRCs, but doesn't actually store
+them anywhere.  NuLib acts like it has a similar feature, but it lies.
+GSHK should have a similar feature, but I caught AndyN too close to
+the shipping date of v1.1.
+
+Since NuLib and YankIt are shell-based, and I didn't want to add the
+code to correctly handle disk archives, they extract disks as a single
+file.  This can be useful for UNIX and MS-DOS Apple II emulators which
+require disk-files.  Note that ShrinkIt uses ProDOS sector mapping, so
+the disks will work fine for the known UNIX emulators, but not for the
+MS-DOS emulator (which expects DOS 3.3 sector ordering).  There are
+programs available which change the order around.
+
+-=O=-     DEEP THOUGHTS
+
+- What are the advantages of writing an archiver which processes
+archive entries individually instead of reading them all at once?
+(hint: &quot;yankit xv - &lt; file.shk&quot;)
+
+- Is 4096 the optimal size for stopping and checking compression
+progress?
+
+- How does ShrinkIt's &quot;checkpoint every 4K&quot; compare to v.42bis?  (see
+lesson 8 for details on v.42bis)
+
+- Why does ShrinkIt clear the table after a chunk fails to compress
+with LZW?  What would you have to do to avoid doing so?
+
+-=!=-
+</pre><hr>
+<address>This document is Copyright by Genie and Andy McFadden</address>
+<!--msnavigation--></td></tr><!--msnavigation--></table></body>
+
+</html>

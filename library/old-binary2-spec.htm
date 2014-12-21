@@ -1,0 +1,405 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<meta name="GENERATOR" content="Microsoft FrontPage 4.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>Binary ][ Protocol</title>
+<meta name="Microsoft Border" content="t, default">
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000"><!--msnavigation--><table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td>
+
+<p align="center"><font size="6"><strong></strong></font><br>
+</p>
+<hr>
+
+</td></tr><!--msnavigation--></table><!--msnavigation--><table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><!--msnavigation--><td valign="top">
+<h2>Binary ][ Specification -- Initial Release</h2>
+<p>This is an older version of the specification.  Please use the
+<a href="FTN.e08000.htm">File Type Note</a> instead.</p>
+<p><a href="index.htm">Back to nulib.com library</a></p>
+<hr><pre>
+                           Binary ][ protocol
+ 
+                              developed by
+                             Gary B. Little
+ 
+ Version History
+ ---------------
+ November 24, 1986  : Initial release.
+ 
+ Background
+ ----------
+ Transferring Apple II files in binary form to commercial information
+ services like CompuServe, Delphi, GEnie, and The Source is, to put it
+ mildly, a frustrating exercise. (For convenience, I'll refer to such
+ services, and any other non-Apple II systems, as "hosts.") Although
+ most hosts are able to receive a file's *data* in binary form (using
+ the Xmodem protocol, for example), they don't receive the file's all-
+ important attribute bytes. All the common Apple II operating systems,
+ notably ProDOS, store the attributes inside the disk directory, not
+ inside the file itself.
+ 
+ The ProDOS attributes are the access code, file type code, auxiliary
+ type code, storage type code, date of creation and last modification,
+ time of creation and last modification, the file size, and the name of
+ the file itself. (All these terms are defined in Apple's "ProDOS
+ Technical Reference Manual" or in the book "Apple ProDOS: Advanced
+ Features for Programmers" by Gary Little.) It is usually not possible
+ to use a ProDOS file's data without knowing what the file's attributes
+ are (particularly the file type code, auxiliary type code, and size).
+ This means ProDOS files uploaded in binary form to a host are useless
+ to those who download them. The same is true for DOS 3.3 and Pascal
+ files.
+ 
+ Most Apple II communications programs use special protocols for
+ transferring file attributes during a binary file transfer, but none
+ of these protocols have been implemented by hosts. These programs are
+ only useful for exchanging files with another Apple II running the
+ same program.
+ 
+ At present, the only acceptable way to transfer an Apple II file to a
+ host is to convert it into lines of text and send it as a textfile.
+ Such a textfile would contain a listing of an Applesoft program, or a
+ series of Apple II system monitor "enter" commands (e.g., 0300:A4 32
+ etc.). Someone downloading such a file can convert it to binary form
+ using the Applesoft EXEC command.
+ 
+ The main disadvantage of this technique is that the text version of
+ the file is over three times the size of the original binary file,
+ making it expensive (in terms of time and $$$) to upload and download.
+ It is also awkward, and sometimes impossible, to perform the binary-
+ to-text or text-to-binary conversion.
+ 
+ The solution to the problem is to upload an encoded binary file which
+ contains not just the file's data, but the file's attributes as well.
+ Someone downloading such a file, say using Xmodem, can then use a
+ conversion program to strip the attributes from the file and create a
+ file with the required attributes.
+ 
+ To make this technique truly useful, however, the Apple II community
+ must agree on a format for this encoded binary file. A variety of
+ incompatible formats, all achieving the same general result, cannot be
+ allowed to appear.
+ 
+ It is proposed that the Binary II format described in this document be
+ adopted. What follows is a description of the Binary II format in
+ sufficient detail to allow software developers to implement it in
+ Apple II communications programs.
+ 
+ The Binary II File Format
+ -------------------------
+ The Binary II form of a standard file consists of a 128-byte file
+ information header followed by the file's data. The data portion of
+ the file is padded with nulls ($00 bytes), if necessary, to ensure the
+ data length is an even multiple of 128. As a result, the Binary II
+ form of a file is never more than 255 bytes longer than the original
+ file.
+ 
+ The file information header contains four ID bytes, the attributes of
+ the file (in ProDOS 8 form), and some control information. Here is the
+ structure of the header:
+ 
+       Offset  Length                  Contents
+       ------  ------   ---------------------------------------
+        +0       1      ID byte: always $0A
+        +1       1      ID byte: always $47
+        +2       1      ID byte: always $4C
+        +3       1      access code
+        +4       1      file type code
+        +5       2      auxiliary type code
+        +7       1      storage type code
+        +8       2      size of file in 512-byte blocks
+        +10      2      date of modification
+        +12      2      time of modification
+        +14      2      date of creation
+        +16      2      time of creation
+        +18      1      ID byte: always $02
+        +19      1      [reserved]
+        +20      3      end-of-file (EOF) position
+        +23      1      length of filename/partial pathname
+        +24      64     ASCII filename or partial pathname
+        +88      23     [reserved, must be zero]
+        +111     1      ProDOS 16 access code (high)
+        +112     1      ProDOS 16 file type code (high)
+        +113     1      ProDOS 16 storage type code (high)
+        +114     2      ProDOS 16 size of file in blocks (high)
+        +116     1      ProDOS 16 end-of-file position (high)
+        +117     4      disk space needed
+        +121     1      operating system type
+        +122     2      native file type code
+        +124     1      phantom file flag
+        +125     1      data flags
+        +126     1      Binary II version number
+        +127     1      number of files to follow
+ 
+ Multi-byte numeric quantities are stored with their low-order bytes
+ first, the same order expected by ProDOS. All reserved bytes must be
+ set to zero; they may be used in future versions of the protocol.
+ 
+ To determine the values of the attributes to be put into a file
+ information header for a ProDOS file, you can use the ProDOS
+ GET_FILE_INFO and GET_EOF MLI commands.
+ 
+    Note: Some file attributes returned by ProDOS 16 commands
+          are one or two bytes longer than the attributes
+          returned by the corresponding ProDOS 8 commands. At
+          present, these extra bytes are always zero, and
+          probably will remain zero forever. In any event,
+          place the extra bytes returned by ProDOS 16 in the
+          header at +114 to +119. ProDOS 8 communications
+          programs should zero these header locations.
+ 
+ The "disk space needed" bytes contain the number of 512-byte disk
+ blocks the files inside the Binary II file will occupy after they've
+ been removed from the Binary II file. (The format of a Binary II file
+ containing multiple files is described below.) If the number is zero,
+ the person uploading the file did not bother to calculate the space
+ needed. The "disk space needed" must be placed in the file information
+ header for the first file inside the Binary II file; it can be set to
+ zero in subsequent headers. A downloading program can inspect "disk
+ space needed" and abort the transfer immediately if there isn't enough
+ disk free space.
+ 
+ The value of the "operating system type" byte indicates the native
+ operating system of the file:
+ 
+         $00 = ProDOS 8, ProDOS 16, or SOS
+         $01 = DOS 3.3
+         $02 = Pascal
+         $03 = CP/M
+         $04 = MS-DOS
+ 
+ Note that even if a file is not a ProDOS file, the attributes in the
+ file information header, including the name, must be inserted in
+ ProDOS form. Instructions on how to do this for DOS 3.3 files are
+ given later in this document. Similar considerations apply for the
+ files of other operating systems.
+ 
+ The "native file type code" has meaning only if the "operating system
+ type" is non-zero. It is set to the actual file type code assigned to
+ the file by its native operating system. (Some operating systems, such
+ as CP/M and MS-DOS, do not use file type codes, however.) Contrast
+ this with the file type code at +4, which is the closest equivalent
+ ProDOS file type code. The "native file type code" is needed to
+ distinguish files which have the same *ProDOS* file type, but which
+ may have different file types in their native operating system. Note
+ that if the file type code is only byte long (the usual case), the
+ high-order byte of "native file type code" is set to zero.
+ 
+ The "phantom file flag" byte indicates whether a receiver of the
+ Binary II file should save the file which follows (flag is zero) or
+ ignore it (flag is non-zero). It is anticipated that some
+ communications programs will use phantom files to pass non-essential
+ explanatory notes or encoded information which would be understood
+ only by a receiver using the same communications program. Such
+ programs must not rely on receiving a phantom file, however, since
+ this would mean they couldn't handle Binary II files created by other
+ communications programs.
+ 
+ The first two bytes in a phantom file *must* contain an ID code unique
+ to the communications program. Developers must obtain ID codes from
+ Gary Little to ensure uniqueness (see below for his address). Here is
+ a current list of approved ID codes for phantom files used by Apple II
+ communications programs:
+ 
+         $00 $00  =  [generic]
+         $00 $01  =  Point-to-Point
+         $00 $02  =  Tele-Master Communications System
+ 
+ Developers of communications programs are responsible for defining and
+ publishing the structures of their phantom files.
+ 
+ The ID bytes appear in the first two bytes of the phantom file.
+ Phantom files having a generic ID code of zero must contain lines of
+ text terminated by a $00 byte. The text must begin at the third byte
+ in the file.
+ 
+ The "data flags" byte is a bit vector indicating whether the data
+ portion of the Binary II file has been compressed, encrypted, or
+ packed. If bit 7 (the high-order bit) is set to 1, the file is
+ compressed. If bit 6 is 1, the file is encrypted. If bit 0 is 1, the
+ file is a sparse file that is packed. A Binary II downloading program
+ can examine this byte and warn the user, when necessary, that the file
+ must be expanded, decrypted, or unpacked. The person uploading a
+ Binary II file may use any convenient method for compressing,
+ encrypting, or packing the file but is responsible for providing
+ instructions on how to restore the file to its original state.
+ 
+ This initial release of Binary II has a "Binary II version number" of
+ $00.
+ 
+ Handling Multiple Files
+ -----------------------
+ An appealing feature of Binary II is that a single Binary II file can
+ hold multiple disk files, making it easy to keep a group of related
+ files "glued" together when they're sent to a host.
+ 
+ The structure of a Binary II file containing multiple disk files is
+ what you might expect: it is a series of images of individual Binary
+ II files. For example, here is the general structure of a Binary II
+ file containing three disk files:
+ 
+  start                                                           end
+  -------------------------------------------------------------------
+  | Header #1 | #1 Data | Header #2 | #2 Data | Header #3 | #3 Data |
+  -------------------------------------------------------------------
+    +127 = 2              +127 = 1              +127 = 0
+ 
+ The data areas following each header end on a 128-byte boundary.
+ 
+ The "number of files to follow" byte (at offset 127) in the file
+ information header for each disk file contains the number of disk
+ files that follow it in the Binary II file. It will be zero in the
+ header for the last disk file in the group.
+ 
+ Filenames and Partial Pathnames
+ -------------------------------
+ Notice that you can put a standard ProDOS filename or a partial
+ pathname in the file information header (but never a complete
+ pathname). *Beware!* Don't use a partial pathname unless you've
+ included, earlier on in the Binary II file, file information headers
+ for each of the directories referred to in the partial pathname. Such
+ a header must have its "end of file position" bytes set to zero, and
+ no data blocks for the subdirectory file must follow it.
+ 
+ For example, if you want to send a file whose partial pathname is
+ HELP/GS/READ.ME, first send a file information header defining the
+ HELP/ subdirectory, then one defining the HELP/GS/ subdirectory. If
+ you don't, someone downloading the Binary II file won't be able to
+ convert it because the necessary subdirectories will not exist.
+ 
+ Filename Convention
+ -------------------
+ Whenever a file is sent to a host, the host asks the sender to provide
+ a name for it. If it's a Binary II file, the name provided should end
+ in .BNY so that its special form will be apparent to anyone viewing a
+ list of filenames.
+ 
+ Identifying Binary II Files
+ ---------------------------
+ ose the ProDOS
+ file. You would repeat this for each file contained inside the Binary
+ II file.
+ 
+    Note: The number of 128-byte data blocks following the
+          file information header must be derived from the
+          "end-of-file position" attribute (EOF) not the "size
+          of file in blocks" attribute. Calculate the number
+          by dividing EOF by 128 and adding one to the result
+          if EOF is not 0 or an exact multiple of 128.
+ 
+ Exception: If the file information header defines a subdirectory (the
+ file type code is 15), simply CREATE the subdirectory file. Do not
+ OPEN it and do not set its size with SET_EOF.
+ 
+ Ideally, all this conversion work will be done automatically by a
+ communications program during an Xmodem (or other binary protocol)
+ download. If not, a separate conversion program will have to be run
+ after the Binary II file has been received and saved to disk. Gary
+ Little has published a public domain program, called BINARY.DWN, that
+ will do this for you. (A related program, BINARY.UP, combines multiple
+ ProDOS files into one Binary II file which can then be uploaded to a
+ host.)
+ 
+ DOS 3.3 Considerations
+ ----------------------
+ With a little extra effort, you can also convert DOS 3.3 files to
+ Binary II form. This involves translating the DOS 3.3 file attributes
+ to the corresponding ProDOS attributes so that you can build a proper
+ file information header. Here is how to do this:
+ 
+    (1) Set the name to one that adheres to the stricter ProDOS naming
+        rules.
+ 
+    (2) Set the ProDOS file type code, auxiliary type code, and access
+        code to values which correspond to the DOS 3.3 file type:
+ 
+           DOS 3.3  |   ProDOS     ProDOS    ProDOS
+          file type | file type   aux type   access
+         -----------|----------- ---------- --------
+          $00 ( T)  | $04 (TXT)    $0000      $E3
+          $80 (*T)  | $04 (TXT)    $0000      $21
+          $01 ( I)  | $FA (INT)    $0C00      $E3
+          $81 (*I)  | $FA (INT)    $0C00      $21
+          $02 ( A)  | $FC (BAS)    $0801      $E3
+          $82 (*A)  | $FC (BAS)    $0801      $21
+          $04 ( B)  | $06 (BIN)     (*)       $E3
+          $84 (*B)  | $06 (BIN)     (*)       $21
+          $08 ( S)  | $06 (BIN)    $0000      $E3
+          $88 (*S)  | $06 (BIN)    $0000      $21
+          $10 ( R)  | $FE (REL)    $0000      $E3
+          $90 (*R)  | $FE (REL)    $0000      $21
+          $20 ( A)  | $06 (BIN)    $0000      $E3
+          $A0 (*A)  | $06 (BIN)    $0000      $21
+          $40 ( B)  | $06 (BIN)    $0000      $E3
+          $C0 (*B)  | $06 (BIN)    $0000      $21
+ 
+          (*) Set the aux type for a B file to the
+              value stored in the first two bytes
+              of the file (this is the default load
+              address).
+ 
+     (3) Set the storage type code to $01.
+ 
+     (4) Set the size of file in blocks, date of creation, date of
+         modification, time of creation, and time of modification to
+         $0000.
+ 
+     (5) Set the end-of-file position to the length of the DOS 3.3
+         file, in bytes. For a B file (code $04 or $84), this number is
+         stored in the third and fourth bytes of the file. For an I
+         file (code $01 or $81) or an A file (code $02 or $82), this
+         number is stored in the first and second bytes of the file.
+ 
+     (6) Set the operating system type to $01.
+ 
+     (7) Set the native file type code to the value of the DOS 3.3 file
+         type code.
+ 
+ Attribute bytes inside a DOS 3.3 file (if any) must *not* be included
+ in the data portion of the Binary II file. This includes the first
+ four bytes of a B (Binary) file, and the first two bytes of an A
+ (Applesoft) or I (Integer BASIC) file.
+ 
+ Acknowledgements
+ ----------------
+ Thanks to Glen Bredon for suggesting that partial pathnames be allowed
+ in file information headers. Thanks also to Shawn Quick for suggesting
+ the "phantom file" byte, to Scott McMahan for suggesting the
+ compression and encryption bits in the "data flags" byte, and to
+ William Bond for suggesting the "disk space needed" bytes. Finally, a
+ big thank you to Neil Shapiro, Chief Sysop of MAUG, for supporting the
+ development of the Binary II format and helping it become a true
+ standard.
+ 
+ Feedback and Support
+ --------------------
+ Send any comments or questions concerning the Binary II file format
+ to:
+ 
+    Gary B. Little
+    #210 - 131 Water Street
+    Vancouver, British Columbia
+    Canada  V6B 4M3
+    (604) 681-3371
+ 
+    CompuServe : 70135,1007
+    Delphi     : GBL
+    MCI Mail   : 658L6
+ 
+ Gary developed the Point-to-Point telecommunications program published
+ by Pinpoint Publishing. He has also written several books on how to
+ program Apple computers: "Inside the Apple IIe," "Inside the Apple
+ IIc," "Apple ProDOS: Advanced Features for Programmers," and "Mac
+ Assembly Language: A Guide for Programmers." He is currently a
+ Contributing Editor for A+ magazine and writes A+'s monthly Rescue
+ Squad column. Gary has also published articles in Nibble, Micro, Call
+ -A.P.P.L.E, and Softalk.
+ 
+</pre><hr>
+
+<!--msnavigation--></td></tr><!--msnavigation--></table></body>
+
+</html>
