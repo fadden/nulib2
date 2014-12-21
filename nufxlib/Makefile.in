@@ -97,7 +97,6 @@ tags::
 
 distclean: clean
 	(cd samples; make distclean)
-	-rm -f Version.c
 	-rm -f Makefile Makefile.bak
 	-rm -f config.log config.cache config.status config.h
 	-rm -f tags
