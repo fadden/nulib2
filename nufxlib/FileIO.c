@@ -219,11 +219,11 @@ typedef struct NuFileInfo {
     Boolean     isRegularFile;  /* is this a regular file? */
     Boolean     isDirectory;    /* is this a directory? */
 
-    ulong       dataEof;
-    ulong       rsrcEof;
+    uint32_t    dataEof;
+    uint32_t    rsrcEof;
 
-    ulong       fileType;
-    ulong       auxType;
+    uint32_t    fileType;
+    uint32_t    auxType;
     NuDateTime  modWhen;
     mode_t      unixMode;       /* UNIX-style permissions */
 } NuFileInfo;
@@ -312,7 +312,7 @@ Nu_GetFileInfo(NuArchive* pArchive, const char* pathname,
             OSType fileType, creator;
             FSCatalogInfo catalogInfo;
             FSRef ref;
-            unsigned long proType, proAux;
+            uint32_t proType, proAux;
             
             strcpy(path, pathname);
             strcat(path, "/rsrc");

@@ -59,7 +59,7 @@ typedef unsigned char Boolean;
             (x) <= '9' ? (x) - '0' : toupper(x) +10 - 'A' )
 
 /* convert number from 0-15 to hex digit */
-#define HexConv(x)  ( ((uint)(x)) <= 15 ? \
+#define HexConv(x)  ( ((unsigned int)(x)) <= 15 ? \
             ( (x) <= 9 ? (x) + '0' : (x) -10 + 'A') : -1 )
 
 

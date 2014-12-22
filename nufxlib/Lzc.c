@@ -25,10 +25,10 @@
 /*
  * Selected definitions from compress.h.
  */
-typedef unsigned short CODE;
-typedef unsigned char UCHAR;
-typedef unsigned int INTCODE;
-typedef unsigned int HASH;
+typedef uint16_t CODE;
+typedef uint8_t UCHAR;
+typedef uint32_t INTCODE;
+typedef uint32_t HASH;
 typedef int FLAG;
 
 #ifndef FALSE            /* let's get some sense to this */
@@ -80,7 +80,7 @@ static UCHAR gNu_magic_header[] = { 0x1F,0x9D };
  * Normally in COMPUSI.UNI.
  */
 static inline ALLOCTYPE FAR *
-Nu_LZC_emalloc(NuArchive* pArchive, unsigned int x, int y)
+Nu_LZC_emalloc(NuArchive* pArchive, uint32_t x, int y)
 {
     return Nu_Malloc(pArchive, x*y);
 }
@@ -153,7 +153,7 @@ Nu_LZC_efree(NuArchive* pArchive, ALLOCTYPE FAR * ptr)
 typedef struct LZCState {
     NuArchive* pArchive;
     int doCalcCRC;
-    ushort crc;
+    uint16_t crc;
 
     /* compression */
     NuStraw* pStraw;
@@ -163,7 +163,7 @@ typedef struct LZCState {
     /* expansion */
     FILE* infp;
     NuFunnel* pFunnel;
-    ushort* pCrc;
+    uint16_t* pCrc;
     long compRemaining;
 
 
@@ -251,18 +251,18 @@ static CONST INTCODE gNu_mc[] = {
 #ifdef __STDC__
 #ifdef DEBUG_LZC
 #define allocx(type, ptr, size) \
-    (((ptr) = (type FAR *) Nu_LZC_emalloc(pArchive, (unsigned int)(size),sizeof(type))) == NULLPTR(type) \
+    (((ptr) = (type FAR *) Nu_LZC_emalloc(pArchive, (uint32_t)(size),sizeof(type))) == NULLPTR(type) \
     ?   (DBUG(("%s: "#ptr" -- ", "LZC")), NOMEM) : OK \
     )
 #else
 #define allocx(type,ptr,size) \
-    (((ptr) = (type FAR *) Nu_LZC_emalloc(pArchive, (unsigned int)(size),sizeof(type))) == NULLPTR(type) \
+    (((ptr) = (type FAR *) Nu_LZC_emalloc(pArchive, (uint32_t)(size),sizeof(type))) == NULLPTR(type) \
     ? NOMEM : OK \
     )
 #endif
 #else
 #define allocx(type,ptr,size) \
-    (((ptr) = (type FAR *) Nu_LZC_emalloc(pArchive, (unsigned int)(size),sizeof(type))) == NULLPTR(type) \
+    (((ptr) = (type FAR *) Nu_LZC_emalloc(pArchive, (uint32_t)(size),sizeof(type))) == NULLPTR(type) \
     ? NOMEM : OK \
     )
 #endif
@@ -558,7 +558,7 @@ static NuError
 Nu_LZCGetcCRC(LZCState* pLzcState, int* pSym)
 {
     NuError err;
-    uchar c;
+    uint8_t c;
 
     if (!pLzcState->uncompRemaining) {
         *pSym = kNuLZCEOF;
@@ -580,7 +580,7 @@ Nu_LZCGetcCRC(LZCState* pLzcState, int* pSym)
  * compress stdin to stdout
  */
 static void
-Nu_LZC_compress(LZCState* pLzcState, ulong* pDstLen)
+Nu_LZC_compress(LZCState* pLzcState, uint32_t* pDstLen)
 {
     int c,adjbits;
     register HASH hash;
@@ -760,7 +760,7 @@ Nu_LZC_compress(LZCState* pLzcState, ulong* pDstLen)
  */
 static NuError
 Nu_CompressLZC(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
-    ulong srcLen, ulong* pDstLen, ushort* pCrc, int maxbits)
+    uint32_t srcLen, uint32_t* pDstLen, uint16_t* pCrc, int maxbits)
 {
     NuError err = kNuErrNone;
     LZCState lzcState;
@@ -808,14 +808,14 @@ Nu_CompressLZC(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
 
 NuError
 Nu_CompressLZC12(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
-    ulong srcLen, ulong* pDstLen, ushort* pCrc)
+    uint32_t srcLen, uint32_t* pDstLen, uint16_t* pCrc)
 {
     return Nu_CompressLZC(pArchive, pStraw, fp, srcLen, pDstLen, pCrc, 12);
 }
 
 NuError
 Nu_CompressLZC16(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
-    ulong srcLen, ulong* pDstLen, ushort* pCrc)
+    uint32_t srcLen, uint32_t* pDstLen, uint16_t* pCrc)
 {
     return Nu_CompressLZC(pArchive, pStraw, fp, srcLen, pDstLen, pCrc, 16);
 }
@@ -839,9 +839,9 @@ Nu_LZCPutcCRC(LZCState* pLzcState, char c)
     NuError err;
 
     err = Nu_FunnelWrite(pLzcState->pArchive, pLzcState->pFunnel,
-            (uchar*) &c, 1);
+            (uint8_t*) &c, 1);
     if (pLzcState->doCalcCRC)
-        pLzcState->crc = Nu_CalcCRC16(pLzcState->crc, (uchar*) &c, 1);
+        pLzcState->crc = Nu_CalcCRC16(pLzcState->crc, (uint8_t*) &c, 1);
 
     return err;
 }
@@ -899,7 +899,7 @@ Nu_LZC_nextcode(LZCState* pLzcState, INTCODE* codeptr)
 }
 
 static void
-Nu_LZC_decompress(LZCState* pLzcState, ulong compressedLen)
+Nu_LZC_decompress(LZCState* pLzcState, uint32_t compressedLen)
 {
     NuArchive* pArchive = pLzcState->pArchive;
     register int i;
@@ -1062,7 +1062,7 @@ Nu_LZC_decompress(LZCState* pLzcState, ulong compressedLen)
  */
 NuError
 Nu_ExpandLZC(NuArchive* pArchive, const NuRecord* pRecord,
-    const NuThread* pThread, FILE* infp, NuFunnel* pFunnel, ushort* pCrc)
+    const NuThread* pThread, FILE* infp, NuFunnel* pFunnel, uint16_t* pCrc)
 {
     NuError err = kNuErrNone;
     LZCState lzcState;

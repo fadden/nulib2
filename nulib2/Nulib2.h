@@ -42,7 +42,7 @@ Boolean IsFilenameStdin(const char* archiveName);
 Boolean IsSpecified(NulibState* pState, const NuRecord* pRecord);
 NuError OpenArchiveReadOnly(NulibState* pState);
 NuError OpenArchiveReadWrite(NulibState* pState);
-const NuThread* GetThread(const NuRecord* pRecord, ulong idx);
+const NuThread* GetThread(const NuRecord* pRecord, uint32_t idx);
 Boolean IsRecordReadOnly(const NuRecord* pRecord);
 
 /* Binary2.c */
@@ -61,12 +61,12 @@ NuError DoExtractToPipe(NulibState* pState);
 NuError DoTest(NulibState* pState);
 
 /* Filename.c */
-const char* GetFileTypeString(ulong fileType);
+const char* GetFileTypeString(uint32_t fileType);
 const char* NormalizePath(NulibState* pState, NuPathnameProposal* pathProposal);
 void InterpretExtension(NulibState* pState, const char* pathName,
-    ulong* pFileType, ulong* pAuxType);
+    uint32_t* pFileType, uint32_t* pAuxType);
 Boolean ExtractPreservationString(NulibState* pState, char* pathname,
-    ulong* pFileType, ulong* pAuxType, NuThreadID* pThreadID);
+    uint32_t* pFileType, uint32_t* pAuxType, NuThreadID* pThreadID);
 void DenormalizePath(NulibState* pState, char* pathBuf);
 const char* FilenameOnly(NulibState* pState, const char* pathname);
 const char* FindExtension(NulibState* pState, const char* pathname);

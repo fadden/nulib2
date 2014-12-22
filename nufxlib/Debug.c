@@ -119,7 +119,7 @@ bail:
  * The result will be 2x the size of the original, +1 for a null byte.
  */
 static void
-ConvertToHexStr(const uchar* inBuf, int inLen, char* outBuf)
+ConvertToHexStr(const uint8_t* inBuf, int inLen, char* outBuf)
 {
     while (inLen--) {
         *outBuf++ = HexConv((*inBuf >> 4) & 0x0f);
@@ -186,7 +186,7 @@ Nu_DebugDumpRecord(NuArchive* pArchive, const NuRecord* pRecord,
     char dateBuf[kNuDateOutputLen];
     const NuThreadMod* pThreadMod;
     const NuThread* pThread;
-    ulong idx;
+    uint32_t idx;
 
     Assert(pRecord != NULL);
 

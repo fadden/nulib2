@@ -48,7 +48,7 @@ Nu_zfree(voidpf opaque, voidpf address)
  */
 NuError
 Nu_CompressDeflate(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
-    ulong srcLen, ulong* pDstLen, ushort* pCrc)
+    uint32_t srcLen, uint32_t* pDstLen, uint16_t* pCrc)
 {
     NuError err = kNuErrNone;
     z_stream zstream;
@@ -100,7 +100,7 @@ Nu_CompressDeflate(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
      * Loop while we have data.
      */
     do {
-        ulong getSize;
+        uint32_t getSize;
         int flush;
 
         /* should be able to read a full buffer every time */
@@ -176,12 +176,12 @@ bail:
  */
 NuError
 Nu_ExpandDeflate(NuArchive* pArchive, const NuRecord* pRecord,
-    const NuThread* pThread, FILE* infp, NuFunnel* pFunnel, ushort* pCrc)
+    const NuThread* pThread, FILE* infp, NuFunnel* pFunnel, uint16_t* pCrc)
 {
     NuError err = kNuErrNone;
     z_stream zstream;
     int zerr;
-    ulong compRemaining;
+    uint32_t compRemaining;
     Bytef* outbuf;
 
     Assert(pArchive != NULL);
@@ -229,7 +229,7 @@ Nu_ExpandDeflate(NuArchive* pArchive, const NuRecord* pRecord,
      * Loop while we have data.
      */
     do {
-        ulong getSize;
+        uint32_t getSize;
 
         /* read as much as we can */
         if (zstream.avail_in == 0) {
@@ -282,7 +282,7 @@ Nu_ExpandDeflate(NuArchive* pArchive, const NuRecord* pRecord,
     if (zstream.total_out != pThread->actualThreadEOF) {
         err = kNuErrBadData;
         Nu_ReportError(NU_BLOB, err,
-            "size mismatch on inflated file (%ld vs %ld)",
+            "size mismatch on inflated file (%ld vs %u)",
             zstream.total_out, pThread->actualThreadEOF);
         goto z_bail;
     }

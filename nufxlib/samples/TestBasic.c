@@ -174,7 +174,7 @@ int
 Test_AddStuff(NuArchive* pArchive)
 {
     NuError err;
-    uchar* buf = NULL;
+    uint8_t* buf = NULL;
     NuDataSource* pDataSource = NULL;
     NuRecordIdx recordIdx;
     long status;
@@ -237,7 +237,7 @@ Test_AddStuff(NuArchive* pArchive)
      */
     printf("... add 'English' record\n");
     err = NuCreateDataSourceForBuffer(kNuThreadFormatUncompressed,
-            0, (const uchar*)testMsg, 0, strlen(testMsg), NULL, &pDataSource);
+            0, (const uint8_t*)testMsg, 0, strlen(testMsg), NULL, &pDataSource);
     if (err != kNuErrNone) {
         fprintf(stderr,
             "ERROR: 'English' source create failed (err=%d)\n", err);
@@ -386,7 +386,7 @@ Test_Contents(NuArchive* pArchive)
 
         err = NuGetRecord(pArchive, recordIdx, &pRecord);
         if (err != kNuErrNone) {
-            fprintf(stderr, "ERROR: couldn't get record index %ld (err=%d)\n",
+            fprintf(stderr, "ERROR: couldn't get record index %u (err=%d)\n",
                 recordIdx, err);
             goto failed;
         }
@@ -411,7 +411,7 @@ Test_Contents(NuArchive* pArchive)
         }
 
         if (cc) {
-            fprintf(stderr, "ERROR: got '%s' for %ld (%ld), not expected\n",
+            fprintf(stderr, "ERROR: got '%s' for %ld (%u), not expected\n",
                 pRecord->filename, posn, recordIdx);
             goto failed;
         }
@@ -528,7 +528,7 @@ Test_Extract(NuArchive* pArchive)
     const NuRecord* pRecord;
     const NuThread* pThread;
     NuDataSink* pDataSink = NULL;
-    uchar* buf = NULL;
+    uint8_t* buf = NULL;
 
     printf("... extracting files\n");
 
@@ -549,7 +549,7 @@ Test_Extract(NuArchive* pArchive)
     }
     err = NuGetRecord(pArchive, recordIdx, &pRecord);
     if (err != kNuErrNone) {
-        fprintf(stderr, "ERROR: couldn't get record index %ld (err=%d)\n",
+        fprintf(stderr, "ERROR: couldn't get record index %u (err=%d)\n",
             recordIdx, err);
         goto failed;
     }
@@ -559,14 +559,14 @@ Test_Extract(NuArchive* pArchive)
     pThread = NuGetThread(pRecord, 1);
     assert(pThread != NULL);
     if (NuGetThreadID(pThread) != kNuThreadIDDataFork) {
-        fprintf(stderr, "ERROR: 'bytes' had unexpected threadID 0x%08lx\n",
+        fprintf(stderr, "ERROR: 'bytes' had unexpected threadID 0x%08x\n",
             NuGetThreadID(pThread));
         goto failed;
     }
 
     buf = malloc(pThread->actualThreadEOF);
     if (buf == NULL) {
-        fprintf(stderr, "ERROR: malloc(%ld) failed\n",pThread->actualThreadEOF);
+        fprintf(stderr, "ERROR: malloc(%u) failed\n",pThread->actualThreadEOF);
         goto failed;
     }
 
@@ -648,7 +648,7 @@ Test_Extract(NuArchive* pArchive)
     }
     err = NuGetRecord(pArchive, recordIdx, &pRecord);
     if (err != kNuErrNone) {
-        fprintf(stderr, "ERROR: couldn't get record index %ld (err=%d)\n",
+        fprintf(stderr, "ERROR: couldn't get record index %u (err=%d)\n",
             recordIdx, err);
         goto failed;
     }
@@ -658,14 +658,14 @@ Test_Extract(NuArchive* pArchive)
     pThread = NuGetThread(pRecord, 1);
     assert(pThread != NULL);
     if (NuGetThreadID(pThread) != kNuThreadIDDataFork) {
-        fprintf(stderr, "ERROR: 'English' had unexpected threadID 0x%08lx\n",
+        fprintf(stderr, "ERROR: 'English' had unexpected threadID 0x%08x\n",
             NuGetThreadID(pThread));
         goto failed;
     }
 
     buf = malloc(pThread->actualThreadEOF);
     if (buf == NULL) {
-        fprintf(stderr, "ERROR: malloc(%ld) failed\n",pThread->actualThreadEOF);
+        fprintf(stderr, "ERROR: malloc(%u) failed\n", pThread->actualThreadEOF);
         goto failed;
     }
 
@@ -727,7 +727,7 @@ Test_Extract(NuArchive* pArchive)
     }
     err = NuGetRecord(pArchive, recordIdx, &pRecord);
     if (err != kNuErrNone) {
-        fprintf(stderr, "ERROR: couldn't get record index %ld (err=%d)\n",
+        fprintf(stderr, "ERROR: couldn't get record index %u (err=%d)\n",
             recordIdx, err);
         goto failed;
     }
@@ -737,7 +737,7 @@ Test_Extract(NuArchive* pArchive)
     pThread = NuGetThread(pRecord, 1);
     assert(pThread != NULL);
     if (NuGetThreadID(pThread) != kNuThreadIDRsrcFork) {
-        fprintf(stderr, "ERROR: 'Long' had unexpected threadID 0x%08lx\n",
+        fprintf(stderr, "ERROR: 'Long' had unexpected threadID 0x%08x\n",
             NuGetThreadID(pThread));
         goto failed;
     }
@@ -802,7 +802,7 @@ Test_Delete(NuArchive* pArchive)
     }
     err = NuGetRecord(pArchive, recordIdx, &pRecord);
     if (err != kNuErrNone) {
-        fprintf(stderr, "ERROR: couldn't get record index %ld (err=%d)\n",
+        fprintf(stderr, "ERROR: couldn't get record index %u (err=%d)\n",
             recordIdx, err);
         goto failed;
     }
@@ -816,7 +816,7 @@ Test_Delete(NuArchive* pArchive)
         err = NuDeleteThread(pArchive, pThread->threadIdx);
         if (err != kNuErrNone) {
             fprintf(stderr,
-                "ERROR: couldn't delete thread #%d (%ld) (err=%d)\n",
+                "ERROR: couldn't delete thread #%d (%u) (err=%d)\n",
                 idx, recordIdx, err);
             goto failed;
         }
@@ -828,7 +828,7 @@ Test_Delete(NuArchive* pArchive)
     err = NuDeleteThread(pArchive, pThread->threadIdx);
     FAIL_BAD;
     if (err == kNuErrNone) {
-        fprintf(stderr, "ERROR: allowed to re-delete thread (%ld) (err=%d)\n",
+        fprintf(stderr, "ERROR: allowed to re-delete thread (%u) (err=%d)\n",
             recordIdx, err);
         goto failed;
     }
@@ -839,7 +839,7 @@ Test_Delete(NuArchive* pArchive)
     FAIL_BAD;
     if (err == kNuErrNone) {
         fprintf(stderr,
-            "ERROR: able to delete modified record (%ld) (err=%d)\n",
+            "ERROR: able to delete modified record (%u) (err=%d)\n",
             recordIdx, err);
         goto failed;
     }
@@ -847,7 +847,7 @@ Test_Delete(NuArchive* pArchive)
     /*
      * Make sure the attr hasn't been updated yet.
      */
-    err = NuGetAttr(pArchive, kNuAttrNumRecords, (unsigned long*) &count);
+    err = NuGetAttr(pArchive, kNuAttrNumRecords, (uint32_t*) &count);
     if (count != kNumEntries) {
         fprintf(stderr, "ERROR: kNuAttrNumRecords %ld vs %d\n",
             count, kNumEntries);
@@ -864,7 +864,7 @@ Test_Delete(NuArchive* pArchive)
     }
     err = NuGetRecord(pArchive, recordIdx, &pRecord);
     if (err != kNuErrNone) {
-        fprintf(stderr, "ERROR: couldn't get record index %ld (err=%d)\n",
+        fprintf(stderr, "ERROR: couldn't get record index %u (err=%d)\n",
             recordIdx, err);
         goto failed;
     }
@@ -876,7 +876,7 @@ Test_Delete(NuArchive* pArchive)
 
     err = NuDeleteRecord(pArchive, recordIdx);
     if (err != kNuErrNone) {
-        fprintf(stderr, "ERROR: unable to delete record #%d (%ld) (err=%d)\n",
+        fprintf(stderr, "ERROR: unable to delete record #%d (%u) (err=%d)\n",
             kNumEntries-1, recordIdx, err);
         goto failed;
     }
@@ -887,7 +887,7 @@ Test_Delete(NuArchive* pArchive)
     FAIL_BAD;
     if (err == kNuErrNone) {
         fprintf(stderr,
-            "ERROR: allowed to delete from deleted (%ld) (err=%d)\n",
+            "ERROR: allowed to delete from deleted (%u) (err=%d)\n",
             pThread->threadIdx, err);
         goto failed;
     }
@@ -915,8 +915,8 @@ Test_MasterCount(NuArchive* pArchive, long expected)
         goto failed;
     }
 
-    if (pMasterHeader->mhTotalRecords != (ulong)expected) {
-        fprintf(stderr, "ERROR: unexpected MH count (%ld vs %ld)\n",
+    if (pMasterHeader->mhTotalRecords != (uint32_t)expected) {
+        fprintf(stderr, "ERROR: unexpected MH count (%u vs %ld)\n",
             pMasterHeader->mhTotalRecords, expected);
         goto failed;
     }

@@ -235,14 +235,14 @@ ArchiveData_DumpContents(const ArchiveData* pArcData)
         const NuThread* pThread;
         int i, count;
 
-        printf("%5ld '%s'\n",
+        printf("%5u '%s'\n",
             ArchiveRecord_GetRecordIdx(pArcRec),
             ArchiveRecord_GetFilename(pArcRec));
 
         count = ArchiveRecord_GetNumThreads(pArcRec);
         for (i = 0; i < count; i++) {
             pThread = ArchiveRecord_GetThread(pArcRec, i);
-            printf("    %5ld 0x%04x 0x%04x\n", pThread->threadIdx,
+            printf("    %5u 0x%04x 0x%04x\n", pThread->threadIdx,
                 pThread->thThreadClass, pThread->thThreadKind);
         }
 
@@ -369,9 +369,9 @@ NuError
 ExtractToBuffer(NuArchive* pArchive, ArchiveData* pArchiveData)
 {
     NuError err;
-    unsigned char buffer[kHappySize];
+    uint8_t buffer[kHappySize];
     NuDataSink* pDataSink = NULL;
-    unsigned long count;
+    uint32_t count;
 
     err = NuCreateDataSinkForBuffer(true, kNuConvertOff, buffer, kHappySize,
             &pDataSink);
@@ -391,7 +391,7 @@ ExtractToBuffer(NuArchive* pArchive, ArchiveData* pArchiveData)
         FILE* fp;
         if ((fp = fopen("out.buf", kNuFileOpenWriteTrunc)) != NULL) {
 
-            printf("*** Writing %ld bytes\n", count);
+            printf("*** Writing %u bytes\n", count);
             if (fwrite(buffer, count, 1, fp) != 1)
                 err = kNuErrFileWrite;
             fclose(fp);

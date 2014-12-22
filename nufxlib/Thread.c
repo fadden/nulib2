@@ -29,13 +29,13 @@
 void
 Nu_StripHiIfAllSet(char* str)
 {
-    uchar* cp;
+    uint8_t* cp;
 
-    for (cp = (uchar*)str; *cp != '\0'; cp++)
+    for (cp = (uint8_t*)str; *cp != '\0'; cp++)
         if (!(*cp & 0x80))
             return;
 
-    for (cp = (uchar*)str; *cp != '\0'; cp++)
+    for (cp = (uint8_t*)str; *cp != '\0'; cp++)
         *cp &= 0x7f;
 }
 
@@ -152,7 +152,7 @@ Nu_CopyThreadContents(NuThread* pDstThread, const NuThread* pSrcThread)
  * Read a single thread header from the archive.
  */
 static NuError
-Nu_ReadThreadHeader(NuArchive* pArchive, NuThread* pThread, ushort* pCrc)
+Nu_ReadThreadHeader(NuArchive* pArchive, NuThread* pThread, uint16_t* pCrc)
 {
     FILE* fp;
 
@@ -185,7 +185,7 @@ Nu_ReadThreadHeader(NuArchive* pArchive, NuThread* pThread, ushort* pCrc)
  * benefit for us, and adds complexity.
  */
 NuError
-Nu_ReadThreadHeaders(NuArchive* pArchive, NuRecord* pRecord, ushort* pCrc)
+Nu_ReadThreadHeaders(NuArchive* pArchive, NuRecord* pRecord, uint16_t* pCrc)
 {
     NuError err = kNuErrNone;
     NuThread* pThread;
@@ -308,7 +308,7 @@ bail:
  */
 static NuError
 Nu_WriteThreadHeader(NuArchive* pArchive, const NuThread* pThread, FILE* fp,
-    ushort* pCrc)
+    uint16_t* pCrc)
 {
     Assert(pArchive != NULL);
     Assert(pThread != NULL);
@@ -316,7 +316,7 @@ Nu_WriteThreadHeader(NuArchive* pArchive, const NuThread* pThread, FILE* fp,
     Assert(pCrc != NULL);
 
     Nu_WriteTwoC(pArchive, fp, pThread->thThreadClass, pCrc);
-    Nu_WriteTwoC(pArchive, fp, (ushort)pThread->thThreadFormat, pCrc);
+    Nu_WriteTwoC(pArchive, fp, (uint16_t)pThread->thThreadFormat, pCrc);
     Nu_WriteTwoC(pArchive, fp, pThread->thThreadKind, pCrc);
     Nu_WriteTwoC(pArchive, fp, pThread->thThreadCRC, pCrc);
     Nu_WriteFourC(pArchive, fp, pThread->thThreadEOF, pCrc);
@@ -334,7 +334,7 @@ Nu_WriteThreadHeader(NuArchive* pArchive, const NuThread* pThread, FILE* fp,
  */
 NuError
 Nu_WriteThreadHeaders(NuArchive* pArchive, NuRecord* pRecord, FILE* fp,
-    ushort* pCrc)
+    uint16_t* pCrc)
 {
     NuError err = kNuErrNone;
     NuThread* pThread;
@@ -430,7 +430,7 @@ Nu_ScanThreads(NuArchive* pArchive, NuRecord* pRecord, long numThreads)
             /* it's the first filename thread, read the whole thing */
             if (pThread->thCompThreadEOF > kNuReasonableFilenameLen) {
                 err = kNuErrBadRecord;
-                Nu_ReportError(NU_BLOB, err, "Bad thread filename len (%lu)",
+                Nu_ReportError(NU_BLOB, err, "Bad thread filename len (%u)",
                     pThread->thCompThreadEOF);
                 goto bail;
             }
@@ -589,7 +589,7 @@ Nu_ExtractThreadCommon(NuArchive* pArchive, const NuRecord* pRecord,
     char* newPathStorage = NULL;
     const char* newPathname;
     NuResult result;
-    uchar newFssep;
+    uint8_t newFssep;
     Boolean doFreeSink = false;
 
     Assert(pRecord != NULL);
@@ -1269,7 +1269,7 @@ Nu_UpdatePresizedThread(NuArchive* pArchive, NuThreadIdx threadIdx,
             Nu_DataSourceGetOtherLen(pDataSource))
         {
             err = kNuErrPreSizeOverflow;
-            Nu_ReportError(NU_BLOB, err, "can't put %ld bytes into %ld",
+            Nu_ReportError(NU_BLOB, err, "can't put %u bytes into %u",
                 Nu_DataSourceGetOtherLen(pDataSource),
                 pFoundThread->thCompThreadEOF);
             goto bail;
@@ -1281,7 +1281,7 @@ Nu_UpdatePresizedThread(NuArchive* pArchive, NuThreadIdx threadIdx,
              Nu_DataSourceGetOtherLen(pDataSource) > kNuReasonableFilenameLen))
         {
             err = kNuErrInvalidFilename;
-            Nu_ReportError(NU_BLOB, err, "invalid filename (%ld bytes)",
+            Nu_ReportError(NU_BLOB, err, "invalid filename (%u bytes)",
                 Nu_DataSourceGetOtherLen(pDataSource));
             goto bail;
         }

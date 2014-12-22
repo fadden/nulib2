@@ -18,6 +18,7 @@
 #endif
 
 /* these should exist everywhere */
+#include <stdint.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
@@ -55,10 +56,6 @@
 #  define SNPRINTF_DECLARED
 #  define VSNPRINTF_DECLARED
 #  define SPRINTF_RETURNS_INT
-#  define uchar unsigned char
-#  define ushort unsigned short
-#  define uint unsigned int
-#  define ulong unsigned long
 #  define inline /*Visual C++6.0 can't inline ".c" files*/
 #  define mode_t int
 # endif

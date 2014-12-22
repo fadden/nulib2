@@ -67,7 +67,7 @@ CopyThreadRecompressed(NuArchive* pInArchive, NuArchive* pOutArchive,
     NuError err = kNuErrNone;
     NuDataSource* pDataSource = NULL;
     NuDataSink* pDataSink = NULL;
-    uchar* buffer = NULL;
+    uint8_t* buffer = NULL;
 
     /*
      * Allocate a buffer large enough to hold all the uncompressed data, and
@@ -95,7 +95,7 @@ CopyThreadRecompressed(NuArchive* pInArchive, NuArchive* pOutArchive,
          */
         err = NuExtractThread(pInArchive, pThread->threadIdx, pDataSink);
         if (err != kNuErrNone) {
-            fprintf(stderr, "ERROR: unable to extract thread %ld (err=%d)\n",
+            fprintf(stderr, "ERROR: unable to extract thread %u (err=%d)\n",
                 pThread->threadIdx, err);
             goto bail;
         }
@@ -181,7 +181,7 @@ CopyThreadUncompressed(NuArchive* pInArchive, NuArchive* pOutArchive,
     NuError err = kNuErrNone;
     NuDataSource* pDataSource = NULL;
     NuDataSink* pDataSink = NULL;
-    uchar* buffer = NULL;
+    uint8_t* buffer = NULL;
 
     /*
      * If we have some data files that were left uncompressed, perhaps
@@ -225,7 +225,7 @@ CopyThreadUncompressed(NuArchive* pInArchive, NuArchive* pOutArchive,
      */
     err = NuExtractThread(pInArchive, pThread->threadIdx, pDataSink);
     if (err != kNuErrNone) {
-        fprintf(stderr, "ERROR: unable to extract thread %ld (err=%d)\n",
+        fprintf(stderr, "ERROR: unable to extract thread %u (err=%d)\n",
             pThread->threadIdx, err);
         goto bail;
     }
@@ -344,7 +344,7 @@ CopyRecord(NuArchive* pInArchive, NuArchive* pOutArchive, long flags,
      */
     err = NuGetRecord(pInArchive, recordIdx, &pRecord);
     if (err != kNuErrNone) {
-        fprintf(stderr, "ERROR: unable to get recordIdx %ld\n", recordIdx);
+        fprintf(stderr, "ERROR: unable to get recordIdx %u\n", recordIdx);
         goto bail;
     }
 
@@ -362,7 +362,7 @@ CopyRecord(NuArchive* pInArchive, NuArchive* pOutArchive, long flags,
 
     numThreads = NuRecordGetNumThreads(pRecord);
     if (!numThreads) {
-        fprintf(stderr, "WARNING: recordIdx=%ld was empty\n", recordIdx);
+        fprintf(stderr, "WARNING: recordIdx=%u was empty\n", recordIdx);
         goto bail;
     }
 

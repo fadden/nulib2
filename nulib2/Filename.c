@@ -73,9 +73,9 @@ static const char gFileTypeNames[256][4] = {
  */
 static const struct {
     const char*         label;
-    ushort              fileType;
-    ulong               auxType;
-    uchar               flags;
+    uint16_t            fileType;
+    uint32_t            auxType;
+    uint8_t             unused;         // remove?
 } gRecognizedExtensions[] = {
     { "ASM",  0xb0, 0x0003, 0 },        /* APW assembly source */
     { "C",    0xb0, 0x000a, 0 },        /* APW C source */
@@ -96,7 +96,7 @@ static const struct {
  * Return a pointer to the three-letter representation of the file type name.
  */
 const char*
-GetFileTypeString(ulong fileType)
+GetFileTypeString(uint32_t fileType)
 {
     if (fileType < NELEM(gFileTypeNames))
         return gFileTypeNames[fileType];
@@ -144,11 +144,11 @@ AddPreservationString(NulibState* pState,
      * return the #of characters written, so we add it up manually.
      */
     if (pRecord->recFileType < 0x100 && pRecord->recExtraType < 0x10000) {
-        sprintf(cp, "%c%02lx%04lx", kPreserveIndic, pRecord->recFileType,
+        sprintf(cp, "%c%02x%04x", kPreserveIndic, pRecord->recFileType,
             pRecord->recExtraType);
         cp += 7;
     } else {
-        sprintf(cp, "%c%08lx%08lx", kPreserveIndic, pRecord->recFileType,
+        sprintf(cp, "%c%08x%08x", kPreserveIndic, pRecord->recFileType,
             pRecord->recExtraType);
         cp += 17;
     }
@@ -358,8 +358,8 @@ bail:
  * like "TXT" and "BIN") and the separate list of recognized extensions.
  */
 static void
-LookupExtension(NulibState* pState, const char* ext, ulong* pFileType,
-    ulong* pAuxType)
+LookupExtension(NulibState* pState, const char* ext, uint32_t* pFileType,
+    uint32_t* pAuxType)
 {
     char uext3[4];
     int i, extLen;
@@ -410,8 +410,8 @@ bail:
  * Try to associate some meaning with the file extension.
  */
 void
-InterpretExtension(NulibState* pState, const char* pathName, ulong* pFileType,
-    ulong* pAuxType)
+InterpretExtension(NulibState* pState, const char* pathName, uint32_t* pFileType,
+    uint32_t* pAuxType)
 {
     const char* pExt;
 
@@ -435,11 +435,11 @@ InterpretExtension(NulibState* pState, const char* pathName, ulong* pFileType,
  * in the filename.
  */
 Boolean
-ExtractPreservationString(NulibState* pState, char* pathname, ulong* pFileType,
-    ulong* pAuxType, NuThreadID* pThreadID)
+ExtractPreservationString(NulibState* pState, char* pathname, uint32_t* pFileType,
+    uint32_t* pAuxType, NuThreadID* pThreadID)
 {
     char numBuf[9];
-    ulong fileType, auxType;
+    uint32_t fileType, auxType;
     NuThreadID threadID;
     char* pPreserve;
     char* cp;

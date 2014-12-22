@@ -51,35 +51,35 @@ strcasecmp(const char *str1, const char *str2)
 typedef struct ImgHeader {
     char            magic[4];
     char            creator[4];
-    short           headerLen;
-    short           version;
-    long            imageFormat;
-    unsigned long   flags;
-    long            numBlocks;
-    long            dataOffset;
-    long            dataLen;
-    long            cmntOffset;
-    long            cmntLen;
-    long            creatorOffset;
-    long            creatorLen;
-    long            spare[4];
+    uint16_t        headerLen;
+    uint16_t        version;
+    uint32_t        imageFormat;
+    uint32_t        flags;
+    uint32_t        numBlocks;
+    uint32_t        dataOffset;
+    uint32_t        dataLen;
+    uint32_t        cmntOffset;
+    uint32_t        cmntLen;
+    uint32_t        creatorOffset;
+    uint32_t        creatorLen;
+    uint32_t        spare[4];
 } ImgHeader;
 
 /*
  * Read a two-byte little-endian value.
  */
 void
-ReadShortLE(FILE* fp, short* pBuf)
+ReadShortLE(FILE* fp, uint16_t* pBuf)
 {
     *pBuf = getc(fp);
-    *pBuf += (short) getc(fp) << 8;
+    *pBuf += (uint16_t) getc(fp) << 8;
 }
 
 /*
  * Write a two-byte little-endian value.
  */
 void
-WriteShortLE(FILE* fp, unsigned short val)
+WriteShortLE(FILE* fp, uint16_t val)
 {
     putc(val, fp);
     putc(val >> 8, fp);
@@ -89,19 +89,19 @@ WriteShortLE(FILE* fp, unsigned short val)
  * Read a four-byte little-endian value.
  */
 void
-ReadLongLE(FILE* fp, long* pBuf)
+ReadLongLE(FILE* fp, uint32_t* pBuf)
 {
     *pBuf = getc(fp);
-    *pBuf += (long) getc(fp) << 8;
-    *pBuf += (long) getc(fp) << 16;
-    *pBuf += (long) getc(fp) << 24;
+    *pBuf += (uint32_t) getc(fp) << 8;
+    *pBuf += (uint32_t) getc(fp) << 16;
+    *pBuf += (uint32_t) getc(fp) << 24;
 }
 
 /*
  * Write a four-byte little-endian value.
  */
 void
-WriteLongLE(FILE* fp, unsigned long val)
+WriteLongLE(FILE* fp, uint32_t val)
 {
     putc(val, fp);
     putc(val >> 8, fp);
@@ -121,7 +121,7 @@ ReadImgHeader(FILE* fp, ImgHeader* pHeader)
     ReadShortLE(fp, &pHeader->headerLen);
     ReadShortLE(fp, &pHeader->version);
     ReadLongLE(fp, &pHeader->imageFormat);
-    ReadLongLE(fp, (long*)&pHeader->flags);
+    ReadLongLE(fp, &pHeader->flags);
     ReadLongLE(fp, &pHeader->numBlocks);
     ReadLongLE(fp, &pHeader->dataOffset);
     ReadLongLE(fp, &pHeader->dataLen);
@@ -193,15 +193,15 @@ DumpImgHeader(ImgHeader* pHeader)
     printf("\tcreator       = '%.4s'\n", pHeader->creator);
     printf("\theaderLen     = %d\n", pHeader->headerLen);
     printf("\tversion       = %d\n", pHeader->version);
-    printf("\timageFormat   = %ld\n", pHeader->imageFormat);
-    printf("\tflags         = 0x%08lx\n", pHeader->flags);
-    printf("\tnumBlocks     = %ld\n", pHeader->numBlocks);
-    printf("\tdataOffset    = %ld\n", pHeader->dataOffset);
-    printf("\tdataLen       = %ld\n", pHeader->dataLen);
-    printf("\tcmntOffset    = %ld\n", pHeader->cmntOffset);
-    printf("\tcmntLen       = %ld\n", pHeader->cmntLen);
-    printf("\tcreatorOffset = %ld\n", pHeader->creatorOffset);
-    printf("\tcreatorLen    = %ld\n", pHeader->creatorLen);
+    printf("\timageFormat   = %u\n", pHeader->imageFormat);
+    printf("\tflags         = 0x%08x\n", pHeader->flags);
+    printf("\tnumBlocks     = %u\n", pHeader->numBlocks);
+    printf("\tdataOffset    = %u\n", pHeader->dataOffset);
+    printf("\tdataLen       = %u\n", pHeader->dataLen);
+    printf("\tcmntOffset    = %u\n", pHeader->cmntOffset);
+    printf("\tcmntLen       = %u\n", pHeader->cmntLen);
+    printf("\tcreatorOffset = %u\n", pHeader->creatorOffset);
+    printf("\tcreatorLen    = %u\n", pHeader->creatorLen);
     printf("\n");
 }
 
@@ -264,7 +264,7 @@ CreateDosSource(const ImgHeader* pHeader, FILE* fp,
 
     if (pHeader->dataLen % 4096) {
         fprintf(stderr,
-            "ERROR: image size must be multiple of 4096 (%ld isn't)\n",
+            "ERROR: image size must be multiple of 4096 (%u isn't)\n",
             pHeader->dataLen);
         err = kNuErrGeneric;
         goto bail;
@@ -278,7 +278,7 @@ CreateDosSource(const ImgHeader* pHeader, FILE* fp,
 
     diskBuffer = malloc(pHeader->dataLen);
     if (diskBuffer == NULL) {
-        fprintf(stderr, "ERROR: malloc(%ld) failed\n", pHeader->dataLen);
+        fprintf(stderr, "ERROR: malloc(%u) failed\n", pHeader->dataLen);
         err = kNuErrMalloc;
         goto bail;
     }
@@ -319,7 +319,7 @@ CreateDosSource(const ImgHeader* pHeader, FILE* fp,
      * "true", so NufxLib will free the buffer for us.
      */
     err = NuCreateDataSourceForBuffer(kNuThreadFormatUncompressed, 0,
-            (const unsigned char*) diskBuffer, 0, pHeader->dataLen,
+            (const uint8_t*) diskBuffer, 0, pHeader->dataLen,
             FreeCallback, ppDataSource);
     if (err == kNuErrNone)
         diskBuffer = NULL;

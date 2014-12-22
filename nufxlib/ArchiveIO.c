@@ -26,8 +26,8 @@
 /*
  * Read one byte, optionally computing a CRC.
  */
-uchar
-Nu_ReadOneC(NuArchive* pArchive, FILE* fp, ushort* pCrc)
+uint8_t
+Nu_ReadOneC(NuArchive* pArchive, FILE* fp, uint16_t* pCrc)
 {
     int ic;
 
@@ -36,15 +36,15 @@ Nu_ReadOneC(NuArchive* pArchive, FILE* fp, ushort* pCrc)
     Assert(pCrc != NULL);
 
     ic = getc(fp);
-    *pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
+    *pCrc = Nu_UpdateCRC16((uint8_t)ic, *pCrc);
 
-    return (uchar) ic;
+    return (uint8_t) ic;
 }
 
-uchar
+uint8_t
 Nu_ReadOne(NuArchive* pArchive, FILE* fp)
 {
-    ushort dummyCrc CLEAN_INIT;
+    uint16_t dummyCrc CLEAN_INIT;
     return Nu_ReadOneC(pArchive, fp, &dummyCrc);
 }
 
@@ -52,7 +52,7 @@ Nu_ReadOne(NuArchive* pArchive, FILE* fp)
  * Write one byte, optionally computing a CRC.
  */
 void
-Nu_WriteOneC(NuArchive* pArchive, FILE* fp, uchar val, ushort* pCrc)
+Nu_WriteOneC(NuArchive* pArchive, FILE* fp, uint8_t val, uint16_t* pCrc)
 {
     Assert(pArchive != NULL);
     Assert(fp != NULL);
@@ -62,9 +62,9 @@ Nu_WriteOneC(NuArchive* pArchive, FILE* fp, uchar val, ushort* pCrc)
 }
 
 void
-Nu_WriteOne(NuArchive* pArchive, FILE* fp, uchar val)
+Nu_WriteOne(NuArchive* pArchive, FILE* fp, uint8_t val)
 {
-    ushort dummyCrc CLEAN_INIT;
+    uint16_t dummyCrc CLEAN_INIT;
     Nu_WriteOneC(pArchive, fp, val, &dummyCrc);
 }
 
@@ -72,8 +72,8 @@ Nu_WriteOne(NuArchive* pArchive, FILE* fp, uchar val)
 /*
  * Read two little-endian bytes, optionally computing a CRC.
  */
-ushort
-Nu_ReadTwoC(NuArchive* pArchive, FILE* fp, ushort* pCrc)
+uint16_t
+Nu_ReadTwoC(NuArchive* pArchive, FILE* fp, uint16_t* pCrc)
 {
     int ic1, ic2;
 
@@ -82,17 +82,17 @@ Nu_ReadTwoC(NuArchive* pArchive, FILE* fp, ushort* pCrc)
     Assert(pCrc != NULL);
 
     ic1 = getc(fp);
-    *pCrc = Nu_UpdateCRC16((uchar)ic1, *pCrc);
+    *pCrc = Nu_UpdateCRC16((uint8_t)ic1, *pCrc);
     ic2 = getc(fp);
-    *pCrc = Nu_UpdateCRC16((uchar)ic2, *pCrc);
+    *pCrc = Nu_UpdateCRC16((uint8_t)ic2, *pCrc);
 
     return ic1 | ic2 << 8;
 }
 
-ushort
+uint16_t
 Nu_ReadTwo(NuArchive* pArchive, FILE* fp)
 {
-    ushort dummyCrc CLEAN_INIT;
+    uint16_t dummyCrc CLEAN_INIT;
     return Nu_ReadTwoC(pArchive, fp, &dummyCrc);
 }
 
@@ -101,7 +101,7 @@ Nu_ReadTwo(NuArchive* pArchive, FILE* fp)
  * Write two little-endian bytes, optionally computing a CRC.
  */
 void
-Nu_WriteTwoC(NuArchive* pArchive, FILE* fp, ushort val, ushort* pCrc)
+Nu_WriteTwoC(NuArchive* pArchive, FILE* fp, uint16_t val, uint16_t* pCrc)
 {
     int ic1, ic2;
 
@@ -110,18 +110,18 @@ Nu_WriteTwoC(NuArchive* pArchive, FILE* fp, ushort val, ushort* pCrc)
     Assert(pCrc != NULL);
 
     ic1 = val & 0xff;
-    *pCrc = Nu_UpdateCRC16((uchar)ic1, *pCrc);
+    *pCrc = Nu_UpdateCRC16((uint8_t)ic1, *pCrc);
     ic2 = val >> 8;
-    *pCrc = Nu_UpdateCRC16((uchar)ic2, *pCrc);
+    *pCrc = Nu_UpdateCRC16((uint8_t)ic2, *pCrc);
 
     putc(ic1, fp);
     putc(ic2, fp);
 }
 
 void
-Nu_WriteTwo(NuArchive* pArchive, FILE* fp, ushort val)
+Nu_WriteTwo(NuArchive* pArchive, FILE* fp, uint16_t val)
 {
-    ushort dummyCrc CLEAN_INIT;
+    uint16_t dummyCrc CLEAN_INIT;
     Nu_WriteTwoC(pArchive, fp, val, &dummyCrc);
 }
 
@@ -129,8 +129,8 @@ Nu_WriteTwo(NuArchive* pArchive, FILE* fp, ushort val)
 /*
  * Read four little-endian bytes, optionally computing a CRC.
  */
-ulong
-Nu_ReadFourC(NuArchive* pArchive, FILE* fp, ushort* pCrc)
+uint32_t
+Nu_ReadFourC(NuArchive* pArchive, FILE* fp, uint16_t* pCrc)
 {
     int ic1, ic2, ic3, ic4;
 
@@ -139,21 +139,21 @@ Nu_ReadFourC(NuArchive* pArchive, FILE* fp, ushort* pCrc)
     Assert(pCrc != NULL);
 
     ic1 = getc(fp);
-    *pCrc = Nu_UpdateCRC16((uchar)ic1, *pCrc);
+    *pCrc = Nu_UpdateCRC16((uint8_t)ic1, *pCrc);
     ic2 = getc(fp);
-    *pCrc = Nu_UpdateCRC16((uchar)ic2, *pCrc);
+    *pCrc = Nu_UpdateCRC16((uint8_t)ic2, *pCrc);
     ic3 = getc(fp);
-    *pCrc = Nu_UpdateCRC16((uchar)ic3, *pCrc);
+    *pCrc = Nu_UpdateCRC16((uint8_t)ic3, *pCrc);
     ic4 = getc(fp);
-    *pCrc = Nu_UpdateCRC16((uchar)ic4, *pCrc);
+    *pCrc = Nu_UpdateCRC16((uint8_t)ic4, *pCrc);
 
-    return ic1 | ic2 << 8 | (ulong)ic3 << 16 | (ulong)ic4 << 24;
+    return ic1 | ic2 << 8 | (uint32_t)ic3 << 16 | (uint32_t)ic4 << 24;
 }
 
-ulong
+uint32_t
 Nu_ReadFour(NuArchive* pArchive, FILE* fp)
 {
-    ushort dummyCrc CLEAN_INIT;
+    uint16_t dummyCrc CLEAN_INIT;
     return Nu_ReadFourC(pArchive, fp, &dummyCrc);
 }
 
@@ -162,7 +162,7 @@ Nu_ReadFour(NuArchive* pArchive, FILE* fp)
  * Write four little-endian bytes, optionally computing a CRC.
  */
 void
-Nu_WriteFourC(NuArchive* pArchive, FILE* fp, ulong val, ushort* pCrc)
+Nu_WriteFourC(NuArchive* pArchive, FILE* fp, uint32_t val, uint16_t* pCrc)
 {
     int ic1, ic2, ic3, ic4;
 
@@ -171,13 +171,13 @@ Nu_WriteFourC(NuArchive* pArchive, FILE* fp, ulong val, ushort* pCrc)
     Assert(pCrc != NULL);
 
     ic1 = val & 0xff;
-    *pCrc = Nu_UpdateCRC16((uchar)ic1, *pCrc);
+    *pCrc = Nu_UpdateCRC16((uint8_t)ic1, *pCrc);
     ic2 = (val >> 8) & 0xff;
-    *pCrc = Nu_UpdateCRC16((uchar)ic2, *pCrc);
+    *pCrc = Nu_UpdateCRC16((uint8_t)ic2, *pCrc);
     ic3 = (val >> 16) & 0xff;
-    *pCrc = Nu_UpdateCRC16((uchar)ic3, *pCrc);
+    *pCrc = Nu_UpdateCRC16((uint8_t)ic3, *pCrc);
     ic4 = val >> 24;
-    *pCrc = Nu_UpdateCRC16((uchar)ic4, *pCrc);
+    *pCrc = Nu_UpdateCRC16((uint8_t)ic4, *pCrc);
 
     putc(ic1, fp);
     putc(ic2, fp);
@@ -186,9 +186,9 @@ Nu_WriteFourC(NuArchive* pArchive, FILE* fp, ulong val, ushort* pCrc)
 }
 
 void
-Nu_WriteFour(NuArchive* pArchive, FILE* fp, ulong val)
+Nu_WriteFour(NuArchive* pArchive, FILE* fp, uint32_t val)
 {
-    ushort dummyCrc CLEAN_INIT;
+    uint16_t dummyCrc CLEAN_INIT;
     Nu_WriteFourC(pArchive, fp, val, &dummyCrc);
 }
 
@@ -201,7 +201,7 @@ Nu_WriteFour(NuArchive* pArchive, FILE* fp, ulong val)
  * messing-with, the better.
  */
 NuDateTime
-Nu_ReadDateTimeC(NuArchive* pArchive, FILE* fp, ushort* pCrc)
+Nu_ReadDateTimeC(NuArchive* pArchive, FILE* fp, uint16_t* pCrc)
 {
     NuDateTime temp;
     int ic;
@@ -211,37 +211,37 @@ Nu_ReadDateTimeC(NuArchive* pArchive, FILE* fp, ushort* pCrc)
     Assert(pCrc != NULL);
 
     ic = getc(fp);
-    *pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
+    *pCrc = Nu_UpdateCRC16((uint8_t)ic, *pCrc);
     temp.second = ic;
     ic = getc(fp);
-    *pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
+    *pCrc = Nu_UpdateCRC16((uint8_t)ic, *pCrc);
     temp.minute = ic;
     ic = getc(fp);
-    *pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
+    *pCrc = Nu_UpdateCRC16((uint8_t)ic, *pCrc);
     temp.hour = ic;
     ic = getc(fp);
-    *pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
+    *pCrc = Nu_UpdateCRC16((uint8_t)ic, *pCrc);
     temp.year = ic;
     ic = getc(fp);
-    *pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
+    *pCrc = Nu_UpdateCRC16((uint8_t)ic, *pCrc);
     temp.day = ic;
     ic = getc(fp);
-    *pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
+    *pCrc = Nu_UpdateCRC16((uint8_t)ic, *pCrc);
     temp.month = ic;
     ic = getc(fp);
-    *pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
+    *pCrc = Nu_UpdateCRC16((uint8_t)ic, *pCrc);
     temp.extra = ic;
     ic = getc(fp);
-    *pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
+    *pCrc = Nu_UpdateCRC16((uint8_t)ic, *pCrc);
     temp.weekDay = ic;
 
     return temp;
 }
 
 NuDateTime
-Nu_ReadDateTime(NuArchive* pArchive, FILE* fp, ushort* pCrc)
+Nu_ReadDateTime(NuArchive* pArchive, FILE* fp, uint16_t* pCrc)
 {
-    ushort dummyCrc CLEAN_INIT;
+    uint16_t dummyCrc CLEAN_INIT;
     return Nu_ReadDateTimeC(pArchive, fp, &dummyCrc);
 }
 
@@ -251,7 +251,7 @@ Nu_ReadDateTime(NuArchive* pArchive, FILE* fp, ushort* pCrc)
  */
 void
 Nu_WriteDateTimeC(NuArchive* pArchive, FILE* fp, NuDateTime dateTime,
-    ushort* pCrc)
+    uint16_t* pCrc)
 {
     int ic;
 
@@ -260,35 +260,35 @@ Nu_WriteDateTimeC(NuArchive* pArchive, FILE* fp, NuDateTime dateTime,
     Assert(pCrc != NULL);
 
     ic = dateTime.second;
-    *pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
+    *pCrc = Nu_UpdateCRC16((uint8_t)ic, *pCrc);
     putc(ic, fp);
     ic = dateTime.minute;
-    *pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
+    *pCrc = Nu_UpdateCRC16((uint8_t)ic, *pCrc);
     putc(ic, fp);
     ic = dateTime.hour;
-    *pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
+    *pCrc = Nu_UpdateCRC16((uint8_t)ic, *pCrc);
     putc(ic, fp);
     ic = dateTime.year;
-    *pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
+    *pCrc = Nu_UpdateCRC16((uint8_t)ic, *pCrc);
     putc(ic, fp);
     ic = dateTime.day;
-    *pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
+    *pCrc = Nu_UpdateCRC16((uint8_t)ic, *pCrc);
     putc(ic, fp);
     ic = dateTime.month;
-    *pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
+    *pCrc = Nu_UpdateCRC16((uint8_t)ic, *pCrc);
     putc(ic, fp);
     ic = dateTime.extra;
-    *pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
+    *pCrc = Nu_UpdateCRC16((uint8_t)ic, *pCrc);
     putc(ic, fp);
     ic = dateTime.weekDay;
-    *pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
+    *pCrc = Nu_UpdateCRC16((uint8_t)ic, *pCrc);
     putc(ic, fp);
 }
 
 void
 Nu_WriteDateTime(NuArchive* pArchive, FILE* fp, NuDateTime dateTime)
 {
-    ushort dummyCrc CLEAN_INIT;
+    uint16_t dummyCrc CLEAN_INIT;
     Nu_WriteDateTimeC(pArchive, fp, dateTime, &dummyCrc);
 }
 
@@ -298,9 +298,9 @@ Nu_WriteDateTime(NuArchive* pArchive, FILE* fp, NuDateTime dateTime)
  */
 void
 Nu_ReadBytesC(NuArchive* pArchive, FILE* fp, void* vbuffer, long count,
-    ushort* pCrc)
+    uint16_t* pCrc)
 {
-    uchar* buffer = vbuffer;
+    uint8_t* buffer = vbuffer;
     int ic;
 
     Assert(pArchive != NULL);
@@ -311,7 +311,7 @@ Nu_ReadBytesC(NuArchive* pArchive, FILE* fp, void* vbuffer, long count,
 
     while (count--) {
         ic = getc(fp);
-        *pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
+        *pCrc = Nu_UpdateCRC16((uint8_t)ic, *pCrc);
         *buffer++ = ic;
     }
 }
@@ -319,7 +319,7 @@ Nu_ReadBytesC(NuArchive* pArchive, FILE* fp, void* vbuffer, long count,
 void
 Nu_ReadBytes(NuArchive* pArchive, FILE* fp, void* vbuffer, long count)
 {
-    ushort dummyCrc CLEAN_INIT;
+    uint16_t dummyCrc CLEAN_INIT;
     Nu_ReadBytesC(pArchive, fp, vbuffer, count, &dummyCrc);
 }
 
@@ -329,9 +329,9 @@ Nu_ReadBytes(NuArchive* pArchive, FILE* fp, void* vbuffer, long count)
  */
 void
 Nu_WriteBytesC(NuArchive* pArchive, FILE* fp, const void* vbuffer, long count,
-    ushort* pCrc)
+    uint16_t* pCrc)
 {
-    const uchar* buffer = vbuffer;
+    const uint8_t* buffer = vbuffer;
     int ic;
 
     Assert(pArchive != NULL);
@@ -342,7 +342,7 @@ Nu_WriteBytesC(NuArchive* pArchive, FILE* fp, const void* vbuffer, long count,
 
     while (count--) {
         ic = *buffer++;
-        *pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
+        *pCrc = Nu_UpdateCRC16((uint8_t)ic, *pCrc);
         putc(ic, fp);
     }
 }
@@ -350,7 +350,7 @@ Nu_WriteBytesC(NuArchive* pArchive, FILE* fp, const void* vbuffer, long count,
 void
 Nu_WriteBytes(NuArchive* pArchive, FILE* fp, const void* vbuffer, long count)
 {
-    ushort dummyCrc CLEAN_INIT;
+    uint16_t dummyCrc CLEAN_INIT;
     Nu_WriteBytesC(pArchive, fp, vbuffer, count, &dummyCrc);
 }
 

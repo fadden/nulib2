@@ -142,7 +142,7 @@ PrintEntry(NuArchive* pArchive, void* vpRecord)
 
     (void)pArchive; /* shut up, gcc */
 
-    printf("RecordIdx %ld: '%s'\n",
+    printf("RecordIdx %u: '%s'\n",
         pRecord->recordIdx, pRecord->filename);
 
     for (idx = 0; idx < (int) pRecord->recTotalThreads; idx++) {
@@ -198,7 +198,7 @@ PrintEntry(NuArchive* pArchive, void* vpRecord)
             break;
         }
 
-        printf("  ThreadIdx %ld - 0x%08lx (%s)\n", pThread->threadIdx,
+        printf("  ThreadIdx %u - 0x%08x (%s)\n", pThread->threadIdx,
             threadID, threadLabel);
     }
 
@@ -420,7 +420,7 @@ AddRecordFunc(ExerciserState* pState, int argc, char** argv)
     err = NuAddRecord(ExerciserState_GetNuArchive(pState),
             &nuFileDetails, &recordIdx);
     if (err == kNuErrNone)
-        printf("Exerciser: success, new recordIdx=%ld\n", recordIdx);
+        printf("Exerciser: success, new recordIdx=%u\n", recordIdx);
     return err;
 }
 
@@ -487,7 +487,7 @@ AddThreadFunc(ExerciserState* pState, int argc, char** argv)
 
         /* create a data source from the buffer */
         err = NuCreateDataSourceForBuffer(kNuThreadFormatUncompressed,
-                maxLen, (unsigned char*)lineBuf, 0, ourLen, FreeCallback,
+                maxLen, (uint8_t*)lineBuf, 0, ourLen, FreeCallback,
                 &pDataSource);
         if (err != kNuErrNone) {
             fprintf(stderr,
@@ -502,7 +502,7 @@ AddThreadFunc(ExerciserState* pState, int argc, char** argv)
             strtol(argv[1], NULL, 0), threadID, pDataSource, &threadIdx);
     if (err == kNuErrNone) {
         pDataSource = NULL;  /* library owns it now */
-        printf("Exerciser: success; function returned threadIdx=%ld\n",
+        printf("Exerciser: success; function returned threadIdx=%u\n",
             threadIdx);
     }
 
@@ -673,7 +673,7 @@ GetValueFunc(ExerciserState* pState, int argc, char** argv)
     err = NuGetValue(ExerciserState_GetNuArchive(pState),
             (NuValueID) strtol(argv[1], NULL, 0), &value);
     if (err == kNuErrNone)
-        printf("  --> %ld\n", value);
+        printf("  --> %u\n", value);
     return err;
 }
 
@@ -693,7 +693,7 @@ GetMasterHeaderFunc(ExerciserState* pState, int argc, char** argv)
     err = NuGetMasterHeader(ExerciserState_GetNuArchive(pState),
             &pMasterHeader);
     if (err == kNuErrNone) {
-        printf("Exerciser: success (version=%u, totalRecords=%lu, EOF=%lu)\n",
+        printf("Exerciser: success (version=%u, totalRecords=%u, EOF=%u)\n",
             pMasterHeader->mhMasterVersion, pMasterHeader->mhTotalRecords,
             pMasterHeader->mhMasterEOF);
     }
@@ -720,9 +720,9 @@ GetRecordFunc(ExerciserState* pState, int argc, char** argv)
         printf("\tfileSysID   : %d\n", pRecord->recFileSysID);
         printf("\tfileSysInfo : 0x%04x ('%c')\n", pRecord->recFileSysInfo,
             NuGetSepFromSysInfo(pRecord->recFileSysInfo));
-        printf("\taccess      : 0x%02lx\n", pRecord->recAccess);
-        printf("\tfileType    : 0x%04lx\n", pRecord->recFileType);
-        printf("\textraType   : 0x%04lx\n", pRecord->recExtraType);
+        printf("\taccess      : 0x%02x\n", pRecord->recAccess);
+        printf("\tfileType    : 0x%04x\n", pRecord->recFileType);
+        printf("\textraType   : 0x%04x\n", pRecord->recExtraType);
         printf("\tcreateWhen  : ...\n");
         printf("\tmodWhen     : ...\n");        /* too lazy */
         printf("\tarchiveWhen : ...\n");
@@ -746,7 +746,7 @@ GetRecordIdxByNameFunc(ExerciserState* pState, int argc, char** argv)
     err = NuGetRecordIdxByName(ExerciserState_GetNuArchive(pState),
             argv[1], &recIdx);
     if (err == kNuErrNone)
-        printf("Exerciser: success, returned recordIdx=%ld\n", recIdx);
+        printf("Exerciser: success, returned recordIdx=%u\n", recIdx);
     return err;
 }
 
@@ -766,7 +766,7 @@ GetRecordIdxByPositionFunc(ExerciserState* pState, int argc, char** argv)
     err = NuGetRecordIdxByPosition(ExerciserState_GetNuArchive(pState),
             strtol(argv[1], NULL, 0), &recIdx);
     if (err == kNuErrNone)
-        printf("Exerciser: success, returned recordIdx=%ld\n", recIdx);
+        printf("Exerciser: success, returned recordIdx=%u\n", recIdx);
     return err;
 }
 
@@ -1020,7 +1020,7 @@ UpdatePresizedThreadFunc(ExerciserState* pState, int argc, char** argv)
 
     /* use "ourLen" for both buffer len and data len */
     err = NuCreateDataSourceForBuffer(kNuThreadFormatUncompressed,
-            ourLen, (unsigned char*)lineBuf, 0, ourLen, FreeCallback,
+            ourLen, (uint8_t*)lineBuf, 0, ourLen, FreeCallback,
             &pDataSource);
     if (err != kNuErrNone) {
         fprintf(stderr, "Exerciser: data source create failed (err=%d)\n",
@@ -1056,7 +1056,7 @@ static const struct {
     CommandFunc     func;
     int             expectedArgCount;
     const char*     argumentList;
-    unsigned long   flags;
+    uint32_t        flags;
     const char*     description;
 } gCommandTable[] = {
     { "--- exerciser commands ---", HelpFunc, 0, "", 0,

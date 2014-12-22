@@ -17,11 +17,11 @@
  */
 static NuError
 Nu_CompressUncompressed(NuArchive* pArchive, NuStraw* pStraw,
-    FILE* fp, ulong srcLen, ulong* pDstLen, ushort *pCrc)
+    FILE* fp, uint32_t srcLen, uint32_t* pDstLen, uint16_t *pCrc)
 {
     NuError err = kNuErrNone;
-    /*uchar* buffer = NULL;*/
-    ulong count, getsize;
+    /*uint8_t* buffer = NULL;*/
+    uint32_t count, getsize;
 
     Assert(pArchive != NULL);
     Assert(pStraw != NULL);
@@ -97,8 +97,8 @@ Nu_CompressToArchive(NuArchive* pArchive, NuDataSource* pDataSource,
     long origOffset;
     NuStraw* pStraw = NULL;
     NuDataSink* pDataSink = NULL;
-    ulong srcLen = 0, dstLen = 0;
-    ushort threadCrc;
+    uint32_t srcLen = 0, dstLen = 0;
+    uint16_t threadCrc;
 
     Assert(pArchive != NULL);
     Assert(pDataSource != NULL);
@@ -116,7 +116,7 @@ Nu_CompressToArchive(NuArchive* pArchive, NuDataSource* pDataSource,
 
     pThread->thThreadClass = NuThreadIDGetClass(threadID);
     pThread->thThreadKind = NuThreadIDGetKind(threadID);
-    pThread->actualThreadEOF = (ulong)-1;
+    pThread->actualThreadEOF = (uint32_t)-1;
     /* nuThreadIdx and fileOffset should already be set */
 
     /*
@@ -328,8 +328,8 @@ Nu_CopyPresizedToArchive(NuArchive* pArchive, NuDataSource* pDataSource,
 {
     NuError err = kNuErrNone;
     NuStraw* pStraw = NULL;
-    ulong srcLen, bufferLen;
-    ulong count, getsize;
+    uint32_t srcLen, bufferLen;
+    uint32_t count, getsize;
 
     srcLen = Nu_DataSourceGetDataLen(pDataSource);
     bufferLen = Nu_DataSourceGetOtherLen(pDataSource);

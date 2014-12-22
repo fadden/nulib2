@@ -12,7 +12,7 @@
 /*
  * Local constants.
  */
-static const uchar kNufxID[kNufxIDLen] = { 0x4e, 0xf5, 0x46, 0xd8 };
+static const uint8_t kNufxID[kNufxIDLen] = { 0x4e, 0xf5, 0x46, 0xd8 };
 
 
 /*
@@ -106,11 +106,11 @@ Nu_RecordFree(NuArchive* pArchive, NuRecord* pRecord)
  * another.  It is assumed that the length value has already been copied.
  */
 static NuError
-CopySizedField(NuArchive* pArchive, void* vppDst, const void* vpSrc, uint len)
+CopySizedField(NuArchive* pArchive, void* vppDst, const void* vpSrc, uint32_t len)
 {
     NuError err = kNuErrNone;
-    uchar** ppDst = vppDst;
-    const uchar* pSrc = vpSrc;
+    uint8_t** ppDst = vppDst;
+    const uint8_t* pSrc = vpSrc;
 
     Assert(ppDst != NULL);
 
@@ -288,14 +288,14 @@ Nu_RecordSet_SetLoaded(NuRecordSet* pRecordSet, Boolean val)
     pRecordSet->loaded = val;
 }
 
-ulong
+uint32_t
 Nu_RecordSet_GetNumRecords(const NuRecordSet* pRecordSet)
 {
     return pRecordSet->numRecords;
 }
 
 void
-Nu_RecordSet_SetNumRecords(NuRecordSet* pRecordSet, ulong val)
+Nu_RecordSet_SetNumRecords(NuRecordSet* pRecordSet, uint32_t val)
 {
     pRecordSet->numRecords = val;
 }
@@ -876,7 +876,7 @@ static NuError
 Nu_ReadRecordHeader(NuArchive* pArchive, NuRecord* pRecord)
 {
     NuError err = kNuErrNone;
-    ushort crc;
+    uint16_t crc;
     FILE* fp;
     int bytesRead;
 
@@ -941,7 +941,7 @@ Nu_ReadRecordHeader(NuArchive* pArchive, NuRecord* pRecord)
     }
     if (pRecord->recTotalThreads > kNuReasonableTotalThreads) {
         err = kNuErrBadRecord;
-        Nu_ReportError(NU_BLOB, err, "Unreasonable number of threads (%lu)",
+        Nu_ReportError(NU_BLOB, err, "Unreasonable number of threads (%u)",
             pRecord->recTotalThreads);
         goto bail;
     }
@@ -1056,7 +1056,7 @@ Nu_ReadRecordHeader(NuArchive* pArchive, NuRecord* pRecord)
             Nu_ReportError(NU_BLOB, err, "Stored RH CRC=0x%04x, calc=0x%04x",
                 pRecord->recHeaderCRC, crc);
             Nu_ReportError(NU_BLOB_DEBUG, kNuErrNone,
-                "--- Problematic record is id=%ld", pRecord->recordIdx);
+                "--- Problematic record is id=%u", pRecord->recordIdx);
             goto bail;
         }
     }
@@ -1171,7 +1171,7 @@ NuError
 Nu_WriteRecordHeader(NuArchive* pArchive, NuRecord* pRecord, FILE* fp)
 {
     NuError err = kNuErrNone;
-    ushort crc;
+    uint16_t crc;
     long crcOffset;
     int bytesWritten;
 
@@ -1199,7 +1199,7 @@ Nu_WriteRecordHeader(NuArchive* pArchive, NuRecord* pRecord, FILE* fp)
     Nu_WriteTwoC(pArchive, fp, pRecord->recAttribCount, &crc);
     Nu_WriteTwoC(pArchive, fp, pRecord->recVersionNumber, &crc);
     Nu_WriteFourC(pArchive, fp, pRecord->recTotalThreads, &crc);
-    Nu_WriteTwoC(pArchive, fp, (ushort)pRecord->recFileSysID, &crc);
+    Nu_WriteTwoC(pArchive, fp, (uint16_t)pRecord->recFileSysID, &crc);
     Nu_WriteTwoC(pArchive, fp, pRecord->recFileSysInfo, &crc);
     Nu_WriteFourC(pArchive, fp, pRecord->recAccess, &crc);
     Nu_WriteFourC(pArchive, fp, pRecord->recFileType, &crc);
@@ -1423,7 +1423,7 @@ Nu_GetTOCIfNeeded(NuArchive* pArchive)
 {
     NuError err = kNuErrNone;
     NuRecord* pRecord;
-    ulong count;
+    uint32_t count;
 
     Assert(pArchive != NULL);
 
@@ -1464,7 +1464,7 @@ Nu_StreamContents(NuArchive* pArchive, NuCallback contentFunc)
     NuError err = kNuErrNone;
     NuRecord tmpRecord;
     NuResult result;
-    ulong count;
+    uint32_t count;
 
     if (contentFunc == NULL) {
         err = kNuErrInvalidArg;
@@ -1555,7 +1555,7 @@ Nu_StreamExtract(NuArchive* pArchive)
     NuError err = kNuErrNone;
     NuRecord tmpRecord;
     Boolean hasInterestingThread;
-    ulong count;
+    uint32_t count;
     long idx;
 
     /* reset this just to be safe */
@@ -1692,7 +1692,7 @@ Nu_Contents(NuArchive* pArchive, NuCallback contentFunc)
     NuError err = kNuErrNone;
     NuRecord* pRecord;
     NuResult result;
-    ulong count;
+    uint32_t count;
 
     if (contentFunc == NULL) {
         err = kNuErrInvalidArg;
@@ -1732,7 +1732,7 @@ Nu_ExtractRecordByPtr(NuArchive* pArchive, NuRecord* pRecord)
 {
     NuError err = kNuErrNone;
     Boolean hasInterestingThread;
-    ulong idx;
+    uint32_t idx;
 
     Assert(!Nu_IsStreaming(pArchive));  /* we don't skip things we don't read */
     Assert(pRecord != NULL);
@@ -1801,7 +1801,7 @@ Nu_Extract(NuArchive* pArchive)
 {
     NuError err;
     NuRecord* pRecord = NULL;
-    ulong count;
+    uint32_t count;
     long offset;
 
     /* reset this just to be safe */
@@ -1977,7 +1977,7 @@ bail:
  * Find the recordIdx of a record by zero-based position.
  */
 NuError
-Nu_GetRecordIdxByPosition(NuArchive* pArchive, ulong position,
+Nu_GetRecordIdxByPosition(NuArchive* pArchive, uint32_t position,
     NuRecordIdx* pRecordIdx)
 {
     NuError err;
@@ -2644,7 +2644,7 @@ Nu_Rename(NuArchive* pArchive, NuRecordIdx recIdx, const char* pathname,
     if (doAdd || doUpdate) {
         Assert(newCapacity);
         err = Nu_DataSourceBuffer_New(kNuThreadFormatUncompressed,
-                newCapacity, (const uchar*)strdup(pathname), 0,
+                newCapacity, (const uint8_t*)strdup(pathname), 0,
                 requiredCapacity /*(strlen)*/, Nu_InternalFreeCallback,
                 &pDataSource);
         BailError(err);

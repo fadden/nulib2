@@ -272,9 +272,9 @@ SelectionFilter(NuArchive* pArchive, void* vproposal)
  * Print a three-digit progress percentage; range is 0% to 100%.
  */
 void
-PrintPercentage(ulong total, ulong progress)
+PrintPercentage(uint32_t total, uint32_t progress)
 {
-    ulong perc;
+    uint32_t perc;
 
     if (!total) {
         /*printf("   %%");*/
@@ -292,7 +292,7 @@ PrintPercentage(ulong total, ulong progress)
             perc = 100;
     }
 
-    printf("%3ld%%", perc);
+    printf("%3d%%", perc);
 }
 
 /*

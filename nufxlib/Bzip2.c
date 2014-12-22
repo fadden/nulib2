@@ -48,12 +48,12 @@ Nu_bzfree(void* opaque, void* address)
  */
 NuError
 Nu_CompressBzip2(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
-    ulong srcLen, ulong* pDstLen, ushort* pCrc)
+    uint32_t srcLen, uint32_t* pDstLen, uint16_t* pCrc)
 {
     NuError err = kNuErrNone;
     bz_stream bzstream;
     int bzerr;
-    uchar* outbuf = NULL;
+    uint8_t* outbuf = NULL;
 
     Assert(pArchive != NULL);
     Assert(pStraw != NULL);
@@ -98,7 +98,7 @@ Nu_CompressBzip2(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
      * Loop while we have data.
      */
     do {
-        ulong getSize;
+        uint32_t getSize;
         int action;
 
         /* should be able to read a full buffer every time */
@@ -139,8 +139,8 @@ Nu_CompressBzip2(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
             (bzerr == BZ_STREAM_END && bzstream.avail_out != kNuGenCompBufSize))
         {
             DBUG(("+++ writing %d bytes\n",
-                (uchar*)bzstream.next_out - outbuf));
-            err = Nu_FWrite(fp, outbuf, (uchar*)bzstream.next_out - outbuf);
+                (uint8_t*)bzstream.next_out - outbuf));
+            err = Nu_FWrite(fp, outbuf, (uint8_t*)bzstream.next_out - outbuf);
             if (err != kNuErrNone) {
                 Nu_ReportError(NU_BLOB, err, "fwrite failed in bzip2");
                 goto bz_bail;
@@ -175,13 +175,13 @@ bail:
  */
 NuError
 Nu_ExpandBzip2(NuArchive* pArchive, const NuRecord* pRecord,
-    const NuThread* pThread, FILE* infp, NuFunnel* pFunnel, ushort* pCrc)
+    const NuThread* pThread, FILE* infp, NuFunnel* pFunnel, uint16_t* pCrc)
 {
     NuError err = kNuErrNone;
     bz_stream bzstream;
     int bzerr;
-    ulong compRemaining;
-    uchar* outbuf;
+    uint32_t compRemaining;
+    uint8_t* outbuf;
 
     Assert(pArchive != NULL);
     Assert(pThread != NULL);
@@ -226,7 +226,7 @@ Nu_ExpandBzip2(NuArchive* pArchive, const NuRecord* pRecord,
      * Loop while we have data.
      */
     do {
-        ulong getSize;
+        uint32_t getSize;
 
         /* read as much as we can */
         if (bzstream.avail_in == 0) {
@@ -258,9 +258,10 @@ Nu_ExpandBzip2(NuArchive* pArchive, const NuRecord* pRecord,
 
         /* write every time there's anything (buffer will usually be full) */
         if (bzstream.avail_out != kNuGenCompBufSize) {
-            DBUG(("+++ writing %d bytes\n",(uchar*)bzstream.next_out - outbuf));
+            DBUG(("+++ writing %d bytes\n",
+                (uint8_t*) bzstream.next_out - outbuf));
             err = Nu_FunnelWrite(pArchive, pFunnel, outbuf,
-                    (uchar*)bzstream.next_out - outbuf);
+                    (uint8_t*)bzstream.next_out - outbuf);
             if (err != kNuErrNone) {
                 Nu_ReportError(NU_BLOB, err, "write failed in bzip2");
                 goto bz_bail;
@@ -268,7 +269,7 @@ Nu_ExpandBzip2(NuArchive* pArchive, const NuRecord* pRecord,
 
             if (pCrc != NULL)
                 *pCrc = Nu_CalcCRC16(*pCrc, outbuf,
-                                    (uchar*) bzstream.next_out - outbuf);
+                                    (uint8_t*) bzstream.next_out - outbuf);
 
             bzstream.next_out = outbuf;
             bzstream.avail_out = kNuGenCompBufSize;

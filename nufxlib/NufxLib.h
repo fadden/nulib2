@@ -10,6 +10,7 @@
 #define __NufxLib__
 
 #include <stdio.h>
+#include <stdint.h>
 
 
 #ifdef __cplusplus
@@ -148,27 +149,27 @@ typedef enum NuResult {
  * NuRecordIdxs are assigned to records in an archive.  You may assume that
  * the values are unique, but that is all.
  */
-typedef unsigned long NuRecordIdx;
+typedef uint32_t NuRecordIdx;
 
 /*
  * NuThreadIdxs are assigned to threads within a record.  Again, you may
  * assume that the values are unique within a record, but that is all.
  */
-typedef unsigned long NuThreadIdx;
+typedef uint32_t NuThreadIdx;
 
 /*
  * Thread ID, a combination of thread_class and thread_kind.  Standard
  * values have explicit identifiers.
  */
-typedef unsigned long NuThreadID;
+typedef uint32_t NuThreadID;
 #define NuMakeThreadID(class, kind) /* construct a NuThreadID */ \
-            ((unsigned long)(class) << 16 | (unsigned long)(kind))
+            ((uint32_t)(class) << 16 | (uint32_t)(kind))
 #define NuGetThreadID(pThread)      /* pull NuThreadID out of NuThread */ \
             (NuMakeThreadID((pThread)->thThreadClass, (pThread)->thThreadKind))
 #define NuThreadIDGetClass(threadID) /* get threadClass from NuThreadID */ \
-            ((unsigned short) ((unsigned long)(threadID) >> 16))
+            ((uint16_t) ((uint32_t)(threadID) >> 16))
 #define NuThreadIDGetKind(threadID) /* get threadKind from NuThreadID */ \
-            ((unsigned short) ((threadID) & 0xffff))
+            ((uint16_t) ((threadID) & 0xffff))
 #define kNuThreadClassMessage   0x0000
 #define kNuThreadClassControl   0x0001
 #define kNuThreadClassData      0x0002
@@ -201,7 +202,7 @@ typedef enum NuThreadFormat {
             ((char) ((sysInfo) & 0xff))
 /* return a file_sys_info with a replaced filesystem separator */
 #define NuSetSepInSysInfo(sysInfo, newSep) \
-            ((unsigned short) (((sysInfo) & 0xff00) | ((newSep) & 0xff)) )
+            ((uint16_t) (((sysInfo) & 0xff00) | ((newSep) & 0xff)) )
 
 /* GS/OS-defined file system identifiers; sadly, UNIX is not among them */
 typedef enum NuFileSysID {
@@ -273,7 +274,7 @@ typedef enum NuValueID {
     kNuValueIgnoreLZW2Len       = 14,
     kNuValueHandleBadMac        = 15
 } NuValueID;
-typedef unsigned long NuValue;
+typedef uint32_t NuValue;
 
 /*
  * Enumerated values for things you pass in a NuValue.
@@ -322,7 +323,7 @@ typedef enum NuAttrID {
     kNuAttrHeaderOffset     = 3,
     kNuAttrJunkOffset       = 4,
 } NuAttrID;
-typedef unsigned long NuAttr;
+typedef uint32_t NuAttr;
 
 /*
  * Archive types.
@@ -381,14 +382,14 @@ typedef union NuDataSink NuDataSink;        /* dummy def for internal struct */
  * NuFX Date/Time structure; same as TimeRec from IIgs "misctool.h".
  */
 typedef struct NuDateTime {
-    unsigned char   second;         /* 0-59 */
-    unsigned char   minute;         /* 0-59 */
-    unsigned char   hour;           /* 0-23 */
-    unsigned char   year;           /* year - 1900 */
-    unsigned char   day;            /* 0-30 */
-    unsigned char   month;          /* 0-11 */
-    unsigned char   extra;          /* (must be zero) */
-    unsigned char   weekDay;        /* 1-7 (1=sunday) */
+    uint8_t     second;         /* 0-59 */
+    uint8_t     minute;         /* 0-59 */
+    uint8_t     hour;           /* 0-23 */
+    uint8_t     year;           /* year - 1900 */
+    uint8_t     day;            /* 0-30 */
+    uint8_t     month;          /* 0-11 */
+    uint8_t     extra;          /* (must be zero) */
+    uint8_t     weekDay;        /* 1-7 (1=sunday) */
 } NuDateTime;
 
 /*
@@ -399,20 +400,20 @@ typedef struct NuDateTime {
  */
 typedef struct NuThread {
     /* from the archive */
-    unsigned short      thThreadClass;
-    NuThreadFormat      thThreadFormat;
-    unsigned short      thThreadKind;
-    unsigned short      thThreadCRC;    /* comp or uncomp data; see rec vers */
-    unsigned long       thThreadEOF;
-    unsigned long       thCompThreadEOF;
+    uint16_t        thThreadClass;
+    NuThreadFormat  thThreadFormat;
+    uint16_t        thThreadKind;
+    uint16_t        thThreadCRC;    /* comp or uncomp data; see rec vers */
+    uint32_t        thThreadEOF;
+    uint32_t        thCompThreadEOF;
 
     /* extra goodies */
-    NuThreadIdx         threadIdx;
-    unsigned long       actualThreadEOF;    /* disk images might be off */
-    long                fileOffset;         /* fseek offset to data in shk */
+    NuThreadIdx     threadIdx;
+    uint32_t        actualThreadEOF;    /* disk images might be off */
+    long            fileOffset;         /* fseek offset to data in shk */
 
     /* internal use only */
-    unsigned short      used;               /* mark as uninteresting */
+    uint16_t        used;               /* mark as uninteresting */
 } NuThread;
 
 /*
@@ -428,52 +429,52 @@ typedef struct NuThread {
 #define kNuOurRecordVersion         3       /* what we write */
 typedef struct NuRecord {
     /* version 0+ */
-    unsigned char       recNufxID[kNufxIDLen];
-    unsigned short      recHeaderCRC;
-    unsigned short      recAttribCount;
-    unsigned short      recVersionNumber;
-    unsigned long       recTotalThreads;
-    NuFileSysID         recFileSysID;
-    unsigned short      recFileSysInfo;
-    unsigned long       recAccess;
-    unsigned long       recFileType;
-    unsigned long       recExtraType;
-    unsigned short      recStorageType;     /* NuStorage*,file_sys_block_size */
-    NuDateTime          recCreateWhen;
-    NuDateTime          recModWhen;
-    NuDateTime          recArchiveWhen;
+    uint8_t         recNufxID[kNufxIDLen];
+    uint16_t        recHeaderCRC;
+    uint16_t        recAttribCount;
+    uint16_t        recVersionNumber;
+    uint32_t        recTotalThreads;
+    NuFileSysID     recFileSysID;
+    uint16_t        recFileSysInfo;
+    uint32_t        recAccess;
+    uint32_t        recFileType;
+    uint32_t        recExtraType;
+    uint16_t        recStorageType;     /* NuStorage*,file_sys_block_size */
+    NuDateTime      recCreateWhen;
+    NuDateTime      recModWhen;
+    NuDateTime      recArchiveWhen;
 
     /* option lists only in version 1+ */
-    unsigned short      recOptionSize;
-    unsigned char*      recOptionList;      /* NULL if v0 or recOptionSize==0 */
+    uint16_t        recOptionSize;
+    uint8_t*        recOptionList;      /* NULL if v0 or recOptionSize==0 */
 
     /* data specified by recAttribCount, not accounted for by option list */
-    long                extraCount;
-    unsigned char*      extraBytes;
+    long            extraCount;
+    uint8_t*        extraBytes;
 
-    unsigned short      recFilenameLength;  /* usually zero */
-    char*               recFilename;        /* doubles as disk volume_name */
+    uint16_t        recFilenameLength;  /* usually zero */
+    char*           recFilename;        /* doubles as disk volume_name */
 
     /* extra goodies; "dirtyHeader" does not apply to anything below */
-    NuRecordIdx         recordIdx;      /* session-unique record index */
-    char*               threadFilename; /* extracted from filename thread */
-    char*               newFilename;    /* memorized during "add file" call */
-    const char*         filename;       /* points at recFilen or threadFilen */
-    unsigned long       recHeaderLength; /* size of rec hdr, incl thread hdrs */
-    unsigned long       totalCompLength; /* total len of data in archive file */
-    long                fakeThreads;    /* used by "MaskDataless" */
-    int                 isBadMac;       /* malformed "bad mac" header */
+    NuRecordIdx     recordIdx;          /* session-unique record index */
+    char*           threadFilename;     /* extracted from filename thread */
+    char*           newFilename;        /* memorized during "add file" call */
+    const char*     filename;           /* points at recFilen or threadFilen */
+    uint32_t        recHeaderLength;    /* size of rec hdr, incl thread hdrs */
+    uint32_t        totalCompLength;    /* total len of data in archive file */
+    long            fakeThreads;        /* used by "MaskDataless" */
+    int             isBadMac;           /* malformed "bad mac" header */
 
-    long                fileOffset;     /* file offset of record header */
+    long            fileOffset;         /* file offset of record header */
 
     /* use provided interface to access this */
-    struct NuThread*    pThreads;       /* ptr to thread array */
+    struct NuThread* pThreads;          /* ptr to thread array */
 
     /* private -- things the application shouldn't look at */
-    struct NuRecord*    pNext;          /* used internally */
-    NuThreadMod*        pThreadMods;    /* used internally */
-    short               dirtyHeader;    /* set in "copy" when hdr fields uptd */
-    short               dropRecFilename; /* if set, we're dropping this name */
+    struct NuRecord* pNext;             /* used internally */
+    NuThreadMod*    pThreadMods;        /* used internally */
+    short           dirtyHeader;        /* set in "copy" when hdr fields uptd */
+    short           dropRecFilename;    /* if set, we're dropping this name */
 } NuRecord;
 
 /*
@@ -488,18 +489,18 @@ typedef struct NuRecord {
 #define kNuMaxMHVersion             2       /* max we can handle */
 #define kNuOurMHVersion             2       /* what we write */
 typedef struct NuMasterHeader {
-    unsigned char       mhNufileID[kNufileIDLen];
-    unsigned short      mhMasterCRC;
-    unsigned long       mhTotalRecords;
-    NuDateTime          mhArchiveCreateWhen;
-    NuDateTime          mhArchiveModWhen;
-    unsigned short      mhMasterVersion;
-    unsigned char       mhReserved1[kNufileMasterReserved1Len];
-    unsigned long       mhMasterEOF;
-    unsigned char       mhReserved2[kNufileMasterReserved2Len];
+    uint8_t         mhNufileID[kNufileIDLen];
+    uint16_t        mhMasterCRC;
+    uint32_t        mhTotalRecords;
+    NuDateTime      mhArchiveCreateWhen;
+    NuDateTime      mhArchiveModWhen;
+    uint16_t        mhMasterVersion;
+    uint8_t         mhReserved1[kNufileMasterReserved1Len];
+    uint32_t        mhMasterEOF;
+    uint8_t         mhReserved2[kNufileMasterReserved2Len];
 
     /* private -- internal use only */
-    short               isValid;
+    short           isValid;
 } NuMasterHeader;
 
 
@@ -514,14 +515,14 @@ typedef struct NuMasterHeader {
  * a small subset of the full record.
  */
 typedef struct NuRecordAttr {
-    NuFileSysID         fileSysID;
-    /*unsigned short        fileSysInfo;*/
-    unsigned long       access;
-    unsigned long       fileType;
-    unsigned long       extraType;
-    NuDateTime          createWhen;
-    NuDateTime          modWhen;
-    NuDateTime          archiveWhen;
+    NuFileSysID     fileSysID;
+    /*uint16_t        fileSysInfo;*/
+    uint32_t        access;
+    uint32_t        fileType;
+    uint32_t        extraType;
+    NuDateTime      createWhen;
+    NuDateTime      modWhen;
+    NuDateTime      archiveWhen;
 } NuRecordAttr;
 
 /*
@@ -529,20 +530,20 @@ typedef struct NuRecordAttr {
  */
 typedef struct NuFileDetails {
     /* used during AddFile call */
-    NuThreadID          threadID;       /* data, rsrc, disk img? */
-    const char*         origName;
+    NuThreadID      threadID;       /* data, rsrc, disk img? */
+    const char*     origName;
 
     /* these go straight into the NuRecord */
-    const char*         storageName;
-    NuFileSysID         fileSysID;
-    unsigned short      fileSysInfo;
-    unsigned long       access;
-    unsigned long       fileType;
-    unsigned long       extraType;
-    unsigned short      storageType;    /* use Unknown, or disk block size */
-    NuDateTime          createWhen;
-    NuDateTime          modWhen;
-    NuDateTime          archiveWhen;
+    const char*     storageName;
+    NuFileSysID     fileSysID;
+    uint16_t        fileSysInfo;
+    uint32_t        access;
+    uint32_t        fileType;
+    uint32_t        extraType;
+    uint16_t        storageType;    /* use Unknown, or disk block size */
+    NuDateTime      createWhen;
+    NuDateTime      modWhen;
+    NuDateTime      archiveWhen;
 } NuFileDetails;
 
 
@@ -550,23 +551,23 @@ typedef struct NuFileDetails {
  * Passed into the SelectionFilter callback.
  */
 typedef struct NuSelectionProposal {
-    const NuRecord*     pRecord;
-    const NuThread*     pThread;
+    const NuRecord* pRecord;
+    const NuThread* pThread;
 } NuSelectionProposal;
 
 /*
  * Passed into the OutputPathnameFilter callback.
  */
 typedef struct NuPathnameProposal {
-    const char*         pathname;
-    char                filenameSeparator;
-    const NuRecord*     pRecord;
-    const NuThread*     pThread;
+    const char*     pathname;
+    char            filenameSeparator;
+    const NuRecord* pRecord;
+    const NuThread* pThread;
 
-    const char*         newPathname;
-    unsigned char       newFilenameSeparator;
-    /*NuThreadID        newStorage;*/
-    NuDataSink*         newDataSink;
+    const char*     newPathname;
+    uint8_t         newFilenameSeparator;
+    /*NuThreadID      newStorage;*/
+    NuDataSink*     newDataSink;
 } NuPathnameProposal;
 
 
@@ -606,36 +607,36 @@ typedef enum NuProgressState {
  */
 typedef struct NuProgressData {
     /* what are we doing */
-    NuOperation         operation;
+    NuOperation     operation;
     /* what specifically are we doing */
-    NuProgressState     state;
+    NuProgressState state;
     /* how far along are we */
-    short               percentComplete;    /* 0-100 */
+    short           percentComplete;    /* 0-100 */
 
     /* original pathname (in archive for expand, on disk for compress) */
-    const char*         origPathname;
+    const char*     origPathname;
     /* processed pathname (PathnameFilter for expand, in-record for compress) */
-    const char*         pathname;
+    const char*     pathname;
     /* basename of "pathname" */
-    const char*         filename;
+    const char*     filename;
     /* pointer to the record we're expanding from */
-    const NuRecord*     pRecord;
+    const NuRecord* pRecord;
 
-    unsigned long       uncompressedLength; /* size of uncompressed data */
-    unsigned long       uncompressedProgress;   /* #of bytes in/out */
+    uint32_t        uncompressedLength; /* size of uncompressed data */
+    uint32_t        uncompressedProgress;   /* #of bytes in/out */
 
     struct {
-        NuThreadFormat      threadFormat;       /* compression being applied */
+        NuThreadFormat  threadFormat;       /* compression being applied */
     } compress;
 
     struct {
-        unsigned long       totalCompressedLength;  /* all "data" threads */
-        unsigned long       totalUncompressedLength;
+        uint32_t        totalCompressedLength;  /* all "data" threads */
+        uint32_t        totalUncompressedLength;
 
-        /*unsigned long     compressedLength;    * size of compressed data */
-        /*unsigned long     compressedProgress;  * #of compressed bytes in/out*/
-        const NuThread*     pThread;            /* thread we're working on */
-        NuValue             convertEOL;         /* set if LF/CR conv is on */
+        /*uint32_t        compressedLength;    * size of compressed data */
+        /*uint32_t        compressedProgress;  * #of compressed bytes in/out*/
+        const NuThread* pThread;            /* thread we're working on */
+        NuValue         convertEOL;         /* set if LF/CR conv is on */
     } expand;
 
     /* pay no attention */
@@ -737,11 +738,11 @@ NUFXLIB_API NuError NuGetRecord(NuArchive* pArchive, NuRecordIdx recordIdx,
 NUFXLIB_API NuError NuGetRecordIdxByName(NuArchive* pArchive, const char* name,
             NuRecordIdx* pRecordIdx);
 NUFXLIB_API NuError NuGetRecordIdxByPosition(NuArchive* pArchive,
-            unsigned long position, NuRecordIdx* pRecordIdx);
+            uint32_t position, NuRecordIdx* pRecordIdx);
 
 /* read/write interfaces */
 NUFXLIB_API NuError NuOpenRW(const char* archivePathname,
-            const char* tempPathname, unsigned long flags,
+            const char* tempPathname, uint32_t flags,
             NuArchive** ppArchive);
 NUFXLIB_API NuError NuFlush(NuArchive* pArchive, long* pStatusFlags);
 NUFXLIB_API NuError NuAddRecord(NuArchive* pArchive,
@@ -779,27 +780,27 @@ NUFXLIB_API NuError NuDebugDumpArchive(NuArchive* pArchive);
 
 /* sources and sinks */
 NUFXLIB_API NuError NuCreateDataSourceForFile(NuThreadFormat threadFormat,
-            unsigned long otherLen, const char* pathname,
+            uint32_t otherLen, const char* pathname,
             short isFromRsrcFork, NuDataSource** ppDataSource);
 NUFXLIB_API NuError NuCreateDataSourceForFP(NuThreadFormat threadFormat,
-            unsigned long otherLen, FILE* fp, long offset, long length,
+            uint32_t otherLen, FILE* fp, long offset, long length,
             NuCallback closeFunc, NuDataSource** ppDataSource);
 NUFXLIB_API NuError NuCreateDataSourceForBuffer(NuThreadFormat threadFormat,
-            unsigned long otherLen, const unsigned char* buffer, long offset,
+            uint32_t otherLen, const uint8_t* buffer, long offset,
             long length, NuCallback freeFunc, NuDataSource** ppDataSource);
 NUFXLIB_API NuError NuFreeDataSource(NuDataSource* pDataSource);
 NUFXLIB_API NuError NuDataSourceSetRawCrc(NuDataSource* pDataSource,
-            unsigned short crc);
+            uint16_t crc);
 NUFXLIB_API NuError NuCreateDataSinkForFile(short doExpand, NuValue convertEOL,
             const char* pathname, char fssep, NuDataSink** ppDataSink);
 NUFXLIB_API NuError NuCreateDataSinkForFP(short doExpand, NuValue convertEOL,
             FILE* fp, NuDataSink** ppDataSink);
 NUFXLIB_API NuError NuCreateDataSinkForBuffer(short doExpand,
-            NuValue convertEOL, unsigned char* buffer, unsigned long bufLen,
+            NuValue convertEOL, uint8_t* buffer, uint32_t bufLen,
             NuDataSink** ppDataSink);
 NUFXLIB_API NuError NuFreeDataSink(NuDataSink* pDataSink);
 NUFXLIB_API NuError NuDataSinkGetOutCount(NuDataSink* pDataSink,
-            unsigned long* pOutCount);
+            uint32_t* pOutCount);
 
 /* miscellaneous non-archive operations */
 NUFXLIB_API NuError NuGetVersion(long* pMajorVersion, long* pMinorVersion,
@@ -811,12 +812,12 @@ NUFXLIB_API void NuRecordCopyAttr(NuRecordAttr* pRecordAttr,
             const NuRecord* pRecord);
 NUFXLIB_API NuError NuRecordCopyThreads(const NuRecord* pRecord,
             NuThread** ppThreads);
-NUFXLIB_API unsigned long NuRecordGetNumThreads(const NuRecord* pRecord);
+NUFXLIB_API uint32_t NuRecordGetNumThreads(const NuRecord* pRecord);
 NUFXLIB_API const NuThread* NuThreadGetByIdx(const NuThread* pThread, long idx);
 NUFXLIB_API short NuIsPresizedThreadID(NuThreadID threadID);
 
 #define NuGetThread(pRecord, idx) ( (const NuThread*)                       \
-        ((unsigned long) (idx) < (unsigned long) (pRecord)->recTotalThreads ? \
+        ((uint32_t) (idx) < (uint32_t) (pRecord)->recTotalThreads ? \
                 &(pRecord)->pThreads[(idx)] : NULL)                         \
         )
 

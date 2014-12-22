@@ -14,11 +14,11 @@
  */
 static NuError
 Nu_ExpandUncompressed(NuArchive* pArchive, const NuRecord* pRecord,
-    const NuThread* pThread, FILE* infp, NuFunnel* pFunnel, ushort* pCrc)
+    const NuThread* pThread, FILE* infp, NuFunnel* pFunnel, uint16_t* pCrc)
 {
     NuError err;
-    /*uchar* buffer = NULL;*/
-    ulong count, getsize;
+    /*uint8_t* buffer = NULL;*/
+    uint32_t count, getsize;
 
     Assert(pArchive != NULL);
     Assert(pThread != NULL);
@@ -68,8 +68,8 @@ Nu_ExpandRaw(NuArchive* pArchive, const NuThread* pThread, FILE* infp,
     NuFunnel* pFunnel)
 {
     NuError err;
-    /*uchar* buffer = NULL;*/
-    ulong count, getsize;
+    /*uint8_t* buffer = NULL;*/
+    uint32_t count, getsize;
 
     Assert(pArchive != NULL);
     Assert(pThread != NULL);
@@ -113,8 +113,8 @@ Nu_ExpandStream(NuArchive* pArchive, const NuRecord* pRecord,
     const NuThread* pThread, FILE* infp, NuFunnel* pFunnel)
 {
     NuError err = kNuErrNone;
-    ushort calcCrc;
-    ushort* pCalcCrc;
+    uint16_t calcCrc;
+    uint16_t* pCalcCrc;
 
     if (!pThread->thThreadEOF && !pThread->thCompThreadEOF) {
         /* somebody stored an empty file! */

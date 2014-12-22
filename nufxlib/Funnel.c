@@ -128,7 +128,7 @@ Nu_ProgressDataInit_Expand(NuArchive* pArchive, NuProgressData* pProgressData,
  */
 NuError
 Nu_ProgressDataCompressPrep(NuArchive* pArchive, NuStraw* pStraw,
-    NuThreadFormat threadFormat, ulong sourceLen)
+    NuThreadFormat threadFormat, uint32_t sourceLen)
 {
     NuProgressData* pProgressData;
 
@@ -176,9 +176,9 @@ Nu_ProgressDataExpandPrep(NuArchive* pArchive, NuFunnel* pFunnel,
  * Compute a completion percentage.
  */
 static int
-Nu_ComputePercent(ulong total, ulong progress)
+Nu_ComputePercent(uint32_t total, uint32_t progress)
 {
-    ulong perc;
+    uint32_t perc;
 
     if (!total)
         return 0;
@@ -305,7 +305,7 @@ Nu_FunnelFree(NuArchive* pArchive, NuFunnel* pFunnel)
  * failing and is actually resulting in a larger file.
  */
 void
-Nu_FunnelSetMaxOutput(NuFunnel* pFunnel, ulong maxBytes)
+Nu_FunnelSetMaxOutput(NuFunnel* pFunnel, uint32_t maxBytes)
 {
     Assert(pFunnel != NULL);
     Assert(maxBytes > 0);
@@ -325,8 +325,8 @@ Nu_FunnelSetMaxOutput(NuFunnel* pFunnel, ulong maxBytes)
  * (The exception is courtesy Glen Bredon's "Merlin".)
  */
 static Boolean
-Nu_CheckHighASCII(const NuFunnel* pFunnel, const unsigned char* buffer,
-    unsigned long count)
+Nu_CheckHighASCII(const NuFunnel* pFunnel, const uint8_t* buffer,
+    uint32_t count)
 {
     Boolean isHighASCII;
 
@@ -406,11 +406,11 @@ static const char gNuIsBinary[256] = {
  * if pFunnel->CheckStripHighASCII is set.
  */
 static NuValue
-Nu_DetermineConversion(NuFunnel* pFunnel, const uchar* buffer, ulong count)
+Nu_DetermineConversion(NuFunnel* pFunnel, const uint8_t* buffer, uint32_t count)
 {
-    ulong bufCount, numBinary, numLF, numCR;
+    uint32_t bufCount, numBinary, numLF, numCR;
     Boolean isHighASCII;
-    uchar val;
+    uint8_t val;
 
     if (count < kNuMinConvThreshold)
         return kNuConvertOff;
@@ -485,7 +485,7 @@ Nu_DetermineConversion(NuFunnel* pFunnel, const uchar* buffer, ulong count)
  * your perspective.
  */
 static inline void
-Nu_FunnelPutBlock(NuFunnel* pFunnel, const uchar* buf, ulong len)
+Nu_FunnelPutBlock(NuFunnel* pFunnel, const uint8_t* buf, uint32_t len)
 {
     Assert(pFunnel != NULL);
     Assert(pFunnel->pDataSink != NULL);
@@ -514,7 +514,7 @@ Nu_FunnelPutBlock(NuFunnel* pFunnel, const uchar* buf, ulong len)
 static inline void
 Nu_PutEOL(NuFunnel* pFunnel)
 {
-    uchar ch;
+    uint8_t ch;
 
     if (pFunnel->convertEOLTo == kNuEOLCR) {
         ch = kNuCharCR;
@@ -541,10 +541,10 @@ Nu_PutEOL(NuFunnel* pFunnel)
  * CR, LF, or CRLF; all three get converted to whatever the system uses.
  */
 static NuError
-Nu_FunnelWriteConvert(NuFunnel* pFunnel, const uchar* buffer, ulong count)
+Nu_FunnelWriteConvert(NuFunnel* pFunnel, const uint8_t* buffer, uint32_t count)
 {
     NuError err = kNuErrNone;
-    ulong progressCount = count;
+    uint32_t progressCount = count;
 
     /*if (pFunnel->outMaxExceeded)
         return kNuErrOutMax;*/
@@ -589,7 +589,7 @@ Nu_FunnelWriteConvert(NuFunnel* pFunnel, const uchar* buffer, ulong count)
     } else {
         /* do the EOL conversion and optional high-bit stripping */
         Boolean lastCR = pFunnel->lastCR;   /* make local copy */
-        uchar uch;
+        uint8_t uch;
         int mask;
 
         if (pFunnel->doStripHighASCII)
@@ -662,8 +662,8 @@ bail:
  * if they fit, or flushed out the bottom if not.
  */
 NuError
-Nu_FunnelWrite(NuArchive* pArchive, NuFunnel* pFunnel, const uchar* buffer,
-    ulong count)
+Nu_FunnelWrite(NuArchive* pArchive, NuFunnel* pFunnel, const uint8_t* buffer,
+    uint32_t count)
 {
     NuError err = kNuErrNone;
 
@@ -857,7 +857,7 @@ Nu_StrawSendProgressUpdate(NuArchive* pArchive, NuStraw* pStraw)
  * Read data from a straw.
  */
 NuError
-Nu_StrawRead(NuArchive* pArchive, NuStraw* pStraw, uchar* buffer, long len)
+Nu_StrawRead(NuArchive* pArchive, NuStraw* pStraw, uint8_t* buffer, long len)
 {
     NuError err;
 

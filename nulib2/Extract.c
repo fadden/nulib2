@@ -41,7 +41,7 @@ ExtractAllRecords(NulibState* pState, NuArchive* pArchive)
 
         err = NuGetRecord(pArchive, recordIdx, &pRecord);
         if (err != kNuErrNone) {
-            fprintf(stderr, "ERROR: unable to get recordIdx %ld\n", recordIdx);
+            fprintf(stderr, "ERROR: unable to get recordIdx %u\n", recordIdx);
             goto bail;
         }
 
@@ -53,7 +53,7 @@ ExtractAllRecords(NulibState* pState, NuArchive* pArchive)
         /*
          * Look for a comment thread.
          */
-        for (threadIdx = 0; (ulong)threadIdx < pRecord->recTotalThreads;
+        for (threadIdx = 0; (uint32_t)threadIdx < pRecord->recTotalThreads;
             threadIdx++)
         {
             pThread = NuGetThread(pRecord, threadIdx);

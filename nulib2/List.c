@@ -41,7 +41,7 @@ static const char* gMonths[] = {
  * Compute a percentage.
  */
 int
-ComputePercent(ulong totalSize, ulong size)
+ComputePercent(uint32_t totalSize, uint32_t size)
 {
     int perc;
 
@@ -144,11 +144,11 @@ bail:
  */
 static NuError
 AnalyzeRecord(const NuRecord* pRecord, enum RecordKind* pRecordKind,
-    ushort* pFormat, ulong* pTotalLen, ulong* pTotalCompLen)
+    uint16_t* pFormat, uint32_t* pTotalLen, uint32_t* pTotalCompLen)
 {
     const NuThread* pThread;
     NuThreadID threadID;
-    ulong idx;
+    uint32_t idx;
 
     *pRecordKind = kRecordKindUnknown;
     *pTotalLen = *pTotalCompLen = 0;
@@ -194,8 +194,8 @@ ShowContentsVerbose(NuArchive* pArchive, void* vpRecord)
     NuError err = kNuErrNone;
     const NuRecord* pRecord = (NuRecord*) vpRecord;
     enum RecordKind recordKind;
-    ulong totalLen, totalCompLen;
-    ushort format;
+    uint32_t totalLen, totalCompLen;
+    uint16_t format;
     NulibState* pState;
     char date1[kDateOutputLen];
     char tmpbuf[16];
@@ -223,17 +223,17 @@ ShowContentsVerbose(NuArchive* pArchive, void* vpRecord)
     }
     switch (recordKind) {
     case kRecordKindUnknown:
-        printf("%s- $%04lX  ",
+        printf("%s- $%04X  ",
             GetFileTypeString(pRecord->recFileType),
             pRecord->recExtraType);
         break;
     case kRecordKindDisk:
-        sprintf(tmpbuf, "%ldk", totalLen / 1024);
+        sprintf(tmpbuf, "%dk", totalLen / 1024);
         printf("Disk %-6s ", tmpbuf);
         break;
     case kRecordKindFile:
     case kRecordKindForkedFile:
-        printf("%s%c $%04lX  ",
+        printf("%s%c $%04X  ",
             GetFileTypeString(pRecord->recFileType),
             recordKind == kRecordKindForkedFile ? '+' : ' ',
             pRecord->recExtraType);
@@ -262,7 +262,7 @@ ShowContentsVerbose(NuArchive* pArchive, void* vpRecord)
     if (!totalLen && totalCompLen)
         printf("   ????");      /* weird */
     else
-        printf("%8ld", totalLen);
+        printf("%8u", totalLen);
 
     printf("\n");
 
@@ -348,7 +348,7 @@ DoListVerbose(NulibState* pState)
     if (err != kNuErrNone)
         goto bail;
 
-    printf(" %-15.15s Created:%s   Mod:%s     Recs:%5lu\n\n",
+    printf(" %-15.15s Created:%s   Mod:%s     Recs:%5u\n\n",
         cp,
         FormatDateShort(&pHeader->mhArchiveCreateWhen, date1),
         FormatDateShort(&pHeader->mhArchiveModWhen, date2),

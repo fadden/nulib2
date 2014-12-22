@@ -669,7 +669,7 @@ DoAddFile(NulibState* pState, NuArchive* pArchive, const char* pathname,
             NuDataSource* pDataSource;
 
             err = NuCreateDataSourceForBuffer(kNuThreadFormatUncompressed,
-                    kDefaultCommentLen, (unsigned char*)comment, 0,
+                    kDefaultCommentLen, (uint8_t*)comment, 0,
                     strlen(comment), FreeCallback, &pDataSource);
             if (err != kNuErrNone) {
                 ReportError(err, "comment buffer create failed");
@@ -878,7 +878,7 @@ OpenDir(const char* name)
         goto failed;
 
     strcpy(dir->d_name, fnd.cFileName);
-    dir->d_attr = (uchar) fnd.dwFileAttributes;
+    dir->d_attr = (uint8_t) fnd.dwFileAttributes;
     dir->d_first = 1;
 
 bail:
@@ -907,7 +907,7 @@ ReadDir(Win32dirent* dir)
         if (!FindNextFile(dir->d_hFindFile, &fnd))
             return NULL;
         strcpy(dir->d_name, fnd.cFileName);
-        dir->d_attr = (uchar) fnd.dwFileAttributes;
+        dir->d_attr = (uint8_t) fnd.dwFileAttributes;
     }
 
     return dir;

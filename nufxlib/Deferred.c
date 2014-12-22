@@ -324,10 +324,10 @@ Nu_NewThreads_GetNumThreads(const NuNewThreads* pNewThreads)
 /*
  * Total up the compressed EOFs of all threads.
  */
-static ulong
+static uint32_t
 Nu_NewThreads_TotalCompThreadEOF(NuNewThreads* pNewThreads)
 {
-    ulong compThreadEOF;
+    uint32_t compThreadEOF;
     int i;
 
     /* we should be all full up at this point; if not, we have a bug */
@@ -401,7 +401,7 @@ Nu_CopyArchiveRecord(NuArchive* pArchive, NuRecord* pRecord)
     }
 
     Assert(outputOffset + pRecord->recHeaderLength + pRecord->totalCompLength ==
-        (ulong)ftell(pArchive->tmpFp));
+        (uint32_t)ftell(pArchive->tmpFp));
     Assert(pRecord->fileOffset == outputOffset);
 
 bail:
@@ -605,8 +605,8 @@ Nu_ConstructArchiveUpdate(NuArchive* pArchive, FILE* fp, NuRecord* pRecord,
 {
     NuError err;
     NuDataSource* pDataSource = NULL;
-    ulong sourceLen;
-    ulong threadBufSize;
+    uint32_t sourceLen;
+    uint32_t threadBufSize;
 
     /*
      * We're going to copy the data out of the data source.  Because
@@ -645,7 +645,7 @@ Nu_ConstructArchiveUpdate(NuArchive* pArchive, FILE* fp, NuRecord* pRecord,
     sourceLen = Nu_DataSourceGetDataLen(pDataSource);
     if (sourceLen > pThread->thCompThreadEOF) {
         err = kNuErrPreSizeOverflow;
-        Nu_ReportError(NU_BLOB, err, "can't fit %ld bytes into %ld-byte buffer",
+        Nu_ReportError(NU_BLOB, err, "can't fit %u bytes into %u-byte buffer",
             sourceLen, pThread->thCompThreadEOF);
         goto bail;
     }
@@ -679,7 +679,7 @@ Nu_ConstructArchiveUpdate(NuArchive* pArchive, FILE* fp, NuRecord* pRecord,
             goto bail;
         }
     }
-    Assert((ulong)ftell(fp) == pThread->fileOffset + threadBufSize);
+    Assert((uint32_t)ftell(fp) == pThread->fileOffset + threadBufSize);
 
 skip_update:
     Nu_DataSourceUnPrepareInput(pArchive, pDataSource);
@@ -804,7 +804,7 @@ Nu_HandleAddThreadMods(NuArchive* pArchive, NuRecord* pRecord,
             if (pThreadMod->entry.add.threadID == kNuThreadIDDiskImage) {
                 const NuDataSource* pDataSource =
                     pThreadMod->entry.add.pDataSource;
-                ulong uncompLen;
+                uint32_t uncompLen;
 
                 if (Nu_DataSourceGetThreadFormat(pDataSource) ==
                                                     kNuThreadFormatUncompressed)
@@ -1339,7 +1339,7 @@ Nu_ConstructNewRecord(NuArchive* pArchive, NuRecord* pRecord, FILE* fp)
         maxLen = len > kNuDefaultFilenameThreadSize ?
                                             len : kNuDefaultFilenameThreadSize;
         err = Nu_DataSourceBuffer_New(kNuThreadFormatUncompressed,
-                maxLen, (const uchar*)pRecord->filename, 0,
+                maxLen, (const uint8_t*)pRecord->filename, 0,
                 strlen(pRecord->filename), NULL, &pTmpDataSource);
         BailError(err);
 
@@ -1852,7 +1852,7 @@ Nu_PurgeEmptyRecords(NuArchive* pArchive, NuRecordSet* pRecordSet)
         if (Nu_RecordIsEmpty(pArchive, pRecord)) {
             DBUG(("--- Purging empty record %06ld '%s' (0x%08lx-->0x%08lx)\n",
                 pRecord->recordIdx, pRecord->filename,
-                (ulong)ppRecord, (ulong)pRecord));
+                (uint32_t)ppRecord, (uint32_t)pRecord));
             err = Nu_RecordSet_DeleteRecordPtr(pArchive, pRecordSet, ppRecord);
             BailError(err);
             /* pRecord is now invalid, and *ppRecord has been updated */

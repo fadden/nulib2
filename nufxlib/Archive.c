@@ -16,13 +16,13 @@
 #endif
 
 /* master header identification */
-static const uchar kNuMasterID[kNufileIDLen] =
+static const uint8_t kNuMasterID[kNufileIDLen] =
     { 0x4e, 0xf5, 0x46, 0xe9, 0x6c, 0xe5 };
 
 /* other identification; can be no longer than kNufileIDLen */
-static const uchar kNuBinary2ID[] =
+static const uint8_t kNuBinary2ID[] =
     { 0x0a, 0x47, 0x4c };
-static const uchar kNuSHKSEAID[] =
+static const uint8_t kNuSHKSEAID[] =
     { 0xa2, 0x2e, 0x00 };
 
 /*
@@ -60,8 +60,6 @@ Nu_NuArchiveNew(NuArchive** ppArchive)
 
     /* validate some assumptions we make throughout the code */
     Assert(sizeof(int) >= 2);
-    Assert(sizeof(ushort) >= 2);
-    Assert(sizeof(ulong) >= 4);
     Assert(sizeof(void*) >= sizeof(NuArchive*));
 
     *ppArchive = Nu_Calloc(NULL, sizeof(**ppArchive));
@@ -252,8 +250,8 @@ Nu_UpdateWrapper(NuArchive* pArchive, FILE* fp)
 {
     NuError err = kNuErrNone;
     Boolean hasBinary2, hasSea;
-    uchar identBuf[kNufileIDLen];
-    ulong archiveLen, archiveLen512;
+    uint8_t identBuf[kNufileIDLen];
+    uint32_t archiveLen, archiveLen512;
 
     Assert(pArchive->newMasterHeader.isValid);  /* need new crc and len */
 
@@ -306,20 +304,20 @@ Nu_UpdateWrapper(NuArchive* pArchive, FILE* fp)
 
         err = Nu_FSeek(fp, kNuBNYFileSizeLo - kNufileIDLen, SEEK_CUR);
         BailError(err);
-        Nu_WriteTwo(pArchive, fp, (ushort)(archiveLen512 & 0xffff));
+        Nu_WriteTwo(pArchive, fp, (uint16_t)(archiveLen512 & 0xffff));
 
         err = Nu_FSeek(fp, kNuBNYFileSizeHi - (kNuBNYFileSizeLo+2), SEEK_CUR);
         BailError(err);
-        Nu_WriteTwo(pArchive, fp, (ushort)(archiveLen512 >> 16));
+        Nu_WriteTwo(pArchive, fp, (uint16_t)(archiveLen512 >> 16));
 
         err = Nu_FSeek(fp, kNuBNYEOFLo - (kNuBNYFileSizeHi+2), SEEK_CUR);
         BailError(err);
-        Nu_WriteTwo(pArchive, fp, (ushort)(archiveLen & 0xffff));
-        Nu_WriteOne(pArchive, fp, (uchar)((archiveLen >> 16) & 0xff));
+        Nu_WriteTwo(pArchive, fp, (uint16_t)(archiveLen & 0xffff));
+        Nu_WriteOne(pArchive, fp, (uint8_t)((archiveLen >> 16) & 0xff));
 
         err = Nu_FSeek(fp, kNuBNYEOFHi - (kNuBNYEOFLo+3), SEEK_CUR);
         BailError(err);
-        Nu_WriteOne(pArchive, fp, (uchar)(archiveLen >> 24));
+        Nu_WriteOne(pArchive, fp, (uint8_t)(archiveLen >> 24));
 
         err = Nu_FSeek(fp, kNuBNYDiskSpace - (kNuBNYEOFHi+1), SEEK_CUR);
         BailError(err);
@@ -358,11 +356,11 @@ Nu_UpdateWrapper(NuArchive* pArchive, FILE* fp)
 
         err = Nu_FSeek(fp, kNuSEALength1 - (kNuSEAFunkySize+4), SEEK_CUR);
         BailError(err);
-        Nu_WriteTwo(pArchive, fp, (ushort)archiveLen);
+        Nu_WriteTwo(pArchive, fp, (uint16_t)archiveLen);
 
         err = Nu_FSeek(fp, kNuSEALength2 - (kNuSEALength1+2), SEEK_CUR);
         BailError(err);
-        Nu_WriteTwo(pArchive, fp, (ushort)archiveLen);
+        Nu_WriteTwo(pArchive, fp, (uint16_t)archiveLen);
 
         /* seek past end of SEA wrapper */
         err = Nu_FSeek(fp, kNuSEAOffset - (kNuSEALength2+2), SEEK_CUR);
@@ -499,7 +497,7 @@ static NuError
 Nu_ReadMasterHeader(NuArchive* pArchive)
 {
     NuError err;
-    ushort crc;
+    uint16_t crc;
     FILE* fp;
     NuMasterHeader* pHeader;
     Boolean isBinary2 = false;
@@ -669,7 +667,7 @@ retry:
     if (pHeader->mhMasterEOF == kNuMasterHeaderSize) {
         err = kNuErrNoRecords;
         Nu_ReportError(NU_BLOB, err,
-            "Master EOF is %ld, archive is probably truncated",
+            "Master EOF is %u, archive is probably truncated",
             pHeader->mhMasterEOF);
         goto bail;
     }
@@ -929,7 +927,7 @@ bail:
  * exist.
  */
 NuError
-Nu_OpenRW(const char* archivePathname, const char* tmpPathname, ulong flags,
+Nu_OpenRW(const char* archivePathname, const char* tmpPathname, uint32_t flags,
     NuArchive** ppArchive)
 {
     NuError err;
@@ -1066,7 +1064,7 @@ Nu_WriteMasterHeader(NuArchive* pArchive, FILE* fp,
 {
     NuError err;
     long crcOffset;
-    ushort crc;
+    uint16_t crc;
 
     Assert(pArchive != NULL);
     Assert(fp != NULL);

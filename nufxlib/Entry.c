@@ -259,7 +259,7 @@ NuGetRecordIdxByName(NuArchive* pArchive, const char* name,
 }
 
 NUFXLIB_API NuError
-NuGetRecordIdxByPosition(NuArchive* pArchive, unsigned long position,
+NuGetRecordIdxByPosition(NuArchive* pArchive, uint32_t position,
     NuRecordIdx* pRecordIdx)
 {
     NuError err;
@@ -282,7 +282,7 @@ NuGetRecordIdxByPosition(NuArchive* pArchive, unsigned long position,
 
 NUFXLIB_API NuError
 NuOpenRW(const char* archivePathname, const char* tmpPathname,
-    unsigned long flags, NuArchive** ppArchive)
+    uint32_t flags, NuArchive** ppArchive)
 {
     NuError err;
 
@@ -570,7 +570,7 @@ NuDebugDumpArchive(NuArchive* pArchive)
 
 NUFXLIB_API NuError
 NuCreateDataSourceForFile(NuThreadFormat threadFormat,
-    unsigned long otherLen, const char* pathname, short isFromRsrcFork,
+    uint32_t otherLen, const char* pathname, short isFromRsrcFork,
     NuDataSource** ppDataSource)
 {
     return Nu_DataSourceFile_New(threadFormat, otherLen,
@@ -579,7 +579,7 @@ NuCreateDataSourceForFile(NuThreadFormat threadFormat,
 
 NUFXLIB_API NuError
 NuCreateDataSourceForFP(NuThreadFormat threadFormat,
-    unsigned long otherLen, FILE* fp, long offset, long length,
+    uint32_t otherLen, FILE* fp, long offset, long length,
     NuCallback fcloseFunc, NuDataSource** ppDataSource)
 {
     return Nu_DataSourceFP_New(threadFormat, otherLen,
@@ -588,7 +588,7 @@ NuCreateDataSourceForFP(NuThreadFormat threadFormat,
 
 NUFXLIB_API NuError
 NuCreateDataSourceForBuffer(NuThreadFormat threadFormat,
-    unsigned long otherLen, const unsigned char* buffer, long offset,
+    uint32_t otherLen, const uint8_t* buffer, long offset,
     long length, NuCallback freeFunc, NuDataSource** ppDataSource)
 {
     return Nu_DataSourceBuffer_New(threadFormat, otherLen,
@@ -602,7 +602,7 @@ NuFreeDataSource(NuDataSource* pDataSource)
 }
 
 NUFXLIB_API NuError
-NuDataSourceSetRawCrc(NuDataSource* pDataSource, unsigned short crc)
+NuDataSourceSetRawCrc(NuDataSource* pDataSource, uint16_t crc)
 {
     if (pDataSource == NULL)
         return kNuErrInvalidArg;
@@ -628,7 +628,7 @@ NuCreateDataSinkForFP(short doExpand, NuValue convertEOL, FILE* fp,
 
 NUFXLIB_API NuError
 NuCreateDataSinkForBuffer(short doExpand, NuValue convertEOL,
-    unsigned char* buffer, unsigned long bufLen, NuDataSink** ppDataSink)
+    uint8_t* buffer, uint32_t bufLen, NuDataSink** ppDataSink)
 {
     return Nu_DataSinkBuffer_New((Boolean)(doExpand != 0), convertEOL, buffer,
             bufLen, ppDataSink);
@@ -641,7 +641,7 @@ NuFreeDataSink(NuDataSink* pDataSink)
 }
 
 NUFXLIB_API NuError
-NuDataSinkGetOutCount(NuDataSink* pDataSink, ulong* pOutCount)
+NuDataSinkGetOutCount(NuDataSink* pDataSink, uint32_t* pOutCount)
 {
     if (pDataSink == NULL || pOutCount == NULL)
         return kNuErrInvalidArg;
@@ -741,7 +741,7 @@ NuRecordCopyThreads(const NuRecord* pNuRecord, NuThread** ppThreads)
     return kNuErrNone;
 }
 
-NUFXLIB_API unsigned long
+NUFXLIB_API uint32_t
 NuRecordGetNumThreads(const NuRecord* pNuRecord)
 {
     if (pNuRecord == NULL)
@@ -777,7 +777,7 @@ NuSetSelectionFilter(NuArchive* pArchive, NuCallback filterFunc)
     NuError err;
     NuCallback oldFunc = kNuInvalidCallback;
 
-    /*Assert(!((ulong)filterFunc % 4));*/
+    /*Assert(!((uint32_t)filterFunc % 4));*/
 
     if ((err = Nu_ValidateNuArchive(pArchive)) == kNuErrNone) {
         oldFunc = pArchive->selectionFilterFunc;
@@ -793,7 +793,7 @@ NuSetOutputPathnameFilter(NuArchive* pArchive, NuCallback filterFunc)
     NuError err;
     NuCallback oldFunc = kNuInvalidCallback;
 
-    /*Assert(!((ulong)filterFunc % 4));*/
+    /*Assert(!((uint32_t)filterFunc % 4));*/
 
     if ((err = Nu_ValidateNuArchive(pArchive)) == kNuErrNone) {
         oldFunc = pArchive->outputPathnameFunc;
@@ -809,7 +809,7 @@ NuSetProgressUpdater(NuArchive* pArchive, NuCallback updateFunc)
     NuError err;
     NuCallback oldFunc = kNuInvalidCallback;
 
-    /*Assert(!((ulong)updateFunc % 4));*/
+    /*Assert(!((uint32_t)updateFunc % 4));*/
 
     if ((err = Nu_ValidateNuArchive(pArchive)) == kNuErrNone) {
         oldFunc = pArchive->progressUpdaterFunc;
@@ -825,7 +825,7 @@ NuSetErrorHandler(NuArchive* pArchive, NuCallback errorFunc)
     NuError err;
     NuCallback oldFunc = kNuInvalidCallback;
 
-    /*Assert(!((ulong)errorFunc % 4));*/
+    /*Assert(!((uint32_t)errorFunc % 4));*/
 
     if ((err = Nu_ValidateNuArchive(pArchive)) == kNuErrNone) {
         oldFunc = pArchive->errorHandlerFunc;
@@ -841,7 +841,7 @@ NuSetErrorMessageHandler(NuArchive* pArchive, NuCallback messageHandlerFunc)
     NuError err;
     NuCallback oldFunc = kNuInvalidCallback;
 
-    /*Assert(!((ulong)messageHandlerFunc % 4));*/
+    /*Assert(!((uint32_t)messageHandlerFunc % 4));*/
 
     if ((err = Nu_ValidateNuArchive(pArchive)) == kNuErrNone) {
         oldFunc = pArchive->messageHandlerFunc;
@@ -855,7 +855,7 @@ NUFXLIB_API NuCallback
 NuSetGlobalErrorMessageHandler(NuCallback messageHandlerFunc)
 {
     NuCallback oldFunc = kNuInvalidCallback;
-    /*Assert(!((ulong)messageHandlerFunc % 4));*/
+    /*Assert(!((uint32_t)messageHandlerFunc % 4));*/
 
     oldFunc = gNuGlobalErrorMessageHandler;
     gNuGlobalErrorMessageHandler = messageHandlerFunc;

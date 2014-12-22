@@ -70,7 +70,7 @@ Malloc(size_t size)
     Assert(size > 0);
     _result = malloc(size);
     if (_result == NULL) {
-        ReportError(kNuErrMalloc, "malloc(%u) failed", (uint) size);
+        ReportError(kNuErrMalloc, "malloc(%u) failed", (unsigned int) size);
         DebugAbort();   /* leave a core dump if we're built for it */
     }
     DebugFill(_result, size);
@@ -94,7 +94,7 @@ Realloc(void* ptr, size_t size)
     Assert(size > 0);       /* disallow this usage */
     _result = realloc(ptr, size);
     if (_result == NULL) {
-        ReportError(kNuErrMalloc, "realloc(%u) failed", (uint) size);
+        ReportError(kNuErrMalloc, "realloc(%u) failed", (unsigned int) size);
         DebugAbort();   /* leave a core dump if we're built for it */
     }
     return _result;

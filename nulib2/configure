@@ -4001,50 +4001,6 @@ $as_echo "#define TM_IN_SYS_TIME 1" >>confdefs.h
 
 fi
 
-ac_fn_c_check_type "$LINENO" "uchar" "ac_cv_type_uchar" "$ac_includes_default"
-if test "x$ac_cv_type_uchar" = xyes; then :
-
-else
-
-cat >>confdefs.h <<_ACEOF
-#define uchar unsigned char
-_ACEOF
-
-fi
-
-ac_fn_c_check_type "$LINENO" "ushort" "ac_cv_type_ushort" "$ac_includes_default"
-if test "x$ac_cv_type_ushort" = xyes; then :
-
-else
-
-cat >>confdefs.h <<_ACEOF
-#define ushort unsigned short
-_ACEOF
-
-fi
-
-ac_fn_c_check_type "$LINENO" "uint" "ac_cv_type_uint" "$ac_includes_default"
-if test "x$ac_cv_type_uint" = xyes; then :
-
-else
-
-cat >>confdefs.h <<_ACEOF
-#define uint unsigned int
-_ACEOF
-
-fi
-
-ac_fn_c_check_type "$LINENO" "ulong" "ac_cv_type_ulong" "$ac_includes_default"
-if test "x$ac_cv_type_ulong" = xyes; then :
-
-else
-
-cat >>confdefs.h <<_ACEOF
-#define ulong unsigned long
-_ACEOF
-
-fi
-
 
 
 

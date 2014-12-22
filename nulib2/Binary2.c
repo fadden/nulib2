@@ -125,37 +125,37 @@ typedef struct BNYArchive {
  * something else follows this entry.
  */
 typedef struct BNYEntry {
-    ushort          access;
-    ushort          fileType;
-    ulong           auxType;
-    uchar           storageType;
-    ulong           fileSize;           /* in 512-byte blocks */
-    ushort          prodosModDate;
-    ushort          prodosModTime;
+    uint16_t        access;
+    uint16_t        fileType;
+    uint32_t        auxType;
+    uint8_t         storageType;
+    uint32_t        fileSize;           /* in 512-byte blocks */
+    uint16_t        prodosModDate;
+    uint16_t        prodosModTime;
     NuDateTime      modWhen;            /* computed from previous two fields */
-    ushort          prodosCreateDate;
-    ushort          prodosCreateTime;
+    uint16_t        prodosCreateDate;
+    uint16_t        prodosCreateTime;
     NuDateTime      createWhen;         /* computed from previous two fields */
-    ulong           eof;
-    ulong           realEOF;            /* eof is bogus for directories */
+    uint32_t        eof;
+    uint32_t        realEOF;            /* eof is bogus for directories */
     char            fileName[kBNYMaxFileName+1];
     char            nativeName[kBNYMaxNativeName+1];
-    ulong           diskSpace;          /* in 512-byte blocks */
-    uchar           osType;             /* not exactly same as NuFileSysID */
-    ushort          nativeFileType;
-    uchar           phantomFlag;
-    uchar           dataFlags;          /* advisory flags */
-    uchar           version;
-    uchar           filesToFollow;      /* #of files after this one */
+    uint32_t        diskSpace;          /* in 512-byte blocks */
+    uint8_t         osType;             /* not exactly same as NuFileSysID */
+    uint16_t        nativeFileType;
+    uint8_t         phantomFlag;
+    uint8_t         dataFlags;          /* advisory flags */
+    uint8_t         version;
+    uint8_t         filesToFollow;      /* #of files after this one */
 
-    uchar           blockBuf[kBNYBlockSize];
+    uint8_t         blockBuf[kBNYBlockSize];
 } BNYEntry;
 
 /*
  * Test for the magic number on a file in SQueezed format.
  */
 static inline Boolean
-IsSqueezed(uchar one, uchar two)
+IsSqueezed(uint8_t one, uint8_t two)
 {
     return (one == 0x76 && two == 0xff);
 }
@@ -300,7 +300,7 @@ BNYSeek(BNYArchive* pBny, long offset)
  * Convert from ProDOS compact date format to the expanded DateTime format.
  */
 static void
-BNYConvertDateTime(ushort prodosDate, ushort prodosTime, NuDateTime* pWhen)
+BNYConvertDateTime(uint16_t prodosDate, uint16_t prodosTime, NuDateTime* pWhen)
 {
     pWhen->second = 0;
     pWhen->minute = prodosTime & 0x3f;
@@ -324,7 +324,7 @@ static NuError
 BNYDecodeHeader(BNYArchive* pBny, BNYEntry* pEntry)
 {
     NuError err = kNuErrNone;
-    uchar* raw;
+    uint8_t* raw;
     int len;
 
     Assert(pBny != NULL);
@@ -522,8 +522,8 @@ bail:
  * State during uncompression.
  */
 typedef struct USQState {
-    ulong           dataInBuffer;
-    uchar*          dataPtr;
+    uint32_t        dataInBuffer;
+    uint8_t*        dataPtr;
     int             bitPosn;
     int             bits;
 
@@ -603,14 +603,14 @@ BNYUnSqueeze(BNYArchive* pBny, BNYEntry* pEntry, FILE* outfp)
 {
     NuError err = kNuErrNone;
     USQState usqState;
-    ulong compRemaining, getSize;
+    uint32_t compRemaining, getSize;
 #ifdef FULL_SQ_HEADER
-    ushort magic, fileChecksum, checksum;
+    uint16_t magic, fileChecksum, checksum;
 #endif
     short nodeCount;
     int i, inrep;
-    uchar* tmpBuf = NULL;
-    uchar lastc = 0;
+    uint8_t* tmpBuf = NULL;
+    uint8_t lastc = 0;
 
     tmpBuf = Malloc(kSqBufferSize);
     if (tmpBuf == NULL) {
@@ -677,7 +677,7 @@ BNYUnSqueeze(BNYArchive* pBny, BNYEntry* pEntry, FILE* outfp)
         err = BNYRead(pBny, usqState.dataPtr, getSize);
         if (err != kNuErrNone) {
             ReportError(err,
-                "failed reading compressed data (%ld bytes)", getSize);
+                "failed reading compressed data (%u bytes)", getSize);
             goto bail;
         }
         usqState.dataInBuffer += getSize;
@@ -787,7 +787,7 @@ BNYUnSqueeze(BNYArchive* pBny, BNYEntry* pEntry, FILE* outfp)
                     getSize);
             if (err != kNuErrNone) {
                 ReportError(err,
-                    "failed reading compressed data (%ld bytes)", getSize);
+                    "failed reading compressed data (%u bytes)", getSize);
                 goto bail;
             }
             usqState.dataInBuffer += getSize;
@@ -876,7 +876,7 @@ BNYUnSqueeze(BNYArchive* pBny, BNYEntry* pEntry, FILE* outfp)
      */
     if (compRemaining > kSqBufferSize) {
         err = kNuErrBadData;
-        ReportError(err, "wow: found %ld bytes left over", compRemaining);
+        ReportError(err, "wow: found %u bytes left over", compRemaining);
         goto bail;
     }
     if (compRemaining) {
@@ -1077,7 +1077,7 @@ BNYListVerbose(BNYArchive* pBny, BNYEntry* pEntry, Boolean* pConsumedFlag)
         printf("%c..%-25.25s ",
             isReadOnly ? '+' : ' ', pEntry->fileName + len - 25);
     }
-    printf("%s  $%04lX  ",
+    printf("%s  $%04X  ",
         GetFileTypeString(pEntry->fileType), pEntry->auxType);
 
     printf("%s  ", FormatDateShort(&pEntry->modWhen, date1));
@@ -1086,7 +1086,7 @@ BNYListVerbose(BNYArchive* pBny, BNYEntry* pEntry, Boolean* pConsumedFlag)
     else
         printf("unc  ");
 
-    printf("%8ld", pEntry->realEOF);
+    printf("%8u", pEntry->realEOF);
 
     printf("\n");
 
@@ -1123,9 +1123,9 @@ BNYListDebug(BNYArchive* pBny, BNYEntry* pEntry, Boolean* pConsumedFlag)
         pEntry->createWhen.year+1900, pEntry->createWhen.month,
         pEntry->createWhen.day, pEntry->createWhen.hour,
         pEntry->createWhen.minute);
-    printf("  FileType: 0x%04x  AuxType: 0x%08lx  StorageType: 0x%02x\n",
+    printf("  FileType: 0x%04x  AuxType: 0x%08x  StorageType: 0x%02x\n",
         pEntry->fileType, pEntry->auxType, pEntry->storageType);
-    printf("  EOF: %ld  FileSize: %ld blocks  DiskSpace: %ld blocks\n",
+    printf("  EOF: %u  FileSize: %u blocks  DiskSpace: %u blocks\n",
         pEntry->eof, pEntry->fileSize, pEntry->diskSpace);
     printf("  Access: 0x%04x  OSType: %d  NativeFileType: 0x%04x\n",
         pEntry->access, pEntry->osType, pEntry->nativeFileType);

@@ -140,7 +140,7 @@ Nu_DataSourceFree(NuDataSource* pDataSource)
  * Create a data source for an unopened file.
  */
 NuError
-Nu_DataSourceFile_New(NuThreadFormat threadFormat, ulong otherLen,
+Nu_DataSourceFile_New(NuThreadFormat threadFormat, uint32_t otherLen,
     const char* pathname, Boolean isFromRsrcFork, NuDataSource** ppDataSource)
 {
     NuError err;
@@ -176,7 +176,7 @@ bail:
  * must be seekable.
  */
 NuError
-Nu_DataSourceFP_New(NuThreadFormat threadFormat, ulong otherLen,
+Nu_DataSourceFP_New(NuThreadFormat threadFormat, uint32_t otherLen,
     FILE* fp, long offset, long length, NuCallback fcloseFunc,
     NuDataSource** ppDataSource)
 {
@@ -188,7 +188,7 @@ Nu_DataSourceFP_New(NuThreadFormat threadFormat, ulong otherLen,
         return kNuErrInvalidArg;
     }
 
-    if (otherLen && otherLen < (ulong)length) {
+    if (otherLen && otherLen < (uint32_t)length) {
         DBUG(("--- rejecting FP len=%ld other=%ld\n", length, otherLen));
         err = kNuErrPreSizeOverflow;
         goto bail;
@@ -221,8 +221,8 @@ bail:
  * blank comment fields.
  */
 NuError
-Nu_DataSourceBuffer_New(NuThreadFormat threadFormat, ulong otherLen,
-    const uchar* buffer, long offset, long length, NuCallback freeFunc,
+Nu_DataSourceBuffer_New(NuThreadFormat threadFormat, uint32_t otherLen,
+    const uint8_t* buffer, long offset, long length, NuCallback freeFunc,
     NuDataSource** ppDataSource)
 {
     NuError err;
@@ -237,7 +237,7 @@ Nu_DataSourceBuffer_New(NuThreadFormat threadFormat, ulong otherLen,
         freeFunc = NULL;
     }
 
-    if (otherLen && otherLen < (ulong)length) {
+    if (otherLen && otherLen < (uint32_t)length) {
         DBUG(("--- rejecting buffer len=%ld other=%ld\n", length, otherLen));
         err = kNuErrPreSizeOverflow;
         goto bail;
@@ -287,7 +287,7 @@ Nu_DataSourceGetThreadFormat(const NuDataSource* pDataSource)
 /*
  * Get "dataLen" from a dataSource.
  */
-ulong
+uint32_t
 Nu_DataSourceGetDataLen(const NuDataSource* pDataSource)
 {
     Assert(pDataSource != NULL);
@@ -303,7 +303,7 @@ Nu_DataSourceGetDataLen(const NuDataSource* pDataSource)
 /*
  * Get "otherLen" from a dataSource.
  */
-ulong
+uint32_t
 Nu_DataSourceGetOtherLen(const NuDataSource* pDataSource)
 {
     Assert(pDataSource != NULL);
@@ -324,7 +324,7 @@ Nu_DataSourceSetOtherLen(NuDataSource* pDataSource, long otherLen)
 /*
  * Get the "raw CRC" value.
  */
-ushort
+uint16_t
 Nu_DataSourceGetRawCrc(const NuDataSource* pDataSource)
 {
     Assert(pDataSource != NULL);
@@ -336,7 +336,7 @@ Nu_DataSourceGetRawCrc(const NuDataSource* pDataSource)
  * already-compressed data, and you wanted to propagate the thread CRC.
  */
 void
-Nu_DataSourceSetRawCrc(NuDataSource* pDataSource, ushort crc)
+Nu_DataSourceSetRawCrc(NuDataSource* pDataSource, uint16_t crc)
 {
     Assert(pDataSource != NULL);
     pDataSource->common.rawCrc = crc;
@@ -435,7 +435,7 @@ Nu_DataSourceFile_GetPathname(NuDataSource* pDataSource)
  * Read a block of data from a dataSource.
  */
 NuError
-Nu_DataSourceGetBlock(NuDataSource* pDataSource, uchar* buf, ulong len)
+Nu_DataSourceGetBlock(NuDataSource* pDataSource, uint8_t* buf, uint32_t len)
 {
     NuError err;
 
@@ -643,8 +643,8 @@ bail:
  * Create a data sink for a buffer in memory.
  */
 NuError
-Nu_DataSinkBuffer_New(Boolean doExpand, NuValue convertEOL, uchar* buffer,
-    ulong bufLen, NuDataSink** ppDataSink)
+Nu_DataSinkBuffer_New(Boolean doExpand, NuValue convertEOL, uint8_t* buffer,
+    uint32_t bufLen, NuDataSink** ppDataSink)
 {
     NuError err;
 
@@ -735,7 +735,7 @@ Nu_DataSinkGetConvertEOL(const NuDataSink* pDataSink)
 /*
  * Return the #of bytes written to the sink.
  */
-ulong
+uint32_t
 Nu_DataSinkGetOutCount(const NuDataSink* pDataSink)
 {
     return pDataSink->common.outCount;
@@ -809,7 +809,7 @@ Nu_DataSinkFile_Close(NuDataSink* pDataSink)
  * Write a block of data to a DataSink.
  */
 NuError
-Nu_DataSinkPutBlock(NuDataSink* pDataSink, const uchar* buf, ulong len)
+Nu_DataSinkPutBlock(NuDataSink* pDataSink, const uint8_t* buf, uint32_t len)
 {
     NuError err;
 

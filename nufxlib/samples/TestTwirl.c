@@ -29,8 +29,8 @@ const int kMaxHeldLen = 1024 * 1024;
  * A list of CRCs.
  */
 typedef struct CRCList {
-    int             numEntries;
-    unsigned short* entries;
+    int         numEntries;
+    uint16_t*   entries;
 } CRCList;
 
 
@@ -125,7 +125,7 @@ GatherCRCs(NuArchive* pArchive)
     NuError err = kNuErrNone;
     const NuMasterHeader* pMasterHeader;
     CRCList* pCRCList = NULL;
-    unsigned short* pEntries = NULL;
+    uint16_t* pEntries = NULL;
     long recCount, maxCRCs;
     long recIdx, crcIdx;
     int i;
@@ -178,12 +178,12 @@ GatherCRCs(NuArchive* pArchive)
 
         err = NuGetRecord(pArchive, recordIdx, &pRecord);
         if (err != kNuErrNone) {
-            fprintf(stderr, "ERROR: unable to get recordIdx %ld\n", recordIdx);
+            fprintf(stderr, "ERROR: unable to get recordIdx %u\n", recordIdx);
             goto bail;
         }
 
         if (NuRecordGetNumThreads(pRecord) == 0) {
-            fprintf(stderr, "ERROR: not expecting empty record (%ld)!\n",
+            fprintf(stderr, "ERROR: not expecting empty record (%u)!\n",
                 recordIdx);
             err = kNuErrGeneric;
             goto bail;
@@ -281,7 +281,7 @@ RecompressThread(NuArchive* pArchive, const NuRecord* pRecord,
     NuError err = kNuErrNone;
     NuDataSource* pDataSource = NULL;
     NuDataSink* pDataSink = NULL;
-    unsigned char* buf = NULL;
+    uint8_t* buf = NULL;
 
     if (pThread->actualThreadEOF == 0) {
         buf = malloc(1);
@@ -296,7 +296,7 @@ RecompressThread(NuArchive* pArchive, const NuRecord* pRecord,
          */
         buf = malloc(pThread->actualThreadEOF);
         if (buf == NULL) {
-            fprintf(stderr, "ERROR: failed allocating %ld bytes\n",
+            fprintf(stderr, "ERROR: failed allocating %u bytes\n",
                 pThread->actualThreadEOF);
             err = kNuErrGeneric;
             goto bail;
@@ -314,7 +314,7 @@ RecompressThread(NuArchive* pArchive, const NuRecord* pRecord,
          */
         err = NuExtractThread(pArchive, pThread->threadIdx, pDataSink);
         if (err != kNuErrNone) {
-            fprintf(stderr, "ERROR: failed extracting thread %ld in '%s': %s\n",
+            fprintf(stderr, "ERROR: failed extracting thread %u in '%s': %s\n",
                 pThread->threadIdx, pRecord->filename, NuStrError(err));
             goto bail;
         }
@@ -325,7 +325,7 @@ RecompressThread(NuArchive* pArchive, const NuRecord* pRecord,
      */
     err = NuDeleteThread(pArchive, pThread->threadIdx);
     if (err != kNuErrNone) {
-        fprintf(stderr, "ERROR: unable to delete thread %ld\n",
+        fprintf(stderr, "ERROR: unable to delete thread %u\n",
             pThread->threadIdx);
         goto bail;
     }
@@ -348,7 +348,7 @@ RecompressThread(NuArchive* pArchive, const NuRecord* pRecord,
     err = NuAddThread(pArchive, pRecord->recordIdx, NuGetThreadID(pThread),
             pDataSource, NULL);
     if (err != kNuErrNone) {
-        fprintf(stderr, "ERROR: unable to add new thread ID=0x%08lx (err=%d)\n",
+        fprintf(stderr, "ERROR: unable to add new thread ID=0x%08x (err=%d)\n",
             NuGetThreadID(pThread), err);
         goto bail;
     }
@@ -375,13 +375,13 @@ RecompressRecord(NuArchive* pArchive, NuRecordIdx recordIdx, long* pLen)
     const NuThread* pThread;
     int i;
 
-    printf("  Recompressing %ld\n", recordIdx);
+    printf("  Recompressing %u\n", recordIdx);
 
     *pLen = 0;
 
     err = NuGetRecord(pArchive, recordIdx, &pRecord);
     if (err != kNuErrNone) {
-        fprintf(stderr, "ERROR: unable to get record %ld (err=%d)\n",
+        fprintf(stderr, "ERROR: unable to get record %u (err=%d)\n",
             recordIdx, err);
         goto bail;
     }
@@ -393,8 +393,8 @@ RecompressRecord(NuArchive* pArchive, NuRecordIdx recordIdx, long* pLen)
                 NuGetThreadID(pThread));*/
             err = RecompressThread(pArchive, pRecord, pThread);
             if (err != kNuErrNone) {
-                fprintf(stderr, "ERROR: failed recompressing thread %ld "
-                                " in record %ld (err=%d)\n",
+                fprintf(stderr, "ERROR: failed recompressing thread %u "
+                                " in record %u (err=%d)\n",
                     pThread->threadIdx, pRecord->recordIdx, err);
                 goto bail;
             }
@@ -423,12 +423,12 @@ RecompressArchive(NuArchive* pArchive, NuValue compression)
 
     err = NuSetValue(pArchive, kNuValueDataCompression, compression);
     if (err != kNuErrNone) {
-        fprintf(stderr, "ERROR: unable to set compression to %ld (err=%d)\n",
+        fprintf(stderr, "ERROR: unable to set compression to %u (err=%d)\n",
             compression, err);
         goto bail;
     }
 
-    printf("Recompressing threads with compression type %ld\n", compression);
+    printf("Recompressing threads with compression type %u\n", compression);
 
     err = NuGetAttr(pArchive, kNuAttrNumRecords, &countAttr);
     if (err != kNuErrNone) {
@@ -447,7 +447,7 @@ RecompressArchive(NuArchive* pArchive, NuValue compression)
      */
     pIndices = malloc(countAttr * sizeof(*pIndices));
     if (pIndices == NULL) {
-        fprintf(stderr, "ERROR: malloc on %ld indices failed\n", countAttr);
+        fprintf(stderr, "ERROR: malloc on %u indices failed\n", countAttr);
         err = kNuErrGeneric;
         goto bail;
     }
@@ -470,7 +470,7 @@ RecompressArchive(NuArchive* pArchive, NuValue compression)
 
         err = RecompressRecord(pArchive, pIndices[idx], &recHeldLen);
         if (err != kNuErrNone) {
-            fprintf(stderr, "ERROR: failed recompressing record %ld (err=%d)\n",
+            fprintf(stderr, "ERROR: failed recompressing record %u (err=%d)\n",
                 pIndices[idx], err);
             goto bail;
         }
