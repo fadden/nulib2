@@ -127,15 +127,15 @@ AddPreservationString(NulibState* pState,
     NuThreadID threadID;
     char* cp;
 
-    Assert(pState != nil);
-    Assert(pPathProposal != nil);
-    Assert(pathBuf != nil);
+    Assert(pState != NULL);
+    Assert(pPathProposal != NULL);
+    Assert(pathBuf != NULL);
     Assert(NState_GetModPreserveType(pState));
 
     pRecord = pPathProposal->pRecord;
     pThread = pPathProposal->pThread;
-    Assert(pRecord != nil);
-    Assert(pThread != nil);
+    Assert(pRecord != NULL);
+    Assert(pThread != NULL);
 
     cp = extBuf;
 
@@ -179,26 +179,26 @@ AddPreservationString(NulibState* pState,
          * to be ".txt", and perhaps do something clever for some others.
          */
         if (pRecord->recFileType == 0x04 || threadID == kNuThreadIDDiskImage)
-            pExt = nil;
+            pExt = NULL;
         else
             pExt = FindExtension(pState, pathBuf);
-        if (pExt != nil) {
+        if (pExt != NULL) {
             pExt++; /* skip past the '.' */
 
             if (strlen(pExt) >= kMaxExtLen) {
                 /* too long, forget it */
-                pExt = nil;
+                pExt = NULL;
             } else {
                 /* if strictly decimal-numeric, don't use it (.1, .2, etc) */
                 (void) strtoul(pExt, &end, 10);
                 if (*end == '\0') {
-                    pExt = nil;
+                    pExt = NULL;
                 } else {
                     /* if '#' appears in it, don't use it -- it'll confuse us */
                     const char* ccp = pExt;
                     while (*ccp != '\0') {
                         if (*ccp == '#') {
-                            pExt = nil;
+                            pExt = NULL;
                             break;
                         }
                         ccp++;
@@ -217,11 +217,11 @@ AddPreservationString(NulibState* pState,
             else if (pRecord->recFileType) {
                 pExt = GetFileTypeString(pRecord->recFileType);
                 if (pExt[0] == '?' || pExt[0] == '$')
-                    pExt = nil;
+                    pExt = NULL;
             }
         }
 
-        if (pExt != nil) {
+        if (pExt != NULL) {
             *cp++ = kFilenameExtDelim;
             strcpy(cp, pExt);
             cp += strlen(pExt);
@@ -259,9 +259,9 @@ NormalizePath(NulibState* pState, NuPathnameProposal* pPathProposal)
     char localFssep;
     int newBufLen;
 
-    Assert(pState != nil);
-    Assert(pPathProposal != nil);
-    Assert(pPathProposal->pathname != nil);
+    Assert(pState != NULL);
+    Assert(pPathProposal != NULL);
+    Assert(pPathProposal->pathname != NULL);
 
     localFssep = NState_GetSystemPathSeparator(pState);
 
@@ -273,9 +273,9 @@ NormalizePath(NulibState* pState, NuPathnameProposal* pPathProposal)
     newBufLen = strlen(pPathProposal->pathname)*3 + kMaxPathGrowth +1;
     NState_SetTempPathnameLen(pState, newBufLen);
     pathBuf = NState_GetTempPathnameBuf(pState);
-    Assert(pathBuf != nil);
-    if (pathBuf == nil)
-        return nil;
+    Assert(pathBuf != NULL);
+    if (pathBuf == NULL)
+        return NULL;
 
     startp = pPathProposal->pathname;
     dstp = pathBuf;
@@ -285,9 +285,9 @@ NormalizePath(NulibState* pState, NuPathnameProposal* pPathProposal)
     }
 
     /* normalize all directory components and the filename component */
-    while (startp != nil) {
+    while (startp != NULL) {
         endp = strchr(startp, pPathProposal->filenameSeparator);
-        if (endp != nil) {
+        if (endp != NULL) {
             /* normalize directory component */
             err = NormalizeDirectoryName(pState, startp, endp - startp,
                     pPathProposal->filenameSeparator, &dstp,
@@ -316,7 +316,7 @@ NormalizePath(NulibState* pState, NuPathnameProposal* pPathProposal)
                 strcat(pathBuf, kResourceStr);
             }
 
-            startp = nil;   /* we're done */
+            startp = NULL;   /* we're done */
         }
     }
 
@@ -332,7 +332,7 @@ NormalizePath(NulibState* pState, NuPathnameProposal* pPathProposal)
     if (NState_GetModJunkPaths(pState)) {
         char* lastFssep;
         lastFssep = strrchr(pathBuf, localFssep);
-        if (lastFssep != nil) {
+        if (lastFssep != NULL) {
             Assert(*(lastFssep+1) != '\0'); /* should already have been caught*/
             memmove(pathBuf, lastFssep+1, strlen(lastFssep+1)+1);
         }
@@ -340,7 +340,7 @@ NormalizePath(NulibState* pState, NuPathnameProposal* pPathProposal)
 
 bail:
     if (err != kNuErrNone)
-        return nil;
+        return NULL;
     return pathBuf;
 }
 
@@ -415,13 +415,13 @@ InterpretExtension(NulibState* pState, const char* pathName, ulong* pFileType,
 {
     const char* pExt;
 
-    Assert(pState != nil);
-    Assert(pathName != nil);
-    Assert(pFileType != nil);
-    Assert(pAuxType != nil);
+    Assert(pState != NULL);
+    Assert(pathName != NULL);
+    Assert(pFileType != NULL);
+    Assert(pAuxType != NULL);
 
     pExt = FindExtension(pState, pathName);
-    if (pExt != nil)
+    if (pExt != NULL)
         LookupExtension(pState, pExt+1, pFileType, pAuxType);
 }
 
@@ -445,14 +445,14 @@ ExtractPreservationString(NulibState* pState, char* pathname, ulong* pFileType,
     char* cp;
     int digitCount;
 
-    Assert(pState != nil);
-    Assert(pathname != nil);
-    Assert(pFileType != nil);
-    Assert(pAuxType != nil);
-    Assert(pThreadID != nil);
+    Assert(pState != NULL);
+    Assert(pathname != NULL);
+    Assert(pFileType != NULL);
+    Assert(pAuxType != NULL);
+    Assert(pThreadID != NULL);
 
     pPreserve = strrchr(pathname, kPreserveIndic);
-    if (pPreserve == nil)
+    if (pPreserve == NULL)
         return false;
 
     /* count up the #of hex digits */
@@ -583,20 +583,20 @@ DenormalizePath(NulibState* pState, char* pathBuf)
  * Find the filename component of a local pathname.  Uses the fssep defined
  * in pState.
  *
- * Always returns a pointer to a string; never returns nil.
+ * Always returns a pointer to a string; never returns NULL.
  */
 const char*
 FilenameOnly(NulibState* pState, const char* pathname)
 {
     const char* retstr;
     const char* pSlash;
-    char* tmpStr = nil;
+    char* tmpStr = NULL;
 
-    Assert(pState != nil);
-    Assert(pathname != nil);
+    Assert(pState != NULL);
+    Assert(pathname != NULL);
 
     pSlash = strrchr(pathname, NState_GetSystemPathSeparator(pState));
-    if (pSlash == nil) {
+    if (pSlash == NULL) {
         retstr = pathname;      /* whole thing is the filename */
         goto bail;
     }
@@ -614,7 +614,7 @@ FilenameOnly(NulibState* pState, const char* pathname)
         tmpStr[strlen(pathname)-1] = '\0';
         pSlash = strrchr(tmpStr, NState_GetSystemPathSeparator(pState));
 
-        if (pSlash == nil) {
+        if (pSlash == NULL) {
             retstr = pathname;  /* just a filename with a '/' after it */
             goto bail;
         }
@@ -642,7 +642,7 @@ bail:
  * An extension is the stuff following the last '.' in the filename.  If
  * there is nothing following the last '.', then there is no extension.
  *
- * Returns a pointer to the '.' preceding the extension, or nil if no
+ * Returns a pointer to the '.' preceding the extension, or NULL if no
  * extension was found.
  */
 const char*
@@ -656,13 +656,13 @@ FindExtension(NulibState* pState, const char* pathname)
      * about "/foo.bar/file".
      */
     pFilename = FilenameOnly(pState, pathname);
-    Assert(pFilename != nil);
+    Assert(pFilename != NULL);
     pExt = strrchr(pFilename, kFilenameExtDelim);
 
     /* also check for "/blah/foo.", which doesn't count */
-    if (pExt != nil && *(pExt+1) != '\0')
+    if (pExt != NULL && *(pExt+1) != '\0')
         return pExt;
 
-    return nil;
+    return NULL;
 }
 

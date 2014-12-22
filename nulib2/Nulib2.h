@@ -90,7 +90,7 @@ void ReportError(NuError err, const char* format, ...)
 # define Malloc(size) malloc(size)
 # define Calloc(size) calloc(1, size)
 # define Realloc(ptr, size) realloc(ptr, size)
-# define Free(ptr) (ptr != nil ? free(ptr) : (void)0)
+# define Free(ptr) (ptr != NULL ? free(ptr) : (void)0)
 #else
 void* Malloc(size_t size);
 void* Calloc(size_t size);

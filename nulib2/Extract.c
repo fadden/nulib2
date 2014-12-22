@@ -57,7 +57,7 @@ ExtractAllRecords(NulibState* pState, NuArchive* pArchive)
             threadIdx++)
         {
             pThread = NuGetThread(pRecord, threadIdx);
-            Assert(pThread != nil);
+            Assert(pThread != NULL);
 
             if (NuGetThreadID(pThread) == kNuThreadIDComment &&
                 pThread->actualThreadEOF > 0)
@@ -91,9 +91,9 @@ NuError
 DoExtract(NulibState* pState)
 {
     NuError err;
-    NuArchive* pArchive = nil;
+    NuArchive* pArchive = NULL;
 
-    Assert(pState != nil);
+    Assert(pState != NULL);
 
     if (NState_GetModBinaryII(pState))
         return BNYDoExtract(pState);
@@ -104,7 +104,7 @@ DoExtract(NulibState* pState)
     if (err != kNuErrNone)
         goto bail;
     pArchive = NState_GetNuArchive(pState);
-    Assert(pArchive != nil);
+    Assert(pArchive != NULL);
 
     NState_SetMatchCount(pState, 0);
 
@@ -126,7 +126,7 @@ DoExtract(NulibState* pState)
         printf("%s: no records match\n", gProgName);
 
 bail:
-    if (pArchive != nil)
+    if (pArchive != NULL)
         (void) NuClose(pArchive);
     return err;
 }
@@ -150,9 +150,9 @@ NuError
 DoTest(NulibState* pState)
 {
     NuError err;
-    NuArchive* pArchive = nil;
+    NuArchive* pArchive = NULL;
 
-    Assert(pState != nil);
+    Assert(pState != NULL);
 
     if (NState_GetModBinaryII(pState))
         return BNYDoTest(pState);
@@ -163,7 +163,7 @@ DoTest(NulibState* pState)
     if (err != kNuErrNone)
         goto bail;
     pArchive = NState_GetNuArchive(pState);
-    Assert(pArchive != nil);
+    Assert(pArchive != NULL);
 
     NState_SetMatchCount(pState, 0);
 
@@ -175,7 +175,7 @@ DoTest(NulibState* pState)
         printf("%s: no records match\n", gProgName);
 
 bail:
-    if (pArchive != nil)
+    if (pArchive != NULL)
         (void) NuClose(pArchive);
     return err;
 }

@@ -87,8 +87,8 @@ Nu_DateTimeToGMTSeconds(const NuDateTime* pDateTime, time_t* pWhen)
     struct tm tmbuf;
     time_t when;
 
-    Assert(pDateTime != nil);
-    Assert(pWhen != nil);
+    Assert(pDateTime != NULL);
+    Assert(pWhen != NULL);
 
     tmbuf.tm_sec = pDateTime->second;
     tmbuf.tm_min = pDateTime->minute;
@@ -124,8 +124,8 @@ Nu_GMTSecondsToDateTime(const time_t* pWhen, NuDateTime *pDateTime)
 {
     struct tm* ptm;
 
-    Assert(pWhen != nil);
-    Assert(pDateTime != nil);
+    Assert(pWhen != NULL);
+    Assert(pDateTime != NULL);
 
     #if defined(HAVE_LOCALTIME_R) && defined(USE_REENTRANT_CALLS)
     struct tm res;
@@ -152,11 +152,11 @@ Nu_GMTSecondsToDateTime(const time_t* pWhen, NuDateTime *pDateTime)
 void
 Nu_SetCurrentDateTime(NuDateTime* pDateTime)
 {
-    Assert(pDateTime != nil);
+    Assert(pDateTime != NULL);
 
 #if defined(UNIX_LIKE) || defined(WINDOWS_LIKE)
     {
-        time_t now = time(nil);
+        time_t now = time(NULL);
         Nu_GMTSecondsToDateTime(&now, pDateTime);
     }
 #else
@@ -247,7 +247,7 @@ Nu_IsForkedFile(NuArchive* pArchive, const NuRecord* pRecord)
 
     for (i = 0; i < (int)pRecord->recTotalThreads; i++) {
         pThread = Nu_GetThread(pRecord, i);
-        Assert(pThread != nil);
+        Assert(pThread != NULL);
 
         threadID = NuMakeThreadID(pThread->thThreadClass,pThread->thThreadKind);
         if (threadID == kNuThreadIDDataFork)
@@ -272,9 +272,9 @@ Nu_GetFileInfo(NuArchive* pArchive, const char* pathname,
     NuFileInfo* pFileInfo)
 {
     NuError err = kNuErrNone;
-    Assert(pArchive != nil);
-    Assert(pathname != nil);
-    Assert(pFileInfo != nil);
+    Assert(pArchive != NULL);
+    Assert(pathname != NULL);
+    Assert(pFileInfo != NULL);
 
     pFileInfo->isValid = false;
 
@@ -424,11 +424,11 @@ Nu_FileForkExists(NuArchive* pArchive, const char* pathname,
 {
     NuError err = kNuErrNone;
 
-    Assert(pArchive != nil);
-    Assert(pathname != nil);
+    Assert(pArchive != NULL);
+    Assert(pathname != NULL);
     Assert(checkRsrcFork == true || checkRsrcFork == false);
-    Assert(pExists != nil);
-    Assert(pFileInfo != nil);
+    Assert(pExists != NULL);
+    Assert(pFileInfo != NULL);
 
 #if defined(MAC_LIKE)
     /*
@@ -440,7 +440,7 @@ Nu_FileForkExists(NuArchive* pArchive, const char* pathname,
         /*
          * Check the data fork.
          */
-        Assert(pArchive->lastFileCreated == nil);
+        Assert(pArchive->lastFileCreated == NULL);
         err = Nu_GetFileInfo(pArchive, pathname, pFileInfo);
         if (err == kNuErrFileNotFound) {
             err = kNuErrNone;
@@ -470,7 +470,7 @@ Nu_FileForkExists(NuArchive* pArchive, const char* pathname,
      * On Unix and Windows we ignore "isForkedFile" and "checkRsrcFork".
      * The file must not exist at all.
      */
-    Assert(pArchive->lastFileCreated == nil);
+    Assert(pArchive->lastFileCreated == NULL);
 
     *pExists = true;
     err = Nu_GetFileInfo(pArchive, pathname, pFileInfo);
@@ -515,9 +515,9 @@ Nu_SetFileDates(NuArchive* pArchive, const NuRecord* pRecord,
 {
     NuError err = kNuErrNone;
 
-    Assert(pArchive != nil);
-    Assert(pRecord != nil);
-    Assert(pathname != nil);
+    Assert(pArchive != NULL);
+    Assert(pRecord != NULL);
+    Assert(pathname != NULL);
 
 #if defined(UNIX_LIKE) || defined(WINDOWS_LIKE)
     {
@@ -584,9 +584,9 @@ Nu_SetFileAccess(NuArchive* pArchive, const NuRecord* pRecord,
 {
     NuError err = kNuErrNone;
 
-    Assert(pArchive != nil);
-    Assert(pRecord != nil);
-    Assert(pathname != nil);
+    Assert(pArchive != NULL);
+    Assert(pRecord != NULL);
+    Assert(pathname != NULL);
 
 #if defined(UNIX_LIKE) || defined(WINDOWS_LIKE)
     /* only need to do something if the file was "locked" */
@@ -636,10 +636,10 @@ Nu_PrepareForWriting(NuArchive* pArchive, const char* pathname,
     char path[4096];
 #endif
 
-    Assert(pArchive != nil);
-    Assert(pathname != nil);
+    Assert(pArchive != NULL);
+    Assert(pathname != NULL);
     Assert(prepRsrc == true || prepRsrc == false);
-    Assert(pFileInfo != nil);
+    Assert(pFileInfo != NULL);
 
     Assert(pFileInfo->isValid == true);
 
@@ -684,8 +684,8 @@ Nu_Mkdir(NuArchive* pArchive, const char* dir)
 {
     NuError err = kNuErrNone;
 
-    Assert(pArchive != nil);
-    Assert(dir != nil);
+    Assert(pArchive != NULL);
+    Assert(dir != NULL);
 
 #if defined(UNIX_LIKE)
     if (mkdir(dir, S_IRWXU | S_IRGRP|S_IXGRP | S_IROTH|S_IXOTH) < 0) {
@@ -721,11 +721,11 @@ Nu_CreateSubdirIFN(NuArchive* pArchive, const char* pathStart,
 {
     NuError err = kNuErrNone;
     NuFileInfo fileInfo;
-    char* tmpBuf = nil;
+    char* tmpBuf = NULL;
 
-    Assert(pArchive != nil);
-    Assert(pathStart != nil);
-    Assert(pathEnd != nil);
+    Assert(pArchive != NULL);
+    Assert(pathStart != NULL);
+    Assert(pathEnd != NULL);
     Assert(fssep != '\0');
 
     /* pathStart might have whole path, but we only want up to "pathEnd" */
@@ -736,7 +736,7 @@ Nu_CreateSubdirIFN(NuArchive* pArchive, const char* pathStart,
     if (err == kNuErrFileNotFound) {
         /* dir doesn't exist; move up a level and check parent */
         pathEnd = strrchr(tmpBuf, fssep);
-        if (pathEnd != nil) {
+        if (pathEnd != NULL) {
             pathEnd--;
             Assert(pathEnd >= tmpBuf);
             err = Nu_CreateSubdirIFN(pArchive, tmpBuf, pathEnd, fssep);
@@ -777,8 +777,8 @@ Nu_CreatePathIFN(NuArchive* pArchive, const char* pathname, char fssep)
     const char* pathStart;
     const char* pathEnd;
 
-    Assert(pArchive != nil);
-    Assert(pathname != nil);
+    Assert(pArchive != NULL);
+    Assert(pathname != NULL);
     Assert(fssep != '\0');
 
     pathStart = pathname;
@@ -790,7 +790,7 @@ Nu_CreatePathIFN(NuArchive* pArchive, const char* pathname, char fssep)
 
     /* NOTE: not expecting names like "foo/bar/ack/", with terminating fssep */
     pathEnd = strrchr(pathStart, fssep);
-    if (pathEnd == nil) {
+    if (pathEnd == NULL) {
         /* no subdirectory components found */
         goto bail;
     }
@@ -841,7 +841,7 @@ Nu_OpenFileForWrite(NuArchive* pArchive, const char* pathname,
     }
 #endif
     *pFp = fopen(pathname, kNuFileOpenWriteTrunc);
-    if (*pFp == nil)
+    if (*pFp == NULL)
         return errno ? errno : -1;
     return kNuErrNone;
 }
@@ -867,20 +867,20 @@ Nu_OpenOutputFile(NuArchive* pArchive, const NuRecord* pRecord,
     NuErrorStatus errorStatus;
     NuResult result;
 
-    Assert(pArchive != nil);
-    Assert(pRecord != nil);
-    Assert(pThread != nil);
-    Assert(newPathname != nil);
-    Assert(pFp != nil);
+    Assert(pArchive != NULL);
+    Assert(pRecord != NULL);
+    Assert(pThread != NULL);
+    Assert(newPathname != NULL);
+    Assert(pFp != NULL);
 
     /* set up some defaults, in case something goes wrong */
     errorStatus.operation = kNuOpExtract;
     errorStatus.err = kNuErrInternal;
     errorStatus.sysErr = 0;
-    errorStatus.message = nil;
+    errorStatus.message = NULL;
     errorStatus.pRecord = pRecord;
     errorStatus.pathname = newPathname;
-    errorStatus.origPathname = nil;
+    errorStatus.origPathname = NULL;
     errorStatus.filenameSeparator = newFssep;
     /*errorStatus.origArchiveTouched = false;*/
     errorStatus.canAbort = true;
@@ -926,7 +926,7 @@ Nu_OpenOutputFile(NuArchive* pArchive, const NuRecord* pRecord,
         if ((pArchive->valOnlyUpdateOlder) &&
             !Nu_IsOlder(&fileInfo.modWhen, &pRecord->recModWhen))
         {
-            if (pArchive->errorHandlerFunc != nil) {
+            if (pArchive->errorHandlerFunc != NULL) {
                 errorStatus.err = kNuErrNotNewer;
                 result = (*pArchive->errorHandlerFunc)(pArchive, &errorStatus);
 
@@ -962,7 +962,7 @@ Nu_OpenOutputFile(NuArchive* pArchive, const NuRecord* pRecord,
          * and extracting to a different file.
          */
         if (pArchive->valHandleExisting == kNuMaybeOverwrite) {
-            if (pArchive->errorHandlerFunc != nil) {
+            if (pArchive->errorHandlerFunc != NULL) {
                 errorStatus.err = kNuErrFileExists;
                 result = (*pArchive->errorHandlerFunc)(pArchive, &errorStatus);
 
@@ -1005,7 +1005,7 @@ Nu_OpenOutputFile(NuArchive* pArchive, const NuRecord* pRecord,
          */
         if (pArchive->valHandleExisting == kNuMustOverwrite) {
             DBUG(("+++ can't freshen nonexistent file '%s'\n", newPathname));
-            if (pArchive->errorHandlerFunc != nil) {
+            if (pArchive->errorHandlerFunc != NULL) {
                 errorStatus.err = kNuErrDuplicateNotFound;
 
                 /* give them a chance to rename */
@@ -1110,9 +1110,9 @@ Nu_CloseOutputFile(NuArchive* pArchive, const NuRecord* pRecord, FILE* fp,
 {
     NuError err;
 
-    Assert(pArchive != nil);
-    Assert(pRecord != nil);
-    Assert(fp != nil);
+    Assert(pArchive != NULL);
+    Assert(pRecord != NULL);
+    Assert(fp != NULL);
 
     fclose(fp);
 
@@ -1169,7 +1169,7 @@ Nu_OpenFileForRead(NuArchive* pArchive, const char* pathname,
     Boolean openRsrc, FILE** pFp)
 {
     *pFp = fopen(pathname, kNuFileOpenReadOnly);
-    if (*pFp == nil)
+    if (*pFp == NULL)
         return errno ? errno : -1;
     return kNuErrNone;
 }
@@ -1190,9 +1190,9 @@ Nu_OpenInputFile(NuArchive* pArchive, const char* pathname,
     NuErrorStatus errorStatus;
     NuResult result;
 
-    Assert(pArchive != nil);
-    Assert(pathname != nil);
-    Assert(pFp != nil);
+    Assert(pArchive != NULL);
+    Assert(pathname != NULL);
+    Assert(pFp != NULL);
 
 #if defined(MAC_LIKE)
     char path[4096];
@@ -1214,14 +1214,14 @@ retry:
     if (err == ENOENT)
         openErr = kNuErrFileNotFound;
 
-    if (pArchive->errorHandlerFunc != nil) {
+    if (pArchive->errorHandlerFunc != NULL) {
         errorStatus.operation = kNuOpAdd;
         errorStatus.err = openErr;
         errorStatus.sysErr = 0;
-        errorStatus.message = nil;
-        errorStatus.pRecord = nil;
+        errorStatus.message = NULL;
+        errorStatus.pRecord = NULL;
         errorStatus.pathname = pathname;
-        errorStatus.origPathname = nil;
+        errorStatus.origPathname = NULL;
         errorStatus.filenameSeparator = '\0';
         /*errorStatus.origArchiveTouched = false;*/
         errorStatus.canAbort = true;
@@ -1258,7 +1258,7 @@ retry:
 
 bail:
     if (err == kNuErrNone) {
-        Assert(*pFp != nil);
+        Assert(*pFp != NULL);
     } else {
         if (err != kNuErrSkipped && err != kNuErrRename &&
             err != kNuErrFileExists)
@@ -1332,8 +1332,8 @@ Nu_RenameFile(const char* fromPath, const char* toPath)
 NuError
 Nu_FTell(FILE* fp, long* pOffset)
 {
-    Assert(fp != nil);
-    Assert(pOffset != nil);
+    Assert(fp != NULL);
+    Assert(pOffset != NULL);
 
     errno = 0;
     *pOffset = ftell(fp);
@@ -1350,7 +1350,7 @@ Nu_FTell(FILE* fp, long* pOffset)
 NuError
 Nu_FSeek(FILE* fp, long offset, int ptrname)
 {
-    Assert(fp != nil);
+    Assert(fp != NULL);
     Assert(ptrname == SEEK_SET || ptrname == SEEK_CUR || ptrname == SEEK_END);
 
     errno = 0;
@@ -1409,9 +1409,9 @@ Nu_CopyFileSection(NuArchive* pArchive, FILE* dstFp, FILE* srcFp, long length)
     NuError err;
     long readLen;
 
-    Assert(pArchive != nil);
-    Assert(dstFp != nil);
-    Assert(srcFp != nil);
+    Assert(pArchive != NULL);
+    Assert(dstFp != NULL);
+    Assert(srcFp != NULL);
     Assert(length >= 0);    /* can be == 0, e.g. empty data fork from HFS */
 
     /* nice big buffer, for speed... could use getc/putc for simplicity */
@@ -1450,7 +1450,7 @@ bail:
  * Only useful for files < 2GB in size.
  *
  * (pArchive is only used for BailError message reporting, so it's okay
- * to call here with a nil pointer if the archive isn't open yet.)
+ * to call here with a NULL pointer if the archive isn't open yet.)
  */
 NuError
 Nu_GetFileLength(NuArchive* pArchive, FILE* fp, long* pLength)
@@ -1458,8 +1458,8 @@ Nu_GetFileLength(NuArchive* pArchive, FILE* fp, long* pLength)
     NuError err;
     long oldpos;
 
-    Assert(fp != nil);
-    Assert(pLength != nil);
+    Assert(fp != NULL);
+    Assert(pLength != NULL);
 
     err = Nu_FTell(fp, &oldpos);
     BailError(err);

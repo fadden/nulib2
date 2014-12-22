@@ -259,7 +259,7 @@ CreateDosSource(const ImgHeader* pHeader, FILE* fp,
     NuDataSource** ppDataSource)
 {
     NuError err;
-    char* diskBuffer = nil;
+    char* diskBuffer = NULL;
     long offset;
 
     if (pHeader->dataLen % 4096) {
@@ -277,7 +277,7 @@ CreateDosSource(const ImgHeader* pHeader, FILE* fp,
     }
 
     diskBuffer = malloc(pHeader->dataLen);
-    if (diskBuffer == nil) {
+    if (diskBuffer == NULL) {
         fprintf(stderr, "ERROR: malloc(%ld) failed\n", pHeader->dataLen);
         err = kNuErrMalloc;
         goto bail;
@@ -322,10 +322,10 @@ CreateDosSource(const ImgHeader* pHeader, FILE* fp,
             (const unsigned char*) diskBuffer, 0, pHeader->dataLen,
             FreeCallback, ppDataSource);
     if (err == kNuErrNone)
-        diskBuffer = nil;
+        diskBuffer = NULL;
 
 bail:
-    if (diskBuffer != nil)
+    if (diskBuffer != NULL)
         free(diskBuffer);
     return err;
 }
@@ -342,14 +342,14 @@ int
 ConvertFromImgToShk(const char* srcName, const char* dstName)
 {
     NuError err;
-    NuArchive* pArchive = nil;
-    NuDataSource* pDataSource = nil;
+    NuArchive* pArchive = NULL;
+    NuDataSource* pDataSource = NULL;
     NuRecordIdx recordIdx;
     NuFileDetails fileDetails;
     ImgHeader header;
-    FILE* fp = nil;
+    FILE* fp = NULL;
     long flushStatus;
-    char* storageName = nil;
+    char* storageName = NULL;
     char* cp;
 
     printf("Converting 2IMG file '%s' to ShrinkIt archive '%s'\n\n",
@@ -394,10 +394,10 @@ ConvertFromImgToShk(const char* srcName, const char* dstName)
     /* create the name that will be stored in the archive */
     storageName = strdup(dstName);
     cp = strrchr(storageName, '.');
-    if (cp != nil)
+    if (cp != NULL)
         *cp = '\0';
     cp = strrchr(storageName, kLocalFssep);
-    if (cp != nil && *(cp+1) != '\0')
+    if (cp != NULL && *(cp+1) != '\0')
         cp++;
     else
         cp = storageName;
@@ -433,11 +433,11 @@ ConvertFromImgToShk(const char* srcName, const char* dstName)
     switch (header.imageFormat) {
     case kImageFormatDOS:
         err = CreateDosSource(&header, fp, &pDataSource);
-        fp = nil;
+        fp = NULL;
         break;
     case kImageFormatProDOS:
         err = CreateProdosSource(&header, fp, &pDataSource);
-        fp = nil;
+        fp = NULL;
         break;
     default:
         fprintf(stderr, "How the heck did I get here?");
@@ -451,12 +451,12 @@ ConvertFromImgToShk(const char* srcName, const char* dstName)
 
     /* add a disk image thread */
     err = NuAddThread(pArchive, recordIdx, kNuThreadIDDiskImage, pDataSource,
-            nil);
+            NULL);
     if (err != kNuErrNone) {
         fprintf(stderr, "ERROR: unable to create thread (err=%d)\n", err);
         goto bail;
     }
-    pDataSource = nil;  /* library owns it now */
+    pDataSource = NULL;  /* library owns it now */
 
     /* nothing happens until we Flush */
     err = NuFlush(pArchive, &flushStatus);
@@ -470,17 +470,17 @@ ConvertFromImgToShk(const char* srcName, const char* dstName)
         fprintf(stderr, "ERROR: close failed (err=%d)\n", err);
         goto bail;
     }
-    pArchive = nil;
+    pArchive = NULL;
 
 bail:
-    if (pArchive != nil) {
+    if (pArchive != NULL) {
         (void)NuAbort(pArchive);
         (void)NuClose(pArchive);
     }
     NuFreeDataSource(pDataSource);
-    if (storageName != nil)
+    if (storageName != NULL)
         free(storageName);
-    if (fp != nil)
+    if (fp != NULL)
         fclose(fp);
     return (err == kNuErrNone) ? 0 : -1;
 }
@@ -496,13 +496,13 @@ int
 ConvertFromShkToImg(const char* srcName, const char* dstName)
 {
     NuError err;
-    NuArchive* pArchive = nil;
-    NuDataSink* pDataSink = nil;
+    NuArchive* pArchive = NULL;
+    NuDataSink* pDataSink = NULL;
     NuRecordIdx recordIdx;
     const NuRecord* pRecord;
-    const NuThread* pThread = nil;
+    const NuThread* pThread = NULL;
     ImgHeader header;
-    FILE* fp = nil;
+    FILE* fp = NULL;
     int idx;
 
     printf("Converting ShrinkIt archive '%s' to 2IMG file '%s'\n\n",
@@ -592,10 +592,10 @@ ConvertFromShkToImg(const char* srcName, const char* dstName)
     }
 
 bail:
-    if (pArchive != nil)
+    if (pArchive != NULL)
         NuClose(pArchive);
     NuFreeDataSink(pDataSink);
-    if (fp != nil)
+    if (fp != NULL)
         fclose(fp);
     return (err == kNuErrNone) ? 0 : -1;
 }
@@ -610,7 +610,7 @@ DetermineKind(const char* filename)
     const char* dot;
 
     dot = strrchr(filename, '.');
-    if (dot == nil)
+    if (dot == NULL)
         return kKindUnknown;
 
     if (strcasecmp(dot, ".shk") == 0 || strcasecmp(dot, ".sdk") == 0)

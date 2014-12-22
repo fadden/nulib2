@@ -48,7 +48,7 @@ Nu_ClearBusy(NuArchive* pArchive)
 static NuError
 Nu_PartiallyValidateNuArchive(const NuArchive* pArchive)
 {
-    if (pArchive == nil)
+    if (pArchive == NULL)
         return kNuErrInvalidArg;
 
     pArchive =  pArchive;
@@ -77,19 +77,19 @@ Nu_ValidateNuArchive(const NuArchive* pArchive)
     /* make sure the TOC state is consistent */
     if (pArchive->haveToc) {
         if (pArchive->masterHeader.mhTotalRecords != 0)
-            Assert(Nu_RecordSet_GetListHead(&pArchive->origRecordSet) != nil);
+            Assert(Nu_RecordSet_GetListHead(&pArchive->origRecordSet) != NULL);
         Assert(Nu_RecordSet_GetNumRecords(&pArchive->origRecordSet) ==
                pArchive->masterHeader.mhTotalRecords);
     } else {
-        Assert(Nu_RecordSet_GetListHead(&pArchive->origRecordSet) == nil);
+        Assert(Nu_RecordSet_GetListHead(&pArchive->origRecordSet) == NULL);
     }
 
     /* make sure we have open files to work with */
-    Assert(pArchive->archivePathname == nil || pArchive->archiveFp != nil);
-    if (pArchive->archivePathname != nil && pArchive->archiveFp == nil)
+    Assert(pArchive->archivePathname == NULL || pArchive->archiveFp != NULL);
+    if (pArchive->archivePathname != NULL && pArchive->archiveFp == NULL)
         return kNuErrInternal;
-    Assert(pArchive->tmpPathname == nil || pArchive->tmpFp != nil);
-    if (pArchive->tmpPathname != nil && pArchive->tmpFp == nil)
+    Assert(pArchive->tmpPathname == NULL || pArchive->tmpFp != NULL);
+    if (pArchive->tmpPathname != NULL && pArchive->tmpFp == NULL)
         return kNuErrInternal;
 
     /* further validations */
@@ -109,7 +109,7 @@ NuStreamOpenRO(FILE* infp, NuArchive** ppArchive)
 {
     NuError err;
 
-    if (infp == nil || ppArchive == nil)
+    if (infp == NULL || ppArchive == NULL)
         return kNuErrInvalidArg;
 
     err = Nu_StreamOpenRO(infp, (NuArchive**) ppArchive);
@@ -328,7 +328,7 @@ NuAddRecord(NuArchive* pArchive, const NuFileDetails* pFileDetails,
 
     if ((err = Nu_ValidateNuArchive(pArchive)) == kNuErrNone) {
         Nu_SetBusy(pArchive);
-        err = Nu_AddRecord(pArchive, pFileDetails, pRecordIdx, nil);
+        err = Nu_AddRecord(pArchive, pFileDetails, pRecordIdx, NULL);
         Nu_ClearBusy(pArchive);
     }
 
@@ -496,7 +496,7 @@ NuGetExtraData(NuArchive* pArchive, void** ppData)
 {
     NuError err;
 
-    if (ppData == nil)
+    if (ppData == NULL)
         return kNuErrInvalidArg;
     if ((err = Nu_PartiallyValidateNuArchive(pArchive)) == kNuErrNone)
         *ppData = pArchive->extraData;
@@ -604,7 +604,7 @@ NuFreeDataSource(NuDataSource* pDataSource)
 NUFXLIB_API NuError
 NuDataSourceSetRawCrc(NuDataSource* pDataSource, unsigned short crc)
 {
-    if (pDataSource == nil)
+    if (pDataSource == NULL)
         return kNuErrInvalidArg;
     Nu_DataSourceSetRawCrc(pDataSource, crc);
     return kNuErrNone;
@@ -643,7 +643,7 @@ NuFreeDataSink(NuDataSink* pDataSink)
 NUFXLIB_API NuError
 NuDataSinkGetOutCount(NuDataSink* pDataSink, ulong* pOutCount)
 {
-    if (pDataSink == nil || pOutCount == nil)
+    if (pDataSink == NULL || pOutCount == NULL)
         return kNuErrInvalidArg;
 
     *pOutCount = Nu_DataSinkGetOutCount(pDataSink);
@@ -726,13 +726,13 @@ NuRecordCopyAttr(NuRecordAttr* pRecordAttr, const NuRecord* pRecord)
 NUFXLIB_API NuError
 NuRecordCopyThreads(const NuRecord* pNuRecord, NuThread** ppThreads)
 {
-    if (pNuRecord == nil || ppThreads == nil)
+    if (pNuRecord == NULL || ppThreads == NULL)
         return kNuErrInvalidArg;
 
-    Assert(pNuRecord->pThreads != nil);
+    Assert(pNuRecord->pThreads != NULL);
 
-    *ppThreads = Nu_Malloc(nil, pNuRecord->recTotalThreads * sizeof(NuThread));
-    if (*ppThreads == nil)
+    *ppThreads = Nu_Malloc(NULL, pNuRecord->recTotalThreads * sizeof(NuThread));
+    if (*ppThreads == NULL)
         return kNuErrMalloc;
 
     memcpy(*ppThreads, pNuRecord->pThreads,
@@ -744,7 +744,7 @@ NuRecordCopyThreads(const NuRecord* pNuRecord, NuThread** ppThreads)
 NUFXLIB_API unsigned long
 NuRecordGetNumThreads(const NuRecord* pNuRecord)
 {
-    if (pNuRecord == nil)
+    if (pNuRecord == NULL)
         return -1;
 
     return pNuRecord->recTotalThreads;
@@ -753,8 +753,8 @@ NuRecordGetNumThreads(const NuRecord* pNuRecord)
 NUFXLIB_API const NuThread*
 NuThreadGetByIdx(const NuThread* pNuThread, long idx)
 {
-    if (pNuThread == nil)
-        return nil;
+    if (pNuThread == NULL)
+        return NULL;
     return &pNuThread[idx];     /* can't range-check here */
 }
 

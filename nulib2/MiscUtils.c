@@ -14,7 +14,7 @@
  * Similar to perror(), but takes the error as an argument, and knows
  * about NufxLib errors as well as system errors.
  *
- * If "format" is nil, just the error message itself is printed.
+ * If "format" is NULL, just the error message itself is printed.
  */
 void
 ReportError(NuError err, const char* format, ...)
@@ -22,12 +22,12 @@ ReportError(NuError err, const char* format, ...)
     const char* msg;
     va_list args;
 
-    Assert(format != nil);
+    Assert(format != NULL);
 
     va_start(args, format);
 
     /* print the message, if any */
-    if (format != nil) {
+    if (format != NULL) {
         fprintf(stderr, "%s: ERROR: ", gProgName);
         vfprintf(stderr, format, args);
     }
@@ -36,16 +36,16 @@ ReportError(NuError err, const char* format, ...)
     if (err == kNuErrNone)
         fprintf(stderr, "\n");
     else {
-        if (format != nil)
+        if (format != NULL)
             fprintf(stderr, ": ");
 
-        msg = nil;
+        msg = NULL;
         if (err >= 0)
             msg = strerror(err);
-        if (msg == nil)
+        if (msg == NULL)
             msg = NuStrError(err);
 
-        if (msg == nil)
+        if (msg == NULL)
             fprintf(stderr, "(unknown err=%d)\n", err);
         else
             fprintf(stderr, "%s\n", msg);
@@ -69,7 +69,7 @@ Malloc(size_t size)
 
     Assert(size > 0);
     _result = malloc(size);
-    if (_result == nil) {
+    if (_result == NULL) {
         ReportError(kNuErrMalloc, "malloc(%u) failed", (uint) size);
         DebugAbort();   /* leave a core dump if we're built for it */
     }
@@ -90,10 +90,10 @@ Realloc(void* ptr, size_t size)
 {
     void* _result;
 
-    Assert(ptr != nil);     /* disallow this usage */
+    Assert(ptr != NULL);     /* disallow this usage */
     Assert(size > 0);       /* disallow this usage */
     _result = realloc(ptr, size);
-    if (_result == nil) {
+    if (_result == NULL) {
         ReportError(kNuErrMalloc, "realloc(%u) failed", (uint) size);
         DebugAbort();   /* leave a core dump if we're built for it */
     }
@@ -103,7 +103,7 @@ Realloc(void* ptr, size_t size)
 void
 Free(void* ptr)
 {
-    if (ptr != nil)
+    if (ptr != NULL)
         free(ptr);
 }
 #endif

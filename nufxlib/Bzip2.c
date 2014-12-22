@@ -53,14 +53,14 @@ Nu_CompressBzip2(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
     NuError err = kNuErrNone;
     bz_stream bzstream;
     int bzerr;
-    uchar* outbuf = nil;
+    uchar* outbuf = NULL;
 
-    Assert(pArchive != nil);
-    Assert(pStraw != nil);
-    Assert(fp != nil);
+    Assert(pArchive != NULL);
+    Assert(pStraw != NULL);
+    Assert(fp != NULL);
     Assert(srcLen > 0);
-    Assert(pDstLen != nil);
-    Assert(pCrc != nil);
+    Assert(pDstLen != NULL);
+    Assert(pCrc != NULL);
 
     err = Nu_AllocCompressionBufferIFN(pArchive);
     if (err != kNuErrNone)
@@ -76,7 +76,7 @@ Nu_CompressBzip2(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
     bzstream.bzalloc = Nu_bzalloc;
     bzstream.bzfree = Nu_bzfree;
     bzstream.opaque = pArchive;
-    bzstream.next_in = nil;
+    bzstream.next_in = NULL;
     bzstream.avail_in = 0;
     bzstream.next_out = outbuf;
     bzstream.avail_out = kNuGenCompBufSize;
@@ -158,7 +158,7 @@ bz_bail:
     BZ2_bzCompressEnd(&bzstream);       /* free up any allocated structures */
 
 bail:
-    if (outbuf != nil)
+    if (outbuf != NULL)
         free(outbuf);
     return err;
 }
@@ -183,10 +183,10 @@ Nu_ExpandBzip2(NuArchive* pArchive, const NuRecord* pRecord,
     ulong compRemaining;
     uchar* outbuf;
 
-    Assert(pArchive != nil);
-    Assert(pThread != nil);
-    Assert(infp != nil);
-    Assert(pFunnel != nil);
+    Assert(pArchive != NULL);
+    Assert(pThread != NULL);
+    Assert(infp != NULL);
+    Assert(pFunnel != NULL);
 
     err = Nu_AllocCompressionBufferIFN(pArchive);
     if (err != kNuErrNone)
@@ -204,7 +204,7 @@ Nu_ExpandBzip2(NuArchive* pArchive, const NuRecord* pRecord,
     bzstream.bzalloc = Nu_bzalloc;
     bzstream.bzfree = Nu_bzfree;
     bzstream.opaque = pArchive;
-    bzstream.next_in = nil;
+    bzstream.next_in = NULL;
     bzstream.avail_in = 0;
     bzstream.next_out = outbuf;
     bzstream.avail_out = kNuGenCompBufSize;
@@ -266,7 +266,7 @@ Nu_ExpandBzip2(NuArchive* pArchive, const NuRecord* pRecord,
                 goto bz_bail;
             }
 
-            if (pCrc != nil)
+            if (pCrc != NULL)
                 *pCrc = Nu_CalcCRC16(*pCrc, outbuf,
                                     (uchar*) bzstream.next_out - outbuf);
 
@@ -291,7 +291,7 @@ bz_bail:
     BZ2_bzDecompressEnd(&bzstream);     /* free up any allocated structures */
 
 bail:
-    if (outbuf != nil)
+    if (outbuf != NULL)
         free(outbuf);
     return err;
 }

@@ -42,7 +42,7 @@ int
 DoStreamStuff(FILE* fp)
 {
     NuError err;
-    NuArchive* pArchive = nil;
+    NuArchive* pArchive = NULL;
 
     err = NuStreamOpenRO(fp, &pArchive);
     if (err != kNuErrNone) {
@@ -59,7 +59,7 @@ DoStreamStuff(FILE* fp)
     }
 
 bail:
-    if (pArchive != nil) {
+    if (pArchive != NULL) {
         NuError err2 = NuClose(pArchive);
         if (err == kNuErrNone)
             err = err2;
@@ -77,10 +77,10 @@ main(int argc, char** argv)
 {
     long major, minor, bug;
     const char* pBuildDate;
-    FILE* infp = nil;
+    FILE* infp = NULL;
     int cc;
 
-    (void) NuGetVersion(&major, &minor, &bug, &pBuildDate, nil);
+    (void) NuGetVersion(&major, &minor, &bug, &pBuildDate, NULL);
     printf("Using NuFX lib %ld.%ld.%ld built on or after %s\n",
         major, minor, bug, pBuildDate);
 
@@ -93,7 +93,7 @@ main(int argc, char** argv)
         infp = stdin;
     else {
         infp = fopen(argv[1], kNuFileOpenReadOnly);
-        if (infp == nil) {
+        if (infp == NULL) {
             fprintf(stderr, "ERROR: unable to open '%s'\n", argv[1]);
             exit(1);
         }

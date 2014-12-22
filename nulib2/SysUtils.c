@@ -121,10 +121,10 @@ UNIXNormalizeFileName(NulibState* pState, const char* srcp, long srcLen,
  * The list comes from the Linux kernel's fs/msdos/namei.c.
  */
 static const char* fatReservedNames3[] = {
-    "CON", "PRN", "NUL", "AUX", nil
+    "CON", "PRN", "NUL", "AUX", NULL
 };
 static const char* fatReservedNames4[] = {
-    "LPT1", "LPT2", "LPT3", "LPT4", "COM1", "COM2", "COM3", "COM4", nil
+    "LPT1", "LPT2", "LPT3", "LPT4", "COM1", "COM2", "COM3", "COM4", NULL
 };
 
 /*
@@ -142,7 +142,7 @@ Win32NormalizeFileName(NulibState* pState, const char* srcp, long srcLen,
     if (srcLen >= 3) {
         const char** ppcch;
 
-        for (ppcch = fatReservedNames3; *ppcch != nil; ppcch++) {
+        for (ppcch = fatReservedNames3; *ppcch != NULL; ppcch++) {
             if (strncasecmp(srcp, *ppcch, 3) == 0 &&
                 srcp[3] == '.' || srcLen == 3)
             {
@@ -160,7 +160,7 @@ Win32NormalizeFileName(NulibState* pState, const char* srcp, long srcLen,
     if (srcLen >= 4) {
         const char** ppcch;
 
-        for (ppcch = fatReservedNames4; *ppcch != nil; ppcch++) {
+        for (ppcch = fatReservedNames4; *ppcch != NULL; ppcch++) {
             if (strncasecmp(srcp, *ppcch, 4) == 0 &&
                 srcp[4] == '.' || srcLen == 4)
             {
@@ -185,7 +185,7 @@ Win32NormalizeFileName(NulibState* pState, const char* srcp, long srcLen,
             if (NState_GetModPreserveType(pState))
                 *dstp++ = *srcp;
             *dstp++ = *srcp++;
-        } else if (strchr(kInvalid, *srcp) != nil) {
+        } else if (strchr(kInvalid, *srcp) != NULL) {
             /* change invalid char to "%2f" or '_' */
             if (NState_GetModPreserveType(pState)) {
                 *dstp++ = kForeignIndic;
@@ -225,11 +225,11 @@ NormalizeFileName(NulibState* pState, const char* srcp, long srcLen,
 {
     NuError err;
 
-    Assert(srcp != nil);
+    Assert(srcp != NULL);
     Assert(srcLen > 0);
     Assert(dstLen > srcLen);
-    Assert(pDstp != nil);
-    Assert(*pDstp != nil);
+    Assert(pDstp != NULL);
+    Assert(*pDstp != NULL);
     Assert(fssep > ' ' && fssep < 0x7f);
 
 #if defined(UNIX_LIKE)
@@ -271,13 +271,13 @@ MakeTempArchiveName(NulibState* pState)
     const char* archivePathname;
     char fssep;
     const char* nameStart;
-    char* newName = nil;
+    char* newName = NULL;
     char* namePtr;
-    char* resultName = nil;
+    char* resultName = NULL;
     long len;
 
     archivePathname = NState_GetArchiveFilename(pState);
-    Assert(archivePathname != nil);
+    Assert(archivePathname != NULL);
     fssep = NState_GetSystemPathSeparator(pState);
     Assert(fssep != 0);
 
@@ -292,7 +292,7 @@ MakeTempArchiveName(NulibState* pState)
 
     /* figure out where the filename ends */
     nameStart = strrchr(archivePathname, fssep);
-    if (nameStart == nil) {
+    if (nameStart == NULL) {
         /* nothing but a filename */
         newName = Malloc(kTempFileNameLen +1);
         namePtr = newName;
@@ -302,7 +302,7 @@ MakeTempArchiveName(NulibState* pState)
         strcpy(newName, archivePathname);
         namePtr = newName + (nameStart - archivePathname);
     }
-    if (newName == nil)
+    if (newName == NULL)
         goto bail;
 
     /*
@@ -313,7 +313,7 @@ MakeTempArchiveName(NulibState* pState)
     resultName = newName;
 
 bail:
-    if (resultName == nil)
+    if (resultName == NULL)
         Free(newName);
     return resultName;
 }
@@ -360,10 +360,10 @@ CheckFileStatus(const char* pathname, struct stat* psb, Boolean* pExists,
     NuError err = kNuErrNone;
     int cc;
 
-    Assert(pathname != nil);
-    Assert(pExists != nil);
-    Assert(pIsReadable != nil);
-    Assert(pIsDir != nil);
+    Assert(pathname != NULL);
+    Assert(pExists != NULL);
+    Assert(pIsReadable != NULL);
+    Assert(pIsDir != NULL);
 
     *pExists = true;
     *pIsReadable = true;
@@ -403,8 +403,8 @@ UNIXTimeToDateTime(const time_t* pWhen, NuDateTime *pDateTime)
 {
     struct tm* ptm;
 
-    Assert(pWhen != nil);
-    Assert(pDateTime != nil);
+    Assert(pWhen != NULL);
+    Assert(pDateTime != NULL);
 
     ptm = localtime(pWhen);
     pDateTime->second = ptm->tm_sec;
@@ -450,14 +450,14 @@ GetFileDetails(NulibState* pState, const char* pathname, struct stat* psb,
     char slashDotDotSlash[5] = "_.._";
     time_t now;
 
-    Assert(pState != nil);
-    Assert(pathname != nil);
-    Assert(pDetails != nil);
+    Assert(pState != NULL);
+    Assert(pathname != NULL);
+    Assert(pDetails != NULL);
 
     /* set up the pathname buffer; note pDetails->storageName is const */
     NState_SetTempPathnameLen(pState, strlen(pathname) +1);
     livePathStr = NState_GetTempPathnameBuf(pState);
-    Assert(livePathStr != nil);
+    Assert(livePathStr != NULL);
     strcpy(livePathStr, pathname);
 
     /* under Win32, both '/' and '\' work... we want to settle on one */
@@ -472,7 +472,7 @@ GetFileDetails(NulibState* pState, const char* pathname, struct stat* psb,
     memset(pDetails, 0, sizeof(*pDetails));
     pDetails->threadID = kNuThreadIDDataFork;
     pDetails->storageName = livePathStr;    /* point at temp buffer */
-    pDetails->origName = nil;
+    pDetails->origName = NULL;
     pDetails->fileSysID = kNuFileSysUnknown;
     pDetails->fileSysInfo = kStorageFssep;
     pDetails->fileType = 0;
@@ -497,7 +497,7 @@ GetFileDetails(NulibState* pState, const char* pathname, struct stat* psb,
         }
     }
 
-    now = time(nil);
+    now = time(NULL);
     UNIXTimeToDateTime(&now, &pDetails->archiveWhen);
     UNIXTimeToDateTime(&psb->st_mtime, &pDetails->modWhen);
     UNIXTimeToDateTime(&psb->st_mtime, &pDetails->createWhen);
@@ -576,7 +576,7 @@ GetFileDetails(NulibState* pState, const char* pathname, struct stat* psb,
     slashDotDotSlash[0] = NState_GetSystemPathSeparator(pState);
     slashDotDotSlash[3] = NState_GetSystemPathSeparator(pState);
     if ((livePathStr[0] == '.' && livePathStr[1] == '.') ||
-        (strstr(livePathStr, slashDotDotSlash) != nil))
+        (strstr(livePathStr, slashDotDotSlash) != NULL))
     {
         DBUG(("Found dot dot in '%s', keeping only filename\n", livePathStr));
         doJunk = true;
@@ -595,7 +595,7 @@ GetFileDetails(NulibState* pState, const char* pathname, struct stat* psb,
     if (NState_GetModJunkPaths(pState) || doJunk) {
         char* lastFssep;
         lastFssep = strrchr(livePathStr, NState_GetSystemPathSeparator(pState));
-        if (lastFssep != nil) {
+        if (lastFssep != NULL) {
             Assert(*(lastFssep+1) != '\0'); /* should already have been caught*/
             memmove(livePathStr, lastFssep+1, strlen(lastFssep+1)+1);
         }
@@ -665,7 +665,7 @@ DoAddFile(NulibState* pState, NuArchive* pArchive, const char* pathname,
         DBUG(("Preparing comment for recordIdx=%ld\n", recordIdx));
         Assert(recordIdx != 0);
         comment = GetSimpleComment(pState, pathname, kDefaultCommentLen);
-        if (comment != nil) {
+        if (comment != NULL) {
             NuDataSource* pDataSource;
 
             err = NuCreateDataSourceForBuffer(kNuThreadFormatUncompressed,
@@ -676,15 +676,15 @@ DoAddFile(NulibState* pState, NuArchive* pArchive, const char* pathname,
                 Free(comment);
                 err = kNuErrNone;   /* oh well */
             } else {
-                comment = nil;  /* now owned by the data source */
+                comment = NULL;  /* now owned by the data source */
                 err = NuAddThread(pArchive, recordIdx, kNuThreadIDComment,
-                        pDataSource, nil);
+                        pDataSource, NULL);
                 if (err != kNuErrNone) {
                     ReportError(err, "comment thread add failed");
                     NuFreeDataSource(pDataSource);
                     err = kNuErrNone;   /* oh well */
                 } else {
-                    pDataSource = nil;  /* now owned by NufxLib */
+                    pDataSource = NULL;  /* now owned by NufxLib */
                 }
             }
         }
@@ -711,20 +711,20 @@ static NuError
 UNIXAddDirectory(NulibState* pState, NuArchive* pArchive, const char* dirName)
 {
     NuError err = kNuErrNone;
-    DIR* dirp = nil;
+    DIR* dirp = NULL;
     DIR_TYPE* entry;
     char nbuf[MAX_PATH_LEN];    /* malloc might be better; this soaks stack */
     char fssep;
     int len;
 
-    Assert(pState != nil);
-    Assert(pArchive != nil);
-    Assert(dirName != nil);
+    Assert(pState != NULL);
+    Assert(pArchive != NULL);
+    Assert(dirName != NULL);
 
     DBUG(("+++ DESCEND: '%s'\n", dirName));
 
     dirp = opendir(dirName);
-    if (dirp == nil) {
+    if (dirp == NULL) {
         if (errno == ENOTDIR)
             err = kNuErrNotDir;
         else
@@ -736,7 +736,7 @@ UNIXAddDirectory(NulibState* pState, NuArchive* pArchive, const char* dirName)
     fssep = NState_GetSystemPathSeparator(pState);
 
     /* could use readdir_r, but we don't care about reentrancy here */
-    while ((entry = readdir(dirp)) != nil) {
+    while ((entry = readdir(dirp)) != NULL) {
         /* skip the dotsies */
         if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
             continue;
@@ -761,7 +761,7 @@ UNIXAddDirectory(NulibState* pState, NuArchive* pArchive, const char* dirName)
     }
 
 bail:
-    if (dirp != nil)
+    if (dirp != NULL)
         (void)closedir(dirp);
     return err;
 }
@@ -783,9 +783,9 @@ UNIXAddFile(NulibState* pState, NuArchive* pArchive, const char* pathname)
     NuFileDetails details;
     struct stat sb;
 
-    Assert(pState != nil);
-    Assert(pArchive != nil);
-    Assert(pathname != nil);
+    Assert(pState != NULL);
+    Assert(pArchive != NULL);
+    Assert(pathname != NULL);
 
     err = CheckFileStatus(pathname, &sb, &exists, &isReadable, &isDir);
     if (err != kNuErrNone) {
@@ -851,14 +851,14 @@ static const char* kWildMatchAll = "*.*";
 static Win32dirent*
 OpenDir(const char* name)
 {
-    Win32dirent* dir = nil;
-    char* tmpStr = nil;
+    Win32dirent* dir = NULL;
+    char* tmpStr = NULL;
     char* cp;
     WIN32_FIND_DATA fnd;
 
     dir = Malloc(sizeof(*dir));
     tmpStr = Malloc(strlen(name) + (2 + sizeof(kWildMatchAll)));
-    if (dir == nil || tmpStr == nil)
+    if (dir == NULL || tmpStr == NULL)
         goto failed;
 
     strcpy(tmpStr, name);
@@ -887,14 +887,14 @@ bail:
 
 failed:
     Free(dir);
-    dir = nil;
+    dir = NULL;
     goto bail;
 }
 
 /*
  * Get an entry from an open directory.
  *
- * Returns a nil pointer after the last entry has been read.
+ * Returns a NULL pointer after the last entry has been read.
  */
 static Win32dirent*
 ReadDir(Win32dirent* dir)
@@ -905,7 +905,7 @@ ReadDir(Win32dirent* dir)
         WIN32_FIND_DATA fnd;
 
         if (!FindNextFile(dir->d_hFindFile, &fnd))
-            return nil;
+            return NULL;
         strcpy(dir->d_name, fnd.cFileName);
         dir->d_attr = (uchar) fnd.dwFileAttributes;
     }
@@ -919,7 +919,7 @@ ReadDir(Win32dirent* dir)
 static void
 CloseDir(Win32dirent* dir)
 {
-    if (dir == nil)
+    if (dir == NULL)
         return;
 
     FindClose(dir->d_hFindFile);
@@ -943,20 +943,20 @@ static NuError
 Win32AddDirectory(NulibState* pState, NuArchive* pArchive, const char* dirName)
 {
     NuError err = kNuErrNone;
-    Win32dirent* dirp = nil;
+    Win32dirent* dirp = NULL;
     Win32dirent* entry;
     char nbuf[MAX_PATH_LEN];    /* malloc might be better; this soaks stack */
     char fssep;
     int len;
 
-    Assert(pState != nil);
-    Assert(pArchive != nil);
-    Assert(dirName != nil);
+    Assert(pState != NULL);
+    Assert(pArchive != NULL);
+    Assert(dirName != NULL);
 
     DBUG(("+++ DESCEND: '%s'\n", dirName));
 
     dirp = OpenDir(dirName);
-    if (dirp == nil) {
+    if (dirp == NULL) {
         if (errno == ENOTDIR)
             err = kNuErrNotDir;
         else
@@ -968,7 +968,7 @@ Win32AddDirectory(NulibState* pState, NuArchive* pArchive, const char* dirName)
     fssep = NState_GetSystemPathSeparator(pState);
 
     /* could use readdir_r, but we don't care about reentrancy here */
-    while ((entry = ReadDir(dirp)) != nil) {
+    while ((entry = ReadDir(dirp)) != NULL) {
         /* skip the dotsies */
         if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
             continue;
@@ -993,7 +993,7 @@ Win32AddDirectory(NulibState* pState, NuArchive* pArchive, const char* dirName)
     }
 
 bail:
-    if (dirp != nil)
+    if (dirp != NULL)
         (void)CloseDir(dirp);
     return err;
 }
@@ -1013,9 +1013,9 @@ Win32AddFile(NulibState* pState, NuArchive* pArchive, const char* pathname)
     NuFileDetails details;
     struct stat sb;
 
-    Assert(pState != nil);
-    Assert(pArchive != nil);
-    Assert(pathname != nil);
+    Assert(pState != NULL);
+    Assert(pArchive != NULL);
+    Assert(pathname != NULL);
 
     err = CheckFileStatus(pathname, &sb, &exists, &isReadable, &isDir);
     if (err != kNuErrNone) {
@@ -1071,7 +1071,7 @@ bail_quiet:
  *
  * [ I figure the GS/OS version will want to pass a copy of the file
  *   info from the GSOSAddDirectory function back into GSOSAddFile, so we'd
- *   want to call it from here with a nil pointer indicating that we
+ *   want to call it from here with a NULL pointer indicating that we
  *   don't yet have the file info.  That way we can get the file info
  *   from the directory read call and won't have to check it again in
  *   GSOSAddFile. ]
@@ -1099,7 +1099,7 @@ Mkdir(const char* dir)
 {
     NuError err = kNuErrNone;
 
-    Assert(dir != nil);
+    Assert(dir != NULL);
 
 #if defined(UNIX_LIKE)
     if (mkdir(dir, S_IRWXU | S_IRGRP|S_IXGRP | S_IROTH|S_IXOTH) < 0) {
@@ -1130,8 +1130,8 @@ NuError
 TestFileExistence(const char* fileName, Boolean* pIsDir)
 {
     NuError err = kNuErrNone;
-    Assert(fileName != nil);
-    Assert(pIsDir != nil);
+    Assert(fileName != NULL);
+    Assert(pIsDir != NULL);
 
 #if defined(UNIX_LIKE) || defined(WINDOWS_LIKE)
     {

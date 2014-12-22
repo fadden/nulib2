@@ -140,7 +140,7 @@ Nu_DebugDumpThread(const NuThread* pThread)
     NuThreadID threadID;
     const char* descr;
 
-    Assert(pThread != nil);
+    Assert(pThread != NULL);
 
     printf("%sThreadClass:  0x%04x (%s)\n", kInd,
         pThread->thThreadClass,
@@ -188,15 +188,15 @@ Nu_DebugDumpRecord(NuArchive* pArchive, const NuRecord* pRecord,
     const NuThread* pThread;
     ulong idx;
 
-    Assert(pRecord != nil);
+    Assert(pRecord != NULL);
 
     /*printf("PTR: pRecord=0x%08lx pXrefRecord=0x%08lx\n", (long) pRecord,
         (long) pXrefRecord);*/
 
     printf("%s%s%sFilename: '%s' (idx=%lu)\n", kInd,
         isDeleted ? "[DEL] " : "",
-        pXrefRecord != nil && pXrefRecord->pThreadMods != nil ? "[MOD] " : "",
-        pRecord->filename == nil ? "<not specified>" : pRecord->filename,
+        pXrefRecord != NULL && pXrefRecord->pThreadMods != NULL ? "[MOD] " : "",
+        pRecord->filename == NULL ? "<not specified>" : pRecord->filename,
         pRecord->recordIdx);
     printf("%sHeaderID: '%.4s'  VersionNumber: 0x%04x  HeaderCRC: 0x%04x\n",
         kInd,
@@ -223,7 +223,7 @@ Nu_DebugDumpRecord(NuArchive* pArchive, const NuRecord* pRecord,
     if (pRecord->recOptionSize) {
         char* outBuf = Nu_Malloc(pArchive, pRecord->recOptionSize * 2 +1);
         BailAlloc(outBuf);
-        Assert(pRecord->recOptionList != nil);
+        Assert(pRecord->recOptionList != NULL);
         ConvertToHexStr(pRecord->recOptionList, pRecord->recOptionSize, outBuf);
         printf("%sOptionList: [%s]\n", kInd, outBuf);
         Nu_Free(pArchive, outBuf);
@@ -238,21 +238,21 @@ Nu_DebugDumpRecord(NuArchive* pArchive, const NuRecord* pRecord,
 
         isFake = (idx >= pRecord->recTotalThreads - pRecord->fakeThreads);
         pThread = Nu_GetThread(pRecord, idx);
-        Assert(pThread != nil);
+        Assert(pThread != NULL);
 
         printf("%s--Thread #%lu (idx=%lu)%s\n", kInd, idx, pThread->threadIdx,
             isFake ? " [FAKE]" : "");
         Nu_DebugDumpThread(pThread);
     }
 
-    if (pXrefRecord != nil)
+    if (pXrefRecord != NULL)
         pThreadMod = pXrefRecord->pThreadMods;
     else
         pThreadMod = pRecord->pThreadMods;  /* probably empty */
 
-    if (pThreadMod != nil)
+    if (pThreadMod != NULL)
         printf("%s*ThreadMods -----\n", kInd);
-    while (pThreadMod != nil) {
+    while (pThreadMod != NULL) {
         switch (pThreadMod->entry.kind) {
         case kNuThreadModAdd:
             printf("%s  *-ThreadMod ADD 0x%08lx 0x%04x (sourceType=%d)\n", kInd,
@@ -300,8 +300,8 @@ Nu_DebugDumpRecordSet(NuArchive* pArchive, const NuRecordSet* pRecordSet,
     long count;
 
     doXref = false;
-    pXrefRecord = nil;
-    if (pXrefSet != nil && Nu_RecordSet_GetLoaded(pXrefSet)) {
+    pXrefRecord = NULL;
+    if (pXrefSet != NULL && Nu_RecordSet_GetLoaded(pXrefSet)) {
         pXrefRecord = Nu_RecordSet_GetListHead(pXrefSet);
         doXref = true;
     }
@@ -309,18 +309,18 @@ Nu_DebugDumpRecordSet(NuArchive* pArchive, const NuRecordSet* pRecordSet,
     /* dump every record, if we've loaded them */
     count = Nu_RecordSet_GetNumRecords(pRecordSet);
     pRecord = Nu_RecordSet_GetListHead(pRecordSet);
-    if (pRecord != nil) {
+    if (pRecord != NULL) {
         Assert(count != 0);
         while (count--) {
-            Assert(pRecord != nil);
+            Assert(pRecord != NULL);
 
-            if (pXrefRecord != nil &&
+            if (pXrefRecord != NULL &&
                 pRecord->recordIdx == pXrefRecord->recordIdx)
             {
                 Nu_DebugDumpRecord(pArchive, pRecord, pXrefRecord, false);
                 pXrefRecord = pXrefRecord->pNext;
             } else {
-                Nu_DebugDumpRecord(pArchive, pRecord, nil, doXref);
+                Nu_DebugDumpRecord(pArchive, pRecord, NULL, doXref);
             }
             pRecord = pRecord->pNext;
         }
@@ -338,7 +338,7 @@ Nu_DebugDumpMH(const NuMasterHeader* pMasterHeader)
     static const char* kInd = "  ";
     char dateBuf1[kNuDateOutputLen];
 
-    Assert(pMasterHeader != nil);
+    Assert(pMasterHeader != NULL);
 
     printf("%sNufileID: '%.6s'  MasterCRC: 0x%04x  TotalRecords: %lu\n", kInd,
         pMasterHeader->mhNufileID, pMasterHeader->mhMasterCRC,
@@ -362,7 +362,7 @@ Nu_DebugDumpMH(const NuMasterHeader* pMasterHeader)
 void
 Nu_DebugDumpAll(NuArchive* pArchive)
 {
-    Assert(pArchive != nil);
+    Assert(pArchive != NULL);
 
     printf("*Archive pathname: '%s'\n", pArchive->archivePathname);
     printf("*Archive type: %d\n", pArchive->archiveType);
@@ -382,7 +382,7 @@ Nu_DebugDumpAll(NuArchive* pArchive)
     Nu_DebugDumpRecordSet(pArchive, &pArchive->origRecordSet,
         &pArchive->copyRecordSet);
     printf("  *NEW record set:\n");
-    Nu_DebugDumpRecordSet(pArchive, &pArchive->newRecordSet, nil);
+    Nu_DebugDumpRecordSet(pArchive, &pArchive->newRecordSet, NULL);
 
     if (!Nu_RecordSet_GetLoaded(&pArchive->origRecordSet) &&
         !Nu_RecordSet_GetLoaded(&pArchive->newRecordSet))

@@ -704,7 +704,7 @@ Nu_CompressHuffmanSQ(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
 
     sqState.pArchive = pArchive;
     sqState.crc = 0;
-    if (pCrc == nil) {
+    if (pCrc == NULL) {
         sqState.doCalcCRC = false;
     } else {
         sqState.doCalcCRC = true;
@@ -727,7 +727,7 @@ Nu_CompressHuffmanSQ(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
     err = Nu_SQComputeHuffTree(&sqState);
     BailError(err);
 
-    if (pCrc != nil)
+    if (pCrc != NULL)
         *pCrc = sqState.crc;
 
     /*
@@ -915,7 +915,7 @@ Nu_ExpandHuffmanSQ(NuArchive* pArchive, const NuRecord* pRecord,
     err = Nu_AllocCompressionBufferIFN(pArchive);
     if (err != kNuErrNone)
         return err;
-    Assert(pArchive->compBuf != nil);
+    Assert(pArchive->compBuf != NULL);
 
     usqState.dataInBuffer = 0;
     usqState.dataPtr = pArchive->compBuf;
@@ -1080,7 +1080,7 @@ Nu_ExpandHuffmanSQ(NuArchive* pArchive, const NuRecord* pRecord,
                 val = 2;
             }
             while (--val) {
-                if (pCrc != nil)
+                if (pCrc != NULL)
                     *pCrc = Nu_CalcCRC16(*pCrc, &lastc, 1);
                 err = Nu_FunnelWrite(pArchive, pFunnel, &lastc, 1);
                 #ifdef FULL_SQ_HEADER
@@ -1095,7 +1095,7 @@ Nu_ExpandHuffmanSQ(NuArchive* pArchive, const NuRecord* pRecord,
                 inrep = true;
             } else {
                 lastc = val;
-                if (pCrc != nil)
+                if (pCrc != NULL)
                     *pCrc = Nu_CalcCRC16(*pCrc, &lastc, 1);
                 err = Nu_FunnelWrite(pArchive, pFunnel, &lastc, 1);
                 #ifdef FULL_SQ_HEADER

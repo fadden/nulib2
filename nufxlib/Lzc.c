@@ -587,7 +587,7 @@ Nu_LZC_compress(LZCState* pLzcState, ulong* pDstLen)
     register INTCODE code;
     HASH hashf[256];
 
-    Assert(pLzcState->outfp != nil);
+    Assert(pLzcState->outfp != NULL);
 
     pLzcState->maxcode = Maxcode(pLzcState->maxbits);
     pLzcState->hashsize = Hashsize(pLzcState->maxbits);
@@ -771,7 +771,7 @@ Nu_CompressLZC(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
     lzcState.outfp = fp;
     lzcState.uncompRemaining = srcLen;
 
-    if (pCrc == nil) {
+    if (pCrc == NULL) {
         lzcState.doCalcCRC = false;
     } else {
         lzcState.doCalcCRC = true;
@@ -800,7 +800,7 @@ Nu_CompressLZC(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
 #endif
     free_array(char,lzcState.sfx, 256);
 
-    if (pCrc != nil)
+    if (pCrc != NULL)
         *pCrc = lzcState.crc;
 
     return err;
@@ -911,7 +911,7 @@ Nu_LZC_decompress(LZCState* pLzcState, ulong compressedLen)
     /*static*/ int maxtoklen = MAXTOKLEN;
     int flags;
 
-    Assert(pLzcState->infp != nil);
+    Assert(pLzcState->infp != NULL);
 
     pLzcState->exit_stat = OK;
 
@@ -1072,7 +1072,7 @@ Nu_ExpandLZC(NuArchive* pArchive, const NuRecord* pRecord,
     lzcState.infp = infp;
     lzcState.pFunnel = pFunnel;
 
-    if (pCrc == nil) {
+    if (pCrc == NULL) {
         lzcState.doCalcCRC = false;
     } else {
         lzcState.doCalcCRC = true;
@@ -1098,7 +1098,7 @@ Nu_ExpandLZC(NuArchive* pArchive, const NuRecord* pRecord,
 #endif
     free_array(char,lzcState.sfx, 256);
 
-    if (pCrc != nil)
+    if (pCrc != NULL)
         *pCrc = lzcState.crc;
     return err;
 }

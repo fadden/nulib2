@@ -676,7 +676,7 @@ typedef struct NuErrorMessage {
     /* these identify where the message originated if lib built w/debug set */
     const char*         file;           /* source file */
     int                 line;           /* line number */
-    const char*         function;       /* function name (might be nil) */
+    const char*         function;       /* function name (might be NULL) */
 } NuErrorMessage;
 
 

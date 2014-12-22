@@ -153,8 +153,8 @@ Nu_AllocLZWCompressState(NuArchive* pArchive)
     LZWCompressState* lzwState;
     int ic;
 
-    Assert(pArchive != nil);
-    Assert(pArchive->lzwCompressState == nil);
+    Assert(pArchive != NULL);
+    Assert(pArchive->lzwCompressState == NULL);
 
     /* allocate the general-purpose compression buffer, if needed */
     err = Nu_AllocCompressionBufferIFN(pArchive);
@@ -162,7 +162,7 @@ Nu_AllocLZWCompressState(NuArchive* pArchive)
         return err;
 
     pArchive->lzwCompressState = Nu_Malloc(pArchive, sizeof(LZWCompressState));
-    if (pArchive->lzwCompressState == nil)
+    if (pArchive->lzwCompressState == NULL)
         return kNuErrMalloc;
 
     /*
@@ -261,7 +261,7 @@ Nu_CompressBlockRLE(LZWCompressState* lzwState, int* pRLESize)
 static void
 Nu_ClearLZWTable(LZWCompressState* lzwState)
 {
-    Assert(lzwState != nil);
+    Assert(lzwState != NULL);
 
     /*DBUG_LZW(("### clear table\n"));*/
 
@@ -368,8 +368,8 @@ Nu_CompressLZWBlock(LZWCompressState* lzwState, const uchar* inputBuf,
     uchar* pSuffix = lzwState->suffix;
     uchar* outBuf = lzwState->lzwBuf;
 
-    Assert(lzwState != nil);
-    Assert(inputBuf != nil);
+    Assert(lzwState != NULL);
+    Assert(inputBuf != NULL);
     Assert(inputCount > 0 && inputCount <= kNuLZWBlockSize);
     /* make sure nobody has been messing with the types */
     Assert(sizeof(pHashFunc[0]) == sizeof(lzwState->hashFunc[0]));
@@ -567,23 +567,23 @@ Nu_CompressLZW(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
     long compressedLen;
     Boolean keepLzw;
 
-    Assert(pArchive != nil);
-    Assert(pStraw != nil);
-    Assert(fp != nil);
+    Assert(pArchive != NULL);
+    Assert(pStraw != NULL);
+    Assert(fp != NULL);
     Assert(srcLen > 0);
-    Assert(pDstLen != nil);
-    Assert(pThreadCrc != nil);
+    Assert(pDstLen != NULL);
+    Assert(pThreadCrc != NULL);
     Assert(isType2 == true || isType2 == false);
 
     /*
      * Do some initialization and set-up.
      */
-    if (pArchive->lzwCompressState == nil) {
+    if (pArchive->lzwCompressState == NULL) {
         err = Nu_AllocLZWCompressState(pArchive);
         BailError(err);
     }
-    Assert(pArchive->lzwCompressState != nil);
-    Assert(pArchive->compBuf != nil);
+    Assert(pArchive->lzwCompressState != NULL);
+    Assert(pArchive->compBuf != NULL);
 
     lzwState = pArchive->lzwCompressState;
     lzwState->pArchive = pArchive;
@@ -869,8 +869,8 @@ Nu_AllocLZWExpandState(NuArchive* pArchive)
 {
     NuError err;
 
-    Assert(pArchive != nil);
-    Assert(pArchive->lzwExpandState == nil);
+    Assert(pArchive != NULL);
+    Assert(pArchive->lzwExpandState == NULL);
 
     /* allocate the general-purpose compression buffer, if needed */
     err = Nu_AllocCompressionBufferIFN(pArchive);
@@ -878,7 +878,7 @@ Nu_AllocLZWExpandState(NuArchive* pArchive)
         return err;
 
     pArchive->lzwExpandState = Nu_Malloc(pArchive, sizeof(LZWExpandState));
-    if (pArchive->lzwExpandState == nil)
+    if (pArchive->lzwExpandState == NULL)
         return kNuErrMalloc;
     return kNuErrNone;
 }
@@ -990,7 +990,7 @@ Nu_ExpandLZW1(LZWExpandState* lzwState, uint expectedLen)
     uchar* outbufend;
     uchar* stackPtr;
 
-    Assert(lzwState != nil);
+    Assert(lzwState != NULL);
     Assert(expectedLen > 0 && expectedLen <= kNuLZWBlockSize);
 
     inbuf = lzwState->dataPtr;
@@ -1094,7 +1094,7 @@ Nu_ExpandLZW2(LZWExpandState* lzwState, uint expectedLen,
 
     /*DBUG_LZW(("### LZW/2 block start (compIn=%d, rleOut=%d, entry=0x%04x)\n",
         expectedInputUsed, expectedLen, lzwState->entry));*/
-    Assert(lzwState != nil);
+    Assert(lzwState != NULL);
     Assert(expectedLen > 0 && expectedLen <= kNuLZWBlockSize);
 
     inbuf = lzwState->dataPtr;
@@ -1298,7 +1298,7 @@ Nu_GetHeaderByte(LZWExpandState* lzwState)
  * This manages the input data buffer, passing chunks of compressed data
  * into the appropriate expansion function.
  *
- * Pass in nil for "pThreadCrc" if no thread CRC is desired.  Otherwise,
+ * Pass in NULL for "pThreadCrc" if no thread CRC is desired.  Otherwise,
  * "*pThreadCrc" should already be set to its initial value.  On exit it
  * will contain the CRC of the uncompressed data.
  */
@@ -1311,20 +1311,20 @@ Nu_ExpandLZW(NuArchive* pArchive, const NuRecord* pRecord,
     LZWExpandState* lzwState;
     ulong compRemaining, uncompRemaining, minSize;
 
-    Assert(pArchive != nil);
-    Assert(pThread != nil);
-    Assert(infp != nil);
-    Assert(pFunnel != nil);
+    Assert(pArchive != NULL);
+    Assert(pThread != NULL);
+    Assert(infp != NULL);
+    Assert(pFunnel != NULL);
 
     /*
      * Do some initialization and set-up.
      */
-    if (pArchive->lzwExpandState == nil) {
+    if (pArchive->lzwExpandState == NULL) {
         err = Nu_AllocLZWExpandState(pArchive);
         BailError(err);
     }
-    Assert(pArchive->lzwExpandState != nil);
-    Assert(pArchive->compBuf != nil);
+    Assert(pArchive->lzwExpandState != NULL);
+    Assert(pArchive->compBuf != NULL);
 
     lzwState = pArchive->lzwExpandState;
     lzwState->pArchive = pArchive;
@@ -1368,7 +1368,7 @@ Nu_ExpandLZW(NuArchive* pArchive, const NuRecord* pRecord,
     compRemaining -= 2;
 
     lzwState->dataInBuffer = 0;
-    lzwState->dataPtr = nil;
+    lzwState->dataPtr = NULL;
 
     /* reset pointers */
     lzwState->entry = kNuLZWFirstCode;  /* 0x0101 */
@@ -1409,7 +1409,7 @@ Nu_ExpandLZW(NuArchive* pArchive, const NuRecord* pRecord,
              * the buffer.
              */
             if (lzwState->dataInBuffer) {
-                Assert(lzwState->dataPtr != nil);
+                Assert(lzwState->dataPtr != NULL);
                 Assert(pArchive->compBuf != lzwState->dataPtr);
                 memmove(pArchive->compBuf, lzwState->dataPtr,
                     lzwState->dataInBuffer);
@@ -1476,7 +1476,7 @@ Nu_ExpandLZW(NuArchive* pArchive, const NuRecord* pRecord,
             writeLen = kNuLZWBlockSize;
 
         #ifndef NDEBUG
-        writeBuf = nil;
+        writeBuf = NULL;
         #endif
 
         /*
@@ -1537,7 +1537,7 @@ Nu_ExpandLZW(NuArchive* pArchive, const NuRecord* pRecord,
             lzwState->resetFix = false;
         }
 
-        Assert(writeBuf != nil);
+        Assert(writeBuf != NULL);
 
         /*
          * Compute the CRC of the uncompressed data, and write it.  For
@@ -1547,7 +1547,7 @@ Nu_ExpandLZW(NuArchive* pArchive, const NuRecord* pRecord,
          * See commentary in the compression code for why we have to
          * compute two CRCs for LZW/1.
          */
-        if (pThreadCrc != nil) {
+        if (pThreadCrc != NULL) {
             *pThreadCrc = Nu_CalcCRC16(*pThreadCrc, writeBuf, writeLen);
         }
         if (!isType2) {

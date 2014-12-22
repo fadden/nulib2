@@ -20,12 +20,12 @@ Nu_CompressUncompressed(NuArchive* pArchive, NuStraw* pStraw,
     FILE* fp, ulong srcLen, ulong* pDstLen, ushort *pCrc)
 {
     NuError err = kNuErrNone;
-    /*uchar* buffer = nil;*/
+    /*uchar* buffer = NULL;*/
     ulong count, getsize;
 
-    Assert(pArchive != nil);
-    Assert(pStraw != nil);
-    Assert(fp != nil);
+    Assert(pArchive != NULL);
+    Assert(pStraw != NULL);
+    Assert(fp != NULL);
     Assert(srcLen > 0);
 
     *pDstLen = srcLen;  /* get this over with */
@@ -33,7 +33,7 @@ Nu_CompressUncompressed(NuArchive* pArchive, NuStraw* pStraw,
     err = Nu_AllocCompressionBufferIFN(pArchive);
     BailError(err);
 
-    if (pCrc != nil)
+    if (pCrc != NULL)
         *pCrc = kNuInitialThreadCRC;
     count = srcLen;
 
@@ -42,7 +42,7 @@ Nu_CompressUncompressed(NuArchive* pArchive, NuStraw* pStraw,
 
         err = Nu_StrawRead(pArchive, pStraw, pArchive->compBuf, getsize);
         BailError(err);
-        if (pCrc != nil)
+        if (pCrc != NULL)
             *pCrc = Nu_CalcCRC16(*pCrc, pArchive->compBuf, getsize);
         err = Nu_FWrite(fp, pArchive->compBuf, getsize);
         BailError(err);
@@ -95,16 +95,16 @@ Nu_CompressToArchive(NuArchive* pArchive, NuDataSource* pDataSource,
 {
     NuError err;
     long origOffset;
-    NuStraw* pStraw = nil;
-    NuDataSink* pDataSink = nil;
+    NuStraw* pStraw = NULL;
+    NuDataSink* pDataSink = NULL;
     ulong srcLen = 0, dstLen = 0;
     ushort threadCrc;
 
-    Assert(pArchive != nil);
-    Assert(pDataSource != nil);
-    /* okay if pProgressData is nil */
-    Assert(dstFp != nil);
-    Assert(pThread != nil);
+    Assert(pArchive != NULL);
+    Assert(pDataSource != NULL);
+    /* okay if pProgressData is NULL */
+    Assert(dstFp != NULL);
+    Assert(pThread != NULL);
 
     /* remember file offset, so we can back up if compression fails */
     err = Nu_FTell(dstFp, &origOffset);
@@ -168,7 +168,7 @@ Nu_CompressToArchive(NuArchive* pArchive, NuDataSource* pDataSource,
         if (pArchive->valMimicSHK && srcLen < kNuSHKLZWThreshold)
             targetFormat = kNuThreadFormatUncompressed;
 
-        if (pProgressData != nil) {
+        if (pProgressData != NULL) {
             if (targetFormat != kNuThreadFormatUncompressed)
                 Nu_StrawSetProgressState(pStraw, kNuProgressCompressing);
             else
@@ -245,7 +245,7 @@ Nu_CompressToArchive(NuArchive* pArchive, NuDataSource* pDataSource,
             BailError(err);
             err = Nu_StrawRewind(pArchive, pStraw);
             BailError(err);
-            if (pProgressData != nil)
+            if (pProgressData != NULL)
                 Nu_StrawSetProgressState(pStraw, kNuProgressStoring);
             err = Nu_ProgressDataCompressPrep(pArchive, pStraw,
                     kNuThreadFormatUncompressed, srcLen);
@@ -262,7 +262,7 @@ Nu_CompressToArchive(NuArchive* pArchive, NuDataSource* pDataSource,
              * computed a CRC on the entire file (i.e. didn't stop early
              * when it noticed the output was larger than the input).  If
              * this is always the case, then we can change "&threadCrc"
-             * a few lines back to "nil" and avoid re-computing the CRC.
+             * a few lines back to "NULL" and avoid re-computing the CRC.
              * If this is not always the case, remove this assert.
              */
             Assert(threadCrc == pThread->thThreadCRC);
@@ -276,14 +276,14 @@ Nu_CompressToArchive(NuArchive* pArchive, NuDataSource* pDataSource,
         /*
          * Copy the already-compressed input.
          */
-        if (pProgressData != nil)
+        if (pProgressData != NULL)
             Nu_StrawSetProgressState(pStraw, kNuProgressCopying);
         err = Nu_ProgressDataCompressPrep(pArchive, pStraw,
                 kNuThreadFormatUncompressed, srcLen);
         BailError(err);
 
         err = Nu_CompressUncompressed(pArchive, pStraw, dstFp, srcLen,
-                &dstLen, nil);
+                &dstLen, NULL);
         BailError(err);
 
         pThread->thThreadEOF = Nu_DataSourceGetOtherLen(pDataSource);
@@ -298,7 +298,7 @@ done:
         srcLen, dstLen, pThread->actualThreadEOF));
 
     /* make sure we send a final "success" progress message at 100% */
-    if (pProgressData != nil) {
+    if (pProgressData != NULL) {
         (void) Nu_StrawSetProgressState(pStraw, kNuProgressDone);
         err = Nu_StrawSendProgressUpdate(pArchive, pStraw);
         BailError(err);
@@ -327,7 +327,7 @@ Nu_CopyPresizedToArchive(NuArchive* pArchive, NuDataSource* pDataSource,
     NuThreadID threadID, FILE* dstFp, NuThread* pThread, char** ppSavedCopy)
 {
     NuError err = kNuErrNone;
-    NuStraw* pStraw = nil;
+    NuStraw* pStraw = NULL;
     ulong srcLen, bufferLen;
     ulong count, getsize;
 
@@ -355,7 +355,7 @@ Nu_CopyPresizedToArchive(NuArchive* pArchive, NuDataSource* pDataSource,
      * is a convenient way to deal with the dataSource, even though we
      * don't have a progress updater.
      */
-    err = Nu_StrawNew(pArchive, pDataSource, nil, &pStraw);
+    err = Nu_StrawNew(pArchive, pDataSource, NULL, &pStraw);
     BailError(err);
 
     count = srcLen;
@@ -370,7 +370,7 @@ Nu_CopyPresizedToArchive(NuArchive* pArchive, NuDataSource* pDataSource,
         err = Nu_FWrite(dstFp, pArchive->compBuf, getsize);
         BailError(err);
 
-        if (ppSavedCopy != nil && *ppSavedCopy == nil) {
+        if (ppSavedCopy != NULL && *ppSavedCopy == NULL) {
             /*
              * Grab a copy of the filename for our own use.  This assumes
              * that the filename fits in kNuGenCompBufSize, which is a

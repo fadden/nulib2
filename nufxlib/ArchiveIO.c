@@ -31,9 +31,9 @@ Nu_ReadOneC(NuArchive* pArchive, FILE* fp, ushort* pCrc)
 {
     int ic;
 
-    Assert(pArchive != nil);
-    Assert(fp != nil);
-    Assert(pCrc != nil);
+    Assert(pArchive != NULL);
+    Assert(fp != NULL);
+    Assert(pCrc != NULL);
 
     ic = getc(fp);
     *pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
@@ -54,9 +54,9 @@ Nu_ReadOne(NuArchive* pArchive, FILE* fp)
 void
 Nu_WriteOneC(NuArchive* pArchive, FILE* fp, uchar val, ushort* pCrc)
 {
-    Assert(pArchive != nil);
-    Assert(fp != nil);
-    Assert(pCrc != nil);
+    Assert(pArchive != NULL);
+    Assert(fp != NULL);
+    Assert(pCrc != NULL);
 
     putc(val, fp);
 }
@@ -77,9 +77,9 @@ Nu_ReadTwoC(NuArchive* pArchive, FILE* fp, ushort* pCrc)
 {
     int ic1, ic2;
 
-    Assert(pArchive != nil);
-    Assert(fp != nil);
-    Assert(pCrc != nil);
+    Assert(pArchive != NULL);
+    Assert(fp != NULL);
+    Assert(pCrc != NULL);
 
     ic1 = getc(fp);
     *pCrc = Nu_UpdateCRC16((uchar)ic1, *pCrc);
@@ -105,9 +105,9 @@ Nu_WriteTwoC(NuArchive* pArchive, FILE* fp, ushort val, ushort* pCrc)
 {
     int ic1, ic2;
 
-    Assert(pArchive != nil);
-    Assert(fp != nil);
-    Assert(pCrc != nil);
+    Assert(pArchive != NULL);
+    Assert(fp != NULL);
+    Assert(pCrc != NULL);
 
     ic1 = val & 0xff;
     *pCrc = Nu_UpdateCRC16((uchar)ic1, *pCrc);
@@ -134,9 +134,9 @@ Nu_ReadFourC(NuArchive* pArchive, FILE* fp, ushort* pCrc)
 {
     int ic1, ic2, ic3, ic4;
 
-    Assert(pArchive != nil);
-    Assert(fp != nil);
-    Assert(pCrc != nil);
+    Assert(pArchive != NULL);
+    Assert(fp != NULL);
+    Assert(pCrc != NULL);
 
     ic1 = getc(fp);
     *pCrc = Nu_UpdateCRC16((uchar)ic1, *pCrc);
@@ -166,9 +166,9 @@ Nu_WriteFourC(NuArchive* pArchive, FILE* fp, ulong val, ushort* pCrc)
 {
     int ic1, ic2, ic3, ic4;
 
-    Assert(pArchive != nil);
-    Assert(fp != nil);
-    Assert(pCrc != nil);
+    Assert(pArchive != NULL);
+    Assert(fp != NULL);
+    Assert(pCrc != NULL);
 
     ic1 = val & 0xff;
     *pCrc = Nu_UpdateCRC16((uchar)ic1, *pCrc);
@@ -206,9 +206,9 @@ Nu_ReadDateTimeC(NuArchive* pArchive, FILE* fp, ushort* pCrc)
     NuDateTime temp;
     int ic;
 
-    Assert(pArchive != nil);
-    Assert(fp != nil);
-    Assert(pCrc != nil);
+    Assert(pArchive != NULL);
+    Assert(fp != NULL);
+    Assert(pCrc != NULL);
 
     ic = getc(fp);
     *pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
@@ -255,9 +255,9 @@ Nu_WriteDateTimeC(NuArchive* pArchive, FILE* fp, NuDateTime dateTime,
 {
     int ic;
 
-    Assert(pArchive != nil);
-    Assert(fp != nil);
-    Assert(pCrc != nil);
+    Assert(pArchive != NULL);
+    Assert(fp != NULL);
+    Assert(pCrc != NULL);
 
     ic = dateTime.second;
     *pCrc = Nu_UpdateCRC16((uchar)ic, *pCrc);
@@ -303,10 +303,10 @@ Nu_ReadBytesC(NuArchive* pArchive, FILE* fp, void* vbuffer, long count,
     uchar* buffer = vbuffer;
     int ic;
 
-    Assert(pArchive != nil);
-    Assert(fp != nil);
-    Assert(pCrc != nil);
-    Assert(buffer != nil);
+    Assert(pArchive != NULL);
+    Assert(fp != NULL);
+    Assert(pCrc != NULL);
+    Assert(buffer != NULL);
     Assert(count > 0);
 
     while (count--) {
@@ -334,10 +334,10 @@ Nu_WriteBytesC(NuArchive* pArchive, FILE* fp, const void* vbuffer, long count,
     const uchar* buffer = vbuffer;
     int ic;
 
-    Assert(pArchive != nil);
-    Assert(fp != nil);
-    Assert(pCrc != nil);
-    Assert(buffer != nil);
+    Assert(pArchive != NULL);
+    Assert(fp != NULL);
+    Assert(pCrc != NULL);
+    Assert(buffer != NULL);
     Assert(count > 0);
 
     while (count--) {
@@ -411,7 +411,7 @@ Nu_SeekArchive(NuArchive* pArchive, FILE* fp, long offset, int ptrname)
 NuError
 Nu_RewindArchive(NuArchive* pArchive)
 {
-    Assert(pArchive != nil);
+    Assert(pArchive != NULL);
     Assert(!Nu_IsStreaming(pArchive));
 
     if (Nu_SeekArchive(pArchive, pArchive->archiveFp,

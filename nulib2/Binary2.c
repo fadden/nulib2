@@ -50,7 +50,7 @@ OpenFileReadOnly(const char* filename, FILE** pFp)
     NuError err = kNuErrNone;
 
     *pFp = fopen(filename, kFileOpenReadOnly);
-    if (*pFp == nil)
+    if (*pFp == NULL)
         err = errno ? errno : kNuErrFileOpen;
 
     return err;
@@ -198,7 +198,7 @@ static void
 BNYFree(BNYArchive* pBny)
 {
     /* don't need to do this on stdin, but won't really hurt */
-    if (pBny->fp != nil)
+    if (pBny->fp != NULL)
         fclose(pBny->fp);
 
     Free(pBny);
@@ -215,9 +215,9 @@ BNYOpenReadOnly(BNYArchive* pBny)
     NuError err = kNuErrNone;
     NulibState* pState;
     
-    Assert(pBny != nil);
-    Assert(pBny->pState != nil);
-    Assert(pBny->fp == nil);
+    Assert(pBny != NULL);
+    Assert(pBny->pState != NULL);
+    Assert(pBny->fp == NULL);
 
     pState = pBny->pState;
 
@@ -253,10 +253,10 @@ BNYRead(BNYArchive* pBny, void* buf, size_t nbyte)
 {
     size_t result;
 
-    Assert(pBny != nil);
-    Assert(buf != nil);
+    Assert(pBny != NULL);
+    Assert(buf != NULL);
     Assert(nbyte > 0);
-    Assert(pBny->fp != nil);
+    Assert(pBny->fp != NULL);
 
     errno = 0;
     result = fread(buf, 1, nbyte, pBny->fp);
@@ -273,9 +273,9 @@ BNYRead(BNYArchive* pBny, void* buf, size_t nbyte)
 static NuError
 BNYSeek(BNYArchive* pBny, long offset)
 {
-    Assert(pBny != nil);
-    Assert(pBny->fp != nil);
-    Assert(pBny->pState != nil);
+    Assert(pBny != NULL);
+    Assert(pBny->fp != NULL);
+    Assert(pBny->pState != NULL);
     Assert(offset > 0);
 
     /*DBUG(("--- seeking forward %ld bytes\n", offset));*/
@@ -327,8 +327,8 @@ BNYDecodeHeader(BNYArchive* pBny, BNYEntry* pEntry)
     uchar* raw;
     int len;
 
-    Assert(pBny != nil);
-    Assert(pEntry != nil);
+    Assert(pBny != NULL);
+    Assert(pEntry != NULL);
 
     raw = pEntry->blockBuf;
 
@@ -422,9 +422,9 @@ BNYNormalizePath(BNYArchive* pBny, BNYEntry* pEntry)
     pathProposal.pRecord = &fakeRecord;
     pathProposal.pThread = &fakeThread;
 
-    pathProposal.newPathname = nil;
+    pathProposal.newPathname = NULL;
     pathProposal.newFilenameSeparator = '\0';
-    pathProposal.newDataSink = nil;
+    pathProposal.newDataSink = NULL;
 
     /* need the filetype and auxtype for -e/-ee */
     fakeRecord.recFileType = pEntry->fileType;
@@ -464,7 +464,7 @@ BNYCopyBlocks(BNYArchive* pBny, BNYEntry* pEntry, FILE* outfp)
         if (toWrite > kBNYBlockSize)
             toWrite = kBNYBlockSize;
 
-        if (outfp != nil) {
+        if (outfp != NULL) {
             if (fwrite(pEntry->blockBuf, toWrite, 1, outfp) != 1) {
                 err = errno ? errno : kNuErrFileWrite;
                 ReportError(err, "BNY write failed");
@@ -609,11 +609,11 @@ BNYUnSqueeze(BNYArchive* pBny, BNYEntry* pEntry, FILE* outfp)
 #endif
     short nodeCount;
     int i, inrep;
-    uchar* tmpBuf = nil;
+    uchar* tmpBuf = NULL;
     uchar lastc = 0;
 
     tmpBuf = Malloc(kSqBufferSize);
-    if (tmpBuf == nil) {
+    if (tmpBuf == NULL) {
         err = kNuErrMalloc;
         goto bail;
     }
@@ -824,9 +824,9 @@ BNYUnSqueeze(BNYArchive* pBny, BNYEntry* pEntry, FILE* outfp)
                 val = 2;
             }
             while (--val) {
-                /*if (pCrc != nil)
+                /*if (pCrc != NULL)
                     *pCrc = Nu_CalcCRC16(*pCrc, &lastc, 1);*/
-                if (outfp != nil)
+                if (outfp != NULL)
                     putc(lastc, outfp);
                 #ifdef FULL_SQ_HEADER
                 checksum += lastc;
@@ -840,9 +840,9 @@ BNYUnSqueeze(BNYArchive* pBny, BNYEntry* pEntry, FILE* outfp)
                 inrep = true;
             } else {
                 lastc = val;
-                /*if (pCrc != nil)
+                /*if (pCrc != NULL)
                     *pCrc = Nu_CalcCRC16(*pCrc, &lastc, 1);*/
-                if (outfp != nil)
+                if (outfp != NULL)
                     putc(lastc, outfp);
                 #ifdef FULL_SQ_HEADER
                 checksum += lastc;
@@ -889,7 +889,7 @@ BNYUnSqueeze(BNYArchive* pBny, BNYEntry* pEntry, FILE* outfp)
     }
 
 bail:
-    if (outfp != nil)
+    if (outfp != NULL)
         fflush(outfp);
     Free(tmpBuf);
     return err;
@@ -913,19 +913,19 @@ static NuError
 BNYIterate(NulibState* pState, BNYIteratorFunc func)
 {
     NuError err = kNuErrNone;
-    BNYArchive* pBny = nil;
+    BNYArchive* pBny = NULL;
     BNYEntry entry;
     Boolean consumed;
     int first = true;
     int toFollow;
 
-    Assert(pState != nil);
-    Assert(func != nil);
+    Assert(pState != NULL);
+    Assert(func != NULL);
 
     NState_SetMatchCount(pState, 0);
 
     pBny = BNYInit(pState);
-    if (pBny == nil) {
+    if (pBny == NULL) {
         err = kNuErrMalloc;
         goto bail;
     }
@@ -1012,7 +1012,7 @@ BNYIterate(NulibState* pState, BNYIteratorFunc func)
         printf("%s: no records match\n", gProgName);
 
 bail:
-    if (pBny != nil)
+    if (pBny != NULL)
         BNYFree(pBny);
     if (err != kNuErrNone) {
         DBUG(("--- Iterator returning failure %d\n", err));
@@ -1173,7 +1173,7 @@ BNYExtractDirectory(BNYArchive* pBny, BNYEntry* pEntry, ExtMode extMode)
          */
         /*newName = BNYNormalizePath(pBny, pEntry);*/
         newName = pEntry->fileName;
-        if (newName == nil)
+        if (newName == NULL)
             goto bail;
 
         err = TestFileExistence(newName, &isDir);
@@ -1216,7 +1216,7 @@ BNYExtract(BNYArchive* pBny, BNYEntry* pEntry, Boolean* pConsumedFlag)
     NulibState* pState;
     ExtMode extMode;
     const char* actionStr = "HOSED";
-    FILE* outfp = nil;
+    FILE* outfp = NULL;
     Boolean eolConv;
 
     pState = pBny->pState;
@@ -1275,7 +1275,7 @@ BNYExtract(BNYArchive* pBny, BNYEntry* pEntry, Boolean* pConsumedFlag)
         }
 
         newName = BNYNormalizePath(pBny, pEntry);
-        if (newName == nil)
+        if (newName == NULL)
             goto bail;
 
         err = TestFileExistence(newName, &isDir);
@@ -1303,13 +1303,13 @@ BNYExtract(BNYArchive* pBny, BNYEntry* pEntry, Boolean* pConsumedFlag)
 
         /* open it, overwriting anything present */
         outfp = fopen(newName, "w");
-        if (outfp == nil) {
+        if (outfp == NULL) {
             err = kNuErrFileOpen;
             goto bail;
         }
     } else {
-        /* outfp == nil means we're in test mode */
-        Assert(outfp == nil);
+        /* outfp == NULL means we're in test mode */
+        Assert(outfp == NULL);
     }
 
     /*
@@ -1358,7 +1358,7 @@ BNYExtract(BNYArchive* pBny, BNYEntry* pEntry, Boolean* pConsumedFlag)
     *pConsumedFlag = true;
 
 bail:
-    if (outfp != nil && outfp != stdout)
+    if (outfp != NULL && outfp != stdout)
         fclose(outfp);
     return err;
 }

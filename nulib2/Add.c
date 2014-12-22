@@ -18,17 +18,17 @@ NuError
 DoAdd(NulibState* pState)
 {
     NuError err;
-    NuArchive* pArchive = nil;
+    NuArchive* pArchive = NULL;
     long flushStatus;
 
-    Assert(pState != nil);
+    Assert(pState != NULL);
 
     err = OpenArchiveReadWrite(pState);
     if (err != kNuErrNone)
         goto bail;
 
     pArchive = NState_GetNuArchive(pState);
-    Assert(pArchive != nil);
+    Assert(pArchive != NULL);
 
     NState_SetMatchCount(pState, 0);
 
@@ -43,7 +43,7 @@ DoAdd(NulibState* pState)
         printf("%s: no records matched\n", gProgName);
 
 bail:
-    if (pArchive != nil) {
+    if (pArchive != NULL) {
         NuError err2;
 
         #if 0
@@ -91,8 +91,8 @@ AddToArchive(NulibState* pState, NuArchive* pArchive)
     char* const* pSpec;
     int i;
 
-    Assert(pState != nil);
-    Assert(pArchive != nil);
+    Assert(pState != NULL);
+    Assert(pArchive != NULL);
 
     if (!NState_GetFilespecCount(pState)) {
         err = kNuErrSyntax;

@@ -42,7 +42,7 @@ static const ValidCombo gValidCombos[] = {
 /*
  * Find an entry in the gValidCombos table matching the specified command.
  *
- * Returns nil if not found.
+ * Returns NULL if not found.
  */
 static const ValidCombo*
 FindValidComboEntry(Command cmd)
@@ -54,7 +54,7 @@ FindValidComboEntry(Command cmd)
             return &gValidCombos[i];
     }
 
-    return nil;
+    return NULL;
 }
 
 /*
@@ -67,8 +67,8 @@ IsValidModifier(Command cmd, char modifier)
     const ValidCombo* pvc;
 
     pvc = FindValidComboEntry(cmd);
-    if (pvc != nil) {
-        if (strchr(pvc->modifiers, modifier) == nil)
+    if (pvc != NULL) {
+        if (strchr(pvc->modifiers, modifier) == NULL)
             return false;
         else
             return true;
@@ -85,7 +85,7 @@ IsValidOnPipe(Command cmd)
     const ValidCombo* pvc;
 
     pvc = FindValidComboEntry(cmd);
-    if (pvc != nil) {
+    if (pvc != NULL) {
         return pvc->okayForPipe;
     } else
         return false;
@@ -100,7 +100,7 @@ IsFilespecRequired(Command cmd)
     const ValidCombo* pvc;
 
     pvc = FindValidComboEntry(cmd);
-    if (pvc != nil) {
+    if (pvc != NULL) {
         return pvc->filespecRequired;
     } else {
         /* command not found?  warn about it here... */
@@ -124,7 +124,7 @@ GetProgName(const NulibState* pState, const char* argv0)
     sep = NState_GetSystemPathSeparator(pState);
 
     result = strrchr(argv0, sep);
-    if (result == nil)
+    if (result == NULL)
         result = argv0;
     else
         result++;   /* advance past the separator */
@@ -273,7 +273,7 @@ DoHelp(const NulibState* pState)
         int j;
 
         pvc = FindValidComboEntry(help[i].cmd);
-        if (pvc == nil) {
+        if (pvc == NULL) {
             fprintf(stderr, "%s: internal error: couldn't find vc for %d\n",
                 gProgName, help[i].cmd);
             continue;
@@ -328,7 +328,7 @@ ProcessOptions(NulibState* pState, int argc, char* const* argv)
     if (argc == 2 && (tolower(argv[1][0]) == 'h' ||
                      (argv[1][0] == '-' && tolower(argv[1][1] == 'h')) ) )
     {
-        DoHelp(nil);
+        DoHelp(NULL);
         return -1;
     }
 
@@ -486,7 +486,7 @@ ProcessOptions(NulibState* pState, int argc, char* const* argv)
                 gProgName);
             goto fail;
         }
-        NState_SetFilespecPointer(pState, nil);
+        NState_SetFilespecPointer(pState, NULL);
         NState_SetFilespecCount(pState, 0);
     }
 
@@ -561,11 +561,11 @@ DoWork(NulibState* pState)
 int
 main(int argc, char** argv)
 {
-    NulibState* pState = nil;
+    NulibState* pState = NULL;
     long majorVersion, minorVersion, bugVersion;
     int result = 0;
 
-    (void) NuGetVersion(&majorVersion, &minorVersion, &bugVersion, nil, nil);
+    (void) NuGetVersion(&majorVersion, &minorVersion, &bugVersion, NULL, NULL);
     if (majorVersion != kNuVersionMajor || minorVersion < kNuVersionMinor) {
         fprintf(stderr, "ERROR: wrong version of NufxLib --"
                         " wanted %d.%d.x, got %ld.%ld.%ld.\n",

@@ -42,11 +42,7 @@ int Nu_strncasecmp(const char *s1, const char *s2, size_t n);
  * Misc types.
  */
 
-#include <sys/types.h>
-
-#define nil     NULL        /* I can't seem to stop typing 'nil' now */
-
-typedef uchar   Boolean;
+typedef unsigned char Boolean;
 #define false   (0)
 #define true    (!false)
 

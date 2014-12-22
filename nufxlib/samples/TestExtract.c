@@ -53,13 +53,13 @@ typedef struct ArchiveRecord {
 ArchiveRecord*
 ArchiveRecord_New(const NuRecord* pRecord)
 {
-    ArchiveRecord* pArcRec = nil;
+    ArchiveRecord* pArcRec = NULL;
 
     pArcRec = malloc(sizeof(*pArcRec));
-    if (pArcRec == nil)
-        return nil;
+    if (pArcRec == NULL)
+        return NULL;
 
-    if (pRecord->filename == nil)
+    if (pRecord->filename == NULL)
         pArcRec->filename = strdup("<unknown>");
     else
         pArcRec->filename = strdup((char*)pRecord->filename);
@@ -68,7 +68,7 @@ ArchiveRecord_New(const NuRecord* pRecord)
     pArcRec->numThreads = NuRecordGetNumThreads(pRecord);
     (void) NuRecordCopyThreads(pRecord, &pArcRec->pThreads);
 
-    pArcRec->pNext = nil;
+    pArcRec->pNext = NULL;
 
     return pArcRec;
 }
@@ -79,12 +79,12 @@ ArchiveRecord_New(const NuRecord* pRecord)
 void
 ArchiveRecord_Free(ArchiveRecord* pArcRec)
 {
-    if (pArcRec == nil)
+    if (pArcRec == NULL)
         return;
 
-    if (pArcRec->filename != nil)
+    if (pArcRec->filename != NULL)
         free(pArcRec->filename);
-    if (pArcRec->pThreads != nil)
+    if (pArcRec->pThreads != NULL)
         free(pArcRec->pThreads);
     free(pArcRec);
 }
@@ -104,7 +104,7 @@ ArchiveRecord_FindThreadByID(const ArchiveRecord* pArcRec, NuThreadID threadID)
             return pThread;
     }
 
-    return nil;
+    return NULL;
 }
 
 
@@ -130,7 +130,7 @@ const NuThread*
 ArchiveRecord_GetThread(const ArchiveRecord* pArcRec, int idx)
 {
     if (idx < 0 || idx >= pArcRec->numThreads)
-        return nil;
+        return NULL;
     return NuThreadGetByIdx(pArcRec->pThreads, idx);
 }
 
@@ -169,11 +169,11 @@ ArchiveData_New(void)
     ArchiveData* pArcData;
 
     pArcData = malloc(sizeof(*pArcData));
-    if (pArcData == nil)
-        return nil;
+    if (pArcData == NULL)
+        return NULL;
 
     pArcData->numRecords = 0;
-    pArcData->pRecordHead = pArcData->pRecordTail = nil;
+    pArcData->pRecordHead = pArcData->pRecordTail = NULL;
 
     return pArcData;
 }
@@ -183,11 +183,11 @@ ArchiveData_Free(ArchiveData* pArcData)
 {
     ArchiveRecord* pNext;
 
-    if (pArcData == nil)
+    if (pArcData == NULL)
         return;
 
     printf("*** Deleting %ld records!\n", pArcData->numRecords);
-    while (pArcData->pRecordHead != nil) {
+    while (pArcData->pRecordHead != NULL) {
         pNext = ArchiveRecord_GetNext(pArcData->pRecordHead);
         ArchiveRecord_Free(pArcData->pRecordHead);
         pArcData->pRecordHead = pNext;
@@ -208,11 +208,11 @@ ArchiveData_GetRecordHead(const ArchiveData* pArcData)
 void
 ArchiveData_AddRecord(ArchiveData* pArcData, ArchiveRecord* pRecord)
 {
-    assert(pRecord != nil);
-    assert((pArcData->pRecordHead == nil && pArcData->pRecordTail == nil) ||
-           (pArcData->pRecordHead != nil && pArcData->pRecordTail != nil));
+    assert(pRecord != NULL);
+    assert((pArcData->pRecordHead == NULL && pArcData->pRecordTail == NULL) ||
+           (pArcData->pRecordHead != NULL && pArcData->pRecordTail != NULL));
 
-    if (pArcData->pRecordHead == nil) {
+    if (pArcData->pRecordHead == NULL) {
         /* first */
         pArcData->pRecordHead = pArcData->pRecordTail = pRecord;
     } else {
@@ -231,7 +231,7 @@ ArchiveData_DumpContents(const ArchiveData* pArcData)
     ArchiveRecord* pArcRec;
 
     pArcRec = pArcData->pRecordHead;
-    while (pArcRec != nil) {
+    while (pArcRec != NULL) {
         const NuThread* pThread;
         int i, count;
 
@@ -264,14 +264,14 @@ NuResult
 GatherContents(NuArchive* pArchive, void* vpRecord)
 {
     NuRecord* pRecord = (NuRecord*) vpRecord;
-    ArchiveData* pArchiveData = nil;
+    ArchiveData* pArchiveData = NULL;
     ArchiveRecord* pArchiveRecord = ArchiveRecord_New(pRecord);
 
     NuGetExtraData(pArchive, (void**)&pArchiveData);
-    assert(pArchiveData != nil);
+    assert(pArchiveData != NULL);
 
     printf("*** Filename = '%s'\n",
-        pRecord->filename == nil ? "<unknown>":(const char*)pRecord->filename);
+        pRecord->filename == NULL ? "<unknown>":(const char*)pRecord->filename);
 
     ArchiveData_AddRecord(pArchiveData, pArchiveRecord);
 
@@ -291,10 +291,10 @@ ReadAllFilenameThreads(NuArchive* pArchive, ArchiveData* pArchiveData,
     const NuThread* pThread;
 
     pArchiveRecord = ArchiveData_GetRecordHead(pArchiveData);
-    while (pArchiveRecord != nil) {
+    while (pArchiveRecord != NULL) {
         pThread = ArchiveRecord_FindThreadByID(pArchiveRecord,
                     kNuThreadIDFilename);
-        if (pThread != nil) {
+        if (pThread != NULL) {
             err = NuExtractThread(pArchive, pThread->threadIdx, pDataSink);
             if (err != kNuErrNone) {
                 fprintf(stderr, "*** Extract failed (%d)\n", err);
@@ -314,7 +314,7 @@ NuError
 ExtractToFile(NuArchive* pArchive, ArchiveData* pArchiveData)
 {
     NuError err;
-    NuDataSink* pDataSink = nil;
+    NuDataSink* pDataSink = NULL;
 
     err = NuCreateDataSinkForFile(true, kNuConvertOff, "out.file", PATH_SEP,
             &pDataSink);
@@ -341,10 +341,10 @@ NuError
 ExtractToFP(NuArchive* pArchive, ArchiveData* pArchiveData)
 {
     NuError err;
-    FILE* fp = nil;
-    NuDataSink* pDataSink = nil;
+    FILE* fp = NULL;
+    NuDataSink* pDataSink = NULL;
 
-    if ((fp = fopen("out.fp", kNuFileOpenWriteTrunc)) == nil)
+    if ((fp = fopen("out.fp", kNuFileOpenWriteTrunc)) == NULL)
         return kNuErrFileOpen;
 
     err = NuCreateDataSinkForFP(true, kNuConvertOff, fp, &pDataSink);
@@ -357,7 +357,7 @@ ExtractToFP(NuArchive* pArchive, ArchiveData* pArchiveData)
 
 bail:
     (void) NuFreeDataSink(pDataSink);
-    if (fp != nil)
+    if (fp != NULL)
         fclose(fp);
     if (err == kNuErrNone)
         printf("*** FP write complete\n");
@@ -370,7 +370,7 @@ ExtractToBuffer(NuArchive* pArchive, ArchiveData* pArchiveData)
 {
     NuError err;
     unsigned char buffer[kHappySize];
-    NuDataSink* pDataSink = nil;
+    NuDataSink* pDataSink = NULL;
     unsigned long count;
 
     err = NuCreateDataSinkForBuffer(true, kNuConvertOff, buffer, kHappySize,
@@ -389,7 +389,7 @@ ExtractToBuffer(NuArchive* pArchive, ArchiveData* pArchiveData)
     (void) NuDataSinkGetOutCount(pDataSink, &count);
     if (count > 0) {
         FILE* fp;
-        if ((fp = fopen("out.buf", kNuFileOpenWriteTrunc)) != nil) {
+        if ((fp = fopen("out.buf", kNuFileOpenWriteTrunc)) != NULL) {
 
             printf("*** Writing %ld bytes\n", count);
             if (fwrite(buffer, count, 1, fp) != 1)
@@ -413,7 +413,7 @@ int
 DoFileStuff(const char* filename)
 {
     NuError err;
-    NuArchive* pArchive = nil;
+    NuArchive* pArchive = NULL;
     ArchiveData* pArchiveData = ArchiveData_New();
 
     err = NuOpenRO(filename, &pArchive);
@@ -444,7 +444,7 @@ bail:
     if (err != kNuErrNone)
         fprintf(stderr, "*** ERROR: got error %d\n", err);
 
-    if (pArchive != nil) {
+    if (pArchive != NULL) {
         NuError err2 = NuClose(pArchive);
         if (err == kNuErrNone && err2 != kNuErrNone)
             err = err2;
@@ -464,16 +464,16 @@ main(int argc, char** argv)
 {
     long major, minor, bug;
     const char* pBuildDate;
-    FILE* infp = nil;
+    FILE* infp = NULL;
     int cc;
 
-    (void) NuGetVersion(&major, &minor, &bug, &pBuildDate, nil);
+    (void) NuGetVersion(&major, &minor, &bug, &pBuildDate, NULL);
     printf("Using NuFX lib %ld.%ld.%ld built on or after %s\n",
         major, minor, bug, pBuildDate);
 
     if (argc == 2) {
         infp = fopen(argv[1], kNuFileOpenReadOnly);
-        if (infp == nil) {
+        if (infp == NULL) {
             perror("fopen failed");
             exit(1);
         }
@@ -484,7 +484,7 @@ main(int argc, char** argv)
 
     cc = DoFileStuff(argv[1]);
 
-    if (infp != nil)
+    if (infp != NULL)
         fclose(infp);
 
     exit(cc != 0);

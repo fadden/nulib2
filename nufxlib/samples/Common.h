@@ -16,8 +16,6 @@
 # include "dmalloc.h"
 #endif
 
-#define nil NULL    /* this is seriously habit-forming */
-
 #define NELEM(x) (sizeof(x) / sizeof((x)[0]))
 
 #ifndef __cplusplus

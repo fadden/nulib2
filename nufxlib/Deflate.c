@@ -53,14 +53,14 @@ Nu_CompressDeflate(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
     NuError err = kNuErrNone;
     z_stream zstream;
     int zerr;
-    Bytef* outbuf = nil;
+    Bytef* outbuf = NULL;
 
-    Assert(pArchive != nil);
-    Assert(pStraw != nil);
-    Assert(fp != nil);
+    Assert(pArchive != NULL);
+    Assert(pStraw != NULL);
+    Assert(fp != NULL);
     Assert(srcLen > 0);
-    Assert(pDstLen != nil);
-    Assert(pCrc != nil);
+    Assert(pDstLen != NULL);
+    Assert(pCrc != NULL);
 
     err = Nu_AllocCompressionBufferIFN(pArchive);
     if (err != kNuErrNone)
@@ -76,7 +76,7 @@ Nu_CompressDeflate(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
     zstream.zalloc = Nu_zalloc;
     zstream.zfree = Nu_zfree;
     zstream.opaque = pArchive;
-    zstream.next_in = nil;
+    zstream.next_in = NULL;
     zstream.avail_in = 0;
     zstream.next_out = outbuf;
     zstream.avail_out = kNuGenCompBufSize;
@@ -159,7 +159,7 @@ z_bail:
     deflateEnd(&zstream);        /* free up any allocated structures */
 
 bail:
-    if (outbuf != nil)
+    if (outbuf != NULL)
         free(outbuf);
     return err;
 }
@@ -184,10 +184,10 @@ Nu_ExpandDeflate(NuArchive* pArchive, const NuRecord* pRecord,
     ulong compRemaining;
     Bytef* outbuf;
 
-    Assert(pArchive != nil);
-    Assert(pThread != nil);
-    Assert(infp != nil);
-    Assert(pFunnel != nil);
+    Assert(pArchive != NULL);
+    Assert(pThread != NULL);
+    Assert(infp != NULL);
+    Assert(pFunnel != NULL);
 
     err = Nu_AllocCompressionBufferIFN(pArchive);
     if (err != kNuErrNone)
@@ -205,7 +205,7 @@ Nu_ExpandDeflate(NuArchive* pArchive, const NuRecord* pRecord,
     zstream.zalloc = Nu_zalloc;
     zstream.zfree = Nu_zfree;
     zstream.opaque = pArchive;
-    zstream.next_in = nil;
+    zstream.next_in = NULL;
     zstream.avail_in = 0;
     zstream.next_out = outbuf;
     zstream.avail_out = kNuGenCompBufSize;
@@ -269,7 +269,7 @@ Nu_ExpandDeflate(NuArchive* pArchive, const NuRecord* pRecord,
                 goto z_bail;
             }
 
-            if (pCrc != nil)
+            if (pCrc != NULL)
                 *pCrc = Nu_CalcCRC16(*pCrc, outbuf, zstream.next_out - outbuf);
 
             zstream.next_out = outbuf;
@@ -291,7 +291,7 @@ z_bail:
     inflateEnd(&zstream);        /* free up any allocated structures */
 
 bail:
-    if (outbuf != nil)
+    if (outbuf != NULL)
         free(outbuf);
     return err;
 }

@@ -34,9 +34,9 @@ OutputPathnameFilter(NuArchive* pArchive, void* vproposal)
     char* renameToStr;
     char* resultBuf;
 
-    Assert(pArchive != nil);
+    Assert(pArchive != NULL);
     (void) NuGetExtraData(pArchive, (void**) &pState);
-    Assert(pState != nil);
+    Assert(pState != NULL);
 
     /* handle extract-to-pipe */
     if (NState_GetCommand(pState) == kCommandExtractToPipe) {
@@ -51,21 +51,21 @@ OutputPathnameFilter(NuArchive* pArchive, void* vproposal)
      * that it's okay (and let the OS tell them if it isn't).
      */
     renameToStr = NState_GetRenameToStr(pState);
-    if (renameToStr != nil) {
+    if (renameToStr != NULL) {
         renameFromIdx = NState_GetRenameFromIdx(pState);
 
         if (renameFromIdx == pathProposal->pRecord->recordIdx) {
             /* right source file, proceed with the rename */
             NState_SetTempPathnameLen(pState, strlen(renameToStr) +1);
             resultBuf = NState_GetTempPathnameBuf(pState);
-            Assert(resultBuf != nil);
+            Assert(resultBuf != NULL);
             strcpy(resultBuf, renameToStr);
 
             pathProposal->newPathname = resultBuf;
         }
 
         /* free up renameToStr */
-        NState_SetRenameToStr(pState, nil);
+        NState_SetRenameToStr(pState, NULL);
 
         goto bail;
     }
@@ -74,7 +74,7 @@ OutputPathnameFilter(NuArchive* pArchive, void* vproposal)
      * Convert the pathname into something suitable for the current OS.
      */
     newPathname = NormalizePath(pState, pathProposal);
-    if (newPathname == nil) {
+    if (newPathname == NULL) {
         ReportError(kNuErrNone, "unable to convert pathname");
         return kNuAbort;
     }
@@ -104,7 +104,7 @@ GetReplyChar(char defaultReply)
 {
     char tmpBuf[32];
 
-    if (fgets(tmpBuf, sizeof(tmpBuf), stdin) == nil)
+    if (fgets(tmpBuf, sizeof(tmpBuf), stdin) == NULL)
         return defaultReply;
     if (tmpBuf[0] == '\n' || tmpBuf[0] == '\r')
         return defaultReply;
@@ -130,10 +130,10 @@ GetReplyString(const char* prompt)
     printf("%s", prompt);
     fflush(stdout);
     result = fgets(buf, sizeof(buf), stdin);
-    if (result == nil || feof(stdin) || ferror(stdin) || buf[0] == '\0' ||
+    if (result == NULL || feof(stdin) || ferror(stdin) || buf[0] == '\0' ||
         buf[0] == '\n')
     {
-        return nil;
+        return NULL;
     }
 
     /* nuke the terminating '\n', which is lots of fun in filenames */
@@ -148,30 +148,30 @@ GetReplyString(const char* prompt)
 /*
  * Get a one-line comment from the user, of at most "maxLen" bytes.
  *
- * If the user enters a blank line, return "nil".
+ * If the user enters a blank line, return "NULL".
  *
  * A pointer to a newly-allocated buffer is returned.
  */
 char*
 GetSimpleComment(NulibState* pState, const char* pathname, int maxLen)
 {
-    char* buf = nil;
+    char* buf = NULL;
     char* result;
     int len;
 
     buf = Malloc(maxLen);
-    if (buf == nil)
-        return nil;
+    if (buf == NULL)
+        return NULL;
 
     printf("Enter one-line comment for '%s'\n: ", pathname);
     fflush(stdout);
 
     result = fgets(buf, maxLen, stdin);
-    if (result == nil || feof(stdin) || ferror(stdin) || buf[0] == '\0' ||
+    if (result == NULL || feof(stdin) || ferror(stdin) || buf[0] == '\0' ||
         buf[0] == '\n')
     {
         Free(buf);
-        return nil;
+        return NULL;
     }
 
     /* nuke the terminating '\n', which we don't need */
@@ -251,9 +251,9 @@ SelectionFilter(NuArchive* pArchive, void* vproposal)
     const NuSelectionProposal* selProposal = vproposal;
     NulibState* pState;
 
-    Assert(pArchive != nil);
+    Assert(pArchive != NULL);
     (void) NuGetExtraData(pArchive, (void**) &pState);
-    Assert(pState != nil);
+    Assert(pState != NULL);
 
     if (IsSpecified(pState, selProposal->pRecord)) {
         NState_IncMatchCount(pState);
@@ -309,14 +309,14 @@ ProgressUpdater(NuArchive* pArchive, void* vProgress)
     char nameBuf[kMaxDisplayLen+1];
     Boolean showName, eolConv;
 
-    Assert(pArchive != nil);
+    Assert(pArchive != NULL);
     (void) NuGetExtraData(pArchive, (void**) &pState);
-    Assert(pState != nil);
+    Assert(pState != NULL);
 
     if (NState_GetSuppressOutput(pState))
         return kNuOK;
 
-    percStr = nil;
+    percStr = NULL;
     showName = false;
     eolConv = false;
 
@@ -384,19 +384,19 @@ ProgressUpdater(NuArchive* pArchive, void* vProgress)
 
     switch (pProgress->state) {
     case kNuProgressDone:
-        actionStr = nil;
+        actionStr = NULL;
         percStr = "DONE\n";
         break;
     case kNuProgressSkipped:
-        actionStr = nil;
+        actionStr = NULL;
         percStr = "SKIP\n";
         break;
     case kNuProgressAborted:    /* not currently possible in NuLib2 */
-        actionStr = nil;
+        actionStr = NULL;
         percStr = "CNCL\n";
         break;
     case kNuProgressFailed:
-        actionStr = nil;
+        actionStr = NULL;
         percStr = "FAIL\n";
         break;
     default:
@@ -420,10 +420,10 @@ ProgressUpdater(NuArchive* pArchive, void* vProgress)
         }
     }
 
-    if (actionStr == nil && percStr != nil) {
+    if (actionStr == NULL && percStr != NULL) {
         printf("\r%s", percStr);
-    } else if (actionStr != nil && percStr == nil) {
-        if (percStr == nil) {
+    } else if (actionStr != NULL && percStr == NULL) {
+        if (percStr == NULL) {
             putc('\r', stdout);
             PrintPercentage(pProgress->uncompressedLength,
                 pProgress->uncompressedProgress);
@@ -457,9 +457,9 @@ HandleReplaceExisting(NulibState* pState, NuArchive* pArchive,
     char* renameName;
     char reply;
 
-    Assert(pState != nil);
-    Assert(pErrorStatus != nil);
-    Assert(pErrorStatus->pathname != nil);
+    Assert(pState != NULL);
+    Assert(pErrorStatus != NULL);
+    Assert(pErrorStatus->pathname != NULL);
 
     Assert(pErrorStatus->canOverwrite);
     Assert(pErrorStatus->canSkip);
@@ -506,10 +506,10 @@ HandleReplaceExisting(NulibState* pState, NuArchive* pArchive,
                 break;  /* continue in "while" loop */
             }
             renameName = GetReplyString("New name: ");
-            if (renameName == nil)
+            if (renameName == NULL)
                 break;      /* continue in "while" loop */
-            if (pErrorStatus->pRecord == nil) {
-                ReportError(kNuErrNone, "Unexpected nil record");
+            if (pErrorStatus->pRecord == NULL) {
+                ReportError(kNuErrNone, "Unexpected NULL record");
                 break;      /* continue in "while" loop */
             }
             NState_SetRenameFromIdx(pState,
@@ -534,7 +534,7 @@ bail:
 /*
  * Found a bad CRC... should we press onward?
  *
- * Note pErrorStatus->pathname may be nil if the error was found in the
+ * Note pErrorStatus->pathname may be NULL if the error was found in the
  * master header or in the record header.
  */
 static NuResult
@@ -544,8 +544,8 @@ HandleBadCRC(NulibState* pState, NuArchive* pArchive,
     NuResult result = kNuOK;
     char reply;
 
-    Assert(pState != nil);
-    Assert(pErrorStatus != nil);
+    Assert(pState != NULL);
+    Assert(pErrorStatus != NULL);
 
     if (NState_GetInputUnavailable(pState)) {
         putc('\n', stderr);
@@ -555,7 +555,7 @@ HandleBadCRC(NulibState* pState, NuArchive* pArchive,
     }
 
     while (1) {
-        if (pErrorStatus->pathname != nil)
+        if (pErrorStatus->pathname != NULL)
             fprintf(stderr, "\n  Found a bad CRC in %s\n",
                 pErrorStatus->pathname);
         else
@@ -604,9 +604,9 @@ HandleAddNotFound(NulibState* pState, NuArchive* pArchive,
     NuResult result = kNuOK;
     char reply;
 
-    Assert(pState != nil);
-    Assert(pErrorStatus != nil);
-    Assert(pErrorStatus->pathname != nil);
+    Assert(pState != NULL);
+    Assert(pErrorStatus != NULL);
+    Assert(pErrorStatus->pathname != NULL);
 
     if (NState_GetInputUnavailable(pState)) {
         putc('\n', stdout);
@@ -651,9 +651,9 @@ ErrorHandler(NuArchive* pArchive, void* vErrorStatus)
     NulibState* pState;
     NuResult result;
 
-    Assert(pArchive != nil);
+    Assert(pArchive != NULL);
     (void) NuGetExtraData(pArchive, (void**) &pState);
-    Assert(pState != nil);
+    Assert(pState != NULL);
 
     /* default action is to abort the current operation */
     result = kNuAbort;
@@ -728,7 +728,7 @@ ErrorMessageHandler(NuArchive* pArchive, void* vErrorMessage)
     const NuErrorMessage* pErrorMessage = (const NuErrorMessage*) vErrorMessage;
 
     fprintf(stderr, "%s%d %3d %s:%d %s %s\n",
-        pArchive == nil ? "(GLOBAL)" : "",
+        pArchive == NULL ? "(GLOBAL)" : "",
         pErrorMessage->isDebug, pErrorMessage->err, pErrorMessage->file,
         pErrorMessage->line, pErrorMessage->function, pErrorMessage->message);
     return kNuOK;
@@ -768,7 +768,7 @@ IsRecordReadOnly(const NuRecord* pRecord)
 Boolean
 IsFilenameStdin(const char* archiveName)
 {
-    Assert(archiveName != nil);
+    Assert(archiveName != NULL);
     return (strcmp(archiveName, kStdinArchive) == 0);
 }
 
@@ -783,9 +783,9 @@ NuError
 OpenArchiveReadOnly(NulibState* pState)
 {
     NuError err;
-    NuArchive* pArchive = nil;
+    NuArchive* pArchive = NULL;
 
-    Assert(pState != nil);
+    Assert(pState != NULL);
 
     if (IsFilenameStdin(NState_GetArchiveFilename(pState))) {
         err = NuStreamOpenRO(stdin, &pArchive);
@@ -881,10 +881,10 @@ OpenArchiveReadOnly(NulibState* pState)
     BailError(err);
 
 bail:
-    if (err != kNuErrNone && pArchive != nil) {
+    if (err != kNuErrNone && pArchive != NULL) {
         /* clean up */
         (void) NuClose(pArchive);
-        NState_SetNuArchive(pState, nil);
+        NState_SetNuArchive(pState, NULL);
     }
     return err;
 }
@@ -900,14 +900,14 @@ NuError
 OpenArchiveReadWrite(NulibState* pState)
 {
     NuError err = kNuErrNone;
-    NuArchive* pArchive = nil;
-    char* tempName = nil;
+    NuArchive* pArchive = NULL;
+    char* tempName = NULL;
 
-    Assert(pState != nil);
+    Assert(pState != NULL);
     Assert(IsFilenameStdin(NState_GetArchiveFilename(pState)) == false);
 
     tempName = MakeTempArchiveName(pState);
-    if (tempName == nil)
+    if (tempName == NULL)
         goto bail;
     DBUG(("TEMP NAME = '%s'\n", tempName));
 
@@ -979,11 +979,11 @@ OpenArchiveReadWrite(NulibState* pState)
 
 bail:
     Free(tempName);
-    if (err != kNuErrNone && pArchive != nil) {
+    if (err != kNuErrNone && pArchive != NULL) {
         /* clean up */
         NuAbort(pArchive);
         (void) NuClose(pArchive);
-        NState_SetNuArchive(pState, nil);
+        NState_SetNuArchive(pState, NULL);
     }
     return err;
 }

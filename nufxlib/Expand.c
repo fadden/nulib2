@@ -17,13 +17,13 @@ Nu_ExpandUncompressed(NuArchive* pArchive, const NuRecord* pRecord,
     const NuThread* pThread, FILE* infp, NuFunnel* pFunnel, ushort* pCrc)
 {
     NuError err;
-    /*uchar* buffer = nil;*/
+    /*uchar* buffer = NULL;*/
     ulong count, getsize;
 
-    Assert(pArchive != nil);
-    Assert(pThread != nil);
-    Assert(infp != nil);
-    Assert(pFunnel != nil);
+    Assert(pArchive != NULL);
+    Assert(pThread != NULL);
+    Assert(infp != NULL);
+    Assert(pFunnel != NULL);
 
     /* doesn't have to be same size as funnel, but it's not a bad idea */
     /*buffer = Nu_Malloc(pArchive, kNuFunnelBufSize);*/
@@ -43,7 +43,7 @@ Nu_ExpandUncompressed(NuArchive* pArchive, const NuRecord* pRecord,
 
         err = Nu_FRead(infp, pArchive->compBuf, getsize);
         BailError(err);
-        if (pCrc != nil)
+        if (pCrc != NULL)
             *pCrc = Nu_CalcCRC16(*pCrc, pArchive->compBuf, getsize);
         err = Nu_FunnelWrite(pArchive, pFunnel, pArchive->compBuf, getsize);
         BailError(err);
@@ -68,13 +68,13 @@ Nu_ExpandRaw(NuArchive* pArchive, const NuThread* pThread, FILE* infp,
     NuFunnel* pFunnel)
 {
     NuError err;
-    /*uchar* buffer = nil;*/
+    /*uchar* buffer = NULL;*/
     ulong count, getsize;
 
-    Assert(pArchive != nil);
-    Assert(pThread != nil);
-    Assert(infp != nil);
-    Assert(pFunnel != nil);
+    Assert(pArchive != NULL);
+    Assert(pThread != NULL);
+    Assert(infp != NULL);
+    Assert(pFunnel != NULL);
 
     /* doesn't have to be same size as funnel, but it's not a bad idea */
     /*buffer = Nu_Malloc(pArchive, kNuFunnelBufSize);*/
@@ -134,7 +134,7 @@ Nu_ExpandStream(NuArchive* pArchive, const NuRecord* pRecord,
      * unfortunately, unprotected before v3.
      */
     calcCrc = kNuInitialThreadCRC;
-    pCalcCrc = nil;
+    pCalcCrc = NULL;
     if (Nu_ThreadHasCRC(pRecord->recVersionNumber, NuGetThreadID(pThread)) &&
         !pArchive->valIgnoreCRC)
     {
@@ -205,7 +205,7 @@ Nu_ExpandStream(NuArchive* pArchive, const NuRecord* pRecord,
     /*
      * If we have a CRC to check, check it.
      */
-    if (pCalcCrc != nil) {
+    if (pCalcCrc != NULL) {
         if (calcCrc != pThread->thThreadCRC) {
             if (!Nu_ShouldIgnoreBadCRC(pArchive, pRecord, kNuErrBadThreadCRC)) {
                 err = kNuErrBadDataCRC;

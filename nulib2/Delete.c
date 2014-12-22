@@ -19,15 +19,15 @@ NuError
 DoDelete(NulibState* pState)
 {
     NuError err;
-    NuArchive* pArchive = nil;
+    NuArchive* pArchive = NULL;
 
-    Assert(pState != nil);
+    Assert(pState != NULL);
 
     err = OpenArchiveReadWrite(pState);
     if (err != kNuErrNone)
         goto bail;
     pArchive = NState_GetNuArchive(pState);
-    Assert(pArchive != nil);
+    Assert(pArchive != NULL);
 
     NState_SetMatchCount(pState, 0);
 
@@ -39,7 +39,7 @@ DoDelete(NulibState* pState)
         printf("%s: no records matched\n", gProgName);
 
 bail:
-    if (pArchive != nil)
+    if (pArchive != NULL)
         (void) NuClose(pArchive);
     return err;
 }

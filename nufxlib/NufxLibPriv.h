@@ -400,7 +400,7 @@ union NuDataSink {
         char*               pathname;       /* file to open */
         char                fssep;
 
-        /* temp storage; must be nil except when processing in library */
+        /* temp storage; must be NULL except when processing in library */
         FILE*               fp;
     } toFile;
 
@@ -469,13 +469,13 @@ union NuDataSink {
                 goto bail;                                          \
         }
 #define BailNil(val)    {                                           \
-            if ((val) == nil) {                                     \
+            if ((val) == NULL) {                                     \
                 err = kNuErrUnexpectedNil;                          \
                 BailError(err);                                     \
             }                                                       \
         }
 #define BailAlloc(val)  {                                           \
-            if ((val) == nil) {                                     \
+            if ((val) == NULL) {                                     \
                 err = kNuErrMalloc;                                 \
                 BailError(err);                                     \
             }                                                       \
@@ -688,7 +688,7 @@ void Nu_ReportError(NuArchive* pArchive, const char* file, int line,
 # define Nu_Malloc(archive, size) malloc(size)
 # define Nu_Calloc(archive, size) calloc(1, size)
 # define Nu_Realloc(archive, ptr, size) realloc(ptr, size)
-# define Nu_Free(archive, ptr) (ptr != nil ? free(ptr) : (void)0)
+# define Nu_Free(archive, ptr) (ptr != NULL ? free(ptr) : (void)0)
 #else
 void* Nu_Malloc(NuArchive* pArchive, size_t size);
 void* Nu_Calloc(NuArchive* pArchive, size_t size);
@@ -822,7 +822,7 @@ THREAD_INLINE NuThread*
 Nu_GetThread(const NuRecord* pRecord, int idx)
 {
     if (idx >= (int)pRecord->recTotalThreads)
-        return nil;
+        return NULL;
     else
         return &pRecord->pThreads[idx];
 }

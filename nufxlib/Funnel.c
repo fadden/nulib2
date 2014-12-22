@@ -28,10 +28,10 @@ Nu_ProgressDataInit_Compress(NuArchive* pArchive, NuProgressData* pProgressData,
 {
     const char* cp;
 
-    Assert(pProgressData != nil);
-    Assert(pArchive != nil);
-    Assert(pRecord != nil);
-    Assert(origPathname != nil);
+    Assert(pProgressData != NULL);
+    Assert(pArchive != NULL);
+    Assert(pRecord != NULL);
+    Assert(origPathname != NULL);
 
     pProgressData->pRecord = pRecord;
 
@@ -39,7 +39,7 @@ Nu_ProgressDataInit_Compress(NuArchive* pArchive, NuProgressData* pProgressData,
     pProgressData->pathname = pRecord->filename;
     cp = strrchr(pRecord->filename,
             NuGetSepFromSysInfo(pRecord->recFileSysInfo));
-    if (cp == nil || *(cp+1) == '\0')
+    if (cp == NULL || *(cp+1) == '\0')
         pProgressData->filename = pProgressData->pathname;
     else
         pProgressData->filename = cp+1;
@@ -53,7 +53,7 @@ Nu_ProgressDataInit_Compress(NuArchive* pArchive, NuProgressData* pProgressData,
 
     pProgressData->compress.threadFormat = (NuThreadFormat)-1;
 
-    /* ya know... if this is nil, none of the above matters much */
+    /* ya know... if this is NULL, none of the above matters much */
     pProgressData->progressFunc = pArchive->progressUpdaterFunc;
 
     return kNuErrNone;
@@ -76,19 +76,19 @@ Nu_ProgressDataInit_Expand(NuArchive* pArchive, NuProgressData* pProgressData,
     const char* cp;
     int i;
 
-    Assert(pProgressData != nil);
-    Assert(pArchive != nil);
-    Assert(pRecord != nil);
-    Assert(newPathname != nil);
+    Assert(pProgressData != NULL);
+    Assert(pArchive != NULL);
+    Assert(pRecord != NULL);
+    Assert(newPathname != NULL);
     Assert(newFssep != 0);
 
     pProgressData->pRecord = pRecord;
-    pProgressData->expand.pThread = nil;
+    pProgressData->expand.pThread = NULL;
 
     pProgressData->origPathname = pRecord->filename;
     pProgressData->pathname = newPathname;
     cp = strrchr(newPathname, newFssep);
-    if (cp == nil || *(cp+1) == '\0')
+    if (cp == NULL || *(cp+1) == '\0')
         pProgressData->filename = newPathname;
     else
         pProgressData->filename = cp+1;
@@ -116,7 +116,7 @@ Nu_ProgressDataInit_Expand(NuArchive* pArchive, NuProgressData* pProgressData,
     pProgressData->uncompressedLength = 0;
     pProgressData->uncompressedProgress = 0;
 
-    /* ya know... if this is nil, none of the above matters much */
+    /* ya know... if this is NULL, none of the above matters much */
     pProgressData->progressFunc = pArchive->progressUpdaterFunc;
 
     return kNuErrNone;
@@ -132,12 +132,12 @@ Nu_ProgressDataCompressPrep(NuArchive* pArchive, NuStraw* pStraw,
 {
     NuProgressData* pProgressData;
 
-    Assert(pArchive != nil);
-    Assert(pStraw != nil);
+    Assert(pArchive != NULL);
+    Assert(pStraw != NULL);
     Assert(sourceLen < 32767*65536);
 
     pProgressData = pStraw->pProgress;
-    if (pProgressData == nil)
+    if (pProgressData == NULL)
         return kNuErrNone;
 
     pProgressData->uncompressedLength = sourceLen;
@@ -157,12 +157,12 @@ Nu_ProgressDataExpandPrep(NuArchive* pArchive, NuFunnel* pFunnel,
 {
     NuProgressData* pProgressData;
 
-    Assert(pArchive != nil);
-    Assert(pFunnel != nil);
-    Assert(pThread != nil);
+    Assert(pArchive != NULL);
+    Assert(pFunnel != NULL);
+    Assert(pThread != NULL);
 
     pProgressData = pFunnel->pProgress;
-    if (pProgressData == nil)
+    if (pProgressData == NULL)
         return kNuErrNone;
 
     /*pProgressData->compressedLength = pThread->thCompThreadEOF;*/
@@ -205,10 +205,10 @@ Nu_SendInitialProgress(NuArchive* pArchive, NuProgressData* pProgress)
 {
     NuResult result;
 
-    Assert(pArchive != nil);
-    Assert(pProgress != nil);
+    Assert(pArchive != NULL);
+    Assert(pProgress != NULL);
 
-    if (pProgress->progressFunc == nil)
+    if (pProgress->progressFunc == NULL)
         return kNuErrNone;
 
     pProgress->percentComplete = Nu_ComputePercent(
@@ -239,10 +239,10 @@ Nu_FunnelNew(NuArchive* pArchive, NuDataSink* pDataSink, NuValue convertEOL,
     NuValue convertEOLTo, NuProgressData* pProgress, NuFunnel** ppFunnel)
 {
     NuError err = kNuErrNone;
-    NuFunnel* pFunnel = nil;
+    NuFunnel* pFunnel = NULL;
 
-    Assert(ppFunnel != nil);
-    Assert(pDataSink != nil);
+    Assert(ppFunnel != NULL);
+    Assert(pDataSink != NULL);
     Assert(convertEOL == kNuConvertOff ||
            convertEOL == kNuConvertOn ||
            convertEOL == kNuConvertAuto);
@@ -281,7 +281,7 @@ bail:
 NuError
 Nu_FunnelFree(NuArchive* pArchive, NuFunnel* pFunnel)
 {
-    if (pFunnel == nil)
+    if (pFunnel == NULL)
         return kNuErrNone;
 
 #ifdef DEBUG_MSGS
@@ -307,7 +307,7 @@ Nu_FunnelFree(NuArchive* pArchive, NuFunnel* pFunnel)
 void
 Nu_FunnelSetMaxOutput(NuFunnel* pFunnel, ulong maxBytes)
 {
-    Assert(pFunnel != nil);
+    Assert(pFunnel != NULL);
     Assert(maxBytes > 0);
 
     pFunnel->outMax = maxBytes;
@@ -330,7 +330,7 @@ Nu_CheckHighASCII(const NuFunnel* pFunnel, const unsigned char* buffer,
 {
     Boolean isHighASCII;
 
-    Assert(buffer != nil);
+    Assert(buffer != NULL);
     Assert(count != 0);
     Assert(pFunnel->checkStripHighASCII);
 
@@ -487,9 +487,9 @@ Nu_DetermineConversion(NuFunnel* pFunnel, const uchar* buffer, ulong count)
 static inline void
 Nu_FunnelPutBlock(NuFunnel* pFunnel, const uchar* buf, ulong len)
 {
-    Assert(pFunnel != nil);
-    Assert(pFunnel->pDataSink != nil);
-    Assert(buf != nil);
+    Assert(pFunnel != NULL);
+    Assert(pFunnel->pDataSink != NULL);
+    Assert(buf != NULL);
     Assert(len > 0);
 
 #if 0
@@ -566,7 +566,7 @@ Nu_FunnelWriteConvert(NuFunnel* pFunnel, const uchar* buffer, ulong count)
                 pFunnel->convertEOL = kNuConvertOff;
             }
             /* put it where the progress meter can see it */
-            if (pFunnel->pProgress != nil)
+            if (pFunnel->pProgress != NULL)
                 pFunnel->pProgress->expand.convertEOL = pFunnel->convertEOL;
         } else if (pFunnel->convertEOL == kNuConvertOn) {
             if (pFunnel->checkStripHighASCII) {
@@ -627,7 +627,7 @@ Nu_FunnelWriteConvert(NuFunnel* pFunnel, const uchar* buffer, ulong count)
     err = Nu_DataSinkGetError(pFunnel->pDataSink);
 
     /* update progress counter with pre-LFCR count */
-    if (err == kNuErrNone && pFunnel->pProgress != nil)
+    if (err == kNuErrNone && pFunnel->pProgress != NULL)
         pFunnel->pProgress->uncompressedProgress += progressCount;
 
     return err;
@@ -717,9 +717,9 @@ bail:
 NuError
 Nu_FunnelSetProgressState(NuFunnel* pFunnel, NuProgressState state)
 {
-    Assert(pFunnel != nil);
+    Assert(pFunnel != NULL);
 
-    if (pFunnel->pProgress == nil)
+    if (pFunnel->pProgress == NULL)
         return kNuErrNone;
 
     pFunnel->pProgress->state = state;
@@ -736,15 +736,15 @@ Nu_FunnelSendProgressUpdate(NuArchive* pArchive, NuFunnel* pFunnel)
 {
     NuProgressData* pProgress;
 
-    Assert(pArchive != nil);
-    Assert(pFunnel != nil);
+    Assert(pArchive != NULL);
+    Assert(pFunnel != NULL);
 
     pProgress = pFunnel->pProgress;
-    if (pProgress == nil)
+    if (pProgress == NULL)
         return kNuErrNone;      /* no progress meter attached */
 
     /* don't continue if they're not accepting progress messages */
-    if (pProgress->progressFunc == nil)
+    if (pProgress->progressFunc == NULL)
         return kNuErrNone;
 
     /* other than the choice of arguments, it's pretty much the same story */
@@ -758,8 +758,8 @@ Nu_FunnelSendProgressUpdate(NuArchive* pArchive, NuFunnel* pFunnel)
 Boolean
 Nu_FunnelGetDoExpand(NuFunnel* pFunnel)
 {
-    Assert(pFunnel != nil);
-    Assert(pFunnel->pDataSink != nil);
+    Assert(pFunnel != NULL);
+    Assert(pFunnel->pDataSink != NULL);
 
     return Nu_DataSinkGetDoExpand(pFunnel->pDataSink);
 }
@@ -779,10 +779,10 @@ Nu_StrawNew(NuArchive* pArchive, NuDataSource* pDataSource,
     NuProgressData* pProgress, NuStraw** ppStraw)
 {
     NuError err = kNuErrNone;
-    NuStraw* pStraw = nil;
+    NuStraw* pStraw = NULL;
 
-    Assert(ppStraw != nil);
-    Assert(pDataSource != nil);
+    Assert(ppStraw != NULL);
+    Assert(pDataSource != NULL);
 
     pStraw = Nu_Calloc(pArchive, sizeof(*pStraw));
     BailAlloc(pStraw);
@@ -805,7 +805,7 @@ bail:
 NuError
 Nu_StrawFree(NuArchive* pArchive, NuStraw* pStraw)
 {
-    if (pStraw == nil)
+    if (pStraw == NULL)
         return kNuErrNone;
 
     /* we don't own the data source or progress meter */
@@ -821,8 +821,8 @@ Nu_StrawFree(NuArchive* pArchive, NuStraw* pStraw)
 NuError
 Nu_StrawSetProgressState(NuStraw* pStraw, NuProgressState state)
 {
-    Assert(pStraw != nil);
-    Assert(pStraw->pProgress != nil);
+    Assert(pStraw != NULL);
+    Assert(pStraw->pProgress != NULL);
 
     pStraw->pProgress->state = state;
 
@@ -837,15 +837,15 @@ Nu_StrawSendProgressUpdate(NuArchive* pArchive, NuStraw* pStraw)
 {
     NuProgressData* pProgress;
 
-    Assert(pArchive != nil);
-    Assert(pStraw != nil);
+    Assert(pArchive != NULL);
+    Assert(pStraw != NULL);
 
     pProgress = pStraw->pProgress;
-    if (pProgress == nil)
+    if (pProgress == NULL)
         return kNuErrNone;      /* no progress meter attached */
 
     /* don't continue if they're not accepting progress messages */
-    if (pProgress->progressFunc == nil)
+    if (pProgress->progressFunc == NULL)
         return kNuErrNone;
 
     /* other than the choice of arguments, it's pretty much the same story */
@@ -861,9 +861,9 @@ Nu_StrawRead(NuArchive* pArchive, NuStraw* pStraw, uchar* buffer, long len)
 {
     NuError err;
 
-    Assert(pArchive != nil);
-    Assert(pStraw != nil);
-    Assert(buffer != nil);
+    Assert(pArchive != NULL);
+    Assert(pStraw != NULL);
+    Assert(buffer != NULL);
     Assert(len > 0);
 
     /*
@@ -887,7 +887,7 @@ Nu_StrawRead(NuArchive* pArchive, NuStraw* pStraw, uchar* buffer, long len)
      * on the previous call.  (This assumes that whatever they asked for
      * last time has already been fully processed.)
      */
-    if (pStraw->pProgress != nil) {
+    if (pStraw->pProgress != NULL) {
         pStraw->pProgress->uncompressedProgress = pStraw->lastProgress;
         pStraw->lastProgress += len;
 
@@ -914,8 +914,8 @@ bail:
 NuError
 Nu_StrawRewind(NuArchive* pArchive, NuStraw* pStraw)
 {
-    Assert(pStraw != nil);
-    Assert(pStraw->pDataSource != nil);
+    Assert(pStraw != NULL);
+    Assert(pStraw->pDataSource != NULL);
 
     pStraw->lastProgress = 0;
     pStraw->lastDisplayed = 0;

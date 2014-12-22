@@ -107,15 +107,15 @@ ShowContentsShort(NuArchive* pArchive, void* vpRecord)
     const NuRecord* pRecord = (NuRecord*) vpRecord;
     NulibState* pState;
 
-    Assert(pArchive != nil);
+    Assert(pArchive != NULL);
     (void) NuGetExtraData(pArchive, (void**) &pState);
-    Assert(pState != nil);
+    Assert(pState != NULL);
 
     if (!IsSpecified(pState, pRecord))
         goto bail;
 
     printf("%s\n",
-        pRecord->filename == nil ? "<unknown>":(const char*)pRecord->filename);
+        pRecord->filename == NULL ? "<unknown>":(const char*)pRecord->filename);
 
 bail:
     return kNuOK;
@@ -156,7 +156,7 @@ AnalyzeRecord(const NuRecord* pRecord, enum RecordKind* pRecordKind,
 
     for (idx = 0; idx < pRecord->recTotalThreads; idx++) {
         pThread = NuGetThread(pRecord, idx);
-        Assert(pThread != nil);
+        Assert(pThread != NULL);
 
         if (pThread->thThreadClass == kNuThreadClassData) {
             /* replace what's there if this might be more interesting */
@@ -201,9 +201,9 @@ ShowContentsVerbose(NuArchive* pArchive, void* vpRecord)
     char tmpbuf[16];
     int len;
 
-    Assert(pArchive != nil);
+    Assert(pArchive != NULL);
     (void) NuGetExtraData(pArchive, (void**) &pState);
-    Assert(pState != nil);
+    Assert(pState != NULL);
 
     if (!IsSpecified(pState, pRecord))
         goto bail;
@@ -270,7 +270,7 @@ ShowContentsVerbose(NuArchive* pArchive, void* vpRecord)
 
 bail:
     if (err != kNuErrNone) {
-        printf("(ERROR on '%s')\n", pRecord->filename == nil ?
+        printf("(ERROR on '%s')\n", pRecord->filename == NULL ?
                 "<unknown>" : (const char*)pRecord->filename);
     }
     return kNuOK;
@@ -283,9 +283,9 @@ NuError
 DoListShort(NulibState* pState)
 {
     NuError err;
-    NuArchive* pArchive = nil;
+    NuArchive* pArchive = NULL;
 
-    Assert(pState != nil);
+    Assert(pState != NULL);
 
     if (NState_GetModBinaryII(pState))
         return BNYDoListShort(pState);
@@ -296,13 +296,13 @@ DoListShort(NulibState* pState)
     if (err != kNuErrNone)
         goto bail;
     pArchive = NState_GetNuArchive(pState);
-    Assert(pArchive != nil);
+    Assert(pArchive != NULL);
 
     err = NuContents(pArchive, ShowContentsShort);
     /* fall through with err */
 
 bail:
-    if (pArchive != nil)
+    if (pArchive != NULL)
         (void) NuClose(pArchive);
     return err;
 }
@@ -315,14 +315,14 @@ NuError
 DoListVerbose(NulibState* pState)
 {
     NuError err;
-    NuArchive* pArchive = nil;
+    NuArchive* pArchive = NULL;
     const NuMasterHeader* pHeader;
     char date1[kDateOutputLen];
     char date2[kDateOutputLen];
     long totalLen, totalCompLen;
     const char* cp;
 
-    Assert(pState != nil);
+    Assert(pState != NULL);
 
     if (NState_GetModBinaryII(pState))
         return BNYDoListVerbose(pState);
@@ -333,7 +333,7 @@ DoListVerbose(NulibState* pState)
     if (err != kNuErrNone)
         goto bail;
     pArchive = NState_GetNuArchive(pState);
-    Assert(pArchive != nil);
+    Assert(pArchive != NULL);
 
     /*
      * Try to get just the filename.
@@ -384,7 +384,7 @@ DoListVerbose(NulibState* pState)
     /*(void) NuDebugDumpArchive(pArchive);*/
 
 bail:
-    if (pArchive != nil)
+    if (pArchive != NULL)
         (void) NuClose(pArchive);
     return err;
 }
@@ -408,9 +408,9 @@ NuError
 DoListDebug(NulibState* pState)
 {
     NuError err;
-    NuArchive* pArchive = nil;
+    NuArchive* pArchive = NULL;
 
-    Assert(pState != nil);
+    Assert(pState != NULL);
 
     if (NState_GetModBinaryII(pState))
         return BNYDoListDebug(pState);
@@ -421,7 +421,7 @@ DoListDebug(NulibState* pState)
     if (err != kNuErrNone)
         goto bail;
     pArchive = NState_GetNuArchive(pState);
-    Assert(pArchive != nil);
+    Assert(pArchive != NULL);
 
     /* have to do something to force the library to scan the archive */
     err = NuContents(pArchive, NullCallback);
@@ -434,7 +434,7 @@ DoListDebug(NulibState* pState)
     /* fall through with err */
 
 bail:
-    if (pArchive != nil)
+    if (pArchive != NULL)
         (void) NuClose(pArchive);
     return err;
 }

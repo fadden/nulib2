@@ -19,7 +19,7 @@ Nu_GetValue(NuArchive* pArchive, NuValueID ident, NuValue* pValue)
 {
     NuError err = kNuErrNone;
 
-    if (pValue == nil)
+    if (pValue == NULL)
         return kNuErrInvalidArg;
 
     switch (ident) {
@@ -229,7 +229,7 @@ NuError
 Nu_GetAttr(NuArchive* pArchive, NuAttrID ident, NuAttr* pAttr)
 {
     NuError err = kNuErrNone;
-    if (pAttr == nil)
+    if (pAttr == NULL)
         return kNuErrInvalidArg;
 
     switch (ident) {

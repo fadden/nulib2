@@ -18,10 +18,10 @@ static const char* gProgramVersion = "2.2.2";
 NuError
 NState_Init(NulibState** ppState)
 {
-    Assert(ppState != nil);
+    Assert(ppState != NULL);
 
     *ppState = Calloc(sizeof(**ppState));
-    if (*ppState == nil)
+    if (*ppState == NULL)
         return kNuErrMalloc;
 
     /*
@@ -77,14 +77,14 @@ NState_ExtraInit(NulibState* pState)
 void
 NState_Free(NulibState* pState)
 {
-    if (pState == nil)
+    if (pState == NULL)
         return;
 
     Free(pState->renameToStr);  /* ?? */
     Free(pState->tempPathnameBuf);
-    if (pState->pPipeSink != nil)
+    if (pState->pPipeSink != NULL)
         NuFreeDataSink(pState->pPipeSink);
-    if (pState->pCommentSink != nil)
+    if (pState->pCommentSink != NULL)
         NuFreeDataSink(pState->pCommentSink);
     Free(pState);
 }
@@ -108,7 +108,7 @@ NState_DebugDump(const NulibState* pState)
         "help",
     };
 
-    Assert(pState != nil);
+    Assert(pState != NULL);
 
     printf("NState:\n");
     printf("  programVersion: '%s'\n", pState->programVersion);
@@ -301,14 +301,14 @@ NState_SetTempPathnameLen(NulibState* pState, long len)
     len++;      /* add one for the '\0' */
 
     if (pState->tempPathnameAlloc < len) {
-        if (pState->tempPathnameBuf == nil)
+        if (pState->tempPathnameBuf == NULL)
             newBuf = Malloc(len);
         else
             newBuf = Realloc(pState->tempPathnameBuf, len);
-        Assert(newBuf != nil);
-        if (newBuf == nil) {
+        Assert(newBuf != NULL);
+        if (newBuf == NULL) {
             Free(pState->tempPathnameBuf);
-            pState->tempPathnameBuf = nil;
+            pState->tempPathnameBuf = NULL;
             pState->tempPathnameAlloc = 0;
             ReportError(kNuErrMalloc, "buf realloc failed (%ld)", len);
             return;

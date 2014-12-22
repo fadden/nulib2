@@ -28,11 +28,11 @@ Nu_ThreadModAdd_New(NuArchive* pArchive, NuThreadID threadID,
     NuThreadFormat threadFormat, NuDataSource* pDataSource,
     NuThreadMod** ppThreadMod)
 {
-    Assert(ppThreadMod != nil);
-    Assert(pDataSource != nil);
+    Assert(ppThreadMod != NULL);
+    Assert(pDataSource != NULL);
 
     *ppThreadMod = Nu_Calloc(pArchive, sizeof(**ppThreadMod));
-    if (*ppThreadMod == nil)
+    if (*ppThreadMod == NULL)
         return kNuErrMalloc;
 
     (*ppThreadMod)->entry.kind = kNuThreadModAdd;
@@ -57,11 +57,11 @@ NuError
 Nu_ThreadModUpdate_New(NuArchive* pArchive, NuThreadIdx threadIdx,
     NuDataSource* pDataSource, NuThreadMod** ppThreadMod)
 {
-    Assert(ppThreadMod != nil);
-    Assert(pDataSource != nil);
+    Assert(ppThreadMod != NULL);
+    Assert(pDataSource != NULL);
 
     *ppThreadMod = Nu_Calloc(pArchive, sizeof(**ppThreadMod));
-    if (*ppThreadMod == nil)
+    if (*ppThreadMod == NULL)
         return kNuErrMalloc;
 
     (*ppThreadMod)->entry.kind = kNuThreadModUpdate;
@@ -82,10 +82,10 @@ NuError
 Nu_ThreadModDelete_New(NuArchive* pArchive, NuThreadIdx threadIdx,
     NuThreadID threadID, NuThreadMod** ppThreadMod)
 {
-    Assert(ppThreadMod != nil);
+    Assert(ppThreadMod != NULL);
 
     *ppThreadMod = Nu_Calloc(pArchive, sizeof(**ppThreadMod));
-    if (*ppThreadMod == nil)
+    if (*ppThreadMod == NULL)
         return kNuErrMalloc;
 
     (*ppThreadMod)->entry.kind = kNuThreadModDelete;
@@ -102,7 +102,7 @@ Nu_ThreadModDelete_New(NuArchive* pArchive, NuThreadIdx threadIdx,
 void
 Nu_ThreadModFree(NuArchive* pArchive, NuThreadMod* pThreadMod)
 {
-    if (pThreadMod == nil)
+    if (pThreadMod == NULL)
         return;
 
     switch (pThreadMod->entry.kind) {
@@ -131,13 +131,13 @@ Nu_ThreadModFree(NuArchive* pArchive, NuThreadMod* pThreadMod)
  * be more than three or four threads per record, so the extra search
  * isn't costly.)
  *
- * Returns "nil" if nothing found.
+ * Returns "NULL" if nothing found.
  */
 NuThreadMod*
 Nu_ThreadMod_FindByThreadIdx(const NuRecord* pRecord, NuThreadIdx threadIdx)
 {
     NuThreadMod* pThreadMod;
-    NuThreadMod* pMatch = nil;
+    NuThreadMod* pMatch = NULL;
 
     pThreadMod = pRecord->pThreadMods;
     while (pThreadMod) {
@@ -148,13 +148,13 @@ Nu_ThreadMod_FindByThreadIdx(const NuRecord* pRecord, NuThreadIdx threadIdx)
             break;
         case kNuThreadModUpdate:
             if (pThreadMod->entry.update.threadIdx == threadIdx) {
-                Assert(pMatch == nil);
+                Assert(pMatch == NULL);
                 pMatch = pThreadMod;
             }
             break;
         case kNuThreadModDelete:
             if (pThreadMod->entry.delete.threadIdx == threadIdx) {
-                Assert(pMatch == nil);
+                Assert(pMatch == NULL);
                 pMatch = pThreadMod;
             }
             break;
@@ -184,11 +184,11 @@ Nu_ThreadModAdd_FindByThreadID(const NuRecord* pRecord, NuThreadID threadID,
 {
     NuThreadMod* pThreadMod;
 
-    Assert(pRecord != nil);
-    Assert(ppThreadMod != nil);
+    Assert(pRecord != NULL);
+    Assert(ppThreadMod != NULL);
 
     pThreadMod = pRecord->pThreadMods;
-    while (pThreadMod != nil) {
+    while (pThreadMod != NULL) {
         if (pThreadMod->entry.kind != kNuThreadModAdd)
             continue;
 
@@ -213,20 +213,20 @@ Nu_FreeThreadMods(NuArchive* pArchive, NuRecord* pRecord)
     NuThreadMod* pThreadMod;
     NuThreadMod* pNext;
 
-    Assert(pRecord != nil);
+    Assert(pRecord != NULL);
     pThreadMod = pRecord->pThreadMods;
 
-    if (pThreadMod == nil)
+    if (pThreadMod == NULL)
         return;
 
-    while (pThreadMod != nil) {
+    while (pThreadMod != NULL) {
         pNext = pThreadMod->pNext;
 
         Nu_ThreadModFree(pArchive, pThreadMod);
         pThreadMod = pNext;
     }
 
-    pRecord->pThreadMods = nil;
+    pRecord->pThreadMods = NULL;
 }
 
 
@@ -269,7 +269,7 @@ bail:
 static void
 Nu_NewThreads_Free(NuArchive* pArchive, NuNewThreads* pNewThreads)
 {
-    if (pNewThreads != nil) {
+    if (pNewThreads != NULL) {
         Nu_Free(pArchive, pNewThreads->pThreads);
         Nu_Free(pArchive, pNewThreads);
     }
@@ -316,7 +316,7 @@ Nu_NewThreads_GetNext(NuNewThreads* pNewThreads, NuArchive* pArchive)
 static int
 Nu_NewThreads_GetNumThreads(const NuNewThreads* pNewThreads)
 {
-    Assert(pNewThreads != nil);
+    Assert(pNewThreads != NULL);
 
     return pNewThreads->numThreads;
 }
@@ -331,7 +331,7 @@ Nu_NewThreads_TotalCompThreadEOF(NuNewThreads* pNewThreads)
     int i;
 
     /* we should be all full up at this point; if not, we have a bug */
-    Assert(pNewThreads != nil);
+    Assert(pNewThreads != NULL);
     Assert(pNewThreads->numThreads == pNewThreads->nextSlot);
 
     compThreadEOF = 0;
@@ -352,7 +352,7 @@ Nu_NewThreads_DonateThreads(NuNewThreads* pNewThreads)
 {
     NuThread* pThreads = pNewThreads->pThreads;
 
-    pNewThreads->pThreads = nil;
+    pNewThreads->pThreads = NULL;
     return pThreads;
 }
 
@@ -433,7 +433,7 @@ Nu_CountEventualThreads(const NuRecord* pRecord, long* pTotalThreads,
     numFilenameThreads = 0;
 
     pThreadMod = pRecord->pThreadMods;
-    while (pThreadMod != nil) {
+    while (pThreadMod != NULL) {
         switch (pThreadMod->entry.kind) {
         case kNuThreadModAdd:
             numThreads++;
@@ -463,7 +463,7 @@ Nu_CountEventualThreads(const NuRecord* pRecord, long* pTotalThreads,
      */
     for (idx = 0; idx < (long)pRecord->recTotalThreads; idx++) {
         pThread = Nu_GetThread(pRecord, idx);
-        Assert(pThread != nil);
+        Assert(pThread != NULL);
 
         if (NuGetThreadID(pThread) == kNuThreadIDFilename)
             numFilenameThreads++;
@@ -504,11 +504,11 @@ Nu_VerifyAllTouched(NuArchive* pArchive, const NuRecord* pRecord)
     const NuThread* pThread;
     long idx;
 
-    Assert(pArchive != nil);
-    Assert(pRecord != nil);
+    Assert(pArchive != NULL);
+    Assert(pRecord != NULL);
 
     pThreadMod = pRecord->pThreadMods;
-    while (pThreadMod != nil) {
+    while (pThreadMod != NULL) {
         Assert(pThreadMod->entry.generic.used == false ||
                pThreadMod->entry.generic.used == true);
         if (!pThreadMod->entry.generic.used)
@@ -518,7 +518,7 @@ Nu_VerifyAllTouched(NuArchive* pArchive, const NuRecord* pRecord)
 
     for (idx = 0; idx < (long)pRecord->recTotalThreads; idx++) {
         pThread = Nu_GetThread(pRecord, idx);
-        Assert(pThread != nil);
+        Assert(pThread != NULL);
 
         Assert(pThread->used == false || pThread->used == true);
         if (!pThread->used)
@@ -541,8 +541,8 @@ Nu_VerifyAllTouched(NuArchive* pArchive, const NuRecord* pRecord)
 static void
 Nu_SetNewThreadFilename(NuArchive* pArchive, NuRecord* pRecord, char* newName)
 {
-    Assert(pRecord != nil);
-    Assert(newName != nil);
+    Assert(pRecord != NULL);
+    Assert(newName != NULL);
 
     Nu_Free(pArchive, pRecord->threadFilename);
     pRecord->threadFilename = newName;
@@ -604,7 +604,7 @@ Nu_ConstructArchiveUpdate(NuArchive* pArchive, FILE* fp, NuRecord* pRecord,
     NuThread* pThread, const NuThreadMod* pThreadMod)
 {
     NuError err;
-    NuDataSource* pDataSource = nil;
+    NuDataSource* pDataSource = NULL;
     ulong sourceLen;
     ulong threadBufSize;
 
@@ -621,7 +621,7 @@ Nu_ConstructArchiveUpdate(NuArchive* pArchive, FILE* fp, NuRecord* pRecord,
     Assert(pThread->thCompThreadEOF >= pThread->thThreadEOF);
     threadBufSize = pThread->thCompThreadEOF;
     pDataSource = pThreadMod->entry.update.pDataSource;
-    Assert(pDataSource != nil);
+    Assert(pDataSource != NULL);
 
     err = Nu_DataSourcePrepareInput(pArchive, pDataSource);
     if (err == kNuErrSkipped) {
@@ -662,7 +662,7 @@ Nu_ConstructArchiveUpdate(NuArchive* pArchive, FILE* fp, NuRecord* pRecord,
 
     if (NuGetThreadID(pThread) == kNuThreadIDFilename) {
         /* special handling for filename updates */
-        char* savedCopy = nil;
+        char* savedCopy = NULL;
         err = Nu_CopyPresizedToArchive(pArchive, pDataSource,
                 NuGetThreadID(pThread), fp, pThread, &savedCopy);
         if (err != kNuErrNone) {
@@ -673,7 +673,7 @@ Nu_ConstructArchiveUpdate(NuArchive* pArchive, FILE* fp, NuRecord* pRecord,
 
     } else {
         err = Nu_CopyPresizedToArchive(pArchive, pDataSource,
-                NuGetThreadID(pThread), fp, pThread, nil);
+                NuGetThreadID(pThread), fp, pThread, NULL);
         if (err != kNuErrNone) {
             Nu_ReportError(NU_BLOB, err, "thread update failed");
             goto bail;
@@ -723,7 +723,7 @@ Nu_HandleAddThreadMods(NuArchive* pArchive, NuRecord* pRecord,
      * matching by wildcards, but don't re-use "used" entries.
      */
     pThreadMod = pRecord->pThreadMods;
-    while (pThreadMod != nil) {
+    while (pThreadMod != NULL) {
         if (pThreadMod->entry.kind == kNuThreadModAdd &&
             !pThreadMod->entry.generic.used &&
             (pThreadMod->entry.add.threadID == threadID ||
@@ -747,7 +747,7 @@ Nu_HandleAddThreadMods(NuArchive* pArchive, NuRecord* pRecord,
             }
 
             /* if this is a data thread, prepare the progress message */
-            pProgressData = nil;
+            pProgressData = NULL;
             if (NuThreadIDGetClass(pThreadMod->entry.add.threadID) ==
                 kNuThreadClassData)
             {
@@ -836,7 +836,7 @@ Nu_HandleAddThreadMods(NuArchive* pArchive, NuRecord* pRecord,
 
             if (pThreadMod->entry.add.threadID == kNuThreadIDFilename) {
                 /* filenames are special */
-                char* savedCopy = nil;
+                char* savedCopy = NULL;
 
                 Assert(pThreadMod->entry.add.threadFormat ==
                     kNuThreadFormatUncompressed);
@@ -863,7 +863,7 @@ Nu_HandleAddThreadMods(NuArchive* pArchive, NuRecord* pRecord,
                 err = Nu_CopyPresizedToArchive(pArchive,
                         pThreadMod->entry.add.pDataSource,
                         pThreadMod->entry.add.threadID,
-                        dstFp, pNewThread, nil);
+                        dstFp, pNewThread, NULL);
                 /* fall through with err */
 
             } else {
@@ -929,7 +929,7 @@ Nu_ConstructArchiveThreads(NuArchive* pArchive, NuRecord* pRecord,
      */
     for (idx = 0; idx < (int)pRecord->recTotalThreads; idx++) {
         pThread = Nu_GetThread(pRecord, idx);
-        Assert(pThread != nil);
+        Assert(pThread != NULL);
 
         DBUG(("+++ THREAD #%d (used=%d)\n", idx, pThread->used));
         if (threadID == kNuThreadIDWildcard ||
@@ -944,7 +944,7 @@ Nu_ConstructArchiveThreads(NuArchive* pArchive, NuRecord* pRecord,
             pThreadMod = Nu_ThreadMod_FindByThreadIdx(pRecord,
                             pThread->threadIdx);
 
-            if (pThreadMod != nil) {
+            if (pThreadMod != NULL) {
                 /*
                  * The thread has a related ThreadMod.  Deal with it.
                  */
@@ -1060,14 +1060,14 @@ static NuError
 Nu_ConstructArchiveRecord(NuArchive* pArchive, NuRecord* pRecord)
 {
     NuError err;
-    NuNewThreads* pNewThreads = nil;
+    NuNewThreads* pNewThreads = NULL;
     long threadDisp;
     long initialOffset, finalOffset;
     long numThreads, numFilenameThreads;
     int newHeaderSize;
 
-    Assert(pArchive != nil);
-    Assert(pRecord != nil);
+    Assert(pArchive != NULL);
+    Assert(pRecord != NULL);
 
     DBUG(("--- Reconstructing '%s'\n", pRecord->filename));
 
@@ -1102,19 +1102,19 @@ Nu_ConstructArchiveRecord(NuArchive* pArchive, NuRecord* pRecord)
         /* looks like a previously existing filename thread got removed */
         DBUG(("--- Dropping thread filename '%s'\n", pRecord->threadFilename));
         if (pRecord->filename == pRecord->threadFilename)
-            pRecord->filename = nil;    /* don't point at freed memory! */
+            pRecord->filename = NULL;    /* don't point at freed memory! */
         Nu_Free(pArchive, pRecord->threadFilename);
-        pRecord->threadFilename = nil;
+        pRecord->threadFilename = NULL;
 
         /* I don't think this is possible, but check it anyway */
-        if (pRecord->filename == nil && pRecord->recFilename != nil &&
+        if (pRecord->filename == NULL && pRecord->recFilename != NULL &&
             !pRecord->dropRecFilename)
         {
             DBUG(("--- HEY, how did this happen?\n"));
             pRecord->filename = pRecord->recFilename;
         }
     }
-    if (pRecord->filename == nil)
+    if (pRecord->filename == NULL)
         pRecord->filename = kNuDefaultRecordName;
 
     /*
@@ -1265,15 +1265,15 @@ static NuError
 Nu_ConstructNewRecord(NuArchive* pArchive, NuRecord* pRecord, FILE* fp)
 {
     NuError err;
-    NuNewThreads* pNewThreads = nil;
+    NuNewThreads* pNewThreads = NULL;
     NuThreadMod* pThreadMod;
     long threadDisp;
     long initialOffset, finalOffset;
     long numThreadMods, numFilenameThreads;
     int newHeaderSize;
 
-    Assert(pArchive != nil);
-    Assert(pRecord != nil);
+    Assert(pArchive != NULL);
+    Assert(pRecord != NULL);
 
     DBUG(("--- Constructing '%s'\n", pRecord->filename));
 
@@ -1287,7 +1287,7 @@ Nu_ConstructNewRecord(NuArchive* pArchive, NuRecord* pRecord, FILE* fp)
      * make ourselves useful by counting up the number of eventual
      * threads, and verify that there is exactly one filename thread.
      */
-    Assert(pRecord->pThreads == nil);
+    Assert(pRecord->pThreads == NULL);
 
     numThreadMods = 0;
     numFilenameThreads = 0;
@@ -1312,15 +1312,15 @@ Nu_ConstructNewRecord(NuArchive* pArchive, NuRecord* pRecord, FILE* fp)
      * records when the application doesn't explicitly add a thread.
      */
     if (!numFilenameThreads) {
-        NuDataSource* pTmpDataSource = nil;
-        NuThreadMod* pNewThreadMod = nil;
+        NuDataSource* pTmpDataSource = NULL;
+        NuThreadMod* pNewThreadMod = NULL;
         int len, maxLen;
 
         /*
          * Generally speaking, the "add file" call should set the
          * filename.  If somehow it didn't, assign a default.
          */
-        if (pRecord->filename == nil) {
+        if (pRecord->filename == NULL) {
             pRecord->newFilename = strdup(kNuDefaultRecordName);
             pRecord->filename = pRecord->newFilename;
         }
@@ -1340,7 +1340,7 @@ Nu_ConstructNewRecord(NuArchive* pArchive, NuRecord* pRecord, FILE* fp)
                                             len : kNuDefaultFilenameThreadSize;
         err = Nu_DataSourceBuffer_New(kNuThreadFormatUncompressed,
                 maxLen, (const uchar*)pRecord->filename, 0,
-                strlen(pRecord->filename), nil, &pTmpDataSource);
+                strlen(pRecord->filename), NULL, &pTmpDataSource);
         BailError(err);
 
         /* put in a new "add" threadMod (which copies the data source) */
@@ -1351,7 +1351,7 @@ Nu_ConstructNewRecord(NuArchive* pArchive, NuRecord* pRecord, FILE* fp)
 
         /* add it to the list */
         Nu_RecordAddThreadMod(pRecord, pNewThreadMod);
-        pNewThreadMod = nil;
+        pNewThreadMod = NULL;
 
         numFilenameThreads++;
         numThreadMods++;
@@ -1431,7 +1431,7 @@ Nu_ConstructNewRecord(NuArchive* pArchive, NuRecord* pRecord, FILE* fp)
     /*
      * Install pNewThreads as the thread list.
      */
-    Assert(pRecord->pThreads == nil && pRecord->recTotalThreads == 0);
+    Assert(pRecord->pThreads == NULL && pRecord->recTotalThreads == 0);
     pRecord->pThreads = Nu_NewThreads_DonateThreads(pNewThreads);
     pRecord->recTotalThreads = Nu_NewThreads_GetNumThreads(pNewThreads);
 
@@ -1501,7 +1501,7 @@ Nu_UpdateRecordInOriginal(NuArchive* pArchive, NuRecord* pRecord)
      * Loop through all threadMods.
      */
     pThreadMod = pRecord->pThreadMods;
-    while (pThreadMod != nil) {
+    while (pThreadMod != NULL) {
         Assert(pThreadMod->entry.kind == kNuThreadModUpdate);
 
         /* find the thread associated with this threadMod */
@@ -1547,7 +1547,7 @@ Nu_UpdateRecordInOriginal(NuArchive* pArchive, NuRecord* pRecord)
     DBUG(("--- record header wrote %ld bytes\n",
         pArchive->currentOffset - pRecord->fileOffset));
     pThread = pRecord->pThreads;
-    if (pThread != nil && pArchive->currentOffset != pThread->fileOffset) {
+    if (pThread != NULL && pArchive->currentOffset != pThread->fileOffset) {
         /* guess what, we just trashed the archive */
         err = kNuErrDamaged;
         Nu_ReportError(NU_BLOB, err,
@@ -1631,8 +1631,8 @@ Nu_CreateTempFromOriginal(NuArchive* pArchive)
      * record header, but since all we do is copy the data anyway,
      * it's not much slower.
      */
-    while (pRecord != nil) {
-        if (!pRecord->dirtyHeader && pRecord->pThreadMods == nil) {
+    while (pRecord != NULL) {
+        if (!pRecord->dirtyHeader && pRecord->pThreadMods == NULL) {
             err = Nu_CopyArchiveRecord(pArchive, pRecord);
             BailError(err);
         } else {
@@ -1690,8 +1690,8 @@ Nu_UpdateInOriginal(NuArchive* pArchive)
      * Run through and process all the updates.
      */
     pRecord = Nu_RecordSet_GetListHead(&pArchive->copyRecordSet);
-    while (pRecord != nil) {
-        if (pRecord->dirtyHeader || pRecord->pThreadMods != nil) {
+    while (pRecord != NULL) {
+        if (pRecord->dirtyHeader || pRecord->pThreadMods != NULL) {
             err = Nu_UpdateRecordInOriginal(pArchive, pRecord);
             BailError(err);
         }
@@ -1724,7 +1724,7 @@ Nu_CreateNewRecords(NuArchive* pArchive, FILE* fp)
     NuRecord* pRecord;
 
     pRecord = Nu_RecordSet_GetListHead(&pArchive->newRecordSet);
-    while (pRecord != nil) {
+    while (pRecord != NULL) {
         err = Nu_ConstructNewRecord(pArchive, pRecord, fp);
         if (err == kNuErrSkipped) {
             /*
@@ -1801,10 +1801,10 @@ Nu_NoHeavyUpdates(NuArchive* pArchive)
     while (count--) {
         const NuThreadMod* pThreadMod;
 
-        Assert(pRecord != nil);
+        Assert(pRecord != NULL);
 
         pThreadMod = pRecord->pThreadMods;
-        while (pThreadMod != nil) {
+        while (pThreadMod != NULL) {
             /* the only acceptable kind is "update" */
             if (pThreadMod->entry.kind != kNuThreadModUpdate)
                 return false;
@@ -1835,18 +1835,18 @@ Nu_PurgeEmptyRecords(NuArchive* pArchive, NuRecordSet* pRecordSet)
     NuRecord* pRecord;
     NuRecord** ppRecord;
 
-    Assert(pArchive != nil);
-    Assert(pRecordSet != nil);
+    Assert(pArchive != NULL);
+    Assert(pRecordSet != NULL);
 
     if (Nu_RecordSet_IsEmpty(pRecordSet))
         return kNuErrNone;
 
     ppRecord = Nu_RecordSet_GetListHeadPtr(pRecordSet);
-    Assert(ppRecord != nil);
-    Assert(*ppRecord != nil);
+    Assert(ppRecord != NULL);
+    Assert(*ppRecord != NULL);
 
     /* maintain a pointer to the pointer, so we can delete easily */
-    while (*ppRecord != nil) {
+    while (*ppRecord != NULL) {
         pRecord = *ppRecord;
 
         if (Nu_RecordIsEmpty(pArchive, pRecord)) {
@@ -1923,11 +1923,11 @@ Nu_ResetTempFile(NuArchive* pArchive)
     if (Nu_IsReadOnly(pArchive))
         return kNuErrNone;  /* or kNuErrArchiveRO? */
 
-    Assert(pArchive != nil);
-    Assert(pArchive->tmpPathname != nil);
+    Assert(pArchive != NULL);
+    Assert(pArchive->tmpPathname != NULL);
 
 #if 0   /* keep the temp file around for examination */
-if (pArchive->tmpFp != nil) {
+if (pArchive->tmpFp != NULL) {
     DBUG(("--- NOT Resetting temp file\n"));
     fflush(pArchive->tmpFp);
     goto bail;
@@ -1937,9 +1937,9 @@ if (pArchive->tmpFp != nil) {
     DBUG(("--- Resetting temp file\n"));
 
     /* if we renamed the temp over the original, we need to open a new temp */
-    if (pArchive->tmpFp == nil) {
+    if (pArchive->tmpFp == NULL) {
         pArchive->tmpFp = fopen(pArchive->tmpPathname, kNuFileOpenReadWriteCreat);
-        if (pArchive->tmpFp == nil) {
+        if (pArchive->tmpFp == NULL) {
             err = errno ? errno : kNuErrFileOpen;
             Nu_ReportError(NU_BLOB, errno, "Unable to open temp file '%s'",
                 pArchive->tmpPathname);
@@ -1957,7 +1957,7 @@ if (pArchive->tmpFp != nil) {
             err = kNuErrNone;
             fclose(pArchive->tmpFp);
             pArchive->tmpFp = fopen(pArchive->tmpPathname, kNuFileOpenWriteTrunc);
-            if (pArchive->tmpFp == nil) {
+            if (pArchive->tmpFp == NULL) {
                 err = errno ? errno : kNuErrFileOpen;
                 Nu_ReportError(NU_BLOB, err, "failed truncating tmp file");
                 goto bail;
@@ -1965,7 +1965,7 @@ if (pArchive->tmpFp != nil) {
             fclose(pArchive->tmpFp);
             pArchive->tmpFp =
                         fopen(pArchive->tmpPathname, kNuFileOpenReadWriteCreat);
-            if (pArchive->tmpFp == nil) {
+            if (pArchive->tmpFp == NULL) {
                 err = errno ? errno : kNuErrFileOpen;
                 Nu_ReportError(NU_BLOB, err, "Unable to open temp file '%s'",
                     pArchive->tmpPathname);
@@ -1990,8 +1990,8 @@ Nu_RecordResetUsedFlags(NuArchive* pArchive, NuRecord* pRecord)
     NuThread* pThread;
     long idx;
 
-    Assert(pArchive != nil);
-    Assert(pRecord != nil);
+    Assert(pArchive != NULL);
+    Assert(pRecord != NULL);
 
     /* these should already be clear */
     if (pRecord->pThreadMods) {
@@ -2002,7 +2002,7 @@ Nu_RecordResetUsedFlags(NuArchive* pArchive, NuRecord* pRecord)
     /* these might still be set */
     for (idx = 0; idx < (long)pRecord->recTotalThreads; idx++) {
         pThread = Nu_GetThread(pRecord, idx);
-        Assert(pThread != nil);
+        Assert(pThread != NULL);
 
         pThread->used = false;
     }
@@ -2023,7 +2023,7 @@ Nu_ResetUsedFlags(NuArchive* pArchive, NuRecordSet* pRecordSet)
     NuRecord* pRecord;
 
     pRecord = Nu_RecordSet_GetListHead(pRecordSet);
-    while (pRecord != nil) {
+    while (pRecord != NULL) {
         err = Nu_RecordResetUsedFlags(pArchive, pRecord);
         if (err != kNuErrNone) {
             Assert(0);
@@ -2054,8 +2054,8 @@ Nu_ResetCopySetIfUntouched(NuArchive* pArchive)
 
     /* do we have any thread mods or dirty record headers? */
     pRecord = Nu_RecordSet_GetListHead(&pArchive->copyRecordSet);
-    while (pRecord != nil) {
-        if (pRecord->pThreadMods != nil || pRecord->dirtyHeader)
+    while (pRecord != NULL) {
+        if (pRecord->pThreadMods != NULL || pRecord->dirtyHeader)
             return;
 
         pRecord = pRecord->pNext;
@@ -2076,9 +2076,9 @@ Nu_AddCommentToFirstNewRecord(NuArchive* pArchive)
 {
     NuError err = kNuErrNone;
     NuRecord* pRecord;
-    NuThreadMod* pThreadMod = nil;
-    NuThreadMod* pExistingThreadMod = nil;
-    NuDataSource* pDataSource = nil;
+    NuThreadMod* pThreadMod = NULL;
+    NuThreadMod* pExistingThreadMod = NULL;
+    NuDataSource* pDataSource = NULL;
 
     /* if there aren't any records there, skip this */
     if (Nu_RecordSet_IsEmpty(&pArchive->newRecordSet))
@@ -2100,20 +2100,20 @@ Nu_AddCommentToFirstNewRecord(NuArchive* pArchive)
 
     /* create a new data source with nothing in it */
     err = Nu_DataSourceBuffer_New(kNuThreadFormatUncompressed,
-            kNuDefaultCommentSize, nil, 0, 0, nil, &pDataSource);
+            kNuDefaultCommentSize, NULL, 0, 0, NULL, &pDataSource);
     BailError(err);
-    Assert(pDataSource != nil);
+    Assert(pDataSource != NULL);
 
     /* create a new ThreadMod */
     err = Nu_ThreadModAdd_New(pArchive, kNuThreadIDComment,
             kNuThreadFormatUncompressed, pDataSource, &pThreadMod);
     BailError(err);
-    Assert(pThreadMod != nil);
-    /*pDataSource = nil;*/  /* ThreadModAdd_New makes a copy */
+    Assert(pThreadMod != NULL);
+    /*pDataSource = NULL;*/  /* ThreadModAdd_New makes a copy */
 
     /* add the thread mod to the record */
     Nu_RecordAddThreadMod(pRecord, pThreadMod);
-    pThreadMod = nil;   /* don't free on exit */
+    pThreadMod = NULL;   /* don't free on exit */
 
 bail:
     Nu_ThreadModFree(pArchive, pThreadMod);
@@ -2148,7 +2148,7 @@ Nu_Flush(NuArchive* pArchive, long* pStatusFlags)
 
     DBUG(("--- FLUSH\n"));
 
-    if (pStatusFlags == nil)
+    if (pStatusFlags == NULL)
         return kNuErrInvalidArg;
     /* these do get set on error, so clear them no matter what */
     *pStatusFlags = 0;
@@ -2410,7 +2410,7 @@ Nu_Flush(NuArchive* pArchive, long* pStatusFlags)
         *pStatusFlags |= kNuFlushSucceeded;     /* temp file is fully valid */
 
         fclose(pArchive->archiveFp);
-        pArchive->archiveFp = nil;
+        pArchive->archiveFp = NULL;
 
         err = Nu_DeleteArchiveFile(pArchive);
         if (err != kNuErrNone) {
@@ -2422,7 +2422,7 @@ Nu_Flush(NuArchive* pArchive, long* pStatusFlags)
         }
 
         fclose(pArchive->tmpFp);
-        pArchive->tmpFp = nil;
+        pArchive->tmpFp = NULL;
 
         err = Nu_RenameTempToArchive(pArchive);
         if (err != kNuErrNone) {
@@ -2431,9 +2431,9 @@ Nu_Flush(NuArchive* pArchive, long* pStatusFlags)
                 "NOTE: only copy of archive is in '%s'", pArchive->tmpPathname);
             /* maintain Entry.c semantics (and keep them from removing temp) */
             Nu_Free(pArchive, pArchive->archivePathname);
-            pArchive->archivePathname = nil;
+            pArchive->archivePathname = NULL;
             Nu_Free(pArchive, pArchive->tmpPathname);
-            pArchive->tmpPathname = nil;
+            pArchive->tmpPathname = NULL;
             /* bail will put us into read-only mode, which is what we want */
             goto bail;
         }
@@ -2441,7 +2441,7 @@ Nu_Flush(NuArchive* pArchive, long* pStatusFlags)
 bail_reopen:
         pArchive->archiveFp = fopen(pArchive->archivePathname,
                                 kNuFileOpenReadWrite);
-        if (pArchive->archiveFp == nil) {
+        if (pArchive->archiveFp == NULL) {
             err = errno ? errno : -1;
             Nu_ReportError(NU_BLOB, err,
                 "unable to reopen archive file '%s' after rename",
@@ -2545,8 +2545,8 @@ bail:
 
     /* last-minute sanity check */
     Assert(pArchive->origRecordSet.numRecords == 0 ||
-        (pArchive->origRecordSet.nuRecordHead != nil &&
-         pArchive->origRecordSet.nuRecordTail != nil));
+        (pArchive->origRecordSet.nuRecordHead != NULL &&
+         pArchive->origRecordSet.nuRecordTail != NULL));
 
     return err;
 }
@@ -2558,7 +2558,7 @@ bail:
 NuError
 Nu_Abort(NuArchive* pArchive)
 {
-    Assert(pArchive != nil);
+    Assert(pArchive != NULL);
 
     if (Nu_IsReadOnly(pArchive))
         return kNuErrArchiveRO;
