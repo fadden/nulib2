@@ -6,8 +6,8 @@
  * Misc stuff (shared between nufxlib and nulib2).  This is a collection
  * of miscellaneous types and macros that I find generally useful.
  */
-#ifndef __MiscStuff__
-#define __MiscStuff__
+#ifndef NUFXLIB_MISCSTUFF_H
+#define NUFXLIB_MISCSTUFF_H
 
 #define VALGRIND        /* assume we're using it */
 
@@ -102,4 +102,4 @@ typedef unsigned char Boolean;
 
 #define kInvalidPtr     ((void*)0xa3a3a3a3)
 
-#endif /*__MiscStuff__*/
+#endif /*NUFXLIB_MISCSTUFF_H*/

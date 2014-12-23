@@ -4,8 +4,8 @@
  * This is free software; you can redistribute it and/or modify it under the
  * terms of the BSD License, see the file COPYING.
  */
-#ifndef __State__
-#define __State__
+#ifndef NULIB2_STATE_H
+#define NULIB2_STATE_H
 
 #include "MiscStuff.h"
 #include "NufxLib.h"
@@ -154,4 +154,4 @@ void NState_SetModPreserveType(NulibState* pState, Boolean val);
 Boolean NState_GetModPreserveTypeExtended(const NulibState* pState);
 void NState_SetModPreserveTypeExtended(NulibState* pState, Boolean val);
 
-#endif /*__State__*/
+#endif /*NULIB2_STATE_H*/

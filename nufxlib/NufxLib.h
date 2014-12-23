@@ -6,8 +6,8 @@
  *
  * External interface (types, defines, and function prototypes).
  */
-#ifndef __NufxLib__
-#define __NufxLib__
+#ifndef NUFXLIB_NUFXLIB_H
+#define NUFXLIB_NUFXLIB_H
 
 #include <stdio.h>
 #include <stdint.h>
@@ -841,4 +841,4 @@ NUFXLIB_API NuCallback NuSetGlobalErrorMessageHandler(NuCallback messageHandlerF
 }
 #endif
 
-#endif /*__NufxLib__*/
+#endif /*NUFXLIB_NUFXLIB_H*/

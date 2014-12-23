@@ -6,8 +6,8 @@
  *
  * Global internal declarations and definitions.
  */
-#ifndef __NufxLibPriv__
-#define __NufxLibPriv__
+#ifndef NUFXLIB_NUFXLIBPRIV_H
+#define NUFXLIB_NUFXLIBPRIV_H
 
 /* include files that everybody needs */
 #include "SysDefs.h"
@@ -870,4 +870,4 @@ NuThreadFormat Nu_ConvertCompressValToFormat(NuArchive* pArchive,
 NuError Nu_GetVersion(long* pMajorVersion, long* pMinorVersion,
     long* pBugVersion, const char** ppBuildDate, const char** ppBuildFlags);
 
-#endif /*__NufxLibPriv__*/
+#endif /*NUFXLIB_NUFXLIBPRIV_H*/

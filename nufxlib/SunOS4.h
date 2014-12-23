@@ -8,8 +8,8 @@
  * (such as gcc) is used.  The system header files aren't quite sufficient
  * to eliminate hordes of warnings.
  */
-#ifndef __SunOS4__
-#define __SunOS4__
+#ifndef NUFXLIB_SUNOS4_H
+#define NUFXLIB_SUNOS4_H
 
 #ifdef __GNUC__
 extern int      _flsbuf(int, FILE*);
@@ -43,4 +43,4 @@ extern int      toupper(int);
 extern int      vfprintf(FILE*, const char *, va_list);
 extern char*    vsprintf(char *str, const char *format, va_list ap);
 
-#endif /*__SunOS4__*/
+#endif /*NUFXLIB_SUNOS4_H*/

@@ -6,8 +6,8 @@
  *
  * This was adapted from gzip's "tailor.h" and NuLib's "nudefs.h".
  */
-#ifndef __SysDefs__
-#define __SysDefs__
+#ifndef NULIB2_SYSDEFS_H
+#define NULIB2_SYSDEFS_H
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -208,4 +208,4 @@
 # define MAX_PATH_LEN   1024
 #endif
 
-#endif /*__SysDefs__*/
+#endif /*NULIB2_SYSDEFS_H*/

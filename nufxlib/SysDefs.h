@@ -6,8 +6,8 @@
  *
  * External type definitions and function prototypes.
  */
-#ifndef __SysDefs__
-#define __SysDefs__
+#ifndef NUFXLIB_SYSDEFS_H
+#define NUFXLIB_SYSDEFS_H
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -140,4 +140,4 @@
 # define HAS_MALLOC_CHECK_
 #endif
 
-#endif /*__SysDefs__*/
+#endif /*NUFXLIB_SYSDEFS_H*/

@@ -4,8 +4,8 @@
  * This is free software; you can redistribute it and/or modify it under the
  * terms of the BSD License, see the file COPYING.
  */
-#ifndef __Nulib2__
-#define __Nulib2__
+#ifndef NULIB2_NULIB2_H
+#define NULIB2_NULIB2_H
 
 #include "SysDefs.h"    /* system-dependent defs; must come first */
 #include <NufxLib.h>
@@ -110,4 +110,4 @@ NuError AddFile(NulibState* pState, NuArchive* pArchive,
 NuError Mkdir(const char* dir);
 NuError TestFileExistence(const char* fileName, Boolean* pIsDir);
 
-#endif /*__Nulib2__*/
+#endif /*NULIB2_NULIB2_H*/
