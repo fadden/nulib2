@@ -1,9 +1,9 @@
-NuLib2 README, updated 2004/03/10
+NuLib2 README, updated 2014/12/23
 http://www.nulib.com/
 
 
-To build NuLib2, you will also need a copy of NufxLib.  This may have come
-in the same .tar.gz file.  Build the nufxlib library first.
+To build NuLib2, you will also need a copy of NufxLib.  This should have come
+in the same .tar.gz file.  Build the NufxLib library first.
 
 
 UNIX
@@ -71,22 +71,18 @@ Win32
 If you're using an environment that supports "configure" scripts, such as
 DJGPP, follow the UNIX instructions.
 
-NuLib2 has been tested with Microsoft Visual C++ 6.0.  To build NuLib2,
-start up a DOS shell and run vcvars32.bat to set your environment.  Run:
-    nmake -f makefile.msc
-to build with debugging info, or
-    nmake -f makefile.msc nodebug=1
-to build optimized.
+NuLib2 has been tested with Microsoft Visual C++ 12 (Visual Studio 2013).
+To build NuLib2, run the "Visual Studio 2013 x86 Native Tools Command
+Prompt" shortcut to get a shell.  Change to the nulib2 directory, then:
 
-See the notes in Makefile.msc for building with zlib, libbz2, and when
-NufxLib is in a DLL.
+    nmake -f makefile.msc
+
+If you want to have zlib support enabled, you will need to have zlib.lib
+copied into the directory.  See "makefile.msc" for more details.
 
 
 Other Notes
 ===========
-
-All of the source code is now formatted with spaces instead of tabs.
-
 
 Fun benchmark of the day:
 
@@ -140,7 +136,7 @@ Legalese
 ========
 
 NuLib2, a NuFX and Binary II archive application.
-Copyright (C) 2000-2007 by Andy McFadden, All Rights Reserved.
+Copyright (C) 2000-2014 by Andy McFadden, All Rights Reserved.
 
 See COPYING for license.
 
