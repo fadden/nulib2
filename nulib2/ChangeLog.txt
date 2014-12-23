@@ -1,3 +1,6 @@
+2014/12/22  fadden
+    - Source code cleanup.
+
 2014/10/30  ***** v2.2.2 shipped *****
 
 2014/10/28  fadden

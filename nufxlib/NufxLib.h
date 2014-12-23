@@ -33,8 +33,8 @@ extern "C" {
  * fixes.  Unless, of course, your code depends upon that fix.
  */
 #define kNuVersionMajor     2
-#define kNuVersionMinor     2
-#define kNuVersionBug       2
+#define kNuVersionMinor     3
+#define kNuVersionBug       0
 
 
 /*
