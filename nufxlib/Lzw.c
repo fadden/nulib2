@@ -920,8 +920,8 @@ static inline void Nu_LZWPopCheck(const LZWExpandState* lzwState,
  *
  * (Turning this into a macro might speed things up.)
  */
-static inline uint Nu_LZWGetCode(const uint8_t** pInBuf, uint32_t entry,
-    int* pAtBit, uint* pLastByte)
+static inline uint32_t Nu_LZWGetCode(const uint8_t** pInBuf, uint32_t entry,
+    int* pAtBit, uint32_t* pLastByte)
 {
     uint32_t numBits, startBit, lastBit;
     uint32_t value;
