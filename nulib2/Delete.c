@@ -15,8 +15,7 @@
  * This uses the "bulk" delete call, allowing the SelectionFilter callback
  * to do the matching against specified filenames.
  */
-NuError
-DoDelete(NulibState* pState)
+NuError DoDelete(NulibState* pState)
 {
     NuError err;
     NuArchive* pArchive = NULL;

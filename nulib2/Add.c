@@ -14,8 +14,7 @@ static NuError AddToArchive(NulibState* pState, NuArchive* pArchive);
 /*
  * Add the specified files to a new or existing archive.
  */
-NuError
-DoAdd(NulibState* pState)
+NuError DoAdd(NulibState* pState)
 {
     NuError err;
     NuArchive* pArchive = NULL;
@@ -84,8 +83,7 @@ bail:
  * This just results in NuAddFile calls; the deferred write operation
  * isn't initiated.
  */
-static NuError
-AddToArchive(NulibState* pState, NuArchive* pArchive)
+static NuError AddToArchive(NulibState* pState, NuArchive* pArchive)
 {
     NuError err = kNuErrNone;
     char* const* pSpec;

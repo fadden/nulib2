@@ -24,8 +24,7 @@
  * The buffer we return to the archive library will be overwritten the
  * next time this function gets called.  This is expected.
  */
-static NuResult
-OutputPathnameFilter(NuArchive* pArchive, void* vproposal)
+static NuResult OutputPathnameFilter(NuArchive* pArchive, void* vproposal)
 {
     NuPathnameProposal* pathProposal = vproposal;
     NulibState* pState;
@@ -99,8 +98,7 @@ bail:
  * first character.  A fancier version would play with line disciplines
  * so you wouldn't have to hit "return".
  */
-static char
-GetReplyChar(char defaultReply)
+static char GetReplyChar(char defaultReply)
 {
     char tmpBuf[32];
 
@@ -120,8 +118,7 @@ GetReplyChar(char defaultReply)
  *
  * String returned should be freed by the caller.
  */
-static char*
-GetReplyString(const char* prompt)
+static char* GetReplyString(const char* prompt)
 {
     char buf[kMaxInputLen];
     char* result;
@@ -152,8 +149,7 @@ GetReplyString(const char* prompt)
  *
  * A pointer to a newly-allocated buffer is returned.
  */
-char*
-GetSimpleComment(NulibState* pState, const char* pathname, int maxLen)
+char* GetSimpleComment(NulibState* pState, const char* pathname, int maxLen)
 {
     char* buf = NULL;
     char* result;
@@ -196,8 +192,8 @@ GetSimpleComment(NulibState* pState, const char* pathname, int maxLen)
  *
  * (Someday "spec" might be a regexp.)
  */
-static Boolean
-SpecMatchesRecord(NulibState* pState, const char* spec, const NuRecord* pRecord)
+static Boolean SpecMatchesRecord(NulibState* pState, const char* spec,
+    const NuRecord* pRecord)
 {
 #ifdef NU_CASE_SENSITIVE
     if (NState_GetModRecurse(pState))
@@ -222,8 +218,7 @@ SpecMatchesRecord(NulibState* pState, const char* spec, const NuRecord* pRecord)
  * extraction by criteria other than name, e.g. all text files or all
  * files archived before a certain date.
  */
-Boolean
-IsSpecified(NulibState* pState, const NuRecord* pRecord)
+Boolean IsSpecified(NulibState* pState, const NuRecord* pRecord)
 {
     char* const* pSpec;
     int i;
@@ -245,8 +240,7 @@ IsSpecified(NulibState* pState, const NuRecord* pRecord)
  * General-purpose selection filter, invoked as a callback.  Compares the
  * selection proposal with the filenames in "filespec".
  */
-NuResult
-SelectionFilter(NuArchive* pArchive, void* vproposal)
+NuResult SelectionFilter(NuArchive* pArchive, void* vproposal)
 {
     const NuSelectionProposal* selProposal = vproposal;
     NulibState* pState;
@@ -271,8 +265,7 @@ SelectionFilter(NuArchive* pArchive, void* vproposal)
 /*
  * Print a three-digit progress percentage; range is 0% to 100%.
  */
-void
-PrintPercentage(uint32_t total, uint32_t progress)
+void PrintPercentage(uint32_t total, uint32_t progress)
 {
     uint32_t perc;
 
@@ -299,8 +292,7 @@ PrintPercentage(uint32_t total, uint32_t progress)
  * Show our progress, unless we're expanding to a pipe.  Invoked as a
  * callback by nufxlib.
  */
-NuResult
-ProgressUpdater(NuArchive* pArchive, void* vProgress)
+NuResult ProgressUpdater(NuArchive* pArchive, void* vProgress)
 {
     const NuProgressData* pProgress = vProgress;
     NulibState* pState;
@@ -449,8 +441,7 @@ ProgressUpdater(NuArchive* pArchive, void* vProgress)
  * Decide whether or not to replace an existing file (during extract)
  * or record (during add).
  */
-static NuResult
-HandleReplaceExisting(NulibState* pState, NuArchive* pArchive,
+static NuResult HandleReplaceExisting(NulibState* pState, NuArchive* pArchive,
     const NuErrorStatus* pErrorStatus)
 {
     NuResult result = kNuOK;
@@ -537,8 +528,7 @@ bail:
  * Note pErrorStatus->pathname may be NULL if the error was found in the
  * master header or in the record header.
  */
-static NuResult
-HandleBadCRC(NulibState* pState, NuArchive* pArchive,
+static NuResult HandleBadCRC(NulibState* pState, NuArchive* pArchive,
     const NuErrorStatus* pErrorStatus)
 {
     NuResult result = kNuOK;
@@ -597,8 +587,7 @@ bail:
  * the system equivalent of readdir to scan a directory, so deleting a
  * file just means it won't get added.
  */
-static NuResult
-HandleAddNotFound(NulibState* pState, NuArchive* pArchive,
+static NuResult HandleAddNotFound(NulibState* pState, NuArchive* pArchive,
     const NuErrorStatus* pErrorStatus)
 {
     NuResult result = kNuOK;
@@ -644,8 +633,7 @@ bail:
  * Something failed, and the user may want to choose how to handle it.
  * Invoked as a callback.
  */
-NuResult
-ErrorHandler(NuArchive* pArchive, void* vErrorStatus)
+NuResult ErrorHandler(NuArchive* pArchive, void* vErrorStatus)
 {
     const NuErrorStatus* pErrorStatus = vErrorStatus;
     NulibState* pState;
@@ -722,8 +710,7 @@ ErrorHandler(NuArchive* pArchive, void* vErrorStatus)
  * (This was just a test to see if it worked... NufxLib's default behavior
  * is fine for NuLib2.)
  */
-NuResult
-ErrorMessageHandler(NuArchive* pArchive, void* vErrorMessage)
+NuResult ErrorMessageHandler(NuArchive* pArchive, void* vErrorMessage)
 {
     const NuErrorMessage* pErrorMessage = (const NuErrorMessage*) vErrorMessage;
 
@@ -752,8 +739,7 @@ static const char* kStdinArchive = "-";
  *
  * Uses a simplified view of the access flags.
  */
-Boolean
-IsRecordReadOnly(const NuRecord* pRecord)
+Boolean IsRecordReadOnly(const NuRecord* pRecord)
 {
     if (pRecord->recAccess == 0x21L || pRecord->recAccess == 0x01L)
         return true;
@@ -765,8 +751,7 @@ IsRecordReadOnly(const NuRecord* pRecord)
 /*
  * Returns "true" if "archiveName" is the name we use to represent stdin.
  */
-Boolean
-IsFilenameStdin(const char* archiveName)
+Boolean IsFilenameStdin(const char* archiveName)
 {
     Assert(archiveName != NULL);
     return (strcmp(archiveName, kStdinArchive) == 0);
@@ -779,8 +764,7 @@ IsFilenameStdin(const char* archiveName)
  * Open the archive in read-only mode.  We use "file mode" for a file, or
  * "streaming mode" for stdin.
  */
-NuError
-OpenArchiveReadOnly(NulibState* pState)
+NuError OpenArchiveReadOnly(NulibState* pState)
 {
     NuError err;
     NuArchive* pArchive = NULL;
@@ -896,8 +880,7 @@ bail:
  *
  * "Streaming mode" isn't allowed.
  */
-NuError
-OpenArchiveReadWrite(NulibState* pState)
+NuError OpenArchiveReadWrite(NulibState* pState)
 {
     NuError err = kNuErrNone;
     NuArchive* pArchive = NULL;

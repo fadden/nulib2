@@ -25,13 +25,11 @@
 /*
  * Alloc and free functions provided to zlib.
  */
-static voidpf
-Nu_zalloc(voidpf opaque, uInt items, uInt size)
+static voidpf Nu_zalloc(voidpf opaque, uInt items, uInt size)
 {
     return Nu_Malloc(opaque, items * size);
 }
-static void
-Nu_zfree(voidpf opaque, voidpf address)
+static void Nu_zfree(voidpf opaque, voidpf address)
 {
     Nu_Free(opaque, address);
 }
@@ -46,8 +44,7 @@ Nu_zfree(voidpf opaque, voidpf address)
 /*
  * Compress "srcLen" bytes from "pStraw" to "fp".
  */
-NuError
-Nu_CompressDeflate(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
+NuError Nu_CompressDeflate(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
     uint32_t srcLen, uint32_t* pDstLen, uint16_t* pCrc)
 {
     NuError err = kNuErrNone;
@@ -174,8 +171,7 @@ bail:
 /*
  * Expand from "infp" to "pFunnel".
  */
-NuError
-Nu_ExpandDeflate(NuArchive* pArchive, const NuRecord* pRecord,
+NuError Nu_ExpandDeflate(NuArchive* pArchive, const NuRecord* pRecord,
     const NuThread* pThread, FILE* infp, NuFunnel* pFunnel, uint16_t* pCrc)
 {
     NuError err = kNuErrNone;

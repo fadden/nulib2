@@ -15,8 +15,7 @@
 /*
  * "Compress" an uncompressed thread.
  */
-static NuError
-Nu_CompressUncompressed(NuArchive* pArchive, NuStraw* pStraw,
+static NuError Nu_CompressUncompressed(NuArchive* pArchive, NuStraw* pStraw,
     FILE* fp, uint32_t srcLen, uint32_t* pDstLen, uint16_t *pCrc)
 {
     NuError err = kNuErrNone;
@@ -87,8 +86,7 @@ bail:
  * On exit, the output file will be positioned after the last byte of the
  * output.  (For a pre-sized buffer, this may not be the desired result.)
  */
-NuError
-Nu_CompressToArchive(NuArchive* pArchive, NuDataSource* pDataSource,
+NuError Nu_CompressToArchive(NuArchive* pArchive, NuDataSource* pDataSource,
     NuThreadID threadID, NuThreadFormat sourceFormat,
     NuThreadFormat targetFormat, NuProgressData* pProgressData, FILE* dstFp,
     NuThread* pThread)
@@ -322,8 +320,7 @@ bail:
  * will copy the data, and then continue writing zeros to fill out the rest
  * of the pre-sized buffer.
  */
-NuError
-Nu_CopyPresizedToArchive(NuArchive* pArchive, NuDataSource* pDataSource,
+NuError Nu_CopyPresizedToArchive(NuArchive* pArchive, NuDataSource* pDataSource,
     NuThreadID threadID, FILE* dstFp, NuThread* pThread, char** ppSavedCopy)
 {
     NuError err = kNuErrNone;

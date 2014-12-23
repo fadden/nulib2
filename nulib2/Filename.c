@@ -95,8 +95,7 @@ static const struct {
 /*
  * Return a pointer to the three-letter representation of the file type name.
  */
-const char*
-GetFileTypeString(uint32_t fileType)
+const char* GetFileTypeString(uint32_t fileType)
 {
     if (fileType < NELEM(gFileTypeNames))
         return gFileTypeNames[fileType];
@@ -117,8 +116,7 @@ GetFileTypeString(uint32_t fileType)
  * "pathBuf" is assumed to have enough space to hold the current path
  * plus kMaxPathGrowth more.  It will be modified in place.
  */
-static void
-AddPreservationString(NulibState* pState,
+static void AddPreservationString(NulibState* pState,
     const NuPathnameProposal* pPathProposal, char* pathBuf)
 {
     char extBuf[kMaxPathGrowth +1];
@@ -248,8 +246,7 @@ AddPreservationString(NulibState* pState,
  * This returns the new pathname, which is held in NulibState's temporary
  * pathname buffer.
  */
-const char*
-NormalizePath(NulibState* pState, NuPathnameProposal* pPathProposal)
+const char* NormalizePath(NulibState* pState, NuPathnameProposal* pPathProposal)
 {
     NuError err = kNuErrNone;
     char* pathBuf;
@@ -357,9 +354,8 @@ bail:
  * This checks the standard list of ProDOS types (which should catch things
  * like "TXT" and "BIN") and the separate list of recognized extensions.
  */
-static void
-LookupExtension(NulibState* pState, const char* ext, uint32_t* pFileType,
-    uint32_t* pAuxType)
+static void LookupExtension(NulibState* pState, const char* ext,
+    uint32_t* pFileType, uint32_t* pAuxType)
 {
     char uext3[4];
     int i, extLen;
@@ -409,9 +405,8 @@ bail:
 /*
  * Try to associate some meaning with the file extension.
  */
-void
-InterpretExtension(NulibState* pState, const char* pathName, uint32_t* pFileType,
-    uint32_t* pAuxType)
+void InterpretExtension(NulibState* pState, const char* pathName,
+    uint32_t* pFileType, uint32_t* pAuxType)
 {
     const char* pExt;
 
@@ -434,9 +429,8 @@ InterpretExtension(NulibState* pState, const char* pathName, uint32_t* pFileType
  * We have to be careful not to trip on false-positive occurrences of '#'
  * in the filename.
  */
-Boolean
-ExtractPreservationString(NulibState* pState, char* pathname, uint32_t* pFileType,
-    uint32_t* pAuxType, NuThreadID* pThreadID)
+Boolean ExtractPreservationString(NulibState* pState, char* pathname,
+    uint32_t* pFileType, uint32_t* pAuxType, NuThreadID* pThreadID)
 {
     char numBuf[9];
     uint32_t fileType, auxType;
@@ -528,8 +522,7 @@ ExtractPreservationString(NulibState* pState, char* pathname, uint32_t* pFileTyp
  * This always results in the filename staying the same length or getting
  * smaller, so we can do it in place in the buffer.
  */
-void
-DenormalizePath(NulibState* pState, char* pathBuf)
+void DenormalizePath(NulibState* pState, char* pathBuf)
 {
     const char* srcp;
     char* dstp;
@@ -585,8 +578,7 @@ DenormalizePath(NulibState* pState, char* pathBuf)
  *
  * Always returns a pointer to a string; never returns NULL.
  */
-const char*
-FilenameOnly(NulibState* pState, const char* pathname)
+const char* FilenameOnly(NulibState* pState, const char* pathname)
 {
     const char* retstr;
     const char* pSlash;
@@ -645,8 +637,7 @@ bail:
  * Returns a pointer to the '.' preceding the extension, or NULL if no
  * extension was found.
  */
-const char*
-FindExtension(NulibState* pState, const char* pathname)
+const char* FindExtension(NulibState* pState, const char* pathname)
 {
     const char* pFilename;
     const char* pExt;

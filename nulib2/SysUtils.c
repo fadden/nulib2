@@ -71,9 +71,8 @@
  * as well just let the filesystem truncate if it gets too long, rather
  * than worry about truncating it cleverly.
  */
-static NuError
-UNIXNormalizeFileName(NulibState* pState, const char* srcp, long srcLen,
-    char fssep, char** pDstp, long dstLen)
+static NuError UNIXNormalizeFileName(NulibState* pState, const char* srcp,
+    long srcLen, char fssep, char** pDstp, long dstLen)
 {
     char* dstp = *pDstp;
 
@@ -130,9 +129,8 @@ static const char* fatReservedNames4[] = {
 /*
  * Filename normalization for Win32 filesystems.  You can't use [ \/:*?"<>| ].
  */
-static NuError
-Win32NormalizeFileName(NulibState* pState, const char* srcp, long srcLen,
-    char fssep, char** pDstp, long dstLen)
+static NuError Win32NormalizeFileName(NulibState* pState, const char* srcp,
+    long srcLen, char fssep, char** pDstp, long dstLen)
 {
     char* dstp = *pDstp;
     const char* startp = srcp;
@@ -219,8 +217,7 @@ Win32NormalizeFileName(NulibState* pState, const char* srcp, long srcLen,
  *
  * The output buffer must be able to hold 3x the original string length.
  */
-NuError
-NormalizeFileName(NulibState* pState, const char* srcp, long srcLen,
+NuError NormalizeFileName(NulibState* pState, const char* srcp, long srcLen,
     char fssep, char** pDstp, long dstLen)
 {
     NuError err;
@@ -247,9 +244,8 @@ NormalizeFileName(NulibState* pState, const char* srcp, long srcLen,
 /*
  * Normalize a directory name to local filesystem conventions.
  */
-NuError
-NormalizeDirectoryName(NulibState* pState, const char* srcp, long srcLen,
-    char fssep, char** pDstp, long dstLen)
+NuError NormalizeDirectoryName(NulibState* pState, const char* srcp,
+    long srcLen, char fssep, char** pDstp, long dstLen)
 {
     /* in general, directories and filenames are the same */
     return NormalizeFileName(pState, srcp, srcLen, fssep, pDstp, dstLen);
@@ -265,8 +261,7 @@ NormalizeDirectoryName(NulibState* pState, const char* srcp, long srcLen,
  * under GS/OS it has to be in the same directory.  Not sure what Mac OS
  * or Windows requires, so it's safest to just put it in the same dir.
  */
-char*
-MakeTempArchiveName(NulibState* pState)
+char* MakeTempArchiveName(NulibState* pState)
 {
     const char* archivePathname;
     char fssep;
@@ -353,9 +348,8 @@ bail:
  *
  * [ Someday we may want to modify this to handle symbolic links. ]
  */
-NuError
-CheckFileStatus(const char* pathname, struct stat* psb, Boolean* pExists,
-    Boolean* pIsReadable, Boolean* pIsDir)
+NuError CheckFileStatus(const char* pathname, struct stat* psb,
+    Boolean* pExists, Boolean* pIsReadable, Boolean* pIsDir)
 {
     NuError err = kNuErrNone;
     int cc;
@@ -398,8 +392,7 @@ bail:
 /*
  * Convert from time in seconds to DateTime format.
  */
-static void
-UNIXTimeToDateTime(const time_t* pWhen, NuDateTime *pDateTime)
+static void UNIXTimeToDateTime(const time_t* pWhen, NuDateTime *pDateTime)
 {
     struct tm* ptm;
 
@@ -423,8 +416,7 @@ UNIXTimeToDateTime(const time_t* pWhen, NuDateTime *pDateTime)
  * Replace "oldc" with "newc".  If we find an instance of "newc" already
  * in the string, replace it with "newSubst".
  */
-static void
-ReplaceFssep(char* str, char oldc, char newc, char newSubst)
+static void ReplaceFssep(char* str, char oldc, char newc, char newSubst)
 {
     while (*str != '\0') {
         if (*str == oldc)
@@ -439,9 +431,8 @@ ReplaceFssep(char* str, char oldc, char newc, char newSubst)
  * Set the contents of a NuFileDetails structure, based on the pathname
  * and characteristics of the file.
  */
-static NuError
-GetFileDetails(NulibState* pState, const char* pathname, struct stat* psb,
-    NuFileDetails* pDetails)
+static NuError GetFileDetails(NulibState* pState, const char* pathname,
+    struct stat* psb, NuFileDetails* pDetails)
 {
     Boolean wasPreserved;
     Boolean doJunk = false;
@@ -621,8 +612,7 @@ GetFileDetails(NulibState* pState, const char* pathname, struct stat* psb,
  * Do the system-independent part of the file add, including things like
  * adding comments.
  */
-NuError
-DoAddFile(NulibState* pState, NuArchive* pArchive, const char* pathname,
+NuError DoAddFile(NulibState* pState, NuArchive* pArchive, const char* pathname,
     const NuFileDetails* pDetails)
 {
     NuError err;
@@ -707,8 +697,8 @@ static NuError UNIXAddFile(NulibState* pState, NuArchive* pArchive,
  * If a subdirectory is found, follow it; otherwise, call UNIXAddFile to
  * add the file.
  */
-static NuError
-UNIXAddDirectory(NulibState* pState, NuArchive* pArchive, const char* dirName)
+static NuError UNIXAddDirectory(NulibState* pState, NuArchive* pArchive,
+    const char* dirName)
 {
     NuError err = kNuErrNone;
     DIR* dirp = NULL;
@@ -775,8 +765,8 @@ bail:
  *
  * Returns with an error if the file doesn't exist or isn't readable.
  */
-static NuError
-UNIXAddFile(NulibState* pState, NuArchive* pArchive, const char* pathname)
+static NuError UNIXAddFile(NulibState* pState, NuArchive* pArchive,
+    const char* pathname)
 {
     NuError err = kNuErrNone;
     Boolean exists, isDir, isReadable;
@@ -848,8 +838,7 @@ static const char* kWildMatchAll = "*.*";
 /*
  * Prepare a directory for reading.
  */
-static Win32dirent*
-OpenDir(const char* name)
+static Win32dirent* OpenDir(const char* name)
 {
     Win32dirent* dir = NULL;
     char* tmpStr = NULL;
@@ -896,8 +885,7 @@ failed:
  *
  * Returns a NULL pointer after the last entry has been read.
  */
-static Win32dirent*
-ReadDir(Win32dirent* dir)
+static Win32dirent* ReadDir(Win32dirent* dir)
 {
     if (dir->d_first)
         dir->d_first = 0;
@@ -916,8 +904,7 @@ ReadDir(Win32dirent* dir)
 /*
  * Close a directory.
  */
-static void
-CloseDir(Win32dirent* dir)
+static void CloseDir(Win32dirent* dir)
 {
     if (dir == NULL)
         return;
@@ -939,8 +926,8 @@ static NuError Win32AddFile(NulibState* pState, NuArchive* pArchive,
  * If a subdirectory is found, follow it; otherwise, call Win32AddFile to
  * add the file.
  */
-static NuError
-Win32AddDirectory(NulibState* pState, NuArchive* pArchive, const char* dirName)
+static NuError Win32AddDirectory(NulibState* pState, NuArchive* pArchive,
+    const char* dirName)
 {
     NuError err = kNuErrNone;
     Win32dirent* dirp = NULL;
@@ -1005,8 +992,8 @@ bail:
  *
  * Returns with an error if the file doesn't exist or isn't readable.
  */
-static NuError
-Win32AddFile(NulibState* pState, NuArchive* pArchive, const char* pathname)
+static NuError Win32AddFile(NulibState* pState, NuArchive* pArchive,
+    const char* pathname)
 {
     NuError err = kNuErrNone;
     Boolean exists, isDir, isReadable;
@@ -1076,8 +1063,7 @@ bail_quiet:
  *   from the directory read call and won't have to check it again in
  *   GSOSAddFile. ]
  */
-NuError
-AddFile(NulibState* pState, NuArchive* pArchive, const char* pathname)
+NuError AddFile(NulibState* pState, NuArchive* pArchive, const char* pathname)
 {
 #if defined(UNIX_LIKE)
     return UNIXAddFile(pState, pArchive, pathname);
@@ -1094,8 +1080,7 @@ AddFile(NulibState* pState, NuArchive* pArchive, const char* pathname)
  *
  * Currently only used by Binary2.c.
  */
-NuError
-Mkdir(const char* dir)
+NuError Mkdir(const char* dir)
 {
     NuError err = kNuErrNone;
 
@@ -1126,8 +1111,7 @@ bail:
  *
  * Currently only used by Binary2.c.
  */
-NuError
-TestFileExistence(const char* fileName, Boolean* pIsDir)
+NuError TestFileExistence(const char* fileName, Boolean* pIsDir)
 {
     NuError err = kNuErrNone;
     Assert(fileName != NULL);
@@ -1159,5 +1143,4 @@ TestFileExistence(const char* fileName, Boolean* pIsDir)
 bail:
     return err;
 }
-
 

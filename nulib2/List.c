@@ -40,8 +40,7 @@ static const char* gMonths[] = {
 /*
  * Compute a percentage.
  */
-int
-ComputePercent(uint32_t totalSize, uint32_t size)
+int ComputePercent(uint32_t totalSize, uint32_t size)
 {
     int perc;
 
@@ -69,8 +68,7 @@ ComputePercent(uint32_t totalSize, uint32_t size)
  *
  * Returns "buffer" for the benefit of printf() calls.
  */
-char*
-FormatDateShort(const NuDateTime* pDateTime, char* buffer)
+char* FormatDateShort(const NuDateTime* pDateTime, char* buffer)
 {
     /* is it valid? */
     if (pDateTime->day > 30 || pDateTime->month > 11 || pDateTime->hour > 24 ||
@@ -101,8 +99,7 @@ bail:
 /*
  * NuStream callback function.  Displays the filename.
  */
-static NuResult
-ShowContentsShort(NuArchive* pArchive, void* vpRecord)
+static NuResult ShowContentsShort(NuArchive* pArchive, void* vpRecord)
 {
     const NuRecord* pRecord = (NuRecord*) vpRecord;
     NulibState* pState;
@@ -142,9 +139,9 @@ bail:
  * will be categorized as "unknown".  We could detect the situation and
  * correct it, but we might as well flag it in a user-visible way.
  */
-static NuError
-AnalyzeRecord(const NuRecord* pRecord, enum RecordKind* pRecordKind,
-    uint16_t* pFormat, uint32_t* pTotalLen, uint32_t* pTotalCompLen)
+static NuError AnalyzeRecord(const NuRecord* pRecord,
+    enum RecordKind* pRecordKind, uint16_t* pFormat, uint32_t* pTotalLen,
+    uint32_t* pTotalCompLen)
 {
     const NuThread* pThread;
     NuThreadID threadID;
@@ -188,8 +185,7 @@ AnalyzeRecord(const NuRecord* pRecord, enum RecordKind* pRecordKind,
  * This is intended to mimic the output of some old version of ProDOS 8
  * ShrinkIt.
  */
-static NuResult
-ShowContentsVerbose(NuArchive* pArchive, void* vpRecord)
+static NuResult ShowContentsVerbose(NuArchive* pArchive, void* vpRecord)
 {
     NuError err = kNuErrNone;
     const NuRecord* pRecord = (NuRecord*) vpRecord;
@@ -279,8 +275,7 @@ bail:
 /*
  * Print a short listing of the contents of an archive.
  */
-NuError
-DoListShort(NulibState* pState)
+NuError DoListShort(NulibState* pState)
 {
     NuError err;
     NuArchive* pArchive = NULL;
@@ -311,8 +306,7 @@ bail:
 /*
  * Print a more verbose listing of the contents of an archive.
  */
-NuError
-DoListVerbose(NulibState* pState)
+NuError DoListVerbose(NulibState* pState)
 {
     NuError err;
     NuArchive* pArchive = NULL;
@@ -394,8 +388,7 @@ bail:
 /*
  * Null callback, for those times when you don't really want to do anything.
  */
-static NuResult
-NullCallback(NuArchive* pArchive, void* vpRecord)
+static NuResult NullCallback(NuArchive* pArchive, void* vpRecord)
 {
     return kNuOK;
 }
@@ -404,8 +397,7 @@ NullCallback(NuArchive* pArchive, void* vpRecord)
  * Print very detailed output, suitable for debugging (requires that
  * debug messages be enabled in nufxlib).
  */
-NuError
-DoListDebug(NulibState* pState)
+NuError DoListDebug(NulibState* pState)
 {
     NuError err;
     NuArchive* pArchive = NULL;

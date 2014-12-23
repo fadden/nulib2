@@ -44,8 +44,7 @@
  * Open a file read-only.  We abstract this so we get "r" vs "rb" right.
  * (Moves this to SysUtils.c if anybody else needs it.)
  */
-NuError
-OpenFileReadOnly(const char* filename, FILE** pFp)
+NuError OpenFileReadOnly(const char* filename, FILE** pFp)
 {
     NuError err = kNuErrNone;
 
@@ -62,8 +61,7 @@ OpenFileReadOnly(const char* filename, FILE** pFp)
  *
  * If no filespec was provided, then all records are "specified".
  */
-Boolean
-NameIsSpecified(NulibState* pState, const char* filename)
+Boolean NameIsSpecified(NulibState* pState, const char* filename)
 {
     char* const* pSpec;
     int i;
@@ -154,8 +152,7 @@ typedef struct BNYEntry {
 /*
  * Test for the magic number on a file in SQueezed format.
  */
-static inline Boolean
-IsSqueezed(uint8_t one, uint8_t two)
+static inline Boolean IsSqueezed(uint8_t one, uint8_t two)
 {
     return (one == 0x76 && two == 0xff);
 }
@@ -163,8 +160,7 @@ IsSqueezed(uint8_t one, uint8_t two)
 /*
  * Test if this entry is a directory.
  */
-static inline Boolean
-IsDir(BNYEntry* pEntry)
+static inline Boolean IsDir(BNYEntry* pEntry)
 {
     /*
      * NuLib and "unblu.c" compared against file type 15 (DIR), so I'm
@@ -178,8 +174,7 @@ IsDir(BNYEntry* pEntry)
 /*
  * Initialize a BNYArchive structure.
  */
-static BNYArchive*
-BNYInit(NulibState* pState)
+static BNYArchive* BNYInit(NulibState* pState)
 {
     BNYArchive* pBny;
 
@@ -194,8 +189,7 @@ BNYInit(NulibState* pState)
 /*
  * Free up a BNYArchive, disposing of anything inside it.
  */
-static void
-BNYFree(BNYArchive* pBny)
+static void BNYFree(BNYArchive* pBny)
 {
     /* don't need to do this on stdin, but won't really hurt */
     if (pBny->fp != NULL)
@@ -209,8 +203,7 @@ BNYFree(BNYArchive* pBny)
  * Open a Binary II archive read-only.  Might be a file on disk or a
  * stream on stdin.
  */
-static NuError
-BNYOpenReadOnly(BNYArchive* pBny)
+static NuError BNYOpenReadOnly(BNYArchive* pBny)
 {
     NuError err = kNuErrNone;
     NulibState* pState;
@@ -248,8 +241,7 @@ bail:
  * Wrapper for fread().  Note the arguments resemble read(2) rather
  * than fread(3S).
  */
-static NuError
-BNYRead(BNYArchive* pBny, void* buf, size_t nbyte)
+static NuError BNYRead(BNYArchive* pBny, void* buf, size_t nbyte)
 {
     size_t result;
 
@@ -270,8 +262,7 @@ BNYRead(BNYArchive* pBny, void* buf, size_t nbyte)
  * and don't need to special-case anything, we only allow relative
  * forward seeks.
  */
-static NuError
-BNYSeek(BNYArchive* pBny, long offset)
+static NuError BNYSeek(BNYArchive* pBny, long offset)
 {
     Assert(pBny != NULL);
     Assert(pBny->fp != NULL);
@@ -299,8 +290,8 @@ BNYSeek(BNYArchive* pBny, long offset)
 /*
  * Convert from ProDOS compact date format to the expanded DateTime format.
  */
-static void
-BNYConvertDateTime(uint16_t prodosDate, uint16_t prodosTime, NuDateTime* pWhen)
+static void BNYConvertDateTime(uint16_t prodosDate, uint16_t prodosTime,
+    NuDateTime* pWhen)
 {
     pWhen->second = 0;
     pWhen->minute = prodosTime & 0x3f;
@@ -320,8 +311,7 @@ BNYConvertDateTime(uint16_t prodosDate, uint16_t prodosTime, NuDateTime* pWhen)
  * See the File Type Note for $e0/8000 to decipher the buffer offsets
  * and meanings.
  */
-static NuError
-BNYDecodeHeader(BNYArchive* pBny, BNYEntry* pEntry)
+static NuError BNYDecodeHeader(BNYArchive* pBny, BNYEntry* pEntry)
 {
     NuError err = kNuErrNone;
     uint8_t* raw;
@@ -406,8 +396,7 @@ bail:
  * We return the new path, which is stored in NulibState's temporary
  * filename buffer.
  */
-const char*
-BNYNormalizePath(BNYArchive* pBny, BNYEntry* pEntry)
+const char* BNYNormalizePath(BNYArchive* pBny, BNYEntry* pEntry)
 {
     NuPathnameProposal pathProposal;
     NuRecord fakeRecord;
@@ -448,8 +437,7 @@ BNYNormalizePath(BNYArchive* pBny, BNYEntry* pEntry)
  *
  * Uses pEntry->blockBuf, which already has the first 128 bytes in it.
  */
-static NuError
-BNYCopyBlocks(BNYArchive* pBny, BNYEntry* pEntry, FILE* outfp)
+static NuError BNYCopyBlocks(BNYArchive* pBny, BNYEntry* pEntry, FILE* outfp)
 {
     NuError err = kNuErrNone;
     long bytesLeft;
@@ -542,8 +530,7 @@ typedef struct USQState {
 /*
  * Decode the next symbol from the Huffman stream.
  */
-static NuError
-USQDecodeHuffSymbol(USQState* pUsqState, int* pVal)
+static NuError USQDecodeHuffSymbol(USQState* pUsqState, int* pVal)
 {
     short val = 0;
     int bits, bitPosn;
@@ -579,8 +566,7 @@ USQDecodeHuffSymbol(USQState* pUsqState, int* pVal)
 /*
  * Read two bytes of signed data out of the buffer.
  */
-static inline NuError
-USQReadShort(USQState* pUsqState, short* pShort)
+static inline NuError USQReadShort(USQState* pUsqState, short* pShort)
 {
     if (pUsqState->dataInBuffer < 2)
         return kNuErrBufferUnderrun;
@@ -598,8 +584,7 @@ USQReadShort(USQState* pUsqState, short* pShort)
  * Because we have a stop symbol, knowing the uncompressed length of
  * the file is not essential.
  */
-static NuError
-BNYUnSqueeze(BNYArchive* pBny, BNYEntry* pEntry, FILE* outfp)
+static NuError BNYUnSqueeze(BNYArchive* pBny, BNYEntry* pEntry, FILE* outfp)
 {
     NuError err = kNuErrNone;
     USQState usqState;
@@ -909,8 +894,7 @@ typedef NuError (*BNYIteratorFunc)(BNYArchive* pBny, BNYEntry* pEntry,
  * Iterate through a Binary II archive, calling "func" to perform
  * operations on the file.
  */
-static NuError
-BNYIterate(NulibState* pState, BNYIteratorFunc func)
+static NuError BNYIterate(NulibState* pState, BNYIteratorFunc func)
 {
     NuError err = kNuErrNone;
     BNYArchive* pBny = NULL;
@@ -1023,8 +1007,8 @@ bail:
 /*
  * Get a quick table of contents.
  */
-static NuError
-BNYListShort(BNYArchive* pBny, BNYEntry* pEntry, Boolean* pConsumedFlag)
+static NuError BNYListShort(BNYArchive* pBny, BNYEntry* pEntry,
+    Boolean* pConsumedFlag)
 {
     NuError err = kNuErrNone;
 
@@ -1036,8 +1020,8 @@ BNYListShort(BNYArchive* pBny, BNYEntry* pEntry, Boolean* pConsumedFlag)
 /*
  * Get a verbose listing of contents.
  */
-static NuError
-BNYListVerbose(BNYArchive* pBny, BNYEntry* pEntry, Boolean* pConsumedFlag)
+static NuError BNYListVerbose(BNYArchive* pBny, BNYEntry* pEntry,
+    Boolean* pConsumedFlag)
 {
     NuError err = kNuErrNone;
     Boolean isSqueezed, isReadOnly;
@@ -1102,8 +1086,8 @@ BNYListVerbose(BNYArchive* pBny, BNYEntry* pEntry, Boolean* pConsumedFlag)
 /*
  * Get a verbose table of contents.
  */
-static NuError
-BNYListDebug(BNYArchive* pBny, BNYEntry* pEntry, Boolean* pConsumedFlag)
+static NuError BNYListDebug(BNYArchive* pBny, BNYEntry* pEntry,
+    Boolean* pConsumedFlag)
 {
     NuError err = kNuErrNone;
 
@@ -1146,8 +1130,8 @@ typedef enum { kBNYExtNormal, kBNYExtPipe, kBNYExtTest } ExtMode;
 /*
  * Handle "extraction" of a directory.
  */
-static NuError
-BNYExtractDirectory(BNYArchive* pBny, BNYEntry* pEntry, ExtMode extMode)
+static NuError BNYExtractDirectory(BNYArchive* pBny, BNYEntry* pEntry,
+    ExtMode extMode)
 {
     NuError err = kNuErrNone;
     const char* newName;
@@ -1209,8 +1193,8 @@ bail:
 /*
  * Handle "extract", "extract to pipe", and "test".
  */
-static NuError
-BNYExtract(BNYArchive* pBny, BNYEntry* pEntry, Boolean* pConsumedFlag)
+static NuError BNYExtract(BNYArchive* pBny, BNYEntry* pEntry,
+    Boolean* pConsumedFlag)
 {
     NuError err = kNuErrNone;
     NulibState* pState;
@@ -1370,8 +1354,7 @@ bail:
  * ===========================================================================
  */
 
-NuError
-BNYDoExtract(NulibState* pState)
+NuError BNYDoExtract(NulibState* pState)
 {
     if (NState_GetModConvertText(pState) ||
         NState_GetModConvertAll(pState))
@@ -1402,26 +1385,22 @@ BNYDoExtract(NulibState* pState)
     return BNYIterate(pState, BNYExtract);
 }
 
-NuError
-BNYDoTest(NulibState* pState)
+NuError BNYDoTest(NulibState* pState)
 {
     return BNYIterate(pState, BNYExtract);
 }
 
-NuError
-BNYDoListShort(NulibState* pState)
+NuError BNYDoListShort(NulibState* pState)
 {
     return BNYIterate(pState, BNYListShort);
 }
 
-NuError
-BNYDoListVerbose(NulibState* pState)
+NuError BNYDoListVerbose(NulibState* pState)
 {
     return BNYIterate(pState, BNYListVerbose);
 }
 
-NuError
-BNYDoListDebug(NulibState* pState)
+NuError BNYDoListDebug(NulibState* pState)
 {
     return BNYIterate(pState, BNYListDebug);
 }

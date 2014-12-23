@@ -65,8 +65,7 @@ static const char* gFileSysIDs[] = {
  *
  * Returns "buffer" for the benefit of printf() calls.
  */
-static char*
-Nu_DebugDumpDate(const NuDateTime* pDateTime, char* buffer)
+static char* Nu_DebugDumpDate(const NuDateTime* pDateTime, char* buffer)
 {
     char* cp;
 
@@ -118,8 +117,7 @@ bail:
  *
  * The result will be 2x the size of the original, +1 for a null byte.
  */
-static void
-ConvertToHexStr(const uint8_t* inBuf, int inLen, char* outBuf)
+static void ConvertToHexStr(const uint8_t* inBuf, int inLen, char* outBuf)
 {
     while (inLen--) {
         *outBuf++ = HexConv((*inBuf >> 4) & 0x0f);
@@ -133,8 +131,7 @@ ConvertToHexStr(const uint8_t* inBuf, int inLen, char* outBuf)
 /*
  * Dump everything we know about pThread.
  */
-void
-Nu_DebugDumpThread(const NuThread* pThread)
+void Nu_DebugDumpThread(const NuThread* pThread)
 {
     static const char* kInd = "      ";
     NuThreadID threadID;
@@ -177,8 +174,7 @@ Nu_DebugDumpThread(const NuThread* pThread)
  * set.  Pass in the "orig" copy in "pRecord", and optionally pass in the
  * "copy" set in "pXrefRecord" to glean data from both.
  */
-static void
-Nu_DebugDumpRecord(NuArchive* pArchive, const NuRecord* pRecord,
+static void Nu_DebugDumpRecord(NuArchive* pArchive, const NuRecord* pRecord,
     const NuRecord* pXrefRecord, Boolean isDeleted)
 {
     NuError err;    /* dummy */
@@ -290,9 +286,8 @@ bail:
 /*
  * Dump the records in a RecordSet.
  */
-static void
-Nu_DebugDumpRecordSet(NuArchive* pArchive, const NuRecordSet* pRecordSet,
-    const NuRecordSet* pXrefSet)
+static void Nu_DebugDumpRecordSet(NuArchive* pArchive,
+    const NuRecordSet* pRecordSet, const NuRecordSet* pXrefSet)
 {
     const NuRecord* pRecord;
     const NuRecord* pXrefRecord;
@@ -332,8 +327,7 @@ Nu_DebugDumpRecordSet(NuArchive* pArchive, const NuRecordSet* pRecordSet,
 /*
  * Dump the master header block.
  */
-static void
-Nu_DebugDumpMH(const NuMasterHeader* pMasterHeader)
+static void Nu_DebugDumpMH(const NuMasterHeader* pMasterHeader)
 {
     static const char* kInd = "  ";
     char dateBuf1[kNuDateOutputLen];
@@ -359,8 +353,7 @@ Nu_DebugDumpMH(const NuMasterHeader* pMasterHeader)
  * the archive, then this won't be very interesting.  This will never
  * show any records for streaming-mode archives.
  */
-void
-Nu_DebugDumpAll(NuArchive* pArchive)
+void Nu_DebugDumpAll(NuArchive* pArchive)
 {
     Assert(pArchive != NULL);
 

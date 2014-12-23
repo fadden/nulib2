@@ -26,8 +26,7 @@
  * This high-bit-ism was also done for disk archives by most older versions
  * of ShrinkIt.
  */
-void
-Nu_StripHiIfAllSet(char* str)
+void Nu_StripHiIfAllSet(char* str)
 {
     uint8_t* cp;
 
@@ -44,8 +43,7 @@ Nu_StripHiIfAllSet(char* str)
  * Decide if a thread is pre-sized (i.e. has a fixed maximum size with a
  * lesser amount of uncompressed data within) based on the threadID.
  */
-Boolean
-Nu_IsPresizedThreadID(NuThreadID threadID)
+Boolean Nu_IsPresizedThreadID(NuThreadID threadID)
 {
     if (threadID == kNuThreadIDFilename || threadID == kNuThreadIDComment)
         return true;
@@ -58,8 +56,7 @@ Nu_IsPresizedThreadID(NuThreadID threadID)
  * Return an indication of whether the type of thread specified by ThreadID
  * should ever be compressed.  Right now, that's only data-class threads.
  */
-Boolean
-Nu_IsCompressibleThreadID(NuThreadID threadID)
+Boolean Nu_IsCompressibleThreadID(NuThreadID threadID)
 {
     if (NuThreadIDGetClass(threadID) == kNuThreadClassData)
         return true;
@@ -72,8 +69,7 @@ Nu_IsCompressibleThreadID(NuThreadID threadID)
  * Decide if the thread has a CRC, based on the record version and the
  * threadID.
  */
-Boolean
-Nu_ThreadHasCRC(long recordVersion, NuThreadID threadID)
+Boolean Nu_ThreadHasCRC(long recordVersion, NuThreadID threadID)
 {
     return recordVersion >= 3 &&
             NuThreadIDGetClass(threadID) == kNuThreadClassData;
@@ -83,8 +79,7 @@ Nu_ThreadHasCRC(long recordVersion, NuThreadID threadID)
 /*
  * Search through a given NuRecord for the specified thread.
  */
-NuError
-Nu_FindThreadByIdx(const NuRecord* pRecord, NuThreadIdx thread,
+NuError Nu_FindThreadByIdx(const NuRecord* pRecord, NuThreadIdx thread,
     NuThread** ppThread)
 {
     NuThread* pThread;
@@ -108,8 +103,7 @@ Nu_FindThreadByIdx(const NuRecord* pRecord, NuThreadIdx thread,
  * Search through a given NuRecord for the first thread with a matching
  * threadID.
  */
-NuError
-Nu_FindThreadByID(const NuRecord* pRecord, NuThreadID threadID,
+NuError Nu_FindThreadByID(const NuRecord* pRecord, NuThreadID threadID,
     NuThread** ppThread)
 {
     NuThread* pThread;
@@ -132,8 +126,7 @@ Nu_FindThreadByID(const NuRecord* pRecord, NuThreadID threadID,
 /*
  * Copy the contents of a NuThread.
  */
-void
-Nu_CopyThreadContents(NuThread* pDstThread, const NuThread* pSrcThread)
+void Nu_CopyThreadContents(NuThread* pDstThread, const NuThread* pSrcThread)
 {
     Assert(pDstThread != NULL);
     Assert(pSrcThread != NULL);
@@ -151,8 +144,8 @@ Nu_CopyThreadContents(NuThread* pDstThread, const NuThread* pSrcThread)
 /*
  * Read a single thread header from the archive.
  */
-static NuError
-Nu_ReadThreadHeader(NuArchive* pArchive, NuThread* pThread, uint16_t* pCrc)
+static NuError Nu_ReadThreadHeader(NuArchive* pArchive, NuThread* pThread,
+    uint16_t* pCrc)
 {
     FILE* fp;
 
@@ -184,8 +177,8 @@ Nu_ReadThreadHeader(NuArchive* pArchive, NuThread* pThread, uint16_t* pCrc)
  * have used a linked list like NuLib, but that doesn't really provide any
  * benefit for us, and adds complexity.
  */
-NuError
-Nu_ReadThreadHeaders(NuArchive* pArchive, NuRecord* pRecord, uint16_t* pCrc)
+NuError Nu_ReadThreadHeaders(NuArchive* pArchive, NuRecord* pRecord,
+    uint16_t* pCrc)
 {
     NuError err = kNuErrNone;
     NuThread* pThread;
@@ -306,9 +299,8 @@ bail:
 /*
  * Write a single thread header to the archive.
  */
-static NuError
-Nu_WriteThreadHeader(NuArchive* pArchive, const NuThread* pThread, FILE* fp,
-    uint16_t* pCrc)
+static NuError Nu_WriteThreadHeader(NuArchive* pArchive,
+    const NuThread* pThread, FILE* fp, uint16_t* pCrc)
 {
     Assert(pArchive != NULL);
     Assert(pThread != NULL);
@@ -332,8 +324,7 @@ Nu_WriteThreadHeader(NuArchive* pArchive, const NuThread* pThread, FILE* fp,
  * effect, we promote all threads to "real" status.  We update the
  * "fake" count in pRecord accordingly.
  */
-NuError
-Nu_WriteThreadHeaders(NuArchive* pArchive, NuRecord* pRecord, FILE* fp,
+NuError Nu_WriteThreadHeaders(NuArchive* pArchive, NuRecord* pRecord, FILE* fp,
     uint16_t* pCrc)
 {
     NuError err = kNuErrNone;
@@ -366,8 +357,7 @@ bail:
  * Requires that the pArchive->currentOffset be set to the offset
  * immediately after the last of the thread headers.
  */
-NuError
-Nu_ComputeThreadData(NuArchive* pArchive, NuRecord* pRecord)
+NuError Nu_ComputeThreadData(NuArchive* pArchive, NuRecord* pRecord)
 {
     NuThread* pThread;
     long fileOffset, count;
@@ -407,8 +397,7 @@ Nu_ComputeThreadData(NuArchive* pArchive, NuRecord* pRecord)
  * show to the application.  (Someday I'll get AndyN for putting me
  * through this...)
  */
-NuError
-Nu_ScanThreads(NuArchive* pArchive, NuRecord* pRecord, long numThreads)
+NuError Nu_ScanThreads(NuArchive* pArchive, NuRecord* pRecord, long numThreads)
 {
     NuError err = kNuErrNone;
     NuThread* pThread;
@@ -494,8 +483,7 @@ bail:
  * assumes that the file pointer is set to the start of the thread's data
  * already.
  */
-NuError
-Nu_SkipThread(NuArchive* pArchive, const NuRecord* pRecord,
+NuError Nu_SkipThread(NuArchive* pArchive, const NuRecord* pRecord,
     const NuThread* pThread)
 {
     NuError err;
@@ -522,9 +510,9 @@ Nu_SkipThread(NuArchive* pArchive, const NuRecord* pRecord,
  * If the archive is a stream, the stream must be positioned at the
  * start of pThread's data.  If not, it will be seeked first.
  */
-static NuError
-Nu_ExtractThreadToDataSink(NuArchive* pArchive, const NuRecord* pRecord,
-    const NuThread* pThread, NuProgressData* pProgress, NuDataSink* pDataSink)
+static NuError Nu_ExtractThreadToDataSink(NuArchive* pArchive,
+    const NuRecord* pRecord, const NuThread* pThread,
+    NuProgressData* pProgress, NuDataSink* pDataSink)
 {
     NuError err;
     NuFunnel* pFunnel = NULL;
@@ -576,9 +564,8 @@ bail:
  * filters for every thread, which means we can reject specific kinds
  * of forks and/or give them different names.  This is a good thing.
  */
-static NuError
-Nu_ExtractThreadCommon(NuArchive* pArchive, const NuRecord* pRecord,
-    const NuThread* pThread, NuDataSink* pDataSink)
+static NuError Nu_ExtractThreadCommon(NuArchive* pArchive,
+    const NuRecord* pRecord, const NuThread* pThread, NuDataSink* pDataSink)
 {
     NuError err = kNuErrNone;
     NuSelectionProposal selProposal;
@@ -785,8 +772,7 @@ bail:
  *
  * Streaming archives must be properly positioned.
  */
-NuError
-Nu_ExtractThreadBulk(NuArchive* pArchive, const NuRecord* pRecord,
+NuError Nu_ExtractThreadBulk(NuArchive* pArchive, const NuRecord* pRecord,
     const NuThread* pThread)
 {
     NuError err;
@@ -827,8 +813,7 @@ bail:
 /*
  * Extract a thread, given the IDs and a data sink.
  */
-NuError
-Nu_ExtractThread(NuArchive* pArchive, NuThreadIdx threadIdx,
+NuError Nu_ExtractThread(NuArchive* pArchive, NuThreadIdx threadIdx,
     NuDataSink* pDataSink)
 {
     NuError err;
@@ -872,9 +857,8 @@ bail:
  *
  * If a matching threadID is found, this returns an error.
  */
-static NuError
-Nu_FindNoFutureThread(NuArchive* pArchive, const NuRecord* pRecord,
-    NuThreadID threadID)
+static NuError Nu_FindNoFutureThread(NuArchive* pArchive,
+    const NuRecord* pRecord, NuThreadID threadID)
 {
     NuError err = kNuErrNone;
     const NuThread* pThread;
@@ -927,9 +911,8 @@ bail:
 /*
  * Like Nu_FindNoFutureThread, but tests against a whole class.
  */
-static NuError
-Nu_FindNoFutureThreadClass(NuArchive* pArchive, const NuRecord* pRecord,
-    long threadClass)
+static NuError Nu_FindNoFutureThreadClass(NuArchive* pArchive,
+    const NuRecord* pRecord, long threadClass)
 {
     NuError err = kNuErrNone;
     const NuThread* pThread;
@@ -988,9 +971,8 @@ bail:
  * The record and thread returned will always be from the "copy" set.  An
  * error result is returned if the record and thread aren't found.
  */
-static NuError
-Nu_FindThreadForWriteByIdx(NuArchive* pArchive, NuThreadIdx threadIdx,
-    NuRecord** ppFoundRecord, NuThread** ppFoundThread)
+static NuError Nu_FindThreadForWriteByIdx(NuArchive* pArchive,
+    NuThreadIdx threadIdx, NuRecord** ppFoundRecord, NuThread** ppFoundThread)
 {
     NuError err;
 
@@ -1029,8 +1011,7 @@ bail:
  *
  * Returns with an error (kNuErrThreadAdd) if it's not okay.
  */
-NuError
-Nu_OkayToAddThread(NuArchive* pArchive, const NuRecord* pRecord,
+NuError Nu_OkayToAddThread(NuArchive* pArchive, const NuRecord* pRecord,
     NuThreadID threadID)
 {
     NuError err = kNuErrNone;
@@ -1094,9 +1075,8 @@ bail:
  * On success, the NuThreadIdx of the newly-created record will be placed
  * in "*pThreadIdx", and "pDataSource" will be owned by NufxLib.
  */
-NuError
-Nu_AddThread(NuArchive* pArchive, NuRecordIdx recIdx, NuThreadID threadID,
-    NuDataSource* pDataSource, NuThreadIdx* pThreadIdx)
+NuError Nu_AddThread(NuArchive* pArchive, NuRecordIdx recIdx,
+    NuThreadID threadID, NuDataSource* pDataSource, NuThreadIdx* pThreadIdx)
 {
     NuError err;
     NuRecord* pRecord;
@@ -1194,8 +1174,7 @@ bail:
  * You aren't allowed to update threads that have been deleted.  Updating
  * newly-added threads isn't possible, since they aren't really threads yet.
  */
-NuError
-Nu_UpdatePresizedThread(NuArchive* pArchive, NuThreadIdx threadIdx,
+NuError Nu_UpdatePresizedThread(NuArchive* pArchive, NuThreadIdx threadIdx,
     NuDataSource* pDataSource, long* pMaxLen)
 {
     NuError err;
@@ -1322,8 +1301,7 @@ bail:
  * later on.  Besides, it's sort of handy to hang on to the filename for
  * as long as possible.
  */
-NuError
-Nu_DeleteThread(NuArchive* pArchive, NuThreadIdx threadIdx)
+NuError Nu_DeleteThread(NuArchive* pArchive, NuThreadIdx threadIdx)
 {
     NuError err;
     NuThreadMod* pThreadMod = NULL;

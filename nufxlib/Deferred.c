@@ -23,8 +23,7 @@
  * NOTE: threadFormat is how you want the data to be compressed.  The
  * threadFormat passed to DataSource describes the source data.
  */
-NuError
-Nu_ThreadModAdd_New(NuArchive* pArchive, NuThreadID threadID,
+NuError Nu_ThreadModAdd_New(NuArchive* pArchive, NuThreadID threadID,
     NuThreadFormat threadFormat, NuDataSource* pDataSource,
     NuThreadMod** ppThreadMod)
 {
@@ -53,8 +52,7 @@ Nu_ThreadModAdd_New(NuArchive* pArchive, NuThreadID threadID,
  *
  * Caller is allowed to dispose of the data source.
  */
-NuError
-Nu_ThreadModUpdate_New(NuArchive* pArchive, NuThreadIdx threadIdx,
+NuError Nu_ThreadModUpdate_New(NuArchive* pArchive, NuThreadIdx threadIdx,
     NuDataSource* pDataSource, NuThreadMod** ppThreadMod)
 {
     Assert(ppThreadMod != NULL);
@@ -78,8 +76,7 @@ Nu_ThreadModUpdate_New(NuArchive* pArchive, NuThreadIdx threadIdx,
  * The "threadID" argument is really only needed for filename threads.  We
  * use it when trying to track how many filename threads we really have.
  */
-NuError
-Nu_ThreadModDelete_New(NuArchive* pArchive, NuThreadIdx threadIdx,
+NuError Nu_ThreadModDelete_New(NuArchive* pArchive, NuThreadIdx threadIdx,
     NuThreadID threadID, NuThreadMod** ppThreadMod)
 {
     Assert(ppThreadMod != NULL);
@@ -99,8 +96,7 @@ Nu_ThreadModDelete_New(NuArchive* pArchive, NuThreadIdx threadIdx,
 /*
  * Free a single NuThreadMod.
  */
-void
-Nu_ThreadModFree(NuArchive* pArchive, NuThreadMod* pThreadMod)
+void Nu_ThreadModFree(NuArchive* pArchive, NuThreadMod* pThreadMod)
 {
     if (pThreadMod == NULL)
         return;
@@ -133,8 +129,8 @@ Nu_ThreadModFree(NuArchive* pArchive, NuThreadMod* pThreadMod)
  *
  * Returns "NULL" if nothing found.
  */
-NuThreadMod*
-Nu_ThreadMod_FindByThreadIdx(const NuRecord* pRecord, NuThreadIdx threadIdx)
+NuThreadMod* Nu_ThreadMod_FindByThreadIdx(const NuRecord* pRecord,
+    NuThreadIdx threadIdx)
 {
     NuThreadMod* pThreadMod;
     NuThreadMod* pMatch = NULL;
@@ -178,9 +174,8 @@ Nu_ThreadMod_FindByThreadIdx(const NuRecord* pRecord, NuThreadIdx threadIdx)
 /*
  * Search for an "add" ThreadMod, by threadID.
  */
-NuError
-Nu_ThreadModAdd_FindByThreadID(const NuRecord* pRecord, NuThreadID threadID,
-    NuThreadMod** ppThreadMod)
+NuError Nu_ThreadModAdd_FindByThreadID(const NuRecord* pRecord,
+    NuThreadID threadID, NuThreadMod** ppThreadMod)
 {
     NuThreadMod* pThreadMod;
 
@@ -207,8 +202,7 @@ Nu_ThreadModAdd_FindByThreadID(const NuRecord* pRecord, NuThreadID threadID,
 /*
  * Free up the list of NuThreadMods in this record.
  */
-void
-Nu_FreeThreadMods(NuArchive* pArchive, NuRecord* pRecord)
+void Nu_FreeThreadMods(NuArchive* pArchive, NuRecord* pRecord)
 {
     NuThreadMod* pThreadMod;
     NuThreadMod* pNext;
@@ -246,9 +240,8 @@ typedef struct {
 /*
  * Allocate and initialize a NuNewThreads struct.
  */
-static NuError
-Nu_NewThreads_New(NuArchive* pArchive, NuNewThreads** ppNewThreads,
-    long numThreads)
+static NuError Nu_NewThreads_New(NuArchive* pArchive,
+    NuNewThreads** ppNewThreads, long numThreads)
 {
     NuError err = kNuErrNone;
 
@@ -256,7 +249,8 @@ Nu_NewThreads_New(NuArchive* pArchive, NuNewThreads** ppNewThreads,
     BailAlloc(*ppNewThreads);
     (*ppNewThreads)->numThreads = numThreads;
     (*ppNewThreads)->nextSlot = 0;
-    (*ppNewThreads)->pThreads = Nu_Malloc(pArchive, numThreads * sizeof(NuThread));
+    (*ppNewThreads)->pThreads =
+        Nu_Malloc(pArchive, numThreads * sizeof(NuThread));
     BailAlloc((*ppNewThreads)->pThreads);
 
 bail:
@@ -266,8 +260,7 @@ bail:
 /*
  * Free a NuNewThreads struct.
  */
-static void
-Nu_NewThreads_Free(NuArchive* pArchive, NuNewThreads* pNewThreads)
+static void Nu_NewThreads_Free(NuArchive* pArchive, NuNewThreads* pNewThreads)
 {
     if (pNewThreads != NULL) {
         Nu_Free(pArchive, pNewThreads->pThreads);
@@ -278,8 +271,7 @@ Nu_NewThreads_Free(NuArchive* pArchive, NuNewThreads* pNewThreads)
 /*
  * Returns true if "pNewThreads" has room for another entry, false otherwise.
  */
-static Boolean
-Nu_NewThreads_HasRoom(const NuNewThreads* pNewThreads)
+static Boolean Nu_NewThreads_HasRoom(const NuNewThreads* pNewThreads)
 {
     if (pNewThreads->nextSlot < pNewThreads->numThreads)
         return true;
@@ -293,8 +285,8 @@ Nu_NewThreads_HasRoom(const NuNewThreads* pNewThreads)
  *
  * The "next slot" marker is automatically advanced.
  */
-static NuThread*
-Nu_NewThreads_GetNext(NuNewThreads* pNewThreads, NuArchive* pArchive)
+static NuThread* Nu_NewThreads_GetNext(NuNewThreads* pNewThreads,
+    NuArchive* pArchive)
 {
     NuThread* pThread;
 
@@ -313,8 +305,7 @@ Nu_NewThreads_GetNext(NuNewThreads* pNewThreads, NuArchive* pArchive)
 /*
  * Return the #of threads we're meant to hold.
  */
-static int
-Nu_NewThreads_GetNumThreads(const NuNewThreads* pNewThreads)
+static int Nu_NewThreads_GetNumThreads(const NuNewThreads* pNewThreads)
 {
     Assert(pNewThreads != NULL);
 
@@ -324,8 +315,7 @@ Nu_NewThreads_GetNumThreads(const NuNewThreads* pNewThreads)
 /*
  * Total up the compressed EOFs of all threads.
  */
-static uint32_t
-Nu_NewThreads_TotalCompThreadEOF(NuNewThreads* pNewThreads)
+static uint32_t Nu_NewThreads_TotalCompThreadEOF(NuNewThreads* pNewThreads)
 {
     uint32_t compThreadEOF;
     int i;
@@ -347,8 +337,7 @@ Nu_NewThreads_TotalCompThreadEOF(NuNewThreads* pNewThreads)
  * to the thread array, and then nukes our copy of the pointer.  This
  * allows us to transfer ownership of the storage to the caller.
  */
-static NuThread*
-Nu_NewThreads_DonateThreads(NuNewThreads* pNewThreads)
+static NuThread* Nu_NewThreads_DonateThreads(NuNewThreads* pNewThreads)
 {
     NuThread* pThreads = pNewThreads->pThreads;
 
@@ -369,8 +358,7 @@ Nu_NewThreads_DonateThreads(NuNewThreads* pNewThreads)
  *
  * Pass in the record from the *copy* set, not the original.
  */
-static NuError
-Nu_CopyArchiveRecord(NuArchive* pArchive, NuRecord* pRecord)
+static NuError Nu_CopyArchiveRecord(NuArchive* pArchive, NuRecord* pRecord)
 {
     NuError err = kNuErrNone;
     long offsetAdjust;
@@ -414,9 +402,8 @@ bail:
  *
  * Returns -1 on error.
  */
-static NuError
-Nu_CountEventualThreads(const NuRecord* pRecord, long* pTotalThreads,
-    long* pFilenameThreads)
+static NuError Nu_CountEventualThreads(const NuRecord* pRecord,
+    long* pTotalThreads, long* pFilenameThreads)
 {
     const NuThreadMod* pThreadMod;
     const NuThread* pThread;
@@ -497,8 +484,7 @@ Nu_CountEventualThreads(const NuRecord* pRecord, long* pTotalThreads,
  * we ignore, are marked "used" during processing, so we don't need
  * to be terribly bright here.
  */
-static Boolean
-Nu_VerifyAllTouched(NuArchive* pArchive, const NuRecord* pRecord)
+static Boolean Nu_VerifyAllTouched(NuArchive* pArchive, const NuRecord* pRecord)
 {
     const NuThreadMod* pThreadMod;
     const NuThread* pThread;
@@ -538,8 +524,8 @@ Nu_VerifyAllTouched(NuArchive* pArchive, const NuRecord* pRecord)
  *
  * "newName" must be allocated storage.
  */
-static void
-Nu_SetNewThreadFilename(NuArchive* pArchive, NuRecord* pRecord, char* newName)
+static void Nu_SetNewThreadFilename(NuArchive* pArchive, NuRecord* pRecord,
+    char* newName)
 {
     Assert(pRecord != NULL);
     Assert(newName != NULL);
@@ -556,8 +542,8 @@ Nu_SetNewThreadFilename(NuArchive* pArchive, NuRecord* pRecord, char* newName)
  * appropriate values, we'll set them on their behalf, so long as
  * the uncompressed size is a multiple of 512.
  */
-static NuError
-Nu_UpdateDiskImageFields(NuArchive* pArchive, NuRecord* pRecord, long sourceLen)
+static NuError Nu_UpdateDiskImageFields(NuArchive* pArchive, NuRecord* pRecord,
+    long sourceLen)
 {
     NuError err = kNuErrNone;
     long actualLen;
@@ -599,9 +585,8 @@ Nu_UpdateDiskImageFields(NuArchive* pArchive, NuRecord* pRecord, long sourceLen)
  *
  * Possible side-effects on "pRecord": threadFilename may be updated.
  */
-static NuError
-Nu_ConstructArchiveUpdate(NuArchive* pArchive, FILE* fp, NuRecord* pRecord,
-    NuThread* pThread, const NuThreadMod* pThreadMod)
+static NuError Nu_ConstructArchiveUpdate(NuArchive* pArchive, FILE* fp,
+    NuRecord* pRecord, NuThread* pThread, const NuThreadMod* pThreadMod)
 {
     NuError err;
     NuDataSource* pDataSource = NULL;
@@ -705,8 +690,7 @@ bail:
  * Possible side-effects on "pRecord": disk image fields may be revised
  * (storage type, extra type), and threadFilename may be updated.
  */
-static NuError
-Nu_HandleAddThreadMods(NuArchive* pArchive, NuRecord* pRecord,
+static NuError Nu_HandleAddThreadMods(NuArchive* pArchive, NuRecord* pRecord,
     NuThreadID threadID, Boolean doKeepFirstOnly, NuNewThreads* pNewThreads,
     FILE* dstFp)
 {
@@ -911,9 +895,9 @@ bail:
  *
  * "pRecord" must be from the "copy" data set.
  */
-static NuError
-Nu_ConstructArchiveThreads(NuArchive* pArchive, NuRecord* pRecord,
-    NuThreadID threadID, Boolean doKeepFirstOnly, NuNewThreads* pNewThreads)
+static NuError Nu_ConstructArchiveThreads(NuArchive* pArchive,
+    NuRecord* pRecord, NuThreadID threadID, Boolean doKeepFirstOnly,
+    NuNewThreads* pNewThreads)
 {
     NuError err = kNuErrNone;
     NuThread* pThread;
@@ -1056,8 +1040,7 @@ bail:
  * kNuErrSkipped, which should cause the caller to simply copy the
  * previous record.
  */
-static NuError
-Nu_ConstructArchiveRecord(NuArchive* pArchive, NuRecord* pRecord)
+static NuError Nu_ConstructArchiveRecord(NuArchive* pArchive, NuRecord* pRecord)
 {
     NuError err;
     NuNewThreads* pNewThreads = NULL;
@@ -1261,8 +1244,8 @@ bail:
  * not the entire operation, we rewind the temp file to the initial
  * position and return kNuErrSkipped.
  */
-static NuError
-Nu_ConstructNewRecord(NuArchive* pArchive, NuRecord* pRecord, FILE* fp)
+static NuError Nu_ConstructNewRecord(NuArchive* pArchive, NuRecord* pRecord,
+    FILE* fp)
 {
     NuError err;
     NuNewThreads* pNewThreads = NULL;
@@ -1490,8 +1473,7 @@ bail:
  * The position of pArchive->archiveFp on entry and on exit is not
  * defined.
  */
-static NuError
-Nu_UpdateRecordInOriginal(NuArchive* pArchive, NuRecord* pRecord)
+static NuError Nu_UpdateRecordInOriginal(NuArchive* pArchive, NuRecord* pRecord)
 {
     NuError err = kNuErrNone;
     NuThread* pThread;
@@ -1583,8 +1565,7 @@ bail:
  *
  * On exit, pArchive->tmpFp will point at the archive EOF.
  */
-static NuError
-Nu_CreateTempFromOriginal(NuArchive* pArchive)
+static NuError Nu_CreateTempFromOriginal(NuArchive* pArchive)
 {
     NuError err = kNuErrNone;
     NuRecord* pRecord;
@@ -1671,8 +1652,7 @@ bail:
  *
  * On exit, pArchive->archiveFp will point at the archive EOF.
  */
-static NuError
-Nu_UpdateInOriginal(NuArchive* pArchive)
+static NuError Nu_UpdateInOriginal(NuArchive* pArchive)
 {
     NuError err = kNuErrNone;
     NuRecord* pRecord;
@@ -1717,8 +1697,7 @@ bail:
  *
  * On completion, "fp" will point at the end of the archive.
  */
-static NuError
-Nu_CreateNewRecords(NuArchive* pArchive, FILE* fp)
+static NuError Nu_CreateNewRecords(NuArchive* pArchive, FILE* fp)
 {
     NuError err = kNuErrNone;
     NuRecord* pRecord;
@@ -1770,8 +1749,7 @@ bail:
  * At present, a "dirtyHeader" flag is not of itself cause to rebuild
  * the archive, so we don't test for it here.
  */
-static Boolean
-Nu_NoHeavyUpdates(NuArchive* pArchive)
+static Boolean Nu_NoHeavyUpdates(NuArchive* pArchive)
 {
     const NuRecord* pRecord;
     long count;
@@ -1828,8 +1806,8 @@ Nu_NoHeavyUpdates(NuArchive* pArchive)
  * it from the number of threads, skipping on if the record has any
  * "add" thread mods.
  */
-static NuError
-Nu_PurgeEmptyRecords(NuArchive* pArchive, NuRecordSet* pRecordSet)
+static NuError Nu_PurgeEmptyRecords(NuArchive* pArchive,
+    NuRecordSet* pRecordSet)
 {
     NuError err = kNuErrNone;
     NuRecord* pRecord;
@@ -1873,8 +1851,8 @@ bail:
  * Pass in a correctly positioned "fp" and the total length of the archive
  * file.
  */
-static NuError
-Nu_UpdateMasterHeader(NuArchive* pArchive, FILE* fp, long archiveEOF)
+static NuError Nu_UpdateMasterHeader(NuArchive* pArchive, FILE* fp,
+    long archiveEOF)
 {
     NuError err;
     long numRecords;
@@ -1914,8 +1892,7 @@ bail:
 /*
  * Reset the temp file to a known (empty) state.
  */
-static NuError
-Nu_ResetTempFile(NuArchive* pArchive)
+static NuError Nu_ResetTempFile(NuArchive* pArchive)
 {
     NuError err = kNuErrNone;
 
@@ -1984,8 +1961,7 @@ bail:
  * don't even exist.  This is done as we are cleaning up the record sets
  * after a successful (or aborted) update.
  */
-static NuError
-Nu_RecordResetUsedFlags(NuArchive* pArchive, NuRecord* pRecord)
+static NuError Nu_RecordResetUsedFlags(NuArchive* pArchive, NuRecord* pRecord)
 {
     NuThread* pThread;
     long idx;
@@ -2016,8 +1992,7 @@ Nu_RecordResetUsedFlags(NuArchive* pArchive, NuRecord* pRecord)
 /*
  * Invoke Nu_RecordResetUsedFlags on all records in a record set.
  */
-static NuError
-Nu_ResetUsedFlags(NuArchive* pArchive, NuRecordSet* pRecordSet)
+static NuError Nu_ResetUsedFlags(NuArchive* pArchive, NuRecordSet* pRecordSet)
 {
     NuError err = kNuErrNone;
     NuRecord* pRecord;
@@ -2040,8 +2015,7 @@ Nu_ResetUsedFlags(NuArchive* pArchive, NuRecordSet* pRecordSet)
 /*
  * If nothing in the "copy" set has actually been disturbed, throw it out.
  */
-static void
-Nu_ResetCopySetIfUntouched(NuArchive* pArchive)
+static void Nu_ResetCopySetIfUntouched(NuArchive* pArchive)
 {
     const NuRecord* pRecord;
 
@@ -2071,8 +2045,7 @@ Nu_ResetCopySetIfUntouched(NuArchive* pArchive)
  * GSHK always adds a comment to the first new record added to an archive.
  * Imitate this behavior.
  */
-static NuError
-Nu_AddCommentToFirstNewRecord(NuArchive* pArchive)
+static NuError Nu_AddCommentToFirstNewRecord(NuArchive* pArchive)
 {
     NuError err = kNuErrNone;
     NuRecord* pRecord;
@@ -2137,8 +2110,7 @@ bail:
  * If the things this function is doing aren't making any sense at all,
  * read "NOTES.txt" for an introduction.
  */
-NuError
-Nu_Flush(NuArchive* pArchive, long* pStatusFlags)
+NuError Nu_Flush(NuArchive* pArchive, long* pStatusFlags)
 {
     NuError err = kNuErrNone;
     Boolean canAbort = true;
@@ -2555,8 +2527,7 @@ bail:
 /*
  * Abort any pending changes.
  */
-NuError
-Nu_Abort(NuArchive* pArchive)
+NuError Nu_Abort(NuArchive* pArchive)
 {
     Assert(pArchive != NULL);
 

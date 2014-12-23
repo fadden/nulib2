@@ -44,8 +44,7 @@ static const ValidCombo gValidCombos[] = {
  *
  * Returns NULL if not found.
  */
-static const ValidCombo*
-FindValidComboEntry(Command cmd)
+static const ValidCombo* FindValidComboEntry(Command cmd)
 {
     int i;
 
@@ -61,8 +60,7 @@ FindValidComboEntry(Command cmd)
  * Determine whether the specified modifier is valid when used with the
  * current command.
  */
-static Boolean
-IsValidModifier(Command cmd, char modifier)
+static Boolean IsValidModifier(Command cmd, char modifier)
 {
     const ValidCombo* pvc;
 
@@ -79,8 +77,7 @@ IsValidModifier(Command cmd, char modifier)
 /*
  * Determine whether the specified command can be used with stdin as input.
  */
-static Boolean
-IsValidOnPipe(Command cmd)
+static Boolean IsValidOnPipe(Command cmd)
 {
     const ValidCombo* pvc;
 
@@ -94,8 +91,7 @@ IsValidOnPipe(Command cmd)
 /*
  * Determine whether the specified command can be used with stdin as input.
  */
-static Boolean
-IsFilespecRequired(Command cmd)
+static Boolean IsFilespecRequired(Command cmd)
 {
     const ValidCombo* pvc;
 
@@ -114,8 +110,7 @@ IsFilespecRequired(Command cmd)
 /*
  * Separate the program name out of argv[0].
  */
-static const char*
-GetProgName(const NulibState* pState, const char* argv0)
+static const char* GetProgName(const NulibState* pState, const char* argv0)
 {
     const char* result;
     char sep;
@@ -136,8 +131,7 @@ GetProgName(const NulibState* pState, const char* argv0)
 /*
  * Print program usage.
  */
-static void
-Usage(const NulibState* pState)
+static void Usage(const NulibState* pState)
 {
     long majorVersion, minorVersion, bugVersion;
     const char* nufxLibDate;
@@ -184,8 +178,7 @@ Usage(const NulibState* pState)
 /*
  * Handle the "-h" command.
  */
-NuError
-DoHelp(const NulibState* pState)
+NuError DoHelp(const NulibState* pState)
 {
     static const struct {
         Command cmd;
@@ -315,8 +308,7 @@ DoHelp(const NulibState* pState)
 /*
  * Process the command-line options.  The results are placed into "pState".
  */
-static int
-ProcessOptions(NulibState* pState, int argc, char* const* argv)
+static int ProcessOptions(NulibState* pState, int argc, char* const* argv)
 {
     const char* cp;
     int idx;
@@ -511,8 +503,7 @@ fail:
  *
  * Returns 0 on success, 1 on error.
  */
-int
-DoWork(NulibState* pState)
+int DoWork(NulibState* pState)
 {
     NuError err;
 
@@ -558,8 +549,7 @@ DoWork(NulibState* pState)
 /*
  * Entry point.
  */
-int
-main(int argc, char** argv)
+int main(int argc, char** argv)
 {
     NulibState* pState = NULL;
     long majorVersion, minorVersion, bugVersion;

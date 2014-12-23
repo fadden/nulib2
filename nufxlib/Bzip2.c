@@ -25,13 +25,11 @@
 /*
  * Alloc and free functions provided to libbz2.
  */
-static void*
-Nu_bzalloc(void* opaque, int items, int size)
+static void* Nu_bzalloc(void* opaque, int items, int size)
 {
     return Nu_Malloc(opaque, items * size);
 }
-static void
-Nu_bzfree(void* opaque, void* address)
+static void Nu_bzfree(void* opaque, void* address)
 {
     Nu_Free(opaque, address);
 }
@@ -46,8 +44,7 @@ Nu_bzfree(void* opaque, void* address)
 /*
  * Compress "srcLen" bytes from "pStraw" to "fp".
  */
-NuError
-Nu_CompressBzip2(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
+NuError Nu_CompressBzip2(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
     uint32_t srcLen, uint32_t* pDstLen, uint16_t* pCrc)
 {
     NuError err = kNuErrNone;
@@ -173,8 +170,7 @@ bail:
 /*
  * Expand from "infp" to "pFunnel".
  */
-NuError
-Nu_ExpandBzip2(NuArchive* pArchive, const NuRecord* pRecord,
+NuError Nu_ExpandBzip2(NuArchive* pArchive, const NuRecord* pRecord,
     const NuThread* pThread, FILE* infp, NuFunnel* pFunnel, uint16_t* pCrc)
 {
     NuError err = kNuErrNone;

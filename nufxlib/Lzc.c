@@ -300,8 +300,8 @@ static CONST INTCODE gNu_mc[] = {
 #endif
 
 
-static int
-Nu_LZC_alloc_tables(LZCState* pLzcState, INTCODE newmaxcode, HASH newhashsize)
+static int Nu_LZC_alloc_tables(LZCState* pLzcState, INTCODE newmaxcode,
+    HASH newhashsize)
 {
     NuArchive* pArchive = pLzcState->pArchive;
     /*static INTCODE oldmaxcode = 0;*/
@@ -421,8 +421,7 @@ Nu_LZC_alloc_tables(LZCState* pLzcState, INTCODE newmaxcode, HASH newhashsize)
  * ===========================================================================
  */
 
-static void
-Nu_prratio(long int num, long int den)
+static void Nu_prratio(long int num, long int den)
 {
     register int q;         /* Doesn't need to be long */
 
@@ -443,8 +442,7 @@ Nu_prratio(long int num, long int den)
 /* table clear for block compress */
 /* this is for adaptive reset present in version 4.0 joe release */
 /* DjG, sets it up and returns TRUE to compress and FALSE to not compress */
-static int
-Nu_LZC_cl_block(LZCState* pLzcState)     
+static int Nu_LZC_cl_block(LZCState* pLzcState)
 {
     register long int rat;
 
@@ -486,8 +484,7 @@ Nu_LZC_cl_block(LZCState* pLzcState)
 
 static CONST UCHAR gNu_rmask[9] = {0x00, 0x01, 0x03, 0x07, 0x0f, 0x1f, 0x3f, 0x7f, 0xff};
 
-static void
-Nu_LZC_putcode(LZCState* pLzcState, INTCODE code, register int bits)
+static void Nu_LZC_putcode(LZCState* pLzcState, INTCODE code, register int bits)
 {
     /*static int oldbits = 0;*/
     /*static UCHAR outbuf[MAXBITS];*/
@@ -554,8 +551,7 @@ Nu_LZC_putcode(LZCState* pLzcState, INTCODE code, register int bits)
  *
  * Returns kNuLZCEOF as the value when we're out of data.
  */
-static NuError
-Nu_LZCGetcCRC(LZCState* pLzcState, int* pSym)
+static NuError Nu_LZCGetcCRC(LZCState* pLzcState, int* pSym)
 {
     NuError err;
     uint8_t c;
@@ -579,8 +575,7 @@ Nu_LZCGetcCRC(LZCState* pLzcState, int* pSym)
 /*
  * compress stdin to stdout
  */
-static void
-Nu_LZC_compress(LZCState* pLzcState, uint32_t* pDstLen)
+static void Nu_LZC_compress(LZCState* pLzcState, uint32_t* pDstLen)
 {
     int c,adjbits;
     register HASH hash;
@@ -758,8 +753,7 @@ Nu_LZC_compress(LZCState* pLzcState, uint32_t* pDstLen)
 /*
  * NufxLib interface to LZC compression.
  */
-static NuError
-Nu_CompressLZC(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
+static NuError Nu_CompressLZC(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
     uint32_t srcLen, uint32_t* pDstLen, uint16_t* pCrc, int maxbits)
 {
     NuError err = kNuErrNone;
@@ -806,15 +800,13 @@ Nu_CompressLZC(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
     return err;
 }
 
-NuError
-Nu_CompressLZC12(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
+NuError Nu_CompressLZC12(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
     uint32_t srcLen, uint32_t* pDstLen, uint16_t* pCrc)
 {
     return Nu_CompressLZC(pArchive, pStraw, fp, srcLen, pDstLen, pCrc, 12);
 }
 
-NuError
-Nu_CompressLZC16(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
+NuError Nu_CompressLZC16(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
     uint32_t srcLen, uint32_t* pDstLen, uint16_t* pCrc)
 {
     return Nu_CompressLZC(pArchive, pStraw, fp, srcLen, pDstLen, pCrc, 16);
@@ -833,8 +825,7 @@ Nu_CompressLZC16(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
  *
  * Returns kNuLZCEOF as the value when we're out of data.
  */
-static NuError
-Nu_LZCPutcCRC(LZCState* pLzcState, char c)
+static NuError Nu_LZCPutcCRC(LZCState* pLzcState, char c)
 {
     NuError err;
 
@@ -847,8 +838,7 @@ Nu_LZCPutcCRC(LZCState* pLzcState, char c)
 }
 
 
-static int
-Nu_LZC_nextcode(LZCState* pLzcState, INTCODE* codeptr)
+static int Nu_LZC_nextcode(LZCState* pLzcState, INTCODE* codeptr)
 /* Get the next code from input and put it in *codeptr.
  * Return (TRUE) on success, or return (FALSE) on end-of-file.
  * Adapted from COMPRESS V4.0.
@@ -898,8 +888,7 @@ Nu_LZC_nextcode(LZCState* pLzcState, INTCODE* codeptr)
     return (TRUE);
 }
 
-static void
-Nu_LZC_decompress(LZCState* pLzcState, uint32_t compressedLen)
+static void Nu_LZC_decompress(LZCState* pLzcState, uint32_t compressedLen)
 {
     NuArchive* pArchive = pLzcState->pArchive;
     register int i;
@@ -1060,8 +1049,7 @@ Nu_LZC_decompress(LZCState* pLzcState, uint32_t compressedLen)
 /*
  * NufxLib interface to LZC expansion.
  */
-NuError
-Nu_ExpandLZC(NuArchive* pArchive, const NuRecord* pRecord,
+NuError Nu_ExpandLZC(NuArchive* pArchive, const NuRecord* pRecord,
     const NuThread* pThread, FILE* infp, NuFunnel* pFunnel, uint16_t* pCrc)
 {
     NuError err = kNuErrNone;

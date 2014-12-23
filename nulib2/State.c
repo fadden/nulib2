@@ -15,8 +15,7 @@ static const char* gProgramVersion = "2.2.2";
 /*
  * Allocate and initialize the semi-global Nulib2 state object.
  */
-NuError
-NState_Init(NulibState** ppState)
+NuError NState_Init(NulibState** ppState)
 {
     Assert(ppState != NULL);
 
@@ -41,8 +40,7 @@ NState_Init(NulibState** ppState)
 /*
  * A little extra initialization, performed after arguments are parsed.
  */
-NuError
-NState_ExtraInit(NulibState* pState)
+NuError NState_ExtraInit(NulibState* pState)
 {
     NuError err;
     NuValue convertEOL;
@@ -74,8 +72,7 @@ NState_ExtraInit(NulibState* pState)
 /*
  * Free up the state structure and its contents.
  */
-void
-NState_Free(NulibState* pState)
+void NState_Free(NulibState* pState)
 {
     if (pState == NULL)
         return;
@@ -91,8 +88,7 @@ NState_Free(NulibState* pState)
 
 
 #ifdef DEBUG_MSGS
-void
-NState_DebugDump(const NulibState* pState)
+void NState_DebugDump(const NulibState* pState)
 {
     /* this table will break if the code changes, but it's just for debugging */
     static const char* kCommandNames[] = {
@@ -162,139 +158,117 @@ NState_DebugDump(const NulibState* pState)
  * ===========================================================================
  */
 
-char
-NState_GetSystemPathSeparator(const NulibState* pState)
+char NState_GetSystemPathSeparator(const NulibState* pState)
 {
     return pState->systemPathSeparator;
 }
 
-char
-NState_GetAltSystemPathSeparator(const NulibState* pState)
+char NState_GetAltSystemPathSeparator(const NulibState* pState)
 {
     return pState->altSystemPathSeparator;
 }
 
-const char*
-NState_GetProgramVersion(const NulibState* pState)
+const char* NState_GetProgramVersion(const NulibState* pState)
 {
     return pState->programVersion;
 }
 
-NuArchive*
-NState_GetNuArchive(const NulibState* pState)
+NuArchive* NState_GetNuArchive(const NulibState* pState)
 {
     return pState->pArchive;
 }
 
-void
-NState_SetNuArchive(NulibState* pState, NuArchive* pArchive)
+void NState_SetNuArchive(NulibState* pState, NuArchive* pArchive)
 {
     pState->pArchive = pArchive;
 }
 
 
-Boolean
-NState_GetSuppressOutput(const NulibState* pState)
+Boolean NState_GetSuppressOutput(const NulibState* pState)
 {
     return pState->suppressOutput;
 }
 
-void
-NState_SetSuppressOutput(NulibState* pState, Boolean doSuppress)
+void NState_SetSuppressOutput(NulibState* pState, Boolean doSuppress)
 {
     pState->suppressOutput = doSuppress;
 }
 
-Boolean
-NState_GetInputUnavailable(const NulibState* pState)
+Boolean NState_GetInputUnavailable(const NulibState* pState)
 {
     return pState->inputUnavailable;
 }
 
-void
-NState_SetInputUnavailable(NulibState* pState, Boolean isUnavailable)
+void NState_SetInputUnavailable(NulibState* pState, Boolean isUnavailable)
 {
     pState->inputUnavailable = isUnavailable;
 }
 
-NuRecordIdx
-NState_GetRenameFromIdx(const NulibState* pState)
+NuRecordIdx NState_GetRenameFromIdx(const NulibState* pState)
 {
     return pState->renameFromIdx;
 }
 
-void
-NState_SetRenameFromIdx(NulibState* pState, NuRecordIdx recordIdx)
+void NState_SetRenameFromIdx(NulibState* pState, NuRecordIdx recordIdx)
 {
     pState->renameFromIdx = recordIdx;
 }
 
-char*
-NState_GetRenameToStr(const NulibState* pState)
+char* NState_GetRenameToStr(const NulibState* pState)
 {
     return pState->renameToStr;
 }
 
-void
-NState_SetRenameToStr(NulibState* pState, char* str)
+void NState_SetRenameToStr(NulibState* pState, char* str)
 {
     Free(pState->renameToStr);
     pState->renameToStr = str;
 }
 
 
-NuDataSink*
-NState_GetPipeSink(const NulibState* pState)
+NuDataSink* NState_GetPipeSink(const NulibState* pState)
 {
     return pState->pPipeSink;
 }
 
-NuDataSink*
-NState_GetCommentSink(const NulibState* pState)
+NuDataSink* NState_GetCommentSink(const NulibState* pState)
 {
     return pState->pCommentSink;
 }
 
-long
-NState_GetMatchCount(const NulibState* pState)
+long NState_GetMatchCount(const NulibState* pState)
 {
     return pState->matchCount;
 }
 
-void
-NState_SetMatchCount(NulibState* pState, long count)
+void NState_SetMatchCount(NulibState* pState, long count)
 {
     pState->matchCount = count;
 }
 
-void
-NState_IncMatchCount(NulibState* pState)
+void NState_IncMatchCount(NulibState* pState)
 {
     pState->matchCount++;
 }
 
-void
-NState_AddToTotals(NulibState* pState, long len, long compLen)
+void NState_AddToTotals(NulibState* pState, long len, long compLen)
 {
     pState->totalLen += len;
     pState->totalCompLen += compLen;
 }
 
-void
-NState_GetTotals(NulibState* pState, long* pTotalLen, long* pTotalCompLen)
+void NState_GetTotals(NulibState* pState, long* pTotalLen, long* pTotalCompLen)
 {
     *pTotalLen = pState->totalLen;
     *pTotalCompLen = pState->totalCompLen;
 }
 
-long
-NState_GetTempPathnameLen(NulibState* pState)
+long NState_GetTempPathnameLen(NulibState* pState)
 {
     return pState->tempPathnameAlloc;
 }
 
-void
-NState_SetTempPathnameLen(NulibState* pState, long len)
+void NState_SetTempPathnameLen(NulibState* pState, long len)
 {
     char* newBuf;
 
@@ -319,237 +293,198 @@ NState_SetTempPathnameLen(NulibState* pState, long len)
     }
 }
 
-char*
-NState_GetTempPathnameBuf(NulibState* pState)
+char* NState_GetTempPathnameBuf(NulibState* pState)
 {
     return pState->tempPathnameBuf;
 }
 
 
-Command
-NState_GetCommand(const NulibState* pState)
+Command NState_GetCommand(const NulibState* pState)
 {
     return pState->command;
 }
 
-void
-NState_SetCommand(NulibState* pState, Command cmd)
+void NState_SetCommand(NulibState* pState, Command cmd)
 {
     pState->command = cmd;
 }
 
-const char*
-NState_GetArchiveFilename(const NulibState* pState)
+const char* NState_GetArchiveFilename(const NulibState* pState)
 {
     return pState->archiveFilename;
 }
 
-void
-NState_SetArchiveFilename(NulibState* pState, const char* archiveFilename)
+void NState_SetArchiveFilename(NulibState* pState, const char* archiveFilename)
 {
     pState->archiveFilename = archiveFilename;
 }
 
-char* const*
-NState_GetFilespecPointer(const NulibState* pState)
+char* const* NState_GetFilespecPointer(const NulibState* pState)
 {
     return pState->filespecPointer;
 }
 
-void
-NState_SetFilespecPointer(NulibState* pState, char* const* filespecPointer)
+void NState_SetFilespecPointer(NulibState* pState, char* const* filespecPointer)
 {
     pState->filespecPointer = filespecPointer;
 }
 
-long
-NState_GetFilespecCount(const NulibState* pState)
+long NState_GetFilespecCount(const NulibState* pState)
 {
     return pState->filespecCount;
 }
 
-void
-NState_SetFilespecCount(NulibState* pState, long filespecCount)
+void NState_SetFilespecCount(NulibState* pState, long filespecCount)
 {
     pState->filespecCount = filespecCount;
 }
 
-Boolean
-NState_GetModUpdate(const NulibState* pState)
+Boolean NState_GetModUpdate(const NulibState* pState)
 {
     return pState->modUpdate;
 }
 
-void
-NState_SetModUpdate(NulibState* pState, Boolean val)
+void NState_SetModUpdate(NulibState* pState, Boolean val)
 {
     pState->modUpdate = val;
 }
 
-Boolean
-NState_GetModFreshen(const NulibState* pState)
+Boolean NState_GetModFreshen(const NulibState* pState)
 {
     return pState->modFreshen;
 }
 
-void
-NState_SetModFreshen(NulibState* pState, Boolean val)
+void NState_SetModFreshen(NulibState* pState, Boolean val)
 {
     pState->modFreshen = val;
 }
 
-Boolean
-NState_GetModRecurse(const NulibState* pState)
+Boolean NState_GetModRecurse(const NulibState* pState)
 {
     return pState->modRecurse;
 }
 
-void
-NState_SetModRecurse(NulibState* pState, Boolean val)
+void NState_SetModRecurse(NulibState* pState, Boolean val)
 {
     pState->modRecurse = val;
 }
 
-Boolean
-NState_GetModJunkPaths(const NulibState* pState)
+Boolean NState_GetModJunkPaths(const NulibState* pState)
 {
     return pState->modJunkPaths;
 }
 
-void
-NState_SetModJunkPaths(NulibState* pState, Boolean val)
+void NState_SetModJunkPaths(NulibState* pState, Boolean val)
 {
     pState->modJunkPaths = val;
 }
 
-Boolean
-NState_GetModNoCompression(const NulibState* pState)
+Boolean NState_GetModNoCompression(const NulibState* pState)
 {
     return pState->modNoCompression;
 }
 
-void
-NState_SetModNoCompression(NulibState* pState, Boolean val)
+void NState_SetModNoCompression(NulibState* pState, Boolean val)
 {
     pState->modNoCompression = val;
 }
 
-Boolean
-NState_GetModCompressDeflate(const NulibState* pState)
+Boolean NState_GetModCompressDeflate(const NulibState* pState)
 {
     return pState->modCompressDeflate;
 }
 
-void
-NState_SetModCompressDeflate(NulibState* pState, Boolean val)
+void NState_SetModCompressDeflate(NulibState* pState, Boolean val)
 {
     pState->modCompressDeflate = val;
 }
 
-Boolean
-NState_GetModCompressBzip2(const NulibState* pState)
+Boolean NState_GetModCompressBzip2(const NulibState* pState)
 {
     return pState->modCompressBzip2;
 }
 
-void
-NState_SetModCompressBzip2(NulibState* pState, Boolean val)
+void NState_SetModCompressBzip2(NulibState* pState, Boolean val)
 {
     pState->modCompressBzip2 = val;
 }
 
-Boolean
-NState_GetModComments(const NulibState* pState)
+Boolean NState_GetModComments(const NulibState* pState)
 {
     return pState->modComments;
 }
 
-void
-NState_SetModComments(NulibState* pState, Boolean val)
+void NState_SetModComments(NulibState* pState, Boolean val)
 {
     pState->modComments = val;
 }
 
-Boolean
-NState_GetModBinaryII(const NulibState* pState)
+Boolean NState_GetModBinaryII(const NulibState* pState)
 {
     return pState->modBinaryII;
 }
 
-void
-NState_SetModBinaryII(NulibState* pState, Boolean val)
+void NState_SetModBinaryII(NulibState* pState, Boolean val)
 {
     pState->modBinaryII = val;
 }
 
-Boolean
-NState_GetModConvertText(const NulibState* pState)
+Boolean NState_GetModConvertText(const NulibState* pState)
 {
     return pState->modConvertText;
 }
 
-void
-NState_SetModConvertText(NulibState* pState, Boolean val)
+void NState_SetModConvertText(NulibState* pState, Boolean val)
 {
     pState->modConvertText = val;
 }
 
-Boolean
-NState_GetModConvertAll(const NulibState* pState)
+Boolean NState_GetModConvertAll(const NulibState* pState)
 {
     return pState->modConvertAll;
 }
 
-void
-NState_SetModConvertAll(NulibState* pState, Boolean val)
+void NState_SetModConvertAll(NulibState* pState, Boolean val)
 {
     pState->modConvertAll = val;
 }
 
-Boolean
-NState_GetModOverwriteExisting(const NulibState* pState)
+Boolean NState_GetModOverwriteExisting(const NulibState* pState)
 {
     return pState->modOverwriteExisting;
 }
 
-void
-NState_SetModOverwriteExisting(NulibState* pState, Boolean val)
+void NState_SetModOverwriteExisting(NulibState* pState, Boolean val)
 {
     pState->modOverwriteExisting = val;
 }
 
-Boolean
-NState_GetModAddAsDisk(const NulibState* pState)
+Boolean NState_GetModAddAsDisk(const NulibState* pState)
 {
     return pState->modAddAsDisk;
 }
 
-void
-NState_SetModAddAsDisk(NulibState* pState, Boolean val)
+void NState_SetModAddAsDisk(NulibState* pState, Boolean val)
 {
     pState->modAddAsDisk = val;
 }
 
-Boolean
-NState_GetModPreserveType(const NulibState* pState)
+Boolean NState_GetModPreserveType(const NulibState* pState)
 {
     return pState->modPreserveType;
 }
 
-void
-NState_SetModPreserveType(NulibState* pState, Boolean val)
+void NState_SetModPreserveType(NulibState* pState, Boolean val)
 {
     pState->modPreserveType = val;
 }
 
-Boolean
-NState_GetModPreserveTypeExtended(const NulibState* pState)
+Boolean NState_GetModPreserveTypeExtended(const NulibState* pState)
 {
     return pState->modPreserveTypeExtended;
 }
 
-void
-NState_SetModPreserveTypeExtended(NulibState* pState, Boolean val)
+void NState_SetModPreserveTypeExtended(NulibState* pState, Boolean val)
 {
     pState->modPreserveTypeExtended = val;
 }

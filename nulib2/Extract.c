@@ -17,8 +17,7 @@
  * show them while we're extracting the files, we have to manually find
  * and extract them.
  */
-static NuError
-ExtractAllRecords(NulibState* pState, NuArchive* pArchive)
+static NuError ExtractAllRecords(NulibState* pState, NuArchive* pArchive)
 {
     NuError err;
     const NuRecord* pRecord;
@@ -87,8 +86,7 @@ bail:
 /*
  * Extract the specified files.
  */
-NuError
-DoExtract(NulibState* pState)
+NuError DoExtract(NulibState* pState)
 {
     NuError err;
     NuArchive* pArchive = NULL;
@@ -135,8 +133,7 @@ bail:
 /*
  * Extract the specified files to stdout.
  */
-NuError
-DoExtractToPipe(NulibState* pState)
+NuError DoExtractToPipe(NulibState* pState)
 {
     /* we handle the "to pipe" part farther down */
     return DoExtract(pState);
@@ -146,8 +143,7 @@ DoExtractToPipe(NulibState* pState)
 /*
  * Do an integrity check on one or more records in the archive.
  */
-NuError
-DoTest(NulibState* pState)
+NuError DoTest(NulibState* pState)
 {
     NuError err;
     NuArchive* pArchive = NULL;

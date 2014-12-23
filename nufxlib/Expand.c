@@ -12,9 +12,9 @@
 /*
  * "Expand" an uncompressed thread.
  */
-static NuError
-Nu_ExpandUncompressed(NuArchive* pArchive, const NuRecord* pRecord,
-    const NuThread* pThread, FILE* infp, NuFunnel* pFunnel, uint16_t* pCrc)
+static NuError Nu_ExpandUncompressed(NuArchive* pArchive,
+    const NuRecord* pRecord, const NuThread* pThread, FILE* infp,
+    NuFunnel* pFunnel, uint16_t* pCrc)
 {
     NuError err;
     /*uint8_t* buffer = NULL;*/
@@ -63,9 +63,8 @@ bail:
  * Copy the "raw" data out of the thread.  Unlike the preceeding function,
  * this reads up to "thCompThreadEOF", and doesn't even try to compute a CRC.
  */
-static NuError
-Nu_ExpandRaw(NuArchive* pArchive, const NuThread* pThread, FILE* infp,
-    NuFunnel* pFunnel)
+static NuError Nu_ExpandRaw(NuArchive* pArchive, const NuThread* pThread,
+    FILE* infp, NuFunnel* pFunnel)
 {
     NuError err;
     /*uint8_t* buffer = NULL;*/
@@ -108,8 +107,7 @@ bail:
  * Expand a thread from "infp" to "pFunnel", using the compression
  * and stream length specified by "pThread".
  */
-NuError
-Nu_ExpandStream(NuArchive* pArchive, const NuRecord* pRecord,
+NuError Nu_ExpandStream(NuArchive* pArchive, const NuRecord* pRecord,
     const NuThread* pThread, FILE* infp, NuFunnel* pFunnel)
 {
     NuError err = kNuErrNone;

@@ -22,9 +22,9 @@
  * The same structure will be used when expanding all threads in a given
  * record.
  */
-NuError
-Nu_ProgressDataInit_Compress(NuArchive* pArchive, NuProgressData* pProgressData,
-    const NuRecord* pRecord, const char* origPathname)
+NuError Nu_ProgressDataInit_Compress(NuArchive* pArchive,
+    NuProgressData* pProgressData, const NuRecord* pRecord,
+    const char* origPathname)
 {
     const char* cp;
 
@@ -67,10 +67,9 @@ Nu_ProgressDataInit_Compress(NuArchive* pArchive, NuProgressData* pProgressData,
  * The same structure will be used when expanding all threads in a given
  * record.
  */
-NuError
-Nu_ProgressDataInit_Expand(NuArchive* pArchive, NuProgressData* pProgressData,
-    const NuRecord* pRecord, const char* newPathname, char newFssep,
-    NuValue convertEOL)
+NuError Nu_ProgressDataInit_Expand(NuArchive* pArchive,
+    NuProgressData* pProgressData, const NuRecord* pRecord,
+    const char* newPathname, char newFssep, NuValue convertEOL)
 {
     const NuThread* pThreadIter;
     const char* cp;
@@ -126,8 +125,7 @@ Nu_ProgressDataInit_Expand(NuArchive* pArchive, NuProgressData* pProgressData,
 /*
  * Do the setup on a ProgressData prior to compressing a thread.
  */
-NuError
-Nu_ProgressDataCompressPrep(NuArchive* pArchive, NuStraw* pStraw,
+NuError Nu_ProgressDataCompressPrep(NuArchive* pArchive, NuStraw* pStraw,
     NuThreadFormat threadFormat, uint32_t sourceLen)
 {
     NuProgressData* pProgressData;
@@ -151,8 +149,7 @@ Nu_ProgressDataCompressPrep(NuArchive* pArchive, NuStraw* pStraw,
  *
  * "pThread" is the thread being expanded.
  */
-NuError
-Nu_ProgressDataExpandPrep(NuArchive* pArchive, NuFunnel* pFunnel,
+NuError Nu_ProgressDataExpandPrep(NuArchive* pArchive, NuFunnel* pFunnel,
     const NuThread* pThread)
 {
     NuProgressData* pProgressData;
@@ -175,8 +172,7 @@ Nu_ProgressDataExpandPrep(NuArchive* pArchive, NuFunnel* pFunnel,
 /*
  * Compute a completion percentage.
  */
-static int
-Nu_ComputePercent(uint32_t total, uint32_t progress)
+static int Nu_ComputePercent(uint32_t total, uint32_t progress)
 {
     uint32_t perc;
 
@@ -200,8 +196,7 @@ Nu_ComputePercent(uint32_t total, uint32_t progress)
  * Send the initial progress message, before the output file is opened
  * (when extracting) or the input file is opened (when adding).
  */
-NuError
-Nu_SendInitialProgress(NuArchive* pArchive, NuProgressData* pProgress)
+NuError Nu_SendInitialProgress(NuArchive* pArchive, NuProgressData* pProgress)
 {
     NuResult result;
 
@@ -234,9 +229,9 @@ Nu_SendInitialProgress(NuArchive* pArchive, NuProgressData* pProgress)
 /*
  * Allocate and initialize a Funnel.
  */
-NuError
-Nu_FunnelNew(NuArchive* pArchive, NuDataSink* pDataSink, NuValue convertEOL,
-    NuValue convertEOLTo, NuProgressData* pProgress, NuFunnel** ppFunnel)
+NuError Nu_FunnelNew(NuArchive* pArchive, NuDataSink* pDataSink,
+    NuValue convertEOL, NuValue convertEOLTo, NuProgressData* pProgress,
+    NuFunnel** ppFunnel)
 {
     NuError err = kNuErrNone;
     NuFunnel* pFunnel = NULL;
@@ -278,8 +273,7 @@ bail:
  * The data should already have been written; it's not the duty of a
  * "free" function to flush data out.
  */
-NuError
-Nu_FunnelFree(NuArchive* pArchive, NuFunnel* pFunnel)
+NuError Nu_FunnelFree(NuArchive* pArchive, NuFunnel* pFunnel)
 {
     if (pFunnel == NULL)
         return kNuErrNone;
@@ -304,8 +298,7 @@ Nu_FunnelFree(NuArchive* pArchive, NuFunnel* pFunnel)
  * allows us to bail out as soon as it's apparent that compression is
  * failing and is actually resulting in a larger file.
  */
-void
-Nu_FunnelSetMaxOutput(NuFunnel* pFunnel, uint32_t maxBytes)
+void Nu_FunnelSetMaxOutput(NuFunnel* pFunnel, uint32_t maxBytes)
 {
     Assert(pFunnel != NULL);
     Assert(maxBytes > 0);
@@ -324,8 +317,7 @@ Nu_FunnelSetMaxOutput(NuFunnel* pFunnel, uint32_t maxBytes)
  * character must have its high bit set, except for spaces (0x20).
  * (The exception is courtesy Glen Bredon's "Merlin".)
  */
-static Boolean
-Nu_CheckHighASCII(const NuFunnel* pFunnel, const uint8_t* buffer,
+static Boolean Nu_CheckHighASCII(const NuFunnel* pFunnel, const uint8_t* buffer,
     uint32_t count)
 {
     Boolean isHighASCII;
@@ -405,8 +397,8 @@ static const char gNuIsBinary[256] = {
  * Returns kConvEOLOff or kConvEOLOn, and sets pFunnel->doStripHighASCII
  * if pFunnel->CheckStripHighASCII is set.
  */
-static NuValue
-Nu_DetermineConversion(NuFunnel* pFunnel, const uint8_t* buffer, uint32_t count)
+static NuValue Nu_DetermineConversion(NuFunnel* pFunnel, const uint8_t* buffer,
+    uint32_t count)
 {
     uint32_t bufCount, numBinary, numLF, numCR;
     Boolean isHighASCII;
@@ -484,8 +476,8 @@ Nu_DetermineConversion(NuFunnel* pFunnel, const uint8_t* buffer, uint32_t count)
  * This is either a Funnel function or a DataSink function, depending on
  * your perspective.
  */
-static inline void
-Nu_FunnelPutBlock(NuFunnel* pFunnel, const uint8_t* buf, uint32_t len)
+static inline void Nu_FunnelPutBlock(NuFunnel* pFunnel, const uint8_t* buf,
+    uint32_t len)
 {
     Assert(pFunnel != NULL);
     Assert(pFunnel->pDataSink != NULL);
@@ -511,8 +503,7 @@ Nu_FunnelPutBlock(NuFunnel* pFunnel, const uint8_t* buf, uint32_t len)
 /*
  * Output the EOL marker requested for this system.
  */
-static inline void
-Nu_PutEOL(NuFunnel* pFunnel)
+static inline void Nu_PutEOL(NuFunnel* pFunnel)
 {
     uint8_t ch;
 
@@ -540,8 +531,8 @@ Nu_PutEOL(NuFunnel* pFunnel)
  * that looks like an EOL mark and convert it.  Doesn't matter if it's
  * CR, LF, or CRLF; all three get converted to whatever the system uses.
  */
-static NuError
-Nu_FunnelWriteConvert(NuFunnel* pFunnel, const uint8_t* buffer, uint32_t count)
+static NuError Nu_FunnelWriteConvert(NuFunnel* pFunnel, const uint8_t* buffer,
+    uint32_t count)
 {
     NuError err = kNuErrNone;
     uint32_t progressCount = count;
@@ -637,8 +628,7 @@ Nu_FunnelWriteConvert(NuFunnel* pFunnel, const uint8_t* buffer, uint32_t count)
 /*
  * Flush any data currently in the funnel.
  */
-NuError
-Nu_FunnelFlush(NuArchive* pArchive, NuFunnel* pFunnel)
+NuError Nu_FunnelFlush(NuArchive* pArchive, NuFunnel* pFunnel)
 {
     NuError err = kNuErrNone;
 
@@ -661,9 +651,8 @@ bail:
  * Write a bunch of bytes into a funnel.  They will be held in the buffer
  * if they fit, or flushed out the bottom if not.
  */
-NuError
-Nu_FunnelWrite(NuArchive* pArchive, NuFunnel* pFunnel, const uint8_t* buffer,
-    uint32_t count)
+NuError Nu_FunnelWrite(NuArchive* pArchive, NuFunnel* pFunnel,
+    const uint8_t* buffer, uint32_t count)
 {
     NuError err = kNuErrNone;
 
@@ -714,8 +703,7 @@ bail:
 /*
  * Set the Funnel's progress state.
  */
-NuError
-Nu_FunnelSetProgressState(NuFunnel* pFunnel, NuProgressState state)
+NuError Nu_FunnelSetProgressState(NuFunnel* pFunnel, NuProgressState state)
 {
     Assert(pFunnel != NULL);
 
@@ -731,8 +719,7 @@ Nu_FunnelSetProgressState(NuFunnel* pFunnel, NuProgressState state)
 /*
  * Send a progress update to the application, if they're interested.
  */
-NuError
-Nu_FunnelSendProgressUpdate(NuArchive* pArchive, NuFunnel* pFunnel)
+NuError Nu_FunnelSendProgressUpdate(NuArchive* pArchive, NuFunnel* pFunnel)
 {
     NuProgressData* pProgress;
 
@@ -755,8 +742,7 @@ Nu_FunnelSendProgressUpdate(NuArchive* pArchive, NuFunnel* pFunnel)
 /*
  * Pull the "doExpand" parameter out of the data source.
  */
-Boolean
-Nu_FunnelGetDoExpand(NuFunnel* pFunnel)
+Boolean Nu_FunnelGetDoExpand(NuFunnel* pFunnel)
 {
     Assert(pFunnel != NULL);
     Assert(pFunnel->pDataSink != NULL);
@@ -774,8 +760,7 @@ Nu_FunnelGetDoExpand(NuFunnel* pFunnel)
 /*
  * Allocate and initialize a Straw.
  */
-NuError
-Nu_StrawNew(NuArchive* pArchive, NuDataSource* pDataSource,
+NuError Nu_StrawNew(NuArchive* pArchive, NuDataSource* pDataSource,
     NuProgressData* pProgress, NuStraw** ppStraw)
 {
     NuError err = kNuErrNone;
@@ -802,8 +787,7 @@ bail:
 /*
  * Free a Straw.
  */
-NuError
-Nu_StrawFree(NuArchive* pArchive, NuStraw* pStraw)
+NuError Nu_StrawFree(NuArchive* pArchive, NuStraw* pStraw)
 {
     if (pStraw == NULL)
         return kNuErrNone;
@@ -818,8 +802,7 @@ Nu_StrawFree(NuArchive* pArchive, NuStraw* pStraw)
 /*
  * Set the Straw's progress state.
  */
-NuError
-Nu_StrawSetProgressState(NuStraw* pStraw, NuProgressState state)
+NuError Nu_StrawSetProgressState(NuStraw* pStraw, NuProgressState state)
 {
     Assert(pStraw != NULL);
     Assert(pStraw->pProgress != NULL);
@@ -832,8 +815,7 @@ Nu_StrawSetProgressState(NuStraw* pStraw, NuProgressState state)
 /*
  * Send a progress update to the application, if they're interested.
  */
-NuError
-Nu_StrawSendProgressUpdate(NuArchive* pArchive, NuStraw* pStraw)
+NuError Nu_StrawSendProgressUpdate(NuArchive* pArchive, NuStraw* pStraw)
 {
     NuProgressData* pProgress;
 
@@ -856,8 +838,8 @@ Nu_StrawSendProgressUpdate(NuArchive* pArchive, NuStraw* pStraw)
 /*
  * Read data from a straw.
  */
-NuError
-Nu_StrawRead(NuArchive* pArchive, NuStraw* pStraw, uint8_t* buffer, long len)
+NuError Nu_StrawRead(NuArchive* pArchive, NuStraw* pStraw, uint8_t* buffer,
+    long len)
 {
     NuError err;
 
@@ -911,8 +893,7 @@ bail:
  * Rewind a straw.  This rewinds the underlying data source, and resets
  * some progress counters.
  */
-NuError
-Nu_StrawRewind(NuArchive* pArchive, NuStraw* pStraw)
+NuError Nu_StrawRewind(NuArchive* pArchive, NuStraw* pStraw)
 {
     Assert(pStraw != NULL);
     Assert(pStraw->pDataSource != NULL);

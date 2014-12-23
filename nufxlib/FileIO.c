@@ -81,8 +81,7 @@
  *
  * If the conversion is invalid, "*pWhen" is set to zero.
  */
-static void
-Nu_DateTimeToGMTSeconds(const NuDateTime* pDateTime, time_t* pWhen)
+static void Nu_DateTimeToGMTSeconds(const NuDateTime* pDateTime, time_t* pWhen)
 {
     struct tm tmbuf;
     time_t when;
@@ -119,8 +118,7 @@ Nu_DateTimeToGMTSeconds(const NuDateTime* pDateTime, time_t* pWhen)
 /*
  * Convert from GMT seconds since 1970 to local time in a NuDateTime struct.
  */
-static void
-Nu_GMTSecondsToDateTime(const time_t* pWhen, NuDateTime *pDateTime)
+static void Nu_GMTSecondsToDateTime(const time_t* pWhen, NuDateTime *pDateTime)
 {
     struct tm* ptm;
 
@@ -149,8 +147,7 @@ Nu_GMTSecondsToDateTime(const time_t* pWhen, NuDateTime *pDateTime)
 /*
  * Fill in the current time.
  */
-void
-Nu_SetCurrentDateTime(NuDateTime* pDateTime)
+void Nu_SetCurrentDateTime(NuDateTime* pDateTime)
 {
     Assert(pDateTime != NULL);
 
@@ -173,8 +170,7 @@ Nu_SetCurrentDateTime(NuDateTime* pDateTime)
  * to time in seconds, and compare them that way.  However, I don't want
  * to rely on that function too heavily, so we just compare fields.
  */
-Boolean
-Nu_IsOlder(const NuDateTime* pWhen1, const NuDateTime* pWhen2)
+Boolean Nu_IsOlder(const NuDateTime* pWhen1, const NuDateTime* pWhen2)
 {
     long result, year1, year2;
 
@@ -235,8 +231,7 @@ typedef struct NuFileInfo {
 /*
  * Determine whether the record has both data and resource forks.
  */
-static Boolean
-Nu_IsForkedFile(NuArchive* pArchive, const NuRecord* pRecord)
+static Boolean Nu_IsForkedFile(NuArchive* pArchive, const NuRecord* pRecord)
 {
     const NuThread* pThread;
     NuThreadID threadID;
@@ -267,8 +262,7 @@ Nu_IsForkedFile(NuArchive* pArchive, const NuRecord* pRecord)
  * Get the file info into a NuFileInfo struct.  Fields which are
  * inappropriate for the current system are set to default values.
  */
-static NuError
-Nu_GetFileInfo(NuArchive* pArchive, const char* pathname,
+static NuError Nu_GetFileInfo(NuArchive* pArchive, const char* pathname,
     NuFileInfo* pFileInfo)
 {
     NuError err = kNuErrNone;
@@ -417,8 +411,7 @@ bail:
  * file with data and resource forks, we only claim it exists if it has
  * nonzero length.
  */
-static NuError
-Nu_FileForkExists(NuArchive* pArchive, const char* pathname,
+static NuError Nu_FileForkExists(NuArchive* pArchive, const char* pathname,
     Boolean isForkedFile, Boolean checkRsrcFork, Boolean* pExists,
     NuFileInfo* pFileInfo)
 {
@@ -509,8 +502,7 @@ Nu_FileForkExists(NuArchive* pArchive, const char* pathname,
 /*
  * Set the dates on a file according to what's in the record.
  */
-static NuError
-Nu_SetFileDates(NuArchive* pArchive, const NuRecord* pRecord,
+static NuError Nu_SetFileDates(NuArchive* pArchive, const NuRecord* pRecord,
     const char* pathname)
 {
     NuError err = kNuErrNone;
@@ -563,8 +555,7 @@ bail:
  * possible variations.  For our purposes, we treat all files as unlocked
  * unless they match the classic "locked" bit pattern.
  */
-static Boolean
-Nu_IsRecordLocked(const NuRecord* pRecord)
+static Boolean Nu_IsRecordLocked(const NuRecord* pRecord)
 {
     if (pRecord->recAccess == 0x21L || pRecord->recAccess == 0x01L)
         return true;
@@ -578,8 +569,7 @@ Nu_IsRecordLocked(const NuRecord* pRecord)
  * This assumes that the file is currently writable, so we only need
  * to do something if the original file was "locked".
  */
-static NuError
-Nu_SetFileAccess(NuArchive* pArchive, const NuRecord* pRecord,
+static NuError Nu_SetFileAccess(NuArchive* pArchive, const NuRecord* pRecord,
     const char* pathname)
 {
     NuError err = kNuErrNone;
@@ -627,8 +617,7 @@ bail:
  * Generally this just involves ensuring that the file is writable.  If
  * this is a convenient place to truncate it, we should do that too.
  */
-static NuError
-Nu_PrepareForWriting(NuArchive* pArchive, const char* pathname,
+static NuError Nu_PrepareForWriting(NuArchive* pArchive, const char* pathname,
     Boolean prepRsrc, NuFileInfo* pFileInfo)
 {
     NuError err = kNuErrNone;
@@ -679,8 +668,7 @@ bail:
 /*
  * Invoke the system-dependent directory creation function.
  */
-static NuError
-Nu_Mkdir(NuArchive* pArchive, const char* dir)
+static NuError Nu_Mkdir(NuArchive* pArchive, const char* dir)
 {
     NuError err = kNuErrNone;
 
@@ -715,8 +703,7 @@ bail:
  * subdirectory level doesn't exist either, cut down the pathname and
  * recurse.
  */
-static NuError
-Nu_CreateSubdirIFN(NuArchive* pArchive, const char* pathStart,
+static NuError Nu_CreateSubdirIFN(NuArchive* pArchive, const char* pathStart,
     const char* pathEnd, char fssep)
 {
     NuError err = kNuErrNone;
@@ -770,8 +757,8 @@ bail:
  * If "pathname" is just a filename, or the set of directories matches
  * the last directory we created, we don't do anything.
  */
-static NuError
-Nu_CreatePathIFN(NuArchive* pArchive, const char* pathname, char fssep)
+static NuError Nu_CreatePathIFN(NuArchive* pArchive, const char* pathname,
+    char fssep)
 {
     NuError err = kNuErrNone;
     const char* pathStart;
@@ -828,8 +815,7 @@ bail:
 /*
  * Open the file for writing, possibly truncating it.
  */
-static NuError
-Nu_OpenFileForWrite(NuArchive* pArchive, const char* pathname,
+static NuError Nu_OpenFileForWrite(NuArchive* pArchive, const char* pathname,
     Boolean openRsrc, FILE** pFp)
 {
 #if defined(MAC_LIKE)
@@ -856,8 +842,7 @@ Nu_OpenFileForWrite(NuArchive* pArchive, const char* pathname,
  * "freshen" option that requires us to only update files that are
  * older than what we have.
  */
-NuError
-Nu_OpenOutputFile(NuArchive* pArchive, const NuRecord* pRecord,
+NuError Nu_OpenOutputFile(NuArchive* pArchive, const NuRecord* pRecord,
     const NuThread* pThread, const char* newPathname, char newFssep,
     FILE** pFp)
 {
@@ -1104,9 +1089,8 @@ bail:
  * when writing a rsrc fork to a file with just a data fork.  This isn't
  * quite right, but it's close enough.
  */
-NuError
-Nu_CloseOutputFile(NuArchive* pArchive, const NuRecord* pRecord, FILE* fp,
-    const char* pathname)
+NuError Nu_CloseOutputFile(NuArchive* pArchive, const NuRecord* pRecord,
+    FILE* fp, const char* pathname)
 {
     NuError err;
 
@@ -1164,8 +1148,7 @@ bail:
 /*
  * Open the file for reading, in "binary" mode when necessary.
  */
-static NuError
-Nu_OpenFileForRead(NuArchive* pArchive, const char* pathname,
+static NuError Nu_OpenFileForRead(NuArchive* pArchive, const char* pathname,
     Boolean openRsrc, FILE** pFp)
 {
     *pFp = fopen(pathname, kNuFileOpenReadOnly);
@@ -1181,8 +1164,7 @@ Nu_OpenFileForRead(NuArchive* pArchive, const char* pathname,
  * If the file can't be found, we give the application an opportunity to
  * skip the absent file, retry, or abort the whole thing.
  */
-NuError
-Nu_OpenInputFile(NuArchive* pArchive, const char* pathname,
+NuError Nu_OpenInputFile(NuArchive* pArchive, const char* pathname,
     Boolean openRsrc, FILE** pFp)
 {
     NuError err = kNuErrNone;
@@ -1280,8 +1262,7 @@ bail:
 /*
  * Delete a file.
  */
-NuError
-Nu_DeleteFile(const char* pathname)
+NuError Nu_DeleteFile(const char* pathname)
 {
 #if defined(UNIX_LIKE) || defined(WINDOWS_LIKE)
     int cc;
@@ -1301,8 +1282,7 @@ Nu_DeleteFile(const char* pathname)
 /*
  * Rename a file from "fromPath" to "toPath".
  */
-NuError
-Nu_RenameFile(const char* fromPath, const char* toPath)
+NuError Nu_RenameFile(const char* fromPath, const char* toPath)
 {
 #if defined(UNIX_LIKE) || defined(WINDOWS_LIKE)
     int cc;
@@ -1329,8 +1309,7 @@ Nu_RenameFile(const char* fromPath, const char* toPath)
 /*
  * Wrapper for ftell().
  */
-NuError
-Nu_FTell(FILE* fp, long* pOffset)
+NuError Nu_FTell(FILE* fp, long* pOffset)
 {
     Assert(fp != NULL);
     Assert(pOffset != NULL);
@@ -1347,8 +1326,7 @@ Nu_FTell(FILE* fp, long* pOffset)
 /*
  * Wrapper for fseek().
  */
-NuError
-Nu_FSeek(FILE* fp, long offset, int ptrname)
+NuError Nu_FSeek(FILE* fp, long offset, int ptrname)
 {
     Assert(fp != NULL);
     Assert(ptrname == SEEK_SET || ptrname == SEEK_CUR || ptrname == SEEK_END);
@@ -1366,8 +1344,7 @@ Nu_FSeek(FILE* fp, long offset, int ptrname)
  * Wrapper for fread().  Note the arguments resemble read(2) rather than the
  * slightly silly ones used by fread(3S).
  */
-NuError
-Nu_FRead(FILE* fp, void* buf, size_t nbyte)
+NuError Nu_FRead(FILE* fp, void* buf, size_t nbyte)
 {
     size_t result;
 
@@ -1382,8 +1359,7 @@ Nu_FRead(FILE* fp, void* buf, size_t nbyte)
  * Wrapper for fwrite().  Note the arguments resemble write(2) rather than the
  * slightly silly ones used by fwrite(3S).
  */
-NuError
-Nu_FWrite(FILE* fp, const void* buf, size_t nbyte)
+NuError Nu_FWrite(FILE* fp, const void* buf, size_t nbyte)
 {
     size_t result;
 
@@ -1403,8 +1379,8 @@ Nu_FWrite(FILE* fp, const void* buf, size_t nbyte)
 /*
  * Copy a section from one file to another.
  */
-NuError
-Nu_CopyFileSection(NuArchive* pArchive, FILE* dstFp, FILE* srcFp, long length)
+NuError Nu_CopyFileSection(NuArchive* pArchive, FILE* dstFp, FILE* srcFp,
+    long length)
 {
     NuError err;
     long readLen;
@@ -1452,8 +1428,7 @@ bail:
  * (pArchive is only used for BailError message reporting, so it's okay
  * to call here with a NULL pointer if the archive isn't open yet.)
  */
-NuError
-Nu_GetFileLength(NuArchive* pArchive, FILE* fp, long* pLength)
+NuError Nu_GetFileLength(NuArchive* pArchive, FILE* fp, long* pLength)
 {
     NuError err;
     long oldpos;
@@ -1482,8 +1457,7 @@ bail:
  * Truncate an open file.  This differs from ftruncate() in that it takes
  * a FILE* instead of an fd, and the length is a long instead of off_t.
  */
-NuError
-Nu_TruncateOpenFile(FILE* fp, long length)
+NuError Nu_TruncateOpenFile(FILE* fp, long length)
 {
     #if defined(HAVE_FTRUNCATE)
     if (ftruncate(fileno(fp), length) < 0)

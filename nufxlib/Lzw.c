@@ -146,8 +146,7 @@ typedef struct LZWCompressState {
  * the hash function.  This way we don't have to re-create it for
  * every file, or store it statically in the binary.
  */
-static NuError
-Nu_AllocLZWCompressState(NuArchive* pArchive)
+static NuError Nu_AllocLZWCompressState(NuArchive* pArchive)
 {
     NuError err;
     LZWCompressState* lzwState;
@@ -191,8 +190,7 @@ Nu_AllocLZWCompressState(NuArchive* pArchive)
  * The RLE format is "<delim> <char> <count>", where count is zero-based
  * (i.e. for three bytes we encode "2", allowing us to express 1-256).
  */
-static NuError
-Nu_CompressBlockRLE(LZWCompressState* lzwState, int* pRLESize)
+static NuError Nu_CompressBlockRLE(LZWCompressState* lzwState, int* pRLESize)
 {
     const uint8_t* inPtr = lzwState->inputBuf;
     const uint8_t* endPtr = inPtr + kNuLZWBlockSize;
@@ -258,8 +256,7 @@ Nu_CompressBlockRLE(LZWCompressState* lzwState, int* pRLESize)
 /*
  * Clear the LZW table.  Also resets the LZW/2 state.
  */
-static void
-Nu_ClearLZWTable(LZWCompressState* lzwState)
+static void Nu_ClearLZWTable(LZWCompressState* lzwState)
 {
     Assert(lzwState != NULL);
 
@@ -296,8 +293,8 @@ Nu_ClearLZWTable(LZWCompressState* lzwState)
  *
  * (Turning this into a macro might speed things up.)
  */
-static inline void
-Nu_LZWPutCode(uint8_t** pOutBuf, uint32_t prefixCode, int codeBits, int* pAtBit)
+static inline void Nu_LZWPutCode(uint8_t** pOutBuf, uint32_t prefixCode,
+    int codeBits, int* pAtBit)
 {
     int atBit = *pAtBit;
     uint8_t* outBuf = *pOutBuf;
@@ -353,9 +350,8 @@ Nu_LZWPutCode(uint8_t** pOutBuf, uint32_t prefixCode, int codeBits, int* pAtBit)
  * "resetFix" logic in the expansion functions.  Code 0x0101 is essentially
  * lost in this situation.
  */
-static NuError
-Nu_CompressLZWBlock(LZWCompressState* lzwState, const uint8_t* inputBuf,
-    int inputCount, int* pOutputCount)
+static NuError Nu_CompressLZWBlock(LZWCompressState* lzwState,
+    const uint8_t* inputBuf, int inputCount, int* pOutputCount)
 {
     int nextFree, ic, atBit, codeBits;
     int hash, hashDelta;
@@ -555,8 +551,7 @@ Nu_CompressLZWBlock(LZWCompressState* lzwState, const uint8_t* inputBuf,
  *
  * On exit, the output file will be positioned past the last byte written.
  */
-static NuError
-Nu_CompressLZW(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
+static NuError Nu_CompressLZW(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
     uint32_t srcLen, uint32_t* pDstLen, uint16_t* pThreadCrc, Boolean isType2)
 {
     NuError err = kNuErrNone;
@@ -782,8 +777,7 @@ bail:
 /*
  * Compress ShrinkIt-style "LZW/1".
  */
-NuError
-Nu_CompressLZW1(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
+NuError Nu_CompressLZW1(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
     uint32_t srcLen, uint32_t* pDstLen, uint16_t* pCrc)
 {
     return Nu_CompressLZW(pArchive, pStraw, fp, srcLen, pDstLen, pCrc, false);
@@ -792,8 +786,7 @@ Nu_CompressLZW1(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
 /*
  * Compress ShrinkIt-style "LZW/2".
  */
-NuError
-Nu_CompressLZW2(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
+NuError Nu_CompressLZW2(NuArchive* pArchive, NuStraw* pStraw, FILE* fp,
     uint32_t srcLen, uint32_t* pDstLen, uint16_t* pCrc)
 {
     return Nu_CompressLZW(pArchive, pStraw, fp, srcLen, pDstLen, pCrc, true);
@@ -865,8 +858,7 @@ typedef struct LZWExpandState {
 /*
  * Allocate some "reusable" state for LZW expansion.
  */
-static NuError
-Nu_AllocLZWExpandState(NuArchive* pArchive)
+static NuError Nu_AllocLZWExpandState(NuArchive* pArchive)
 {
     NuError err;
 
@@ -897,8 +889,7 @@ Nu_AllocLZWExpandState(NuArchive* pArchive)
             ( Nu_LZWPopCheck(lzwState, stackPtr), *(--stackPtr) )
 # define Nu_LZWStackEmpty() ( stackPtr == lzwState->stack )
 
-static inline void
-Nu_LZWPushCheck(uint8_t uch, const LZWExpandState* lzwState,
+static inline void Nu_LZWPushCheck(uint8_t uch, const LZWExpandState* lzwState,
     const uint8_t* stackPtr)
 {
     if (stackPtr >= lzwState->stack + sizeof(lzwState->stack)) {
@@ -907,8 +898,8 @@ Nu_LZWPushCheck(uint8_t uch, const LZWExpandState* lzwState,
     }
 }
 
-static inline void
-Nu_LZWPopCheck(const LZWExpandState* lzwState, const uint8_t* stackPtr)
+static inline void Nu_LZWPopCheck(const LZWExpandState* lzwState,
+    const uint8_t* stackPtr)
 {
     if (stackPtr == lzwState->stack) {
         Nu_ReportError(lzwState->NU_BLOB, kNuErrBadData, "stack underflow");
@@ -929,8 +920,8 @@ Nu_LZWPopCheck(const LZWExpandState* lzwState, const uint8_t* stackPtr)
  *
  * (Turning this into a macro might speed things up.)
  */
-static inline uint
-Nu_LZWGetCode(const uint8_t** pInBuf, uint32_t entry, int* pAtBit, uint* pLastByte)
+static inline uint Nu_LZWGetCode(const uint8_t** pInBuf, uint32_t entry,
+    int* pAtBit, uint* pLastByte)
 {
     uint32_t numBits, startBit, lastBit;
     uint32_t value;
@@ -977,8 +968,7 @@ Nu_LZWGetCode(const uint8_t** pInBuf, uint32_t entry, int* pAtBit, uint* pLastBy
  *
  * Reads from lzwState->dataPtr, writes to lzwState->lzwOutBuf.
  */
-static NuError
-Nu_ExpandLZW1(LZWExpandState* lzwState, uint32_t expectedLen)
+static NuError Nu_ExpandLZW1(LZWExpandState* lzwState, uint32_t expectedLen)
 {
     NuError err = kNuErrNone;
     TableEntry* tablePtr;
@@ -1077,8 +1067,7 @@ bail:
  * In some cases, "expectedInputUsed" will be -1 to indicate that the
  * value is not known.
  */
-static NuError
-Nu_ExpandLZW2(LZWExpandState* lzwState, uint32_t expectedLen,
+static NuError Nu_ExpandLZW2(LZWExpandState* lzwState, uint32_t expectedLen,
     uint32_t expectedInputUsed)
 {
     NuError err = kNuErrNone;
@@ -1230,8 +1219,7 @@ bail:
 /*
  * Expands a chunk of RLEd data into 4K of output.
  */
-static NuError
-Nu_ExpandRLE(LZWExpandState* lzwState, const uint8_t* inbuf,
+static NuError Nu_ExpandRLE(LZWExpandState* lzwState, const uint8_t* inbuf,
     uint32_t expectedInputUsed)
 {
     NuError err = kNuErrNone;
@@ -1284,8 +1272,7 @@ bail:
 /*
  * Utility function to get a byte from the input buffer.
  */
-static inline uint8_t
-Nu_GetHeaderByte(LZWExpandState* lzwState)
+static inline uint8_t Nu_GetHeaderByte(LZWExpandState* lzwState)
 {
     lzwState->dataInBuffer--;
     Assert(lzwState->dataInBuffer > 0);
@@ -1302,8 +1289,7 @@ Nu_GetHeaderByte(LZWExpandState* lzwState)
  * "*pThreadCrc" should already be set to its initial value.  On exit it
  * will contain the CRC of the uncompressed data.
  */
-NuError
-Nu_ExpandLZW(NuArchive* pArchive, const NuRecord* pRecord,
+NuError Nu_ExpandLZW(NuArchive* pArchive, const NuRecord* pRecord,
     const NuThread* pThread, FILE* infp, NuFunnel* pFunnel,
     uint16_t* pThreadCrc)
 {

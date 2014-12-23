@@ -53,8 +53,7 @@ static void Nu_CloseAndFree(NuArchive* pArchive);
 /*
  * Allocate and initialize a new NuArchive structure.
  */
-static NuError
-Nu_NuArchiveNew(NuArchive** ppArchive)
+static NuError Nu_NuArchiveNew(NuArchive** ppArchive)
 {
     Assert(ppArchive != NULL);
 
@@ -105,8 +104,7 @@ Nu_NuArchiveNew(NuArchive** ppArchive)
 /*
  * Free up a NuArchive structure and its contents.
  */
-static NuError
-Nu_NuArchiveFree(NuArchive* pArchive)
+static NuError Nu_NuArchiveFree(NuArchive* pArchive)
 {
     Assert(pArchive != NULL);
     Assert(pArchive->structMagic == kNuArchiveStructMagic);
@@ -133,8 +131,7 @@ Nu_NuArchiveFree(NuArchive* pArchive)
 /*
  * Copy a NuMasterHeader struct.
  */
-void
-Nu_MasterHeaderCopy(NuArchive* pArchive, NuMasterHeader* pDstHeader,
+void Nu_MasterHeaderCopy(NuArchive* pArchive, NuMasterHeader* pDstHeader,
     const NuMasterHeader* pSrcHeader)
 {
     Assert(pArchive != NULL);
@@ -147,8 +144,8 @@ Nu_MasterHeaderCopy(NuArchive* pArchive, NuMasterHeader* pDstHeader,
 /*
  * Get a pointer to the archive master header (this is an API call).
  */
-NuError
-Nu_GetMasterHeader(NuArchive* pArchive, const NuMasterHeader** ppMasterHeader)
+NuError Nu_GetMasterHeader(NuArchive* pArchive,
+    const NuMasterHeader** ppMasterHeader)
 {
     if (ppMasterHeader == NULL)
         return kNuErrInvalidArg;
@@ -162,8 +159,7 @@ Nu_GetMasterHeader(NuArchive* pArchive, const NuMasterHeader** ppMasterHeader)
 /*
  * Allocate the general-purpose compression buffer, if needed.
  */
-NuError
-Nu_AllocCompressionBufferIFN(NuArchive* pArchive)
+NuError Nu_AllocCompressionBufferIFN(NuArchive* pArchive)
 {
     Assert(pArchive != NULL);
 
@@ -181,8 +177,7 @@ Nu_AllocCompressionBufferIFN(NuArchive* pArchive)
 /*
  * Return a unique value.
  */
-NuRecordIdx
-Nu_GetNextRecordIdx(NuArchive* pArchive)
+NuRecordIdx Nu_GetNextRecordIdx(NuArchive* pArchive)
 {
     return pArchive->nextRecordIdx++;
 }
@@ -190,8 +185,7 @@ Nu_GetNextRecordIdx(NuArchive* pArchive)
 /*
  * Return a unique value.
  */
-NuThreadIdx
-Nu_GetNextThreadIdx(NuArchive* pArchive)
+NuThreadIdx Nu_GetNextThreadIdx(NuArchive* pArchive)
 {
     return pArchive->nextRecordIdx++;       /* just use the record counter */
 }
@@ -206,8 +200,7 @@ Nu_GetNextThreadIdx(NuArchive* pArchive)
 /*
  * Copy the wrapper from the archive file to the temp file.
  */
-NuError
-Nu_CopyWrapperToTemp(NuArchive* pArchive)
+NuError Nu_CopyWrapperToTemp(NuArchive* pArchive)
 {
     NuError err;
 
@@ -245,8 +238,7 @@ bail:
  * guess some of the SEA weirdness stems from some far-sighted support
  * for multiple archives within a single SEA wrapper.
  */
-NuError
-Nu_UpdateWrapper(NuArchive* pArchive, FILE* fp)
+NuError Nu_UpdateWrapper(NuArchive* pArchive, FILE* fp)
 {
     NuError err = kNuErrNone;
     Boolean hasBinary2, hasSea;
@@ -397,8 +389,7 @@ bail:
  * require additional disk space to be used, assuming a filesystem block
  * size of at least 128 bytes.
  */
-NuError
-Nu_AdjustWrapperPadding(NuArchive* pArchive, FILE* fp)
+NuError Nu_AdjustWrapperPadding(NuArchive* pArchive, FILE* fp)
 {
     NuError err = kNuErrNone;
     Boolean hasBinary2, hasSea;
@@ -493,8 +484,7 @@ bail:
  *
  * On exit, the stream will be positioned just past the master header.
  */
-static NuError
-Nu_ReadMasterHeader(NuArchive* pArchive)
+static NuError Nu_ReadMasterHeader(NuArchive* pArchive)
 {
     NuError err;
     uint16_t crc;
@@ -710,8 +700,7 @@ bail:
  * Prepare the NuArchive and NuMasterHeader structures for use with a
  * newly-created archive.
  */
-static void
-Nu_InitNewArchive(NuArchive* pArchive)
+static void Nu_InitNewArchive(NuArchive* pArchive)
 {
     NuMasterHeader* pHeader;
     
@@ -739,8 +728,7 @@ Nu_InitNewArchive(NuArchive* pArchive)
 /*
  * Open an archive in streaming read-only mode.
  */
-NuError
-Nu_StreamOpenRO(FILE* infp, NuArchive** ppArchive)
+NuError Nu_StreamOpenRO(FILE* infp, NuArchive** ppArchive)
 {
     NuError err;
     NuArchive* pArchive = NULL;
@@ -773,8 +761,7 @@ bail:
 /*
  * Open an archive in non-streaming read-only mode.
  */
-NuError
-Nu_OpenRO(const char* archivePathname, NuArchive** ppArchive)
+NuError Nu_OpenRO(const char* archivePathname, NuArchive** ppArchive)
 {
     NuError err;
     NuArchive* pArchive = NULL;
@@ -825,8 +812,7 @@ bail:
  * Thought for the day: consider using Win32 SetFileAttributes() to make
  * temp files hidden.  We will need to un-hide it before rolling it over.
  */
-static NuError
-Nu_OpenTempFile(char* fileName, FILE** pFp)
+static NuError Nu_OpenTempFile(char* fileName, FILE** pFp)
 {
     NuArchive* pArchive = NULL;  /* dummy for NU_BLOB */
     NuError err = kNuErrNone;
@@ -926,9 +912,8 @@ bail:
  * Open an archive in read-write mode, optionally creating it if it doesn't
  * exist.
  */
-NuError
-Nu_OpenRW(const char* archivePathname, const char* tmpPathname, uint32_t flags,
-    NuArchive** ppArchive)
+NuError Nu_OpenRW(const char* archivePathname, const char* tmpPathname,
+    uint32_t flags, NuArchive** ppArchive)
 {
     NuError err;
     FILE* fp = NULL;
@@ -1058,8 +1043,7 @@ bail:
 /*
  * Write the NuFX master header at the current offset.
  */
-NuError
-Nu_WriteMasterHeader(NuArchive* pArchive, FILE* fp,
+NuError Nu_WriteMasterHeader(NuArchive* pArchive, FILE* fp,
     NuMasterHeader* pHeader)
 {
     NuError err;
@@ -1120,8 +1104,7 @@ bail:
  * If it's a brand-new archive, and we didn't add anything to it, then we
  * want to remove the stub archive file.
  */
-static void
-Nu_CloseAndFree(NuArchive* pArchive)
+static void Nu_CloseAndFree(NuArchive* pArchive)
 {
     if (pArchive->archiveFp != NULL) {
         DBUG(("--- Closing archive\n"));
@@ -1156,8 +1139,7 @@ Nu_CloseAndFree(NuArchive* pArchive)
 /*
  * Flush pending changes to the archive, then close it.
  */
-NuError
-Nu_Close(NuArchive* pArchive)
+NuError Nu_Close(NuArchive* pArchive)
 {
     NuError err = kNuErrNone;
     long flushStatus;
@@ -1188,8 +1170,7 @@ Nu_Close(NuArchive* pArchive)
 /*
  * Delete the archive file, which should already have been closed.
  */
-NuError
-Nu_DeleteArchiveFile(NuArchive* pArchive)
+NuError Nu_DeleteArchiveFile(NuArchive* pArchive)
 {
     Assert(pArchive != NULL);
     Assert(pArchive->archiveFp == NULL);
@@ -1202,8 +1183,7 @@ Nu_DeleteArchiveFile(NuArchive* pArchive)
  * Rename the temp file on top of the original archive.  The temp file
  * should be closed, and the archive file should be deleted.
  */
-NuError
-Nu_RenameTempToArchive(NuArchive* pArchive)
+NuError Nu_RenameTempToArchive(NuArchive* pArchive)
 {
     Assert(pArchive != NULL);
     Assert(pArchive->archiveFp == NULL);

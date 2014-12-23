@@ -14,8 +14,7 @@
 /*
  * Get a configurable parameter.
  */
-NuError
-Nu_GetValue(NuArchive* pArchive, NuValueID ident, NuValue* pValue)
+NuError Nu_GetValue(NuArchive* pArchive, NuValueID ident, NuValue* pValue)
 {
     NuError err = kNuErrNone;
 
@@ -82,8 +81,7 @@ bail:
 /*
  * Set a configurable parameter.
  */
-NuError
-Nu_SetValue(NuArchive* pArchive, NuValueID ident, NuValue value)
+NuError Nu_SetValue(NuArchive* pArchive, NuValueID ident, NuValue value)
 {
     NuError err = kNuErrInvalidArg;
 
@@ -225,8 +223,7 @@ bail:
  * pry into pArchive to get at (like the archive type) or get the master
  * header (like the number of records).
  */
-NuError
-Nu_GetAttr(NuArchive* pArchive, NuAttrID ident, NuAttr* pAttr)
+NuError Nu_GetAttr(NuArchive* pArchive, NuAttrID ident, NuAttr* pAttr)
 {
     NuError err = kNuErrNone;
     if (pAttr == NULL)
@@ -260,8 +257,8 @@ bail:
  *
  * Unsupported compression types cause a warning to be flagged.
  */
-NuThreadFormat
-Nu_ConvertCompressValToFormat(NuArchive* pArchive, NuValue compValue)
+NuThreadFormat Nu_ConvertCompressValToFormat(NuArchive* pArchive,
+    NuValue compValue)
 {
     NuThreadFormat threadFormat;
     Boolean unsup = false;

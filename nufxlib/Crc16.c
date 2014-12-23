@@ -83,8 +83,7 @@ const uint16_t gNuCrc16Table[256] = {
  * Depending on CPU architecture, one may be dramatically faster than
  * the other.
  */
-uint16_t
-Nu_CalcCRC16(uint16_t seed, const uint8_t* ptr, int count)
+uint16_t Nu_CalcCRC16(uint16_t seed, const uint8_t* ptr, int count)
 {
     uint16_t CRC = seed;
 #ifndef CRC_TAB

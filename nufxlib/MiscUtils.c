@@ -21,8 +21,7 @@ static const char* kNufxLibName = "nufxlib";
 /*
  * strerror() equivalent for NufxLib errors.
  */
-const char*
-Nu_StrError(NuError err)
+const char* Nu_StrError(NuError err)
 {
     /*
      * BUG: this should be set up as per-thread storage in an MT environment.
@@ -206,8 +205,7 @@ Nu_StrError(NuError err)
  * if the archive is inaccessible (perhaps because it failed to open).  We
  * can't invoke the error message callback if the pointer is NULL.
  */
-void
-Nu_ReportError(NuArchive* pArchive, const char* file, int line,
+void Nu_ReportError(NuArchive* pArchive, const char* file, int line,
     const char* function, Boolean isDebug, NuError err, const char* format, ...)
 {
     NuErrorMessage errorMessage;
@@ -322,8 +320,7 @@ bail:
  */
 
 #ifndef USE_DMALLOC
-void*
-Nu_Malloc(NuArchive* pArchive, size_t size)
+void* Nu_Malloc(NuArchive* pArchive, size_t size)
 {
     void* _result;
 
@@ -338,16 +335,14 @@ Nu_Malloc(NuArchive* pArchive, size_t size)
     return _result;
 }
 
-void*
-Nu_Calloc(NuArchive* pArchive, size_t size)
+void* Nu_Calloc(NuArchive* pArchive, size_t size)
 {
     void* _cresult = Nu_Malloc(pArchive, size);
     memset(_cresult, 0, size);
     return _cresult;
 }
 
-void*
-Nu_Realloc(NuArchive* pArchive, void* ptr, size_t size)
+void* Nu_Realloc(NuArchive* pArchive, void* ptr, size_t size)
 {
     void* _result;
 
@@ -362,8 +357,7 @@ Nu_Realloc(NuArchive* pArchive, void* ptr, size_t size)
     return _result;
 }
 
-void
-Nu_Free(NuArchive* pArchive, void* ptr)
+void Nu_Free(NuArchive* pArchive, void* ptr)
 {
     if (ptr != NULL)
         free(ptr);
@@ -374,8 +368,7 @@ Nu_Free(NuArchive* pArchive, void* ptr)
  * If somebody internal wants to set doClose on a buffer DataSource
  * (looks like "Rename" does), we need to supply a "free" callback.
  */
-NuResult
-Nu_InternalFreeCallback(NuArchive* pArchive, void* args)
+NuResult Nu_InternalFreeCallback(NuArchive* pArchive, void* args)
 {
     DBUG(("+++ internal free callback 0x%08lx\n", (long) args));
     Nu_Free(NULL, args);

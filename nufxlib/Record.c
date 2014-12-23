@@ -26,8 +26,7 @@ static const uint8_t kNufxID[kNufxIDLen] = { 0x4e, 0xf5, 0x46, 0xd8 };
  * things that a Nu_FreeRecordContents call will check, so that we don't
  * end up trying to free garbage.  No need to memset() the whole thing.
  */
-static NuError
-Nu_InitRecordContents(NuArchive* pArchive, NuRecord* pRecord)
+static NuError Nu_InitRecordContents(NuArchive* pArchive, NuRecord* pRecord)
 {
     Assert(pRecord != NULL);
 
@@ -51,8 +50,7 @@ Nu_InitRecordContents(NuArchive* pArchive, NuRecord* pRecord)
 /*
  * Allocate and initialize a new NuRecord struct.
  */
-static NuError
-Nu_RecordNew(NuArchive* pArchive, NuRecord** ppRecord)
+static NuError Nu_RecordNew(NuArchive* pArchive, NuRecord** ppRecord)
 {
     Assert(ppRecord != NULL);
 
@@ -67,8 +65,7 @@ Nu_RecordNew(NuArchive* pArchive, NuRecord** ppRecord)
  * Free anything allocated within a record.  Doesn't try to free the record
  * itself.
  */
-static NuError
-Nu_FreeRecordContents(NuArchive* pArchive, NuRecord* pRecord)
+static NuError Nu_FreeRecordContents(NuArchive* pArchive, NuRecord* pRecord)
 {
     Assert(pRecord != NULL);
 
@@ -89,8 +86,7 @@ Nu_FreeRecordContents(NuArchive* pArchive, NuRecord* pRecord)
 /*
  * Free up a NuRecord struct.
  */
-static NuError
-Nu_RecordFree(NuArchive* pArchive, NuRecord* pRecord)
+static NuError Nu_RecordFree(NuArchive* pArchive, NuRecord* pRecord)
 {
     if (pRecord == NULL)
         return kNuErrNone;
@@ -105,8 +101,8 @@ Nu_RecordFree(NuArchive* pArchive, NuRecord* pRecord)
  * Copy a field comprised of a buffer and a length from one structure to
  * another.  It is assumed that the length value has already been copied.
  */
-static NuError
-CopySizedField(NuArchive* pArchive, void* vppDst, const void* vpSrc, uint32_t len)
+static NuError CopySizedField(NuArchive* pArchive, void* vppDst,
+    const void* vpSrc, uint32_t len)
 {
     NuError err = kNuErrNone;
     uint8_t** ppDst = vppDst;
@@ -131,8 +127,8 @@ bail:
 /*
  * Make a copy of a record.
  */
-static NuError
-Nu_RecordCopy(NuArchive* pArchive, NuRecord** ppDst, const NuRecord* pSrc)
+static NuError Nu_RecordCopy(NuArchive* pArchive, NuRecord** ppDst,
+    const NuRecord* pSrc)
 {
     NuError err;
     NuRecord* pDst;
@@ -189,8 +185,7 @@ bail:
  * acceptable.  We could do simple optimizations, like only preserving
  * ordering for "add" threadMods, but even that seems silly.
  */
-void
-Nu_RecordAddThreadMod(NuRecord* pRecord, NuThreadMod* pThreadMod)
+void Nu_RecordAddThreadMod(NuRecord* pRecord, NuThreadMod* pThreadMod)
 {
     NuThreadMod* pScanThreadMod;
 
@@ -224,8 +219,7 @@ Nu_RecordAddThreadMod(NuRecord* pRecord, NuThreadMod* pThreadMod)
  * threads, subtract the number of deletes, and return "true" if the net
  * result is zero.
  */
-Boolean
-Nu_RecordIsEmpty(NuArchive* pArchive, const NuRecord* pRecord)
+Boolean Nu_RecordIsEmpty(NuArchive* pArchive, const NuRecord* pRecord)
 {
     const NuThreadMod* pThreadMod;
     int numThreads;
@@ -275,51 +269,43 @@ Nu_RecordIsEmpty(NuArchive* pArchive, const NuRecord* pRecord)
  * Trivial getters and setters
  */
 
-Boolean
-Nu_RecordSet_GetLoaded(const NuRecordSet* pRecordSet)
+Boolean Nu_RecordSet_GetLoaded(const NuRecordSet* pRecordSet)
 {
     Assert(pRecordSet != NULL);
     return pRecordSet->loaded;
 }
 
-void
-Nu_RecordSet_SetLoaded(NuRecordSet* pRecordSet, Boolean val)
+void Nu_RecordSet_SetLoaded(NuRecordSet* pRecordSet, Boolean val)
 {
     pRecordSet->loaded = val;
 }
 
-uint32_t
-Nu_RecordSet_GetNumRecords(const NuRecordSet* pRecordSet)
+uint32_t Nu_RecordSet_GetNumRecords(const NuRecordSet* pRecordSet)
 {
     return pRecordSet->numRecords;
 }
 
-void
-Nu_RecordSet_SetNumRecords(NuRecordSet* pRecordSet, uint32_t val)
+void Nu_RecordSet_SetNumRecords(NuRecordSet* pRecordSet, uint32_t val)
 {
     pRecordSet->numRecords = val;
 }
 
-void
-Nu_RecordSet_IncNumRecords(NuRecordSet* pRecordSet)
+void Nu_RecordSet_IncNumRecords(NuRecordSet* pRecordSet)
 {
     pRecordSet->numRecords++;
 }
 
-NuRecord*
-Nu_RecordSet_GetListHead(const NuRecordSet* pRecordSet)
+NuRecord* Nu_RecordSet_GetListHead(const NuRecordSet* pRecordSet)
 {
     return pRecordSet->nuRecordHead;
 }
 
-NuRecord**
-Nu_RecordSet_GetListHeadPtr(NuRecordSet* pRecordSet)
+NuRecord** Nu_RecordSet_GetListHeadPtr(NuRecordSet* pRecordSet)
 {
     return &pRecordSet->nuRecordHead;
 }
 
-NuRecord*
-Nu_RecordSet_GetListTail(const NuRecordSet* pRecordSet)
+NuRecord* Nu_RecordSet_GetListTail(const NuRecordSet* pRecordSet)
 {
     return pRecordSet->nuRecordTail;
 }
@@ -329,8 +315,7 @@ Nu_RecordSet_GetListTail(const NuRecordSet* pRecordSet)
  * Returns "true" if the record set has no records or hasn't ever been
  * used.
  */
-Boolean
-Nu_RecordSet_IsEmpty(const NuRecordSet* pRecordSet)
+Boolean Nu_RecordSet_IsEmpty(const NuRecordSet* pRecordSet)
 {
     if (!pRecordSet->loaded || pRecordSet->numRecords == 0)
         return true;
@@ -341,8 +326,8 @@ Nu_RecordSet_IsEmpty(const NuRecordSet* pRecordSet)
 /*
  * Free the list of records, and reset the record sets to initial state.
  */
-NuError
-Nu_RecordSet_FreeAllRecords(NuArchive* pArchive, NuRecordSet* pRecordSet)
+NuError Nu_RecordSet_FreeAllRecords(NuArchive* pArchive,
+    NuRecordSet* pRecordSet)
 {
     NuError err = kNuErrNone;
     NuRecord* pRecord;
@@ -378,8 +363,8 @@ bail:
 /*
  * Add a new record to the end of the list.
  */
-static NuError
-Nu_RecordSet_AddRecord(NuRecordSet* pRecordSet, NuRecord* pRecord)
+static NuError Nu_RecordSet_AddRecord(NuRecordSet* pRecordSet,
+    NuRecord* pRecord)
 {
     Assert(pRecordSet != NULL);
     Assert(pRecord != NULL);
@@ -413,9 +398,8 @@ Nu_RecordSet_AddRecord(NuRecordSet* pRecordSet, NuRecord* pRecord)
  * (Should have a "heavy assert" mode where we verify that "ppRecord"
  * actually has something to do with pRecordSet.)
  */
-NuError
-Nu_RecordSet_DeleteRecordPtr(NuArchive* pArchive, NuRecordSet* pRecordSet,
-    NuRecord** ppRecord)
+NuError Nu_RecordSet_DeleteRecordPtr(NuArchive* pArchive,
+    NuRecordSet* pRecordSet, NuRecord** ppRecord)
 {
     NuError err;
     NuRecord* pRecord;
@@ -456,8 +440,7 @@ Nu_RecordSet_DeleteRecordPtr(NuArchive* pArchive, NuRecordSet* pRecordSet,
 /*
  * Delete a record from the record set.
  */
-NuError
-Nu_RecordSet_DeleteRecord(NuArchive* pArchive, NuRecordSet* pRecordSet,
+NuError Nu_RecordSet_DeleteRecord(NuArchive* pArchive, NuRecordSet* pRecordSet,
     NuRecord* pRecord)
 {
     NuError err;
@@ -490,8 +473,7 @@ bail:
  * Make a clone of a record set.  This is used to create the "copy" record
  * set out of the "orig" set.
  */
-NuError
-Nu_RecordSet_Clone(NuArchive* pArchive, NuRecordSet* pDstSet,
+NuError Nu_RecordSet_Clone(NuArchive* pArchive, NuRecordSet* pDstSet,
     const NuRecordSet* pSrcSet)
 {
     NuError err = kNuErrNone;
@@ -533,8 +515,7 @@ bail:
  *
  * On completion, "pSrcSet" will be empty and "unloaded".
  */
-NuError
-Nu_RecordSet_MoveAllRecords(NuArchive* pArchive, NuRecordSet* pDstSet,
+NuError Nu_RecordSet_MoveAllRecords(NuArchive* pArchive, NuRecordSet* pDstSet,
     NuRecordSet* pSrcSet)
 {
     NuError err = kNuErrNone;
@@ -583,9 +564,8 @@ Nu_RecordSet_MoveAllRecords(NuArchive* pArchive, NuRecordSet* pDstSet,
 /*
  * Find a record in the list by index.
  */
-NuError
-Nu_RecordSet_FindByIdx(const NuRecordSet* pRecordSet, NuRecordIdx recIdx,
-    NuRecord** ppRecord)
+NuError Nu_RecordSet_FindByIdx(const NuRecordSet* pRecordSet,
+    NuRecordIdx recIdx, NuRecord** ppRecord)
 {
     NuRecord* pRecord;
 
@@ -606,9 +586,8 @@ Nu_RecordSet_FindByIdx(const NuRecordSet* pRecordSet, NuRecordIdx recIdx,
 /*
  * Search for a specific thread in all records in the specified record set.
  */
-NuError
-Nu_RecordSet_FindByThreadIdx(NuRecordSet* pRecordSet, NuThreadIdx threadIdx,
-    NuRecord** ppRecord, NuThread** ppThread)
+NuError Nu_RecordSet_FindByThreadIdx(NuRecordSet* pRecordSet,
+    NuThreadIdx threadIdx, NuRecord** ppRecord, NuThread** ppThread)
 {
     NuError err = kNuErrThreadIdxNotFound;
     NuRecord* pRecord;
@@ -650,8 +629,7 @@ Nu_RecordSet_FindByThreadIdx(NuRecordSet* pRecordSet, NuThreadIdx threadIdx,
  * string pointed to by name1 is greater than, equal to, or less than
  * the string pointed to by s2, respectively (i.e. same as strcmp).
  */
-static int
-Nu_CompareRecordNames(const char* name1, const char* name2)
+static int Nu_CompareRecordNames(const char* name1, const char* name2)
 {
 #ifdef NU_CASE_SENSITIVE
     return strcmp(name1, name2);
@@ -664,9 +642,8 @@ Nu_CompareRecordNames(const char* name1, const char* name2)
 /*
  * Find a record in the list by storageName.
  */
-static NuError
-Nu_RecordSet_FindByName(const NuRecordSet* pRecordSet, const char* name,
-    NuRecord** ppRecord)
+static NuError Nu_RecordSet_FindByName(const NuRecordSet* pRecordSet,
+    const char* name, NuRecord** ppRecord)
 {
     NuRecord* pRecord;
 
@@ -696,9 +673,8 @@ Nu_RecordSet_FindByName(const NuRecordSet* pRecordSet, const char* name,
  * up scanning the entire list and keeping the last match.  If this
  * causes a notable reduction in efficiency we'll have to fix this.
  */
-static NuError
-Nu_RecordSet_ReverseFindByName(const NuRecordSet* pRecordSet, const char* name,
-    NuRecord** ppRecord)
+static NuError Nu_RecordSet_ReverseFindByName(const NuRecordSet* pRecordSet,
+    const char* name, NuRecord** ppRecord)
 {
     NuRecord* pRecord;
     NuRecord* pFoundRecord = NULL;
@@ -734,8 +710,7 @@ Nu_RecordSet_ReverseFindByName(const NuRecordSet* pRecordSet, const char* name,
  *
  * "ppNewRecord" will get a pointer to the newly-created clone.
  */
-NuError
-Nu_RecordSet_ReplaceRecord(NuArchive* pArchive, NuRecordSet* pBadSet,
+NuError Nu_RecordSet_ReplaceRecord(NuArchive* pArchive, NuRecordSet* pBadSet,
     NuRecord* pBadRecord, NuRecordSet* pGoodSet, NuRecord** ppNewRecord)
 {
     NuError err;
@@ -811,8 +786,8 @@ bail:
  * Ask the user if it's okay to ignore a bad CRC.  If we can't ask the
  * user, return "false".
  */
-Boolean
-Nu_ShouldIgnoreBadCRC(NuArchive* pArchive, const NuRecord* pRecord, NuError err)
+Boolean Nu_ShouldIgnoreBadCRC(NuArchive* pArchive, const NuRecord* pRecord,
+    NuError err)
 {
     NuErrorStatus errorStatus;
     NuResult result;
@@ -872,8 +847,7 @@ bail:
  *
  * Pass in a NuRecord structure that will hold the data we read.
  */
-static NuError
-Nu_ReadRecordHeader(NuArchive* pArchive, NuRecord* pRecord)
+static NuError Nu_ReadRecordHeader(NuArchive* pArchive, NuRecord* pRecord)
 {
     NuError err = kNuErrNone;
     uint16_t crc;
@@ -1113,8 +1087,7 @@ bail:
  * NOTE: for data files (types 1, 2, and 3), the actual value may not match
  * up what ProDOS would use, because this doesn't test for sparseness.
  */
-static void
-Nu_UpdateStorageType(NuArchive* pArchive, NuRecord* pRecord)
+static void Nu_UpdateStorageType(NuArchive* pArchive, NuRecord* pRecord)
 {
     NuError err;
     NuThread* pThread;
@@ -1167,8 +1140,7 @@ bail:
  * The position of the file pointer on exit is undefined.  The position
  * past the end of the record will be stored in pArchive->currentOffset.
  */
-NuError
-Nu_WriteRecordHeader(NuArchive* pArchive, NuRecord* pRecord, FILE* fp)
+NuError Nu_WriteRecordHeader(NuArchive* pArchive, NuRecord* pRecord, FILE* fp)
 {
     NuError err = kNuErrNone;
     uint16_t crc;
@@ -1312,8 +1284,7 @@ bail:
  * Prepare for a "walk" through the records.  This is useful for the
  * "read the TOC as you go" method of archive use.
  */
-static NuError
-Nu_RecordWalkPrepare(NuArchive* pArchive, NuRecord** ppRecord)
+static NuError Nu_RecordWalkPrepare(NuArchive* pArchive, NuRecord** ppRecord)
 {
     NuError err = kNuErrNone;
 
@@ -1345,8 +1316,7 @@ bail:
  * we read it from the archive file, and add it to the TOC being
  * constructed.
  */
-static NuError
-Nu_RecordWalkGetNext(NuArchive* pArchive, NuRecord** ppRecord)
+static NuError Nu_RecordWalkGetNext(NuArchive* pArchive, NuRecord** ppRecord)
 {
     NuError err = kNuErrNone;
 
@@ -1394,8 +1364,7 @@ bail:
  * full table of contents.  On an unsuccessful walk, blow away the TOC
  * if we don't have all of it.
  */
-static NuError
-Nu_RecordWalkFinish(NuArchive* pArchive, NuError walkErr)
+static NuError Nu_RecordWalkFinish(NuArchive* pArchive, NuError walkErr)
 {
     if (pArchive->haveToc)
         return kNuErrNone;
@@ -1418,8 +1387,7 @@ Nu_RecordWalkFinish(NuArchive* pArchive, NuError walkErr)
  *
  * Uses the "record walk" functions, because they're there.
  */
-NuError
-Nu_GetTOCIfNeeded(NuArchive* pArchive)
+NuError Nu_GetTOCIfNeeded(NuArchive* pArchive)
 {
     NuError err = kNuErrNone;
     NuRecord* pRecord;
@@ -1458,8 +1426,7 @@ bail:
  * Run through the entire archive, pulling out the header bits, skipping
  * over the data bits, and calling "contentFunc" for each record.
  */
-NuError
-Nu_StreamContents(NuArchive* pArchive, NuCallback contentFunc)
+NuError Nu_StreamContents(NuArchive* pArchive, NuCallback contentFunc)
 {
     NuError err = kNuErrNone;
     NuRecord tmpRecord;
@@ -1516,8 +1483,8 @@ bail:
  * to recreate the original we need to re-add the resource fork so
  * NufxLib knows to make it an extended file.
  */
-static NuError
-Nu_FakeZeroExtract(NuArchive* pArchive, NuRecord* pRecord, int threadKind)
+static NuError Nu_FakeZeroExtract(NuArchive* pArchive, NuRecord* pRecord,
+    int threadKind)
 {
     NuError err;
     NuThread fakeThread;
@@ -1549,8 +1516,7 @@ Nu_FakeZeroExtract(NuArchive* pArchive, NuRecord* pRecord, int threadKind)
 /*
  * Run through the entire archive, extracting the contents.
  */
-NuError
-Nu_StreamExtract(NuArchive* pArchive)
+NuError Nu_StreamExtract(NuArchive* pArchive)
 {
     NuError err = kNuErrNone;
     NuRecord tmpRecord;
@@ -1662,8 +1628,7 @@ bail:
  * Test the contents of an archive.  Works just like extraction, but we
  * don't store anything.
  */
-NuError
-Nu_StreamTest(NuArchive* pArchive)
+NuError Nu_StreamTest(NuArchive* pArchive)
 {
     NuError err;
 
@@ -1686,8 +1651,7 @@ Nu_StreamTest(NuArchive* pArchive)
  * This only walks through the "orig" list, so it does not reflect the
  * results of un-flushed changes.
  */
-NuError
-Nu_Contents(NuArchive* pArchive, NuCallback contentFunc)
+NuError Nu_Contents(NuArchive* pArchive, NuCallback contentFunc)
 {
     NuError err = kNuErrNone;
     NuRecord* pRecord;
@@ -1727,8 +1691,7 @@ bail:
  *
  * This assumes random access, so it can't be used in streaming mode.
  */
-static NuError
-Nu_ExtractRecordByPtr(NuArchive* pArchive, NuRecord* pRecord)
+static NuError Nu_ExtractRecordByPtr(NuArchive* pArchive, NuRecord* pRecord)
 {
     NuError err = kNuErrNone;
     Boolean hasInterestingThread;
@@ -1796,8 +1759,7 @@ bail:
 /*
  * Extract a big buncha files.
  */
-NuError
-Nu_Extract(NuArchive* pArchive)
+NuError Nu_Extract(NuArchive* pArchive)
 {
     NuError err;
     NuRecord* pRecord = NULL;
@@ -1842,8 +1804,7 @@ bail:
 /*
  * Extract a single record.
  */
-NuError
-Nu_ExtractRecord(NuArchive* pArchive, NuRecordIdx recIdx)
+NuError Nu_ExtractRecord(NuArchive* pArchive, NuRecordIdx recIdx)
 {
     NuError err;
     NuRecord* pRecord;
@@ -1871,8 +1832,7 @@ bail:
  * Test the contents of an archive.  Works just like extraction, but we
  * don't store anything.
  */
-NuError
-Nu_Test(NuArchive* pArchive)
+NuError Nu_Test(NuArchive* pArchive)
 {
     NuError err;
 
@@ -1885,8 +1845,7 @@ Nu_Test(NuArchive* pArchive)
 /*
  * Test a single record.
  */
-NuError
-Nu_TestRecord(NuArchive* pArchive, NuRecordIdx recIdx)
+NuError Nu_TestRecord(NuArchive* pArchive, NuRecordIdx recIdx)
 {
     NuError err;
     NuRecord* pRecord;
@@ -1919,8 +1878,7 @@ bail:
  * for records that have been deleted.  It will not reflect changes
  * made by previous "write" calls, not even SetRecordAttr.
  */
-NuError
-Nu_GetRecord(NuArchive* pArchive, NuRecordIdx recordIdx,
+NuError Nu_GetRecord(NuArchive* pArchive, NuRecordIdx recordIdx,
     const NuRecord** ppRecord)
 {
     NuError err;
@@ -1947,8 +1905,7 @@ bail:
 /*
  * Find the recordIdx of a record by storage name.
  */
-NuError
-Nu_GetRecordIdxByName(NuArchive* pArchive, const char* name,
+NuError Nu_GetRecordIdxByName(NuArchive* pArchive, const char* name,
     NuRecordIdx* pRecordIdx)
 {
     NuError err;
@@ -1976,8 +1933,7 @@ bail:
 /*
  * Find the recordIdx of a record by zero-based position.
  */
-NuError
-Nu_GetRecordIdxByPosition(NuArchive* pArchive, uint32_t position,
+NuError Nu_GetRecordIdxByPosition(NuArchive* pArchive, uint32_t position,
     NuRecordIdx* pRecordIdx)
 {
     NuError err;
@@ -2028,8 +1984,7 @@ bail:
  * The record returned will always be from the "copy" set.  An error result
  * is returned if the record isn't found.
  */
-NuError
-Nu_FindRecordForWriteByIdx(NuArchive* pArchive, NuRecordIdx recIdx,
+NuError Nu_FindRecordForWriteByIdx(NuArchive* pArchive, NuRecordIdx recIdx,
     NuRecord** ppFoundRecord)
 {
     NuError err;
@@ -2079,9 +2034,9 @@ bail:
  * passed in, then the record will be deleted from the "copy" set (which
  * will be created only if necessary).
  */
-static NuError
-Nu_HandleAddDuplicateRecord(NuArchive* pArchive, NuRecordSet* pRecordSet,
-    NuRecord* pRecord, const NuFileDetails* pFileDetails)
+static NuError Nu_HandleAddDuplicateRecord(NuArchive* pArchive,
+    NuRecordSet* pRecordSet, NuRecord* pRecord,
+    const NuFileDetails* pFileDetails)
 {
     NuError err = kNuErrNone;
     NuErrorStatus errorStatus;
@@ -2218,8 +2173,7 @@ bail:
  * placed in "*pThreadIdx".  If "*ppNewRecord" is non-NULL, it gets a pointer
  * to the newly-created record (this isn't part of the external interface).
  */
-NuError
-Nu_AddRecord(NuArchive* pArchive, const NuFileDetails* pFileDetails,
+NuError Nu_AddRecord(NuArchive* pArchive, const NuFileDetails* pFileDetails,
     NuRecordIdx* pRecordIdx, NuRecord** ppNewRecord)
 {
     NuError err;
@@ -2358,8 +2312,7 @@ bail:
  * The caller should have already verified that there isn't another
  * "add file" thread mod with the same ThreadID.
  */
-static NuError
-Nu_AddFileThreadMod(NuArchive* pArchive, NuRecord* pRecord,
+static NuError Nu_AddFileThreadMod(NuArchive* pArchive, NuRecord* pRecord,
     const char* pathname, const NuFileDetails* pFileDetails,
     Boolean fromRsrcFork)
 {
@@ -2419,8 +2372,7 @@ bail:
  *
  * If "pRecordIdx" is non-NULL, it will receive the newly assigned recordID.
  */
-NuError 
-Nu_AddFile(NuArchive* pArchive, const char* pathname,
+NuError Nu_AddFile(NuArchive* pArchive, const char* pathname,
     const NuFileDetails* pFileDetails, Boolean fromRsrcFork,
     NuRecordIdx* pRecordIdx)
 {
@@ -2561,8 +2513,7 @@ bail:
  * We might also want to screen out trailing fssep chars, though the NuFX
  * spec doesn't say they're illegal.
  */
-NuError
-Nu_Rename(NuArchive* pArchive, NuRecordIdx recIdx, const char* pathname,
+NuError Nu_Rename(NuArchive* pArchive, NuRecordIdx recIdx, const char* pathname,
     char fssep)
 {
     NuError err;
@@ -2707,8 +2658,7 @@ bail:
 /*
  * Update a record's attributes with the contents of pRecordAttr.
  */
-NuError
-Nu_SetRecordAttr(NuArchive* pArchive, NuRecordIdx recordIdx,
+NuError Nu_SetRecordAttr(NuArchive* pArchive, NuRecordIdx recordIdx,
     const NuRecordAttr* pRecordAttr)
 {
     NuError err;
@@ -2745,8 +2695,7 @@ bail:
 /*
  * Bulk-delete several records, using the selection filter callback.
  */
-NuError
-Nu_Delete(NuArchive* pArchive)
+NuError Nu_Delete(NuArchive* pArchive)
 {
     NuError err;
     NuSelectionProposal selProposal;
@@ -2828,8 +2777,7 @@ bail:
 /*
  * Delete an entire record.
  */
-NuError
-Nu_DeleteRecord(NuArchive* pArchive, NuRecordIdx recIdx)
+NuError Nu_DeleteRecord(NuArchive* pArchive, NuRecordIdx recIdx)
 {
     NuError err;
     NuRecord* pRecord;

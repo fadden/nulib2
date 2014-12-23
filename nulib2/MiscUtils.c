@@ -16,8 +16,7 @@
  *
  * If "format" is NULL, just the error message itself is printed.
  */
-void
-ReportError(NuError err, const char* format, ...)
+void ReportError(NuError err, const char* format, ...)
 {
     const char* msg;
     va_list args;
@@ -62,8 +61,7 @@ ReportError(NuError err, const char* format, ...)
  */
 
 #ifndef USE_DMALLOC
-void*
-Malloc(size_t size)
+void* Malloc(size_t size)
 {
     void* _result;
 
@@ -77,16 +75,14 @@ Malloc(size_t size)
     return _result;
 }
 
-void*
-Calloc(size_t size)
+void* Calloc(size_t size)
 {
     void* _cresult = Malloc(size);
     memset(_cresult, 0, size);
     return _cresult;
 }
 
-void*
-Realloc(void* ptr, size_t size)
+void* Realloc(void* ptr, size_t size)
 {
     void* _result;
 
@@ -100,8 +96,7 @@ Realloc(void* ptr, size_t size)
     return _result;
 }
 
-void
-Free(void* ptr)
+void Free(void* ptr)
 {
     if (ptr != NULL)
         free(ptr);
@@ -111,8 +106,7 @@ Free(void* ptr)
 /*  
  * This gets called when a buffer DataSource is no longer needed.
  */
-NuResult
-FreeCallback(NuArchive* pArchive, void* args)
+NuResult FreeCallback(NuArchive* pArchive, void* args)
 {
     DBUG(("+++ free callback 0x%08lx\n", (long) args));
     Free(args);

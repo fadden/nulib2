@@ -19,8 +19,7 @@
 /*
  * Allocate a new DataSource structure.
  */
-static NuError
-Nu_DataSourceNew(NuDataSource** ppDataSource)
+static NuError Nu_DataSourceNew(NuDataSource** ppDataSource)
 {
     Assert(ppDataSource != NULL);
 
@@ -49,8 +48,7 @@ Nu_DataSourceNew(NuDataSource** ppDataSource)
  *
  * Returns NULL on error.
  */
-NuDataSource*
-Nu_DataSourceCopy(NuDataSource* pDataSource)
+NuDataSource* Nu_DataSourceCopy(NuDataSource* pDataSource)
 {
     Assert(pDataSource->common.refCount >= 1);
     pDataSource->common.refCount++;
@@ -89,8 +87,7 @@ Nu_DataSourceCopy(NuDataSource* pDataSource)
 /*
  * Free a data source structure, and any type-specific elements.
  */
-NuError
-Nu_DataSourceFree(NuDataSource* pDataSource)
+NuError Nu_DataSourceFree(NuDataSource* pDataSource)
 {
     if (pDataSource == NULL)
         return kNuErrNone;
@@ -139,8 +136,7 @@ Nu_DataSourceFree(NuDataSource* pDataSource)
 /*
  * Create a data source for an unopened file.
  */
-NuError
-Nu_DataSourceFile_New(NuThreadFormat threadFormat, uint32_t otherLen,
+NuError Nu_DataSourceFile_New(NuThreadFormat threadFormat, uint32_t otherLen,
     const char* pathname, Boolean isFromRsrcFork, NuDataSource** ppDataSource)
 {
     NuError err;
@@ -175,8 +171,7 @@ bail:
  * Create a data source for an open file at a specific offset.  The FILE*
  * must be seekable.
  */
-NuError
-Nu_DataSourceFP_New(NuThreadFormat threadFormat, uint32_t otherLen,
+NuError Nu_DataSourceFP_New(NuThreadFormat threadFormat, uint32_t otherLen,
     FILE* fp, long offset, long length, NuCallback fcloseFunc,
     NuDataSource** ppDataSource)
 {
@@ -220,8 +215,7 @@ bail:
  * NULL.  This is useful for creating empty pre-sized buffers, such as
  * blank comment fields.
  */
-NuError
-Nu_DataSourceBuffer_New(NuThreadFormat threadFormat, uint32_t otherLen,
+NuError Nu_DataSourceBuffer_New(NuThreadFormat threadFormat, uint32_t otherLen,
     const uint8_t* buffer, long offset, long length, NuCallback freeFunc,
     NuDataSource** ppDataSource)
 {
@@ -267,8 +261,7 @@ bail:
 /*
  * Get the type of a NuDataSource.
  */
-NuDataSourceType
-Nu_DataSourceGetType(const NuDataSource* pDataSource)
+NuDataSourceType Nu_DataSourceGetType(const NuDataSource* pDataSource)
 {
     Assert(pDataSource != NULL);
     return pDataSource->sourceType;
@@ -277,8 +270,7 @@ Nu_DataSourceGetType(const NuDataSource* pDataSource)
 /*
  * Get the threadFormat for a data source.
  */
-NuThreadFormat
-Nu_DataSourceGetThreadFormat(const NuDataSource* pDataSource)
+NuThreadFormat Nu_DataSourceGetThreadFormat(const NuDataSource* pDataSource)
 {
     Assert(pDataSource != NULL);
     return pDataSource->common.threadFormat;
@@ -287,8 +279,7 @@ Nu_DataSourceGetThreadFormat(const NuDataSource* pDataSource)
 /*
  * Get "dataLen" from a dataSource.
  */
-uint32_t
-Nu_DataSourceGetDataLen(const NuDataSource* pDataSource)
+uint32_t Nu_DataSourceGetDataLen(const NuDataSource* pDataSource)
 {
     Assert(pDataSource != NULL);
 
@@ -303,8 +294,7 @@ Nu_DataSourceGetDataLen(const NuDataSource* pDataSource)
 /*
  * Get "otherLen" from a dataSource.
  */
-uint32_t
-Nu_DataSourceGetOtherLen(const NuDataSource* pDataSource)
+uint32_t Nu_DataSourceGetOtherLen(const NuDataSource* pDataSource)
 {
     Assert(pDataSource != NULL);
     return pDataSource->common.otherLen;
@@ -313,8 +303,7 @@ Nu_DataSourceGetOtherLen(const NuDataSource* pDataSource)
 /*
  * Change the "otherLen" value.
  */
-void
-Nu_DataSourceSetOtherLen(NuDataSource* pDataSource, long otherLen)
+void Nu_DataSourceSetOtherLen(NuDataSource* pDataSource, long otherLen)
 {
     Assert(pDataSource != NULL && otherLen > 0);
     pDataSource->common.otherLen = otherLen;
@@ -324,8 +313,7 @@ Nu_DataSourceSetOtherLen(NuDataSource* pDataSource, long otherLen)
 /*
  * Get the "raw CRC" value.
  */
-uint16_t
-Nu_DataSourceGetRawCrc(const NuDataSource* pDataSource)
+uint16_t Nu_DataSourceGetRawCrc(const NuDataSource* pDataSource)
 {
     Assert(pDataSource != NULL);
     return pDataSource->common.rawCrc;
@@ -335,8 +323,7 @@ Nu_DataSourceGetRawCrc(const NuDataSource* pDataSource)
  * Set the "raw CRC" value.  You would want to do this if the input was
  * already-compressed data, and you wanted to propagate the thread CRC.
  */
-void
-Nu_DataSourceSetRawCrc(NuDataSource* pDataSource, uint16_t crc)
+void Nu_DataSourceSetRawCrc(NuDataSource* pDataSource, uint16_t crc)
 {
     Assert(pDataSource != NULL);
     pDataSource->common.rawCrc = crc;
@@ -346,8 +333,8 @@ Nu_DataSourceSetRawCrc(NuDataSource* pDataSource, uint16_t crc)
 /*
  * Prepare a data source for action.
  */
-NuError
-Nu_DataSourcePrepareInput(NuArchive* pArchive, NuDataSource* pDataSource)
+NuError Nu_DataSourcePrepareInput(NuArchive* pArchive,
+    NuDataSource* pDataSource)
 {
     NuError err = kNuErrNone;
     FILE* fileFp = NULL;
@@ -403,8 +390,7 @@ bail:
  * call will take care of this eventually -- but for normal operation on
  * a large number of files, it's vital.
  */
-void
-Nu_DataSourceUnPrepareInput(NuArchive* pArchive, NuDataSource* pDataSource)
+void Nu_DataSourceUnPrepareInput(NuArchive* pArchive, NuDataSource* pDataSource)
 {
     if (Nu_DataSourceGetType(pDataSource) != kNuDataSourceFromFile)
         return;
@@ -420,8 +406,7 @@ Nu_DataSourceUnPrepareInput(NuArchive* pArchive, NuDataSource* pDataSource)
 /*
  * Get the pathname from a "from-file" dataSource.
  */
-const char*
-Nu_DataSourceFile_GetPathname(NuDataSource* pDataSource)
+const char* Nu_DataSourceFile_GetPathname(NuDataSource* pDataSource)
 {
     Assert(pDataSource != NULL);
     Assert(pDataSource->sourceType == kNuDataSourceFromFile);
@@ -434,8 +419,8 @@ Nu_DataSourceFile_GetPathname(NuDataSource* pDataSource)
 /*
  * Read a block of data from a dataSource.
  */
-NuError
-Nu_DataSourceGetBlock(NuDataSource* pDataSource, uint8_t* buf, uint32_t len)
+NuError Nu_DataSourceGetBlock(NuDataSource* pDataSource, uint8_t* buf,
+    uint32_t len)
 {
     NuError err;
 
@@ -479,8 +464,7 @@ Nu_DataSourceGetBlock(NuDataSource* pDataSource, uint8_t* buf, uint32_t len)
 /*
  * Rewind a data source to the start of its input.
  */
-NuError
-Nu_DataSourceRewind(NuDataSource* pDataSource)
+NuError Nu_DataSourceRewind(NuDataSource* pDataSource)
 {
     NuError err;
 
@@ -518,8 +502,7 @@ Nu_DataSourceRewind(NuDataSource* pDataSource)
 /*
  * Allocate a new DataSink structure.
  */
-static NuError
-Nu_DataSinkNew(NuDataSink** ppDataSink)
+static NuError Nu_DataSinkNew(NuDataSink** ppDataSink)
 {
     Assert(ppDataSink != NULL);
 
@@ -536,8 +519,7 @@ Nu_DataSinkNew(NuDataSink** ppDataSink)
 /*
  * Free a data sink structure, and any type-specific elements.
  */
-NuError
-Nu_DataSinkFree(NuDataSink* pDataSink)
+NuError Nu_DataSinkFree(NuDataSink* pDataSink)
 {
     if (pDataSink == NULL)
         return kNuErrNone;
@@ -568,9 +550,8 @@ Nu_DataSinkFree(NuDataSink* pDataSink)
 /*
  * Create a data sink for an unopened file.
  */
-NuError
-Nu_DataSinkFile_New(Boolean doExpand, NuValue convertEOL, const char* pathname,
-    char fssep, NuDataSink** ppDataSink)
+NuError Nu_DataSinkFile_New(Boolean doExpand, NuValue convertEOL,
+    const char* pathname, char fssep, NuDataSink** ppDataSink)
 {
     NuError err;
 
@@ -607,8 +588,7 @@ bail:
 /*
  * Create a data sink based on a file pointer.
  */
-NuError
-Nu_DataSinkFP_New(Boolean doExpand, NuValue convertEOL, FILE* fp,
+NuError Nu_DataSinkFP_New(Boolean doExpand, NuValue convertEOL, FILE* fp,
     NuDataSink** ppDataSink)
 {
     NuError err;
@@ -642,9 +622,8 @@ bail:
 /*
  * Create a data sink for a buffer in memory.
  */
-NuError
-Nu_DataSinkBuffer_New(Boolean doExpand, NuValue convertEOL, uint8_t* buffer,
-    uint32_t bufLen, NuDataSink** ppDataSink)
+NuError Nu_DataSinkBuffer_New(Boolean doExpand, NuValue convertEOL,
+    uint8_t* buffer, uint32_t bufLen, NuDataSink** ppDataSink)
 {
     NuError err;
 
@@ -681,8 +660,7 @@ bail:
 /*
  * Create a data sink that goes nowhere.
  */
-NuError
-Nu_DataSinkVoid_New(Boolean doExpand, NuValue convertEOL,
+NuError Nu_DataSinkVoid_New(Boolean doExpand, NuValue convertEOL,
     NuDataSink** ppDataSink)
 {
     NuError err;
@@ -706,8 +684,7 @@ bail:
 /*
  * Get the type of a NuDataSink.
  */
-NuDataSinkType
-Nu_DataSinkGetType(const NuDataSink* pDataSink)
+NuDataSinkType Nu_DataSinkGetType(const NuDataSink* pDataSink)
 {
     Assert(pDataSink != NULL);
     return pDataSink->sinkType;
@@ -717,8 +694,7 @@ Nu_DataSinkGetType(const NuDataSink* pDataSink)
 /*
  * Return the "doExpand" parameter from any kind of sink.
  */
-Boolean
-Nu_DataSinkGetDoExpand(const NuDataSink* pDataSink)
+Boolean Nu_DataSinkGetDoExpand(const NuDataSink* pDataSink)
 {
     return pDataSink->common.doExpand;
 }
@@ -726,8 +702,7 @@ Nu_DataSinkGetDoExpand(const NuDataSink* pDataSink)
 /*
  * Return the "convertEOL" parameter from any kind of sink.
  */
-NuValue
-Nu_DataSinkGetConvertEOL(const NuDataSink* pDataSink)
+NuValue Nu_DataSinkGetConvertEOL(const NuDataSink* pDataSink)
 {
     return pDataSink->common.convertEOL;
 }
@@ -735,8 +710,7 @@ Nu_DataSinkGetConvertEOL(const NuDataSink* pDataSink)
 /*
  * Return the #of bytes written to the sink.
  */
-uint32_t
-Nu_DataSinkGetOutCount(const NuDataSink* pDataSink)
+uint32_t Nu_DataSinkGetOutCount(const NuDataSink* pDataSink)
 {
     return pDataSink->common.outCount;
 }
@@ -745,8 +719,7 @@ Nu_DataSinkGetOutCount(const NuDataSink* pDataSink)
 /*
  * Get "pathname" from a to-file sink.
  */
-const char*
-Nu_DataSinkFile_GetPathname(const NuDataSink* pDataSink)
+const char* Nu_DataSinkFile_GetPathname(const NuDataSink* pDataSink)
 {
     Assert(pDataSink != NULL);
     Assert(pDataSink->sinkType == kNuDataSinkToFile);
@@ -757,8 +730,7 @@ Nu_DataSinkFile_GetPathname(const NuDataSink* pDataSink)
 /*
  * Get "fssep" from a to-file sink.
  */
-char
-Nu_DataSinkFile_GetFssep(const NuDataSink* pDataSink)
+char Nu_DataSinkFile_GetFssep(const NuDataSink* pDataSink)
 {
     Assert(pDataSink != NULL);
     Assert(pDataSink->sinkType == kNuDataSinkToFile);
@@ -769,8 +741,7 @@ Nu_DataSinkFile_GetFssep(const NuDataSink* pDataSink)
 /*
  * Get the "fp" for a file sink.
  */
-FILE*
-Nu_DataSinkFile_GetFP(const NuDataSink* pDataSink)
+FILE* Nu_DataSinkFile_GetFP(const NuDataSink* pDataSink)
 {
     Assert(pDataSink != NULL);
     Assert(pDataSink->sinkType == kNuDataSinkToFile);
@@ -781,8 +752,7 @@ Nu_DataSinkFile_GetFP(const NuDataSink* pDataSink)
 /*
  * Set the "fp" for a file sink.
  */
-void
-Nu_DataSinkFile_SetFP(NuDataSink* pDataSink, FILE* fp)
+void Nu_DataSinkFile_SetFP(NuDataSink* pDataSink, FILE* fp)
 {
     Assert(pDataSink != NULL);
     Assert(pDataSink->sinkType == kNuDataSinkToFile);
@@ -793,8 +763,7 @@ Nu_DataSinkFile_SetFP(NuDataSink* pDataSink, FILE* fp)
 /*
  * Close a to-file sink.
  */
-void
-Nu_DataSinkFile_Close(NuDataSink* pDataSink)
+void Nu_DataSinkFile_Close(NuDataSink* pDataSink)
 {
     Assert(pDataSink != NULL);
 
@@ -808,8 +777,8 @@ Nu_DataSinkFile_Close(NuDataSink* pDataSink)
 /*
  * Write a block of data to a DataSink.
  */
-NuError
-Nu_DataSinkPutBlock(NuDataSink* pDataSink, const uint8_t* buf, uint32_t len)
+NuError Nu_DataSinkPutBlock(NuDataSink* pDataSink, const uint8_t* buf,
+    uint32_t len)
 {
     NuError err;
 
@@ -856,8 +825,7 @@ Nu_DataSinkPutBlock(NuDataSink* pDataSink, const uint8_t* buf, uint32_t len)
 /*
  * Figure out if one of our earlier writes has failed.
  */
-NuError
-Nu_DataSinkGetError(NuDataSink* pDataSink)
+NuError Nu_DataSinkGetError(NuDataSink* pDataSink)
 {
     NuError err = kNuErrNone;
 
