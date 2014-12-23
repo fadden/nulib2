@@ -19,7 +19,8 @@
 
 <h6>&nbsp;</h6>
 
-<h6>NuFX Addendum - <b>By Andy McFadden - Last revised 2004/09/26</b></h6>
+<h6>NuFX Addendum - <b>By Andy McFadden - Last revised 2014/12/22</b></h6>
+
 <p align="left">This addendum clarifies and extends certain aspects of the <a href="FTN.e08002.htm"> NuFX
 specification</a>.&nbsp; This was developed by Andy McFadden, and is not an
 &quot;official&quot; modification of the original document.</p>
@@ -158,8 +159,9 @@ strip any leading path components from disk image &quot;storage names&quot;.&nbs
 character in a disk volume name.)<p align="left"><b>Extracting:</b>
 Applications extracting directly to a disk must strip leading path components
 before assigning the ProDOS volume name.&nbsp; Applications extracting images to
-a file don't need to do anything unusual.<p align="left">&nbsp;<h3 align="left">Filename
-case sensitivity</h3>
+a file don't need to do anything unusual.
+
+<p align="left">&nbsp;<h3 align="left">Filename case sensitivity</h3>
 <p align="left">There isn't a &quot;filename is case-sensitive&quot; flag in
 NuFX archives.&nbsp; Since it was designed primarily for ProDOS and HFS
 filesystems, neither of which is case-sensitive, we should assume that case is
@@ -170,7 +172,17 @@ to display archive contents as a hierarchical tree.<p align="left">Applications
 should try to recognize that &quot;foo/bar&quot;, &quot;foo/BAR&quot;, and
 &quot;FOO/bar&quot; are the same file, but it's probably not worth
 &quot;probing&quot; a case-sensitive filesystem like Linux ext2 to guarantee
-such.<p align="left">&nbsp;<h3 align="left">Duplicate filenames</h3>
+such.
+
+<p align="left">&nbsp;<h3 align="left">Filename character set</h3>
+<p align="left">GS/OS and contemporary Macintoshes used the
+<a href="http://www.unicode.org/Public/MAPPINGS/VENDORS/APPLE/ROMAN.TXT">Mac OS Roman</a>
+character set.  Since GS/ShrinkIt was designed to handle ProDOS and HFS
+filenames, it's reasonable to declare that all filenames should be interpreted
+as Mac OS Roman.  Applications should convert filenames to and from the
+Unicode equivalents when extracting and adding files.
+
+<p align="left">&nbsp;<h3 align="left">Duplicate filenames</h3>
 <p align="left">There is nothing in the NuFX specification that prevents having
 more than one file with the same name in an archive.&nbsp; In practice, this is
 inconvenient, especially for users with command-line tools.&nbsp; On the other
@@ -530,7 +542,7 @@ also accept the year 0.&nbsp; However, if you find a Date/Time with zero in all
 useful fields (second, minute, hour, day, month, year), treat it as an
 unspecified date rather than midnight of January 1, 2000.</p>
 <hr>
-<p>This document is Copyright © 2000-2004 by <a href="http://www.fadden.com/">Andy
+<p>This document is Copyright &copy; 2000-2004 by <a href="http://www.fadden.com/">Andy
 McFadden</a>.&nbsp; All Rights Reserved.</p>
 <p>The latest version can be found on the NuLib web site at
 <a href="http://www.nulib.com/">http://www.nulib.com/</a>.</p>
