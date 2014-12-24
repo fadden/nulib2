@@ -69,6 +69,7 @@
 # define HAVE_CHSIZE
 # define snprintf _snprintf
 # define vsnprintf _vsnprintf
+
 #endif
 
 #ifdef HAVE_MALLOC_H

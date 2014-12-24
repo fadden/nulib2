@@ -1,13 +1,12 @@
 /*
- * Nulib2
+ * NuLib2
  * Copyright (C) 2000-2007 by Andy McFadden, All Rights Reserved.
  * This is free software; you can redistribute it and/or modify it under the
  * terms of the BSD License, see the file COPYING.
  *
  * Misc support functions.
  */
-#define __MiscUtils_c__
-#include "Nulib2.h"
+#include "NuLib2.h"
 
 
 /*
@@ -111,5 +110,29 @@ NuResult FreeCallback(NuArchive* pArchive, void* args)
     DBUG(("+++ free callback 0x%08lx\n", (long) args));
     Free(args);
     return kNuOK;
+}
+
+/*
+ * Convert Mac OS Roman to Unicode.  The caller must free the string
+ * returned.
+ *
+ * Returns NULL if stringMOR is NULL or if the conversion fails.
+ */
+UNICHAR* CopyMORToUNI(const char* stringMOR)
+{
+    size_t uniLen;
+    UNICHAR* uniBuf;
+
+    if (stringMOR == NULL) {
+        return NULL;
+    }
+
+    uniLen = NuConvertMORToUNI(stringMOR, NULL, 0);
+    if (uniLen == (size_t) -1) {
+        return NULL;
+    }
+    uniBuf = (UNICHAR*) malloc(uniLen);
+    NuConvertMORToUNI(stringMOR, uniBuf, uniLen);
+    return uniBuf;
 }
 

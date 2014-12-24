@@ -6,7 +6,6 @@
  *
  * Miscellaneous NufxLib utility functions.
  */
-#define __MiscUtils_c__
 #include "NufxLibPriv.h"
 
 /*
@@ -206,7 +205,8 @@ const char* Nu_StrError(NuError err)
  * can't invoke the error message callback if the pointer is NULL.
  */
 void Nu_ReportError(NuArchive* pArchive, const char* file, int line,
-    const char* function, Boolean isDebug, NuError err, const char* format, ...)
+    const char* function, Boolean isDebug, NuError err,
+    const UNICHAR* format, ...)
 {
     NuErrorMessage errorMessage;
     const char* msg;

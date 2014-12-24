@@ -161,9 +161,9 @@ void Nu_DebugDumpThread(const NuThread* pThread)
     printf("%sThreadKind:   0x%04x (%s)\n", kInd,
         pThread->thThreadKind, descr);
 
-    printf("%sThreadCRC: 0x%04x  ThreadEOF: %lu  CompThreadEOF: %lu\n", kInd,
+    printf("%sThreadCRC: 0x%04x  ThreadEOF: %u  CompThreadEOF: %u\n", kInd,
         pThread->thThreadCRC, pThread->thThreadEOF, pThread->thCompThreadEOF);
-    printf("%s*File data offset: %ld  actualThreadEOF: %ld\n", kInd,
+    printf("%s*File data offset: %ld  actualThreadEOF: %d\n", kInd,
         pThread->fileOffset, pThread->actualThreadEOF);
 }
 
@@ -189,15 +189,17 @@ static void Nu_DebugDumpRecord(NuArchive* pArchive, const NuRecord* pRecord,
     /*printf("PTR: pRecord=0x%08lx pXrefRecord=0x%08lx\n", (long) pRecord,
         (long) pXrefRecord);*/
 
-    printf("%s%s%sFilename: '%s' (idx=%lu)\n", kInd,
+    UNICHAR* filenameUNI = Nu_CopyMORToUNI(pRecord->filenameMOR);
+    printf("%s%s%sFilename: '%s' (idx=%u)\n", kInd,
         isDeleted ? "[DEL] " : "",
         pXrefRecord != NULL && pXrefRecord->pThreadMods != NULL ? "[MOD] " : "",
-        pRecord->filename == NULL ? "<not specified>" : pRecord->filename,
+        filenameUNI == NULL ? "<not specified>" : filenameUNI,
         pRecord->recordIdx);
+    free(filenameUNI);
     printf("%sHeaderID: '%.4s'  VersionNumber: 0x%04x  HeaderCRC: 0x%04x\n",
         kInd,
         pRecord->recNufxID, pRecord->recVersionNumber, pRecord->recHeaderCRC);
-    printf("%sAttribCount: %u  TotalThreads: %lu\n", kInd,
+    printf("%sAttribCount: %u  TotalThreads: %u\n", kInd,
         pRecord->recAttribCount, pRecord->recTotalThreads);
     printf("%sFileSysID: %u (%s)  FileSysInfo: 0x%04x ('%c')\n", kInd,
         pRecord->recFileSysID,
@@ -205,7 +207,7 @@ static void Nu_DebugDumpRecord(NuArchive* pArchive, const NuRecord* pRecord,
         pRecord->recFileSysInfo,
         NuGetSepFromSysInfo(pRecord->recFileSysInfo));
     /* do something fancy for ProDOS? */
-    printf("%sFileType: 0x%08lx  ExtraType: 0x%08lx  Access: 0x%08lx\n", kInd,
+    printf("%sFileType: 0x%08x  ExtraType: 0x%08x  Access: 0x%08x\n", kInd,
         pRecord->recFileType, pRecord->recExtraType, pRecord->recAccess);
     printf("%sCreateWhen:  %s\n", kInd,
         Nu_DebugDumpDate(&pRecord->recCreateWhen, dateBuf));
@@ -225,7 +227,7 @@ static void Nu_DebugDumpRecord(NuArchive* pArchive, const NuRecord* pRecord,
         Nu_Free(pArchive, outBuf);
     }
 
-    printf("%s*ExtraCount: %ld  RecFileOffset: %ld  RecHeaderLength: %ld\n",
+    printf("%s*ExtraCount: %d  RecFileOffset: %ld  RecHeaderLength: %d\n",
         kInd,
         pRecord->extraCount, pRecord->fileOffset, pRecord->recHeaderLength);
 
@@ -236,7 +238,7 @@ static void Nu_DebugDumpRecord(NuArchive* pArchive, const NuRecord* pRecord,
         pThread = Nu_GetThread(pRecord, idx);
         Assert(pThread != NULL);
 
-        printf("%s--Thread #%lu (idx=%lu)%s\n", kInd, idx, pThread->threadIdx,
+        printf("%s--Thread #%u (idx=%u)%s\n", kInd, idx, pThread->threadIdx,
             isFake ? " [FAKE]" : "");
         Nu_DebugDumpThread(pThread);
     }
@@ -251,17 +253,17 @@ static void Nu_DebugDumpRecord(NuArchive* pArchive, const NuRecord* pRecord,
     while (pThreadMod != NULL) {
         switch (pThreadMod->entry.kind) {
         case kNuThreadModAdd:
-            printf("%s  *-ThreadMod ADD 0x%08lx 0x%04x (sourceType=%d)\n", kInd,
+            printf("%s  *-ThreadMod ADD 0x%08x 0x%04x (sourceType=%d)\n", kInd,
                 pThreadMod->entry.add.threadID,
                 pThreadMod->entry.add.threadFormat,
                 Nu_DataSourceGetType(pThreadMod->entry.add.pDataSource));
             break;
         case kNuThreadModUpdate:
-            printf("%s  *-ThreadMod UPDATE %6ld\n", kInd,
+            printf("%s  *-ThreadMod UPDATE %6d\n", kInd,
                 pThreadMod->entry.update.threadIdx);
             break;
         case kNuThreadModDelete:
-            printf("%s  *-ThreadMod DELETE %6ld\n", kInd,
+            printf("%s  *-ThreadMod DELETE %6d\n", kInd,
                 pThreadMod->entry.delete.threadIdx);
             break;
         case kNuThreadModUnknown:
@@ -276,7 +278,7 @@ static void Nu_DebugDumpRecord(NuArchive* pArchive, const NuRecord* pRecord,
 
     /*printf("%s*TotalLength: %ld  TotalCompLength: %ld\n",
         kInd, pRecord->totalLength, pRecord->totalCompLength);*/
-    printf("%s*TotalCompLength: %ld\n", kInd, pRecord->totalCompLength);
+    printf("%s*TotalCompLength: %u\n", kInd, pRecord->totalCompLength);
     printf("\n");
 
 bail:
@@ -334,14 +336,14 @@ static void Nu_DebugDumpMH(const NuMasterHeader* pMasterHeader)
 
     Assert(pMasterHeader != NULL);
 
-    printf("%sNufileID: '%.6s'  MasterCRC: 0x%04x  TotalRecords: %lu\n", kInd,
+    printf("%sNufileID: '%.6s'  MasterCRC: 0x%04x  TotalRecords: %u\n", kInd,
         pMasterHeader->mhNufileID, pMasterHeader->mhMasterCRC,
         pMasterHeader->mhTotalRecords);
     printf("%sArchiveCreateWhen: %s\n", kInd,
         Nu_DebugDumpDate(&pMasterHeader->mhArchiveCreateWhen, dateBuf1));
     printf("%sArchiveModWhen:    %s\n", kInd,
         Nu_DebugDumpDate(&pMasterHeader->mhArchiveModWhen, dateBuf1));
-    printf("%sMasterVersion: %u  MasterEOF: %lu\n", kInd,
+    printf("%sMasterVersion: %u  MasterEOF: %u\n", kInd,
         pMasterHeader->mhMasterVersion, pMasterHeader->mhMasterEOF);
 }
 
@@ -357,15 +359,15 @@ void Nu_DebugDumpAll(NuArchive* pArchive)
 {
     Assert(pArchive != NULL);
 
-    printf("*Archive pathname: '%s'\n", pArchive->archivePathname);
+    printf("*Archive pathname: '%s'\n", pArchive->archivePathnameUNI);
     printf("*Archive type: %d\n", pArchive->archiveType);
     printf("*Header offset: %ld (junk offset=%ld)\n",
         pArchive->headerOffset, pArchive->junkOffset);
-    printf("*Num records: %ld orig, %ld copy, %ld new\n",
+    printf("*Num records: %u orig, %u copy, %u new\n",
         Nu_RecordSet_GetNumRecords(&pArchive->origRecordSet),
         Nu_RecordSet_GetNumRecords(&pArchive->copyRecordSet),
         Nu_RecordSet_GetNumRecords(&pArchive->newRecordSet));
-    printf("*NuRecordIdx seed: %lu  NuRecordIdx next: %lu\n",
+    printf("*NuRecordIdx seed: %u  NuRecordIdx next: %u\n",
         pArchive->recordIdxSeed, pArchive->nextRecordIdx);
 
     /* master header */

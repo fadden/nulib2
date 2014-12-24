@@ -1,19 +1,19 @@
 /*
- * Nulib2
+ * NuLib2
  * Copyright (C) 2000-2007 by Andy McFadden, All Rights Reserved.
  * This is free software; you can redistribute it and/or modify it under the
  * terms of the BSD License, see the file COPYING.
  *
  * Global-ish state object.
  */
-#include "Nulib2.h"
+#include "NuLib2.h"
 
 
-static const char* gProgramVersion = "2.3.0";
+static const char* gProgramVersion = "3.0.0";
 
 
 /*
- * Allocate and initialize the semi-global Nulib2 state object.
+ * Allocate and initialize the semi-global NuLib2 state object.
  */
 NuError NState_Init(NulibState** ppState)
 {

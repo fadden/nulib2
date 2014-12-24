@@ -32,8 +32,8 @@ extern "C" {
  * The "bug" version can usually be ignored, since it represents minor
  * fixes.  Unless, of course, your code depends upon that fix.
  */
-#define kNuVersionMajor     2
-#define kNuVersionMinor     3
+#define kNuVersionMajor     3
+#define kNuVersionMinor     0
 #define kNuVersionBug       0
 
 
@@ -42,6 +42,33 @@ extern "C" {
  *      Types
  * ===========================================================================
  */
+
+/*
+ * Unicode character type.  For Linux and Mac OS X, filenames use "narrow"
+ * characters and UTF-8 encoding, which allows them to use standard file I/O
+ * functions like fopen().  Windows uses UTF-16, which requires a different
+ * character type and an alternative set of I/O functions like _wfopen().
+ *
+ * The idea is that NufxLib API functions will operate on filenames with
+ * the OS dominant method, so on Windows the API accepts UTF-16.  This
+ * definition is a bit like Windows TCHAR, but it's dependent on the OS, not
+ * on whether _MBCS or _UNICODE is defined.
+ *
+ * The app can include "Unichar.h" to get definitions for functions that
+ * switch between narrow and wide functions (e.g. "unistrlen()" becomes
+ * strlen() or wcslen() as appropriate).
+ *
+ * We switch based on _WIN32, because we're not really switching on
+ * filename-character size; the key issue is all the pesky wide I/O calls.
+ */
+#if defined(_WIN32)
+// TODO: complete this
+//# include <wchar.h>
+//# define UNICHAR wchar_t
+# define UNICHAR char
+#else
+# define UNICHAR char
+#endif
 
 /*
  * Error values returned from functions.
@@ -199,7 +226,7 @@ typedef enum NuThreadFormat {
 
 /* extract the filesystem separator char from the "file_sys_info" field */
 #define NuGetSepFromSysInfo(sysInfo) \
-            ((char) ((sysInfo) & 0xff))
+            ((UNICHAR) ((sysInfo) & 0xff))
 /* return a file_sys_info with a replaced filesystem separator */
 #define NuSetSepInSysInfo(sysInfo, newSep) \
             ((uint16_t) (((sysInfo) & 0xff00) | ((newSep) & 0xff)) )
@@ -420,6 +447,10 @@ typedef struct NuThread {
  * NuFX "record" definition.
  *
  * (Note to developers: update Nu_AddRecord if this changes.)
+ *
+ * The filenames are in Mac OS Roman format.  It's arguable whether MOR
+ * strings should be part of the interface at all.  However, the API
+ * pre-dates the inclusion of Unicode support, and I'm leaving it alone.
  */
 #define kNufxIDLen                  4       /* len of 'NuFX' with funky MSBs */
 #define kNuReasonableAttribCount    256
@@ -449,20 +480,20 @@ typedef struct NuRecord {
     uint8_t*        recOptionList;      /* NULL if v0 or recOptionSize==0 */
 
     /* data specified by recAttribCount, not accounted for by option list */
-    long            extraCount;
+    int32_t         extraCount;
     uint8_t*        extraBytes;
 
     uint16_t        recFilenameLength;  /* usually zero */
-    char*           recFilename;        /* doubles as disk volume_name */
+    char*           recFilenameMOR;     /* doubles as disk volume_name */
 
     /* extra goodies; "dirtyHeader" does not apply to anything below */
     NuRecordIdx     recordIdx;          /* session-unique record index */
-    char*           threadFilename;     /* extracted from filename thread */
-    char*           newFilename;        /* memorized during "add file" call */
-    const char*     filename;           /* points at recFilen or threadFilen */
+    char*           threadFilenameMOR;  /* extracted from filename thread */
+    char*           newFilenameMOR;     /* memorized during "add file" call */
+    const char*     filenameMOR;        /* points at recFilen or threadFilen */
     uint32_t        recHeaderLength;    /* size of rec hdr, incl thread hdrs */
     uint32_t        totalCompLength;    /* total len of data in archive file */
-    long            fakeThreads;        /* used by "MaskDataless" */
+    uint32_t        fakeThreads;        /* used by "MaskDataless" */
     int             isBadMac;           /* malformed "bad mac" header */
 
     long            fileOffset;         /* file offset of record header */
@@ -527,14 +558,19 @@ typedef struct NuRecordAttr {
 
 /*
  * Some additional details about a file.
+ *
+ * Ideally (from an API cleanliness perspective) the storage name would
+ * be passed around as UTF-8 and converted internally.  Passing it as
+ * MOR required fewer changes to the library, and allows us to avoid
+ * having to deal with illegal characters.
  */
 typedef struct NuFileDetails {
     /* used during AddFile call */
     NuThreadID      threadID;       /* data, rsrc, disk img? */
-    const char*     origName;
+    const void*     origName;       /* arbitrary pointer, usually a string */
 
     /* these go straight into the NuRecord */
-    const char*     storageName;
+    const char*     storageNameMOR;
     NuFileSysID     fileSysID;
     uint16_t        fileSysInfo;
     uint32_t        access;
@@ -559,12 +595,12 @@ typedef struct NuSelectionProposal {
  * Passed into the OutputPathnameFilter callback.
  */
 typedef struct NuPathnameProposal {
-    const char*     pathname;
+    const UNICHAR*  pathnameUNI;
     char            filenameSeparator;
     const NuRecord* pRecord;
     const NuThread* pThread;
 
-    const char*     newPathname;
+    const UNICHAR*  newPathnameUNI;
     uint8_t         newFilenameSeparator;
     /*NuThreadID      newStorage;*/
     NuDataSink*     newDataSink;
@@ -599,7 +635,8 @@ typedef enum NuProgressState {
 } NuProgressState;
 
 /*
- * Passed into the ProgressUpdater callback.
+ * Passed into the ProgressUpdater callback.  All pointers become
+ * invalid when the callback returns.
  *
  * [ Thought for the day: add an optional flag that causes us to only
  *   call the progressFunc when the "percentComplete" changes by more
@@ -614,11 +651,11 @@ typedef struct NuProgressData {
     short           percentComplete;    /* 0-100 */
 
     /* original pathname (in archive for expand, on disk for compress) */
-    const char*     origPathname;
+    const UNICHAR*  origPathnameUNI;
     /* processed pathname (PathnameFilter for expand, in-record for compress) */
-    const char*     pathname;
-    /* basename of "pathname" */
-    const char*     filename;
+    const UNICHAR*  pathnameUNI;
+    /* basename of "pathname" (for convenience) */
+    const UNICHAR*  filenameUNI;
     /* pointer to the record we're expanding from */
     const NuRecord* pRecord;
 
@@ -650,11 +687,11 @@ typedef struct NuErrorStatus {
     NuOperation         operation;      /* were we adding, extracting, ?? */
     NuError             err;            /* library error code */
     int                 sysErr;         /* system error code, if applicable */
-    const char*         message;        /* (optional) message to user */
+    const UNICHAR*      message;        /* (optional) message to user */
     const NuRecord*     pRecord;        /* relevant record, if any */
-    const char*         pathname;       /* problematic pathname, if any */
-    const char*         origPathname;   /* original pathname, if any */
-    char                filenameSeparator;  /* fssep for pathname, if any */
+    const UNICHAR*      pathnameUNI;    /* problematic pathname, if any */
+    const void*         origPathname;   /* original pathname ref, if any */
+    UNICHAR             filenameSeparator;  /* fssep for pathname, if any */
     /*char              origArchiveTouched;*/
 
     char                canAbort;       /* give option to abort */
@@ -670,12 +707,12 @@ typedef struct NuErrorStatus {
  * Error message callback gets one of these.
  */
 typedef struct NuErrorMessage {
-    const char*         message;        /* the message itself */
+    const char*         message;        /* the message itself (UTF-8) */
     NuError             err;            /* relevant error code (may be none) */
     short               isDebug;        /* set for debug-only messages */
 
     /* these identify where the message originated if lib built w/debug set */
-    const char*         file;           /* source file */
+    const char*         file;           /* source file (UTF-8) */
     int                 line;           /* line number */
     const char*         function;       /* function name (might be NULL) */
 } NuErrorMessage;
@@ -728,37 +765,38 @@ NUFXLIB_API NuError NuExtract(NuArchive* pArchive);
 NUFXLIB_API NuError NuTest(NuArchive* pArchive);
 
 /* strictly non-streaming read-only interfaces */
-NUFXLIB_API NuError NuOpenRO(const char* archivePathname,NuArchive** ppArchive);
+NUFXLIB_API NuError NuOpenRO(const UNICHAR* archivePathnameUNI,
+    NuArchive** ppArchive);
 NUFXLIB_API NuError NuExtractRecord(NuArchive* pArchive, NuRecordIdx recordIdx);
 NUFXLIB_API NuError NuExtractThread(NuArchive* pArchive, NuThreadIdx threadIdx,
             NuDataSink* pDataSink);
 NUFXLIB_API NuError NuTestRecord(NuArchive* pArchive, NuRecordIdx recordIdx);
 NUFXLIB_API NuError NuGetRecord(NuArchive* pArchive, NuRecordIdx recordIdx,
             const NuRecord** ppRecord);
-NUFXLIB_API NuError NuGetRecordIdxByName(NuArchive* pArchive, const char* name,
-            NuRecordIdx* pRecordIdx);
+NUFXLIB_API NuError NuGetRecordIdxByName(NuArchive* pArchive,
+            const char* nameMOR, NuRecordIdx* pRecordIdx);
 NUFXLIB_API NuError NuGetRecordIdxByPosition(NuArchive* pArchive,
             uint32_t position, NuRecordIdx* pRecordIdx);
 
 /* read/write interfaces */
-NUFXLIB_API NuError NuOpenRW(const char* archivePathname,
-            const char* tempPathname, uint32_t flags,
+NUFXLIB_API NuError NuOpenRW(const UNICHAR* archivePathnameUNI,
+            const UNICHAR* tempPathnameUNI, uint32_t flags,
             NuArchive** ppArchive);
-NUFXLIB_API NuError NuFlush(NuArchive* pArchive, long* pStatusFlags);
+NUFXLIB_API NuError NuFlush(NuArchive* pArchive, uint32_t* pStatusFlags);
 NUFXLIB_API NuError NuAddRecord(NuArchive* pArchive,
             const NuFileDetails* pFileDetails, NuRecordIdx* pRecordIdx);
 NUFXLIB_API NuError NuAddThread(NuArchive* pArchive, NuRecordIdx recordIdx,
             NuThreadID threadID, NuDataSource* pDataSource,
             NuThreadIdx* pThreadIdx);
-NUFXLIB_API NuError NuAddFile(NuArchive* pArchive, const char* pathname,
+NUFXLIB_API NuError NuAddFile(NuArchive* pArchive, const UNICHAR* pathnameUNI,
             const NuFileDetails* pFileDetails, short fromRsrcFork,
             NuRecordIdx* pRecordIdx);
 NUFXLIB_API NuError NuRename(NuArchive* pArchive, NuRecordIdx recordIdx,
-            const char* pathname, char fssep);
+            const char* pathnameMOR, UNICHAR fssep);
 NUFXLIB_API NuError NuSetRecordAttr(NuArchive* pArchive, NuRecordIdx recordIdx,
             const NuRecordAttr* pRecordAttr);
 NUFXLIB_API NuError NuUpdatePresizedThread(NuArchive* pArchive,
-            NuThreadIdx threadIdx, NuDataSource* pDataSource, long* pMaxLen);
+            NuThreadIdx threadIdx, NuDataSource* pDataSource, int32_t* pMaxLen);
 NUFXLIB_API NuError NuDelete(NuArchive* pArchive);
 NUFXLIB_API NuError NuDeleteRecord(NuArchive* pArchive, NuRecordIdx recordIdx);
 NUFXLIB_API NuError NuDeleteThread(NuArchive* pArchive, NuThreadIdx threadIdx);
@@ -780,7 +818,7 @@ NUFXLIB_API NuError NuDebugDumpArchive(NuArchive* pArchive);
 
 /* sources and sinks */
 NUFXLIB_API NuError NuCreateDataSourceForFile(NuThreadFormat threadFormat,
-            uint32_t otherLen, const char* pathname,
+            uint32_t otherLen, const UNICHAR* pathnameUNI,
             short isFromRsrcFork, NuDataSource** ppDataSource);
 NUFXLIB_API NuError NuCreateDataSourceForFP(NuThreadFormat threadFormat,
             uint32_t otherLen, FILE* fp, long offset, long length,
@@ -792,7 +830,7 @@ NUFXLIB_API NuError NuFreeDataSource(NuDataSource* pDataSource);
 NUFXLIB_API NuError NuDataSourceSetRawCrc(NuDataSource* pDataSource,
             uint16_t crc);
 NUFXLIB_API NuError NuCreateDataSinkForFile(short doExpand, NuValue convertEOL,
-            const char* pathname, char fssep, NuDataSink** ppDataSink);
+            const UNICHAR* pathnameUNI, UNICHAR fssep, NuDataSink** ppDataSink);
 NUFXLIB_API NuError NuCreateDataSinkForFP(short doExpand, NuValue convertEOL,
             FILE* fp, NuDataSink** ppDataSink);
 NUFXLIB_API NuError NuCreateDataSinkForBuffer(short doExpand,
@@ -803,8 +841,8 @@ NUFXLIB_API NuError NuDataSinkGetOutCount(NuDataSink* pDataSink,
             uint32_t* pOutCount);
 
 /* miscellaneous non-archive operations */
-NUFXLIB_API NuError NuGetVersion(long* pMajorVersion, long* pMinorVersion,
-            long* pBugVersion, const char** ppBuildDate,
+NUFXLIB_API NuError NuGetVersion(int32_t* pMajorVersion, int32_t* pMinorVersion,
+            int32_t* pBugVersion, const char** ppBuildDate,
             const char** ppBuildFlags);
 NUFXLIB_API const char* NuStrError(NuError err);
 NUFXLIB_API NuError NuTestFeature(NuFeature feature);
@@ -813,12 +851,17 @@ NUFXLIB_API void NuRecordCopyAttr(NuRecordAttr* pRecordAttr,
 NUFXLIB_API NuError NuRecordCopyThreads(const NuRecord* pRecord,
             NuThread** ppThreads);
 NUFXLIB_API uint32_t NuRecordGetNumThreads(const NuRecord* pRecord);
-NUFXLIB_API const NuThread* NuThreadGetByIdx(const NuThread* pThread, long idx);
+NUFXLIB_API const NuThread* NuThreadGetByIdx(const NuThread* pThread,
+    int32_t idx);
 NUFXLIB_API short NuIsPresizedThreadID(NuThreadID threadID);
+NUFXLIB_API size_t NuConvertMORToUNI(const char* stringMOR,
+    UNICHAR* bufUNI, size_t bufSize);
+NUFXLIB_API size_t NuConvertUNIToMOR(const UNICHAR* stringUNI,
+    char* bufMOR, size_t bufSize);
 
-#define NuGetThread(pRecord, idx) ( (const NuThread*)                       \
-        ((uint32_t) (idx) < (uint32_t) (pRecord)->recTotalThreads ? \
-                &(pRecord)->pThreads[(idx)] : NULL)                         \
+#define NuGetThread(pRecord, idx) ( (const NuThread*)       \
+        ((uint32_t) (idx) < (pRecord)->recTotalThreads ?    \
+                &(pRecord)->pThreads[(idx)] : NULL)         \
         )
 
 

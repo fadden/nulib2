@@ -522,17 +522,17 @@ static Boolean Nu_VerifyAllTouched(NuArchive* pArchive, const NuRecord* pRecord)
  * This call should only be made after an "add" or "update" threadMod has
  * successfully completed.
  *
- * "newName" must be allocated storage.
+ * "newName" must be allocated storage, Mac OS Roman charset.
  */
 static void Nu_SetNewThreadFilename(NuArchive* pArchive, NuRecord* pRecord,
-    char* newName)
+    char* newNameMOR)
 {
     Assert(pRecord != NULL);
-    Assert(newName != NULL);
+    Assert(newNameMOR != NULL);
 
-    Nu_Free(pArchive, pRecord->threadFilename);
-    pRecord->threadFilename = newName;
-    pRecord->filename = pRecord->threadFilename;
+    Nu_Free(pArchive, pRecord->threadFilenameMOR);
+    pRecord->threadFilenameMOR = newNameMOR;
+    pRecord->filenameMOR = pRecord->threadFilenameMOR;
 }
 
 /*
@@ -647,14 +647,14 @@ static NuError Nu_ConstructArchiveUpdate(NuArchive* pArchive, FILE* fp,
 
     if (NuGetThreadID(pThread) == kNuThreadIDFilename) {
         /* special handling for filename updates */
-        char* savedCopy = NULL;
+        char* savedCopyMOR = NULL;
         err = Nu_CopyPresizedToArchive(pArchive, pDataSource,
-                NuGetThreadID(pThread), fp, pThread, &savedCopy);
+                NuGetThreadID(pThread), fp, pThread, &savedCopyMOR);
         if (err != kNuErrNone) {
             Nu_ReportError(NU_BLOB, err, "thread update failed");
             goto bail;
         }
-        Nu_SetNewThreadFilename(pArchive, pRecord, savedCopy);
+        Nu_SetNewThreadFilename(pArchive, pRecord, savedCopyMOR);
 
     } else {
         err = Nu_CopyPresizedToArchive(pArchive, pDataSource,
@@ -700,6 +700,7 @@ static NuError Nu_HandleAddThreadMods(NuArchive* pArchive, NuRecord* pRecord,
     NuProgressData* pProgressData;
     NuThreadMod* pThreadMod;
     NuThread* pNewThread;
+    UNICHAR* pathnameUNIStorage = NULL;
     Boolean foundOne = false;
 
     /*
@@ -747,17 +748,19 @@ static NuError Nu_HandleAddThreadMods(NuArchive* pArchive, NuRecord* pRecord,
                  * Do something different here for data sinks with
                  * filenames attached. ++ATM 2003/02/17]
                  */
+                pathnameUNIStorage = Nu_CopyMORToUNI(pRecord->filenameMOR);
                 if (Nu_DataSourceGetType(pThreadMod->entry.add.pDataSource)
                     == kNuDataSourceFromFile)
                 {
                     /* use on-disk filename */
                     err = Nu_ProgressDataInit_Compress(pArchive, &progressData,
                             pRecord, Nu_DataSourceFile_GetPathname(
-                                pThreadMod->entry.add.pDataSource));
+                                pThreadMod->entry.add.pDataSource),
+                            pathnameUNIStorage);
                 } else {
                     /* use archive filename for both */
                     err = Nu_ProgressDataInit_Compress(pArchive, &progressData,
-                            pRecord, pRecord->filename);
+                            pRecord, pathnameUNIStorage, pathnameUNIStorage);
                 }
                 BailError(err);
 
@@ -820,14 +823,14 @@ static NuError Nu_HandleAddThreadMods(NuArchive* pArchive, NuRecord* pRecord,
 
             if (pThreadMod->entry.add.threadID == kNuThreadIDFilename) {
                 /* filenames are special */
-                char* savedCopy = NULL;
+                char* savedCopyMOR = NULL;
 
                 Assert(pThreadMod->entry.add.threadFormat ==
                     kNuThreadFormatUncompressed);
                 err = Nu_CopyPresizedToArchive(pArchive,
                         pThreadMod->entry.add.pDataSource,
                         pThreadMod->entry.add.threadID,
-                        dstFp, pNewThread, &savedCopy);
+                        dstFp, pNewThread, &savedCopyMOR);
                 if (err != kNuErrNone) {
                     Nu_ReportError(NU_BLOB, err, "fn thread add failed");
                     goto bail;
@@ -838,7 +841,7 @@ static NuError Nu_HandleAddThreadMods(NuArchive* pArchive, NuRecord* pRecord,
                    just clear it, because we've already made space for the
                    record header, and didn't include the filename in it. */
 
-                Nu_SetNewThreadFilename(pArchive, pRecord, savedCopy);
+                Nu_SetNewThreadFilename(pArchive, pRecord, savedCopyMOR);
 
             } else if (pThreadMod->entry.add.isPresized) {
                 /* don't compress, just copy */
@@ -874,6 +877,7 @@ static NuError Nu_HandleAddThreadMods(NuArchive* pArchive, NuRecord* pRecord,
     }
 
 bail:
+    Nu_Free(pArchive, pathnameUNIStorage);
     return err;
 }
 
@@ -1081,24 +1085,25 @@ static NuError Nu_ConstructArchiveRecord(NuArchive* pArchive, NuRecord* pRecord)
     /*
      * Handle filename deletion.
      */
-    if (!numFilenameThreads && pRecord->threadFilename) {
+    if (!numFilenameThreads && pRecord->threadFilenameMOR != NULL) {
         /* looks like a previously existing filename thread got removed */
-        DBUG(("--- Dropping thread filename '%s'\n", pRecord->threadFilename));
-        if (pRecord->filename == pRecord->threadFilename)
-            pRecord->filename = NULL;    /* don't point at freed memory! */
-        Nu_Free(pArchive, pRecord->threadFilename);
-        pRecord->threadFilename = NULL;
+        DBUG(("--- Dropping thread filename '%s'\n",
+            pRecord->threadFilenameMOR));
+        if (pRecord->filenameMOR == pRecord->threadFilenameMOR)
+            pRecord->filenameMOR = NULL;    /* don't point at freed memory! */
+        Nu_Free(pArchive, pRecord->threadFilenameMOR);
+        pRecord->threadFilenameMOR = NULL;
 
         /* I don't think this is possible, but check it anyway */
-        if (pRecord->filename == NULL && pRecord->recFilename != NULL &&
+        if (pRecord->filenameMOR == NULL && pRecord->recFilenameMOR != NULL &&
             !pRecord->dropRecFilename)
         {
             DBUG(("--- HEY, how did this happen?\n"));
-            pRecord->filename = pRecord->recFilename;
+            pRecord->filenameMOR = pRecord->recFilenameMOR;
         }
     }
-    if (pRecord->filename == NULL)
-        pRecord->filename = kNuDefaultRecordName;
+    if (pRecord->filenameMOR == NULL)
+        pRecord->filenameMOR = kNuDefaultRecordName;
 
     /*
      * Make a hole, including the header filename if we're not dropping it.
@@ -1303,13 +1308,13 @@ static NuError Nu_ConstructNewRecord(NuArchive* pArchive, NuRecord* pRecord,
          * Generally speaking, the "add file" call should set the
          * filename.  If somehow it didn't, assign a default.
          */
-        if (pRecord->filename == NULL) {
-            pRecord->newFilename = strdup(kNuDefaultRecordName);
-            pRecord->filename = pRecord->newFilename;
+        if (pRecord->filenameMOR == NULL) {
+            pRecord->newFilenameMOR = strdup(kNuDefaultRecordName);
+            pRecord->filenameMOR = pRecord->newFilenameMOR;
         }
 
         DBUG(("--- No filename thread found, adding one ('%s')\n",
-            pRecord->filename));
+            pRecord->filenameMOR));
 
         /*
          * Create a trivial data source for the filename.  The size of
@@ -1318,12 +1323,12 @@ static NuError Nu_ConstructNewRecord(NuArchive* pArchive, NuRecord* pRecord,
          * (If we're really serious about renaming it, maybe we should
          * leave some extra space on the end...?)
          */
-        len = strlen(pRecord->filename);
+        len = strlen(pRecord->filenameMOR);
         maxLen = len > kNuDefaultFilenameThreadSize ?
                                             len : kNuDefaultFilenameThreadSize;
         err = Nu_DataSourceBuffer_New(kNuThreadFormatUncompressed,
-                maxLen, (const uint8_t*)pRecord->filename, 0,
-                strlen(pRecord->filename), NULL, &pTmpDataSource);
+                maxLen, (const uint8_t*)pRecord->filenameMOR, 0,
+                strlen(pRecord->filenameMOR), NULL, &pTmpDataSource);
         BailError(err);
 
         /* put in a new "add" threadMod (which copies the data source) */
@@ -1901,7 +1906,7 @@ static NuError Nu_ResetTempFile(NuArchive* pArchive)
         return kNuErrNone;  /* or kNuErrArchiveRO? */
 
     Assert(pArchive != NULL);
-    Assert(pArchive->tmpPathname != NULL);
+    Assert(pArchive->tmpPathnameUNI != NULL);
 
 #if 0   /* keep the temp file around for examination */
 if (pArchive->tmpFp != NULL) {
@@ -1915,11 +1920,14 @@ if (pArchive->tmpFp != NULL) {
 
     /* if we renamed the temp over the original, we need to open a new temp */
     if (pArchive->tmpFp == NULL) {
-        pArchive->tmpFp = fopen(pArchive->tmpPathname, kNuFileOpenReadWriteCreat);
+        // as in Nu_OpenTempFile, skip the wchar conversion for the temp
+        // file name, which we lazily assume to be ASCII
+        pArchive->tmpFp = fopen(pArchive->tmpPathnameUNI,
+                kNuFileOpenReadWriteCreat);
         if (pArchive->tmpFp == NULL) {
             err = errno ? errno : kNuErrFileOpen;
             Nu_ReportError(NU_BLOB, errno, "Unable to open temp file '%s'",
-                pArchive->tmpPathname);
+                pArchive->tmpPathnameUNI);
             goto bail;
         }
     } else {
@@ -1933,19 +1941,20 @@ if (pArchive->tmpFp != NULL) {
             /* do it the hard way if we don't have ftruncate or equivalent */
             err = kNuErrNone;
             fclose(pArchive->tmpFp);
-            pArchive->tmpFp = fopen(pArchive->tmpPathname, kNuFileOpenWriteTrunc);
+            pArchive->tmpFp = fopen(pArchive->tmpPathnameUNI,
+                    kNuFileOpenWriteTrunc);
             if (pArchive->tmpFp == NULL) {
                 err = errno ? errno : kNuErrFileOpen;
                 Nu_ReportError(NU_BLOB, err, "failed truncating tmp file");
                 goto bail;
             }
             fclose(pArchive->tmpFp);
-            pArchive->tmpFp =
-                        fopen(pArchive->tmpPathname, kNuFileOpenReadWriteCreat);
+            pArchive->tmpFp = fopen(pArchive->tmpPathnameUNI,
+                    kNuFileOpenReadWriteCreat);
             if (pArchive->tmpFp == NULL) {
                 err = errno ? errno : kNuErrFileOpen;
                 Nu_ReportError(NU_BLOB, err, "Unable to open temp file '%s'",
-                    pArchive->tmpPathname);
+                    pArchive->tmpPathnameUNI);
                 goto bail;
             }
         }
@@ -2110,7 +2119,7 @@ bail:
  * If the things this function is doing aren't making any sense at all,
  * read "NOTES.txt" for an introduction.
  */
-NuError Nu_Flush(NuArchive* pArchive, long* pStatusFlags)
+NuError Nu_Flush(NuArchive* pArchive, uint32_t* pStatusFlags)
 {
     NuError err = kNuErrNone;
     Boolean canAbort = true;
@@ -2388,7 +2397,7 @@ NuError Nu_Flush(NuArchive* pArchive, long* pStatusFlags)
         if (err != kNuErrNone) {
             Nu_ReportError(NU_BLOB, err, "unable to remove original archive");
             Nu_ReportError(NU_BLOB, kNuErrNone, "New data is in '%s'",
-                pArchive->tmpPathname);
+                pArchive->tmpPathnameUNI);
             *pStatusFlags |= kNuFlushInaccessible;
             goto bail_reopen;       /* must re-open archiveFp */
         }
@@ -2400,24 +2409,25 @@ NuError Nu_Flush(NuArchive* pArchive, long* pStatusFlags)
         if (err != kNuErrNone) {
             Nu_ReportError(NU_BLOB, err, "unable to rename temp file");
             Nu_ReportError(NU_BLOB, kNuErrNone,
-                "NOTE: only copy of archive is in '%s'", pArchive->tmpPathname);
+                "NOTE: only copy of archive is in '%s'",
+                pArchive->tmpPathnameUNI);
             /* maintain Entry.c semantics (and keep them from removing temp) */
-            Nu_Free(pArchive, pArchive->archivePathname);
-            pArchive->archivePathname = NULL;
-            Nu_Free(pArchive, pArchive->tmpPathname);
-            pArchive->tmpPathname = NULL;
+            Nu_Free(pArchive, pArchive->archivePathnameUNI);
+            pArchive->archivePathnameUNI = NULL;
+            Nu_Free(pArchive, pArchive->tmpPathnameUNI);
+            pArchive->tmpPathnameUNI = NULL;
             /* bail will put us into read-only mode, which is what we want */
             goto bail;
         }
 
 bail_reopen:
-        pArchive->archiveFp = fopen(pArchive->archivePathname,
+        pArchive->archiveFp = fopen(pArchive->archivePathnameUNI,
                                 kNuFileOpenReadWrite);
         if (pArchive->archiveFp == NULL) {
             err = errno ? errno : -1;
             Nu_ReportError(NU_BLOB, err,
                 "unable to reopen archive file '%s' after rename",
-                pArchive->archivePathname);
+                pArchive->archivePathnameUNI);
             *pStatusFlags |= kNuFlushInaccessible;
             goto bail;      /* the Entry.c funcs will obstruct further use */
         }

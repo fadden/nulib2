@@ -1,12 +1,12 @@
 /*
- * Nulib2
+ * NuLib2
  * Copyright (C) 2000-2007 by Andy McFadden, All Rights Reserved.
  * This is free software; you can redistribute it and/or modify it under the
  * terms of the BSD License, see the file COPYING.
  *
  * Common archive-related utility functions.
  */
-#include "Nulib2.h"
+#include "NuLib2.h"
 
 
 /*
@@ -28,10 +28,10 @@ static NuResult OutputPathnameFilter(NuArchive* pArchive, void* vproposal)
 {
     NuPathnameProposal* pathProposal = vproposal;
     NulibState* pState;
-    const char* newPathname;
+    const UNICHAR* newPathnameUNI;
     NuRecordIdx renameFromIdx;
-    char* renameToStr;
-    char* resultBuf;
+    UNICHAR* renameToStrUNI;
+    UNICHAR* resultBufUNI;
 
     Assert(pArchive != NULL);
     (void) NuGetExtraData(pArchive, (void**) &pState);
@@ -49,21 +49,21 @@ static NuResult OutputPathnameFilter(NuArchive* pArchive, void* vproposal)
      * the output through the normalizer; if the user typed it, assume
      * that it's okay (and let the OS tell them if it isn't).
      */
-    renameToStr = NState_GetRenameToStr(pState);
-    if (renameToStr != NULL) {
+    renameToStrUNI = NState_GetRenameToStr(pState);
+    if (renameToStrUNI != NULL) {
         renameFromIdx = NState_GetRenameFromIdx(pState);
 
         if (renameFromIdx == pathProposal->pRecord->recordIdx) {
             /* right source file, proceed with the rename */
-            NState_SetTempPathnameLen(pState, strlen(renameToStr) +1);
-            resultBuf = NState_GetTempPathnameBuf(pState);
-            Assert(resultBuf != NULL);
-            strcpy(resultBuf, renameToStr);
+            NState_SetTempPathnameLen(pState, strlen(renameToStrUNI) +1);
+            resultBufUNI = NState_GetTempPathnameBuf(pState);
+            Assert(resultBufUNI != NULL);
+            strcpy(resultBufUNI, renameToStrUNI);
 
-            pathProposal->newPathname = resultBuf;
+            pathProposal->newPathnameUNI = resultBufUNI;
         }
 
-        /* free up renameToStr */
+        /* free up renameToStrUNI */
         NState_SetRenameToStr(pState, NULL);
 
         goto bail;
@@ -72,13 +72,13 @@ static NuResult OutputPathnameFilter(NuArchive* pArchive, void* vproposal)
     /*
      * Convert the pathname into something suitable for the current OS.
      */
-    newPathname = NormalizePath(pState, pathProposal);
-    if (newPathname == NULL) {
+    newPathnameUNI = NormalizePath(pState, pathProposal);
+    if (newPathnameUNI == NULL) {
         ReportError(kNuErrNone, "unable to convert pathname");
         return kNuAbort;
     }
 
-    pathProposal->newPathname = newPathname;
+    pathProposal->newPathnameUNI = newPathnameUNI;
 
 bail:
     return kNuOK;
@@ -202,9 +202,9 @@ static Boolean SpecMatchesRecord(NulibState* pState, const char* spec,
         return (strcmp(spec, pRecord->filename) == 0);
 #else
     if (NState_GetModRecurse(pState))
-        return (strncasecmp(spec, pRecord->filename, strlen(spec)) == 0);
+        return (strncasecmp(spec, pRecord->filenameMOR, strlen(spec)) == 0);
     else
-        return (strcasecmp(spec, pRecord->filename) == 0);
+        return (strcasecmp(spec, pRecord->filenameMOR) == 0);
 #endif
 }
 
@@ -253,12 +253,14 @@ NuResult SelectionFilter(NuArchive* pArchive, void* vproposal)
         NState_IncMatchCount(pState);
 
         /* we don't get progress notifications for delete, so do it here */
-        if (NState_GetCommand(pState) == kCommandDelete)
-            printf("Deleting %s\n", selProposal->pRecord->filename);
+        if (NState_GetCommand(pState) == kCommandDelete) {
+            printf("Deleting %s\n", selProposal->pRecord->filenameMOR);
+        }
 
         return kNuOK;
-    } else
+    } else {
         return kNuSkip;
+    }
 }
 
 
@@ -401,12 +403,13 @@ NuResult ProgressUpdater(NuArchive* pArchive, void* vProgress)
          * Could also use "origPathname", but I like to show what they're
          * getting instead of what they're giving.
          */
-        int len = strlen(pProgress->pathname);
+        int len = strlen(pProgress->pathnameUNI);
         if (len < sizeof(nameBuf)) {
-            strcpy(nameBuf, pProgress->pathname);
+            strcpy(nameBuf, pProgress->pathnameUNI);
         } else {
             nameBuf[0] = nameBuf[1] = '.';
-            strncpy(nameBuf+2, pProgress->pathname + len - (sizeof(nameBuf)-3),
+            strncpy(nameBuf+2,
+                pProgress->pathnameUNI + len - (sizeof(nameBuf)-3),
                 sizeof(nameBuf)-3);
             nameBuf[sizeof(nameBuf)-1] = '\0';
         }
@@ -450,7 +453,7 @@ static NuResult HandleReplaceExisting(NulibState* pState, NuArchive* pArchive,
 
     Assert(pState != NULL);
     Assert(pErrorStatus != NULL);
-    Assert(pErrorStatus->pathname != NULL);
+    Assert(pErrorStatus->pathnameUNI != NULL);
 
     Assert(pErrorStatus->canOverwrite);
     Assert(pErrorStatus->canSkip);
@@ -465,7 +468,7 @@ static NuResult HandleReplaceExisting(NulibState* pState, NuArchive* pArchive,
 
     while (1) {
         printf("\n  Replace %s?  [y]es, [n]o, [A]ll, [N]one",
-            pErrorStatus->pathname);
+            pErrorStatus->pathnameUNI);
         if (pErrorStatus->canRename)    /* renaming record adds not allowed */
             printf(", [r]ename: ");
         else
@@ -545,9 +548,9 @@ static NuResult HandleBadCRC(NulibState* pState, NuArchive* pArchive,
     }
 
     while (1) {
-        if (pErrorStatus->pathname != NULL)
+        if (pErrorStatus->pathnameUNI != NULL)
             fprintf(stderr, "\n  Found a bad CRC in %s\n",
-                pErrorStatus->pathname);
+                pErrorStatus->pathnameUNI);
         else
             fprintf(stderr, "\n  Found a bad CRC in the archive\n");
 
@@ -595,7 +598,7 @@ static NuResult HandleAddNotFound(NulibState* pState, NuArchive* pArchive,
 
     Assert(pState != NULL);
     Assert(pErrorStatus != NULL);
-    Assert(pErrorStatus->pathname != NULL);
+    Assert(pErrorStatus->pathnameUNI != NULL);
 
     if (NState_GetInputUnavailable(pState)) {
         putc('\n', stdout);
@@ -606,7 +609,7 @@ static NuResult HandleAddNotFound(NulibState* pState, NuArchive* pArchive,
 
     while (1) {
         fprintf(stderr, "\n  Couldn't find %s, continue?  [y]es, [n]o: ",
-            pErrorStatus->pathname);
+            pErrorStatus->pathnameUNI);
         fflush(stderr);
 
         reply = GetReplyChar('n');

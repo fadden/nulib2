@@ -37,7 +37,7 @@
  * Track an archive record.
  */
 typedef struct ArchiveRecord {
-    char*           filename;
+    char*           filenameMOR;
     NuRecordIdx     recordIdx;
 
     long            numThreads;
@@ -50,8 +50,7 @@ typedef struct ArchiveRecord {
 /* 
  * Alloc a new ArchiveRecord.
  */
-ArchiveRecord*
-ArchiveRecord_New(const NuRecord* pRecord)
+ArchiveRecord* ArchiveRecord_New(const NuRecord* pRecord)
 {
     ArchiveRecord* pArcRec = NULL;
 
@@ -59,10 +58,10 @@ ArchiveRecord_New(const NuRecord* pRecord)
     if (pArcRec == NULL)
         return NULL;
 
-    if (pRecord->filename == NULL)
-        pArcRec->filename = strdup("<unknown>");
+    if (pRecord->filenameMOR == NULL)
+        pArcRec->filenameMOR = strdup("<unknown>");
     else
-        pArcRec->filename = strdup((char*)pRecord->filename);
+        pArcRec->filenameMOR = strdup(pRecord->filenameMOR);
 
     pArcRec->recordIdx = pRecord->recordIdx;
     pArcRec->numThreads = NuRecordGetNumThreads(pRecord);
@@ -76,14 +75,13 @@ ArchiveRecord_New(const NuRecord* pRecord)
 /*
  * Free up an ArchiveRecord.
  */
-void
-ArchiveRecord_Free(ArchiveRecord* pArcRec)
+void ArchiveRecord_Free(ArchiveRecord* pArcRec)
 {
     if (pArcRec == NULL)
         return;
 
-    if (pArcRec->filename != NULL)
-        free(pArcRec->filename);
+    if (pArcRec->filenameMOR != NULL)
+        free(pArcRec->filenameMOR);
     if (pArcRec->pThreads != NULL)
         free(pArcRec->pThreads);
     free(pArcRec);
@@ -92,8 +90,8 @@ ArchiveRecord_Free(ArchiveRecord* pArcRec)
 /*
  * Find a thread with a matching NuThreadID.
  */
-const NuThread*
-ArchiveRecord_FindThreadByID(const ArchiveRecord* pArcRec, NuThreadID threadID)
+const NuThread* ArchiveRecord_FindThreadByID(const ArchiveRecord* pArcRec,
+    NuThreadID threadID)
 {
     const NuThread* pThread;
     int i;
@@ -108,40 +106,34 @@ ArchiveRecord_FindThreadByID(const ArchiveRecord* pArcRec, NuThreadID threadID)
 }
 
 
-const char*
-ArchiveRecord_GetFilename(const ArchiveRecord* pArcRec)
+const char* ArchiveRecord_GetFilename(const ArchiveRecord* pArcRec)
 {
-    return pArcRec->filename;
+    return pArcRec->filenameMOR;
 }
 
-NuRecordIdx
-ArchiveRecord_GetRecordIdx(const ArchiveRecord* pArcRec)
+NuRecordIdx ArchiveRecord_GetRecordIdx(const ArchiveRecord* pArcRec)
 {
     return pArcRec->recordIdx;
 }
 
-long
-ArchiveRecord_GetNumThreads(const ArchiveRecord* pArcRec)
+long ArchiveRecord_GetNumThreads(const ArchiveRecord* pArcRec)
 {
     return pArcRec->numThreads;
 }
 
-const NuThread*
-ArchiveRecord_GetThread(const ArchiveRecord* pArcRec, int idx)
+const NuThread* ArchiveRecord_GetThread(const ArchiveRecord* pArcRec, int idx)
 {
     if (idx < 0 || idx >= pArcRec->numThreads)
         return NULL;
     return NuThreadGetByIdx(pArcRec->pThreads, idx);
 }
 
-void
-ArchiveRecord_SetNext(ArchiveRecord* pArcRec, ArchiveRecord* pNextRec)
+void ArchiveRecord_SetNext(ArchiveRecord* pArcRec, ArchiveRecord* pNextRec)
 {
     pArcRec->pNext = pNextRec;
 }
 
-ArchiveRecord*
-ArchiveRecord_GetNext(const ArchiveRecord* pArcRec)
+ArchiveRecord* ArchiveRecord_GetNext(const ArchiveRecord* pArcRec)
 {
     return pArcRec->pNext;
 }
@@ -163,8 +155,7 @@ typedef struct ArchiveData {
 } ArchiveData;
 
 
-ArchiveData*
-ArchiveData_New(void)
+ArchiveData* ArchiveData_New(void)
 {
     ArchiveData* pArcData;
 
@@ -178,8 +169,7 @@ ArchiveData_New(void)
     return pArcData;
 }
 
-void
-ArchiveData_Free(ArchiveData* pArcData)
+void ArchiveData_Free(ArchiveData* pArcData)
 {
     ArchiveRecord* pNext;
 
@@ -197,16 +187,14 @@ ArchiveData_Free(ArchiveData* pArcData)
 }
 
 
-ArchiveRecord*
-ArchiveData_GetRecordHead(const ArchiveData* pArcData)
+ArchiveRecord* ArchiveData_GetRecordHead(const ArchiveData* pArcData)
 {
     return pArcData->pRecordHead;
 }
 
 
 /* add an ArchiveRecord to the list pointed at by ArchiveData */
-void
-ArchiveData_AddRecord(ArchiveData* pArcData, ArchiveRecord* pRecord)
+void ArchiveData_AddRecord(ArchiveData* pArcData, ArchiveRecord* pRecord)
 {
     assert(pRecord != NULL);
     assert((pArcData->pRecordHead == NULL && pArcData->pRecordTail == NULL) ||
@@ -225,8 +213,7 @@ ArchiveData_AddRecord(ArchiveData* pArcData, ArchiveRecord* pRecord)
 }
 
 /* dump the contents of the ArchiveData to stdout */
-void
-ArchiveData_DumpContents(const ArchiveData* pArcData)
+void ArchiveData_DumpContents(const ArchiveData* pArcData)
 {
     ArchiveRecord* pArcRec;
 
@@ -260,8 +247,7 @@ ArchiveData_DumpContents(const ArchiveData* pArcData)
 /*
  * Callback function to collect archive information.
  */
-NuResult
-GatherContents(NuArchive* pArchive, void* vpRecord)
+NuResult GatherContents(NuArchive* pArchive, void* vpRecord)
 {
     NuRecord* pRecord = (NuRecord*) vpRecord;
     ArchiveData* pArchiveData = NULL;
@@ -271,7 +257,8 @@ GatherContents(NuArchive* pArchive, void* vpRecord)
     assert(pArchiveData != NULL);
 
     printf("*** Filename = '%s'\n",
-        pRecord->filename == NULL ? "<unknown>":(const char*)pRecord->filename);
+        pRecord->filenameMOR == NULL ?
+            "<unknown>" : pRecord->filenameMOR);
 
     ArchiveData_AddRecord(pArchiveData, pArchiveRecord);
 
@@ -282,8 +269,7 @@ GatherContents(NuArchive* pArchive, void* vpRecord)
 /*
  * Copy the filename thread from every record to "pDataSink".
  */
-NuError
-ReadAllFilenameThreads(NuArchive* pArchive, ArchiveData* pArchiveData,
+NuError ReadAllFilenameThreads(NuArchive* pArchive, ArchiveData* pArchiveData,
     NuDataSink* pDataSink)
 {
     NuError err = kNuErrNone;
@@ -310,8 +296,7 @@ bail:
 
 
 /* extract every filename thread into a single file, overwriting each time */
-NuError
-ExtractToFile(NuArchive* pArchive, ArchiveData* pArchiveData)
+NuError ExtractToFile(NuArchive* pArchive, ArchiveData* pArchiveData)
 {
     NuError err;
     NuDataSink* pDataSink = NULL;
@@ -337,8 +322,7 @@ bail:
 }
 
 /* extract every filename thread into a FILE*, appending */
-NuError
-ExtractToFP(NuArchive* pArchive, ArchiveData* pArchiveData)
+NuError ExtractToFP(NuArchive* pArchive, ArchiveData* pArchiveData)
 {
     NuError err;
     FILE* fp = NULL;
@@ -365,8 +349,7 @@ bail:
 }
 
 /* extract every filename thread into a buffer, advancing as we go */
-NuError
-ExtractToBuffer(NuArchive* pArchive, ArchiveData* pArchiveData)
+NuError ExtractToBuffer(NuArchive* pArchive, ArchiveData* pArchiveData)
 {
     NuError err;
     uint8_t buffer[kHappySize];
@@ -409,14 +392,13 @@ bail:
 /*
  * Do file stuff.
  */
-int
-DoFileStuff(const char* filename)
+int DoFileStuff(const UNICHAR* filenameUNI)
 {
     NuError err;
     NuArchive* pArchive = NULL;
     ArchiveData* pArchiveData = ArchiveData_New();
 
-    err = NuOpenRO(filename, &pArchive);
+    err = NuOpenRO(filenameUNI, &pArchive);
     if (err != kNuErrNone)
         goto bail;
 
@@ -459,16 +441,15 @@ bail:
 /*
  * Grab the name of an archive to read.  If no name was provided, use stdin.
  */
-int
-main(int argc, char** argv)
+int main(int argc, char** argv)
 {
-    long major, minor, bug;
+    int32_t major, minor, bug;
     const char* pBuildDate;
     FILE* infp = NULL;
     int cc;
 
     (void) NuGetVersion(&major, &minor, &bug, &pBuildDate, NULL);
-    printf("Using NuFX lib %ld.%ld.%ld built on or after %s\n",
+    printf("Using NuFX lib %d.%d.%d built on or after %s\n",
         major, minor, bug, pBuildDate);
 
     if (argc == 2) {

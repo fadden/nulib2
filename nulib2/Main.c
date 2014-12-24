@@ -1,19 +1,19 @@
 /*
- * Nulib2
+ * NuLib2
  * Copyright (C) 2000-2007 by Andy McFadden, All Rights Reserved.
  * This is free software; you can redistribute it and/or modify it under the
  * terms of the BSD License, see the file COPYING.
  *
  * Main entry point and shell command argument processing.
  */
-#include "Nulib2.h"
+#include "NuLib2.h"
 #include <ctype.h>
 
 
 /*
  * Globals and constants.
  */
-const char* gProgName = "Nulib2";
+const char* gProgName = "NuLib2";
 
 
 /*
@@ -133,14 +133,14 @@ static const char* GetProgName(const NulibState* pState, const char* argv0)
  */
 static void Usage(const NulibState* pState)
 {
-    long majorVersion, minorVersion, bugVersion;
+    int32_t majorVersion, minorVersion, bugVersion;
     const char* nufxLibDate;
     const char* nufxLibFlags;
 
     (void) NuGetVersion(&majorVersion, &minorVersion, &bugVersion,
             &nufxLibDate, &nufxLibFlags);
 
-    printf("\nNulib2 v%s, linked with NufxLib v%ld.%ld.%ld [%s]\n",
+    printf("\nNuLib2 v%s, linked with NufxLib v%d.%d.%d [%s]\n",
         NState_GetProgramVersion(pState),
         majorVersion, minorVersion, bugVersion, nufxLibFlags);
     printf("Copyright (C) 2000-2014, Andy McFadden.  All Rights Reserved.\n");
@@ -552,13 +552,13 @@ int DoWork(NulibState* pState)
 int main(int argc, char** argv)
 {
     NulibState* pState = NULL;
-    long majorVersion, minorVersion, bugVersion;
+    int32_t majorVersion, minorVersion, bugVersion;
     int result = 0;
 
     (void) NuGetVersion(&majorVersion, &minorVersion, &bugVersion, NULL, NULL);
     if (majorVersion != kNuVersionMajor || minorVersion < kNuVersionMinor) {
         fprintf(stderr, "ERROR: wrong version of NufxLib --"
-                        " wanted %d.%d.x, got %ld.%ld.%ld.\n",
+                        " wanted %d.%d.x, got %d.%d.%d.\n",
             kNuVersionMajor, kNuVersionMinor,
             majorVersion, minorVersion, bugVersion);
         goto bail;

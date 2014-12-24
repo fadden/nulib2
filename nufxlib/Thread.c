@@ -6,7 +6,7 @@
  *
  * Thread-level operations.
  */
-#define __Thread_c__ 1
+#define COMPILE_THREAD_C 1
 #include "NufxLibPriv.h"
 
 
@@ -69,7 +69,7 @@ Boolean Nu_IsCompressibleThreadID(NuThreadID threadID)
  * Decide if the thread has a CRC, based on the record version and the
  * threadID.
  */
-Boolean Nu_ThreadHasCRC(long recordVersion, NuThreadID threadID)
+Boolean Nu_ThreadHasCRC(uint16_t recordVersion, NuThreadID threadID)
 {
     return recordVersion >= 3 &&
             NuThreadIDGetClass(threadID) == kNuThreadClassData;
@@ -412,7 +412,7 @@ NuError Nu_ScanThreads(NuArchive* pArchive, NuRecord* pRecord, long numThreads)
 
     pThread = pRecord->pThreads;
     while (numThreads--) {
-        if (pRecord->threadFilename == NULL &&
+        if (pRecord->threadFilenameMOR == NULL &&
             NuMakeThreadID(pThread->thThreadClass, pThread->thThreadKind) ==
                 kNuThreadIDFilename)
         {
@@ -423,12 +423,12 @@ NuError Nu_ScanThreads(NuArchive* pArchive, NuRecord* pRecord, long numThreads)
                     pThread->thCompThreadEOF);
                 goto bail;
             }
-            pRecord->threadFilename = Nu_Malloc(pArchive,
+            pRecord->threadFilenameMOR = Nu_Malloc(pArchive,
                                         pThread->thCompThreadEOF +1);
-            BailAlloc(pRecord->threadFilename);
+            BailAlloc(pRecord->threadFilenameMOR);
 
             /* note there is no CRC on a filename thread */
-            (void) Nu_ReadBytes(pArchive, fp, pRecord->threadFilename,
+            (void) Nu_ReadBytes(pArchive, fp, pRecord->threadFilenameMOR,
                     pThread->thCompThreadEOF);
             if ((err = Nu_HeaderIOFailed(pArchive, fp)) != kNuErrNone) {
                 Nu_ReportError(NU_BLOB, err, "Failed reading filename thread");
@@ -436,15 +436,15 @@ NuError Nu_ScanThreads(NuArchive* pArchive, NuRecord* pRecord, long numThreads)
             }
 
             /* null-terminate on the actual len, not the buffer len */
-            pRecord->threadFilename[pThread->thThreadEOF] = '\0';
+            pRecord->threadFilenameMOR[pThread->thThreadEOF] = '\0';
 
-            Nu_StripHiIfAllSet(pRecord->threadFilename);
+            Nu_StripHiIfAllSet(pRecord->threadFilenameMOR);
 
             /* prefer this one over the record one, but only one should exist */
-            if (pRecord->filename != NULL) {
+            if (pRecord->filenameMOR != NULL) {
                 DBUG(("--- HEY: got record filename and thread filename\n"));
             }
-            pRecord->filename = pRecord->threadFilename;
+            pRecord->filenameMOR = pRecord->threadFilenameMOR;
 
         } else {
             /* not a filename (or not first filename), skip past it */
@@ -462,9 +462,9 @@ NuError Nu_ScanThreads(NuArchive* pArchive, NuRecord* pRecord, long numThreads)
      * end up with a disk image that had no name attached.  This will tend
      * to confuse things, so we go ahead and give it a name.
      */
-    if (pRecord->filename == NULL) {
+    if (pRecord->filenameMOR == NULL) {
         DBUG(("+++ no filename found, using default record name\n"));
-        pRecord->filename = kNuDefaultRecordName;
+        pRecord->filenameMOR = kNuDefaultRecordName;
     }
 
     pArchive->currentOffset += pRecord->totalCompLength;
@@ -573,8 +573,9 @@ static NuError Nu_ExtractThreadCommon(NuArchive* pArchive,
     NuProgressData progressData;
     NuProgressData* pProgressData;
     NuDataSink* pOrigDataSink;
-    char* newPathStorage = NULL;
-    const char* newPathname;
+    UNICHAR* newPathStorageUNI = NULL;
+    UNICHAR* recFilenameStorageUNI = NULL;
+    const UNICHAR* newPathnameUNI;
     NuResult result;
     uint8_t newFssep;
     Boolean doFreeSink = false;
@@ -619,8 +620,10 @@ static NuError Nu_ExtractThreadCommon(NuArchive* pArchive,
         }
     }
 
-    newPathname = NULL;
+    newPathnameUNI = NULL;
     newFssep = 0;
+
+    recFilenameStorageUNI = Nu_CopyMORToUNI(pRecord->filenameMOR);
 
 retry_name:
     if (Nu_DataSinkGetType(pDataSink) == kNuDataSinkToFile) {
@@ -632,18 +635,18 @@ retry_name:
          * Start by resetting everything to defaults, in case this isn't
          * our first time through the "rename" loop.
          */
-        newPathname = Nu_DataSinkFile_GetPathname(pDataSink);
+        newPathnameUNI = Nu_DataSinkFile_GetPathname(pDataSink);
         newFssep = Nu_DataSinkFile_GetFssep(pDataSink);
         pDataSink = pOrigDataSink;
 
         /* if they don't have a pathname func defined, we just use default */
         if (pArchive->outputPathnameFunc != NULL) {
-            pathProposal.pathname = pRecord->filename;
+            pathProposal.pathnameUNI = recFilenameStorageUNI;
             pathProposal.filenameSeparator =
                                 NuGetSepFromSysInfo(pRecord->recFileSysInfo);
             pathProposal.pRecord = pRecord;
             pathProposal.pThread = pThread;
-            pathProposal.newPathname = NULL;
+            pathProposal.newPathnameUNI = NULL;
             pathProposal.newFilenameSeparator = '\0';
             /*pathProposal.newStorage = (NuThreadID)-1;*/
             pathProposal.newDataSink = NULL;
@@ -658,11 +661,13 @@ retry_name:
             }
 
             /* we don't own this string, so make a copy */
-            if (pathProposal.newPathname != NULL) {
-                newPathStorage = strdup(pathProposal.newPathname);
-                newPathname = newPathStorage;
-            } else
-                newPathname = NULL;
+            if (pathProposal.newPathnameUNI != NULL) {
+                Nu_Free(pArchive, newPathStorageUNI);
+                newPathStorageUNI = strdup(pathProposal.newPathnameUNI);
+                newPathnameUNI = newPathStorageUNI;
+            } else {
+                newPathnameUNI = NULL;
+            }
             if (pathProposal.newFilenameSeparator != '\0')
                 newFssep = pathProposal.newFilenameSeparator;
 
@@ -672,21 +677,22 @@ retry_name:
         }
 
         /* at least one of these must be set */
-        Assert(!(newPathname == NULL && pathProposal.newDataSink == NULL));
+        Assert(!(newPathnameUNI == NULL && pathProposal.newDataSink == NULL));
     }
 
     /*
      * Prepare the progress data if this is a data thread.
      */
-    if (newPathname == NULL) {
+    if (newPathnameUNI == NULL) {
         /* using a data sink; get the pathname out of the record */
-        newPathname = pRecord->filename;
+        newPathnameUNI = recFilenameStorageUNI;
         newFssep = NuGetSepFromSysInfo(pRecord->recFileSysInfo);
     }
     if (pThread->thThreadClass == kNuThreadClassData) {
         pProgressData = &progressData;
         err = Nu_ProgressDataInit_Expand(pArchive, pProgressData, pRecord,
-                newPathname, newFssep, Nu_DataSinkGetConvertEOL(pOrigDataSink));
+                newPathnameUNI, newFssep, recFilenameStorageUNI,
+                Nu_DataSinkGetConvertEOL(pOrigDataSink));
         BailError(err);
 
         /* send initial progress so they see the right name if "open" fails */
@@ -702,14 +708,14 @@ retry_name:
          */
         FILE* fileFp = NULL;
 
-        err = Nu_OpenOutputFile(pArchive, pRecord, pThread, newPathname,
+        err = Nu_OpenOutputFile(pArchive, pRecord, pThread, newPathnameUNI,
                 newFssep, &fileFp);
         if (err == kNuErrRename) {
             /* they want to rename; the OutputPathname callback handles this */
-            Nu_Free(pArchive, newPathStorage);
-            newPathStorage = NULL;
+            Nu_Free(pArchive, newPathStorageUNI);
+            newPathStorageUNI = NULL;
             /* reset these just to be careful */
-            newPathname = NULL;
+            newPathnameUNI = NULL;
             fileFp = NULL;
             goto retry_name;
         } else if (err != kNuErrNone) {
@@ -739,7 +745,7 @@ retry_name:
          * permissions as appropriate.
          */
         err = Nu_CloseOutputFile(pArchive, pRecord,
-                Nu_DataSinkFile_GetFP(pDataSink), newPathname);
+                Nu_DataSinkFile_GetFP(pDataSink), newPathnameUNI);
         Nu_DataSinkFile_SetFP(pDataSink, NULL);
         BailError(err);
     }
@@ -760,7 +766,8 @@ bail:
     if (Nu_DataSinkGetType(pDataSink) == kNuDataSinkToFile)
         Nu_DataSinkFile_Close(pDataSink);
 
-    Nu_Free(pArchive, newPathStorage);
+    Nu_Free(pArchive, newPathStorageUNI);
+    Nu_Free(pArchive, recFilenameStorageUNI);
 
     if (doFreeSink)
         Nu_DataSinkFree(pDataSink);
@@ -777,6 +784,7 @@ NuError Nu_ExtractThreadBulk(NuArchive* pArchive, const NuRecord* pRecord,
 {
     NuError err;
     NuDataSink* pDataSink = NULL;
+    UNICHAR* recFilenameStorageUNI = NULL;
     NuValue eolConv;
 
     /*
@@ -792,7 +800,8 @@ NuError Nu_ExtractThreadBulk(NuArchive* pArchive, const NuRecord* pRecord,
     eolConv = pArchive->valConvertExtractedEOL;
     if (NuGetThreadID(pThread) == kNuThreadIDDiskImage)
         eolConv = kNuConvertOff;
-    err = Nu_DataSinkFile_New(true, eolConv, pRecord->filename,
+    recFilenameStorageUNI = Nu_CopyMORToUNI(pRecord->filenameMOR);
+    err = Nu_DataSinkFile_New(true, eolConv, recFilenameStorageUNI,
             NuGetSepFromSysInfo(pRecord->recFileSysInfo), &pDataSink);
     BailError(err);
 
@@ -805,6 +814,7 @@ bail:
         if (err == kNuErrNone)
             err = err2;
     }
+    Nu_Free(pArchive, recFilenameStorageUNI);
 
     return err;
 }
@@ -1175,7 +1185,7 @@ bail:
  * newly-added threads isn't possible, since they aren't really threads yet.
  */
 NuError Nu_UpdatePresizedThread(NuArchive* pArchive, NuThreadIdx threadIdx,
-    NuDataSource* pDataSource, long* pMaxLen)
+    NuDataSource* pDataSource, int32_t* pMaxLen)
 {
     NuError err;
     NuThreadMod* pThreadMod = NULL;

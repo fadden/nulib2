@@ -141,8 +141,19 @@ baktar:
 	@gzip -9 nulib2.tar
 	@mv -i nulib2.tar.gz /home/fadden/BAK/
 
-depend:
-	makedepend -- $(CFLAGS) -- $(SRCS)
-
-# DO NOT DELETE THIS LINE -- make depend depends on it.
+# dependency info
+COMMON_HDRS = NuLib2.h SysDefs.h State.h MiscStuff.h config.h \
+	$(NUFXSRCDIR)/NufxLib.h
+Add.o: Add.c $(COMMON_HDRS)
+ArcUtils.o: ArcUtils.c $(COMMON_HDRS)
+Binary2.o: Binary2.c $(COMMON_HDRS)
+Delete.o: Delete.c $(COMMON_HDRS)
+Extract.o: Extract.c $(COMMON_HDRS)
+Filename.o: Filename.c $(COMMON_HDRS)
+List.o: List.c $(COMMON_HDRS)
+Main.o: Main.c $(COMMON_HDRS)
+MiscStuff.o: MiscStuff.c $(COMMON_HDRS)
+MiscUtils.o: MiscUtils.c $(COMMON_HDRS)
+State.o: State.c $(COMMON_HDRS)
+SysUtils.o: SysUtils.c $(COMMON_HDRS)
 

@@ -1,5 +1,5 @@
 /*
- * Nulib2
+ * NuLib2
  * Copyright (C) 2000-2007 by Andy McFadden, All Rights Reserved.
  * This is free software; you can redistribute it and/or modify it under the
  * terms of the BSD License, see the file COPYING.
@@ -11,7 +11,7 @@
 #include "NufxLib.h"
 
 /*
- * Things you can tell Nulib2 to do.
+ * Things you can tell NuLib2 to do.
  *
  * (Some debug code in NState_DebugDump() is sensitive to the order here.)
  */

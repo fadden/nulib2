@@ -1,12 +1,12 @@
 /*
- * Nulib2
+ * NuLib2
  * Copyright (C) 2000-2007 by Andy McFadden, All Rights Reserved.
  * This is free software; you can redistribute it and/or modify it under the
  * terms of the BSD License, see the file COPYING.
  *
  * Add files to or update files in the archive.
  */
-#include "Nulib2.h"
+#include "NuLib2.h"
 
 static NuError AddToArchive(NulibState* pState, NuArchive* pArchive);
 
@@ -18,7 +18,7 @@ NuError DoAdd(NulibState* pState)
 {
     NuError err;
     NuArchive* pArchive = NULL;
-    long flushStatus;
+    uint32_t flushStatus;
 
     Assert(pState != NULL);
 
@@ -61,7 +61,7 @@ bail:
                         "failed afterward");
                 } else {
                     ReportError(err,
-                        "Unable to flush archive changes (status=0x%04lx)",
+                        "Unable to flush archive changes (status=0x%04x)",
                         flushStatus);
                 }
                 NuAbort(pArchive);

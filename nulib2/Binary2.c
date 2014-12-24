@@ -1,5 +1,5 @@
 /*
- * Nulib2
+ * NuLib2
  * Copyright (C) 2000-2007 by Andy McFadden, All Rights Reserved.
  * This is free software; you can redistribute it and/or modify it under the
  * terms of the BSD License, see the file COPYING.
@@ -17,7 +17,7 @@
  *
  * TO DO: add "junk skipping" like NufxLib has.
  */
-#include "Nulib2.h"
+#include "NuLib2.h"
 
 #ifdef HAVE_FCNTL_H
 # include <fcntl.h>
@@ -136,7 +136,7 @@ typedef struct BNYEntry {
     NuDateTime      createWhen;         /* computed from previous two fields */
     uint32_t        eof;
     uint32_t        realEOF;            /* eof is bogus for directories */
-    char            fileName[kBNYMaxFileName+1];
+    char            fileName[kBNYMaxFileName+1];        /* ASCII only */
     char            nativeName[kBNYMaxNativeName+1];
     uint32_t        diskSpace;          /* in 512-byte blocks */
     uint8_t         osType;             /* not exactly same as NuFileSysID */
@@ -406,12 +406,12 @@ const char* BNYNormalizePath(BNYArchive* pBny, BNYEntry* pEntry)
     memset(&fakeRecord, 0xa1, sizeof(fakeRecord));
     memset(&fakeThread, 0xa5, sizeof(fakeThread));
 
-    pathProposal.pathname = pEntry->fileName;
+    pathProposal.pathnameUNI = pEntry->fileName;
     pathProposal.filenameSeparator = '/';   /* BNY always uses ProDOS conv */
     pathProposal.pRecord = &fakeRecord;
     pathProposal.pThread = &fakeThread;
 
-    pathProposal.newPathname = NULL;
+    pathProposal.newPathnameUNI = NULL;
     pathProposal.newFilenameSeparator = '\0';
     pathProposal.newDataSink = NULL;
 

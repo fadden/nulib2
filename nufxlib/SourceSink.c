@@ -100,7 +100,7 @@ NuError Nu_DataSourceFree(NuDataSource* pDataSource)
 
     switch (pDataSource->sourceType) {
     case kNuDataSourceFromFile:
-        Nu_Free(NULL, pDataSource->fromFile.pathname);
+        Nu_Free(NULL, pDataSource->fromFile.pathnameUNI);
         if (pDataSource->fromFile.fp != NULL) {
             fclose(pDataSource->fromFile.fp);
             pDataSource->fromFile.fp = NULL;
@@ -137,11 +137,12 @@ NuError Nu_DataSourceFree(NuDataSource* pDataSource)
  * Create a data source for an unopened file.
  */
 NuError Nu_DataSourceFile_New(NuThreadFormat threadFormat, uint32_t otherLen,
-    const char* pathname, Boolean isFromRsrcFork, NuDataSource** ppDataSource)
+    const UNICHAR* pathnameUNI, Boolean isFromRsrcFork,
+    NuDataSource** ppDataSource)
 {
     NuError err;
 
-    if (pathname == NULL ||
+    if (pathnameUNI == NULL ||
         !(isFromRsrcFork == true || isFromRsrcFork == false) ||
         ppDataSource == NULL)
     {
@@ -158,7 +159,7 @@ NuError Nu_DataSourceFile_New(NuThreadFormat threadFormat, uint32_t otherLen,
     (*ppDataSource)->common.otherLen = otherLen;
     (*ppDataSource)->common.refCount = 1;
 
-    (*ppDataSource)->fromFile.pathname = strdup(pathname);
+    (*ppDataSource)->fromFile.pathnameUNI = strdup(pathnameUNI);
     (*ppDataSource)->fromFile.fromRsrcFork = isFromRsrcFork;
     (*ppDataSource)->fromFile.fp = NULL;     /* to be filled in later */
 
@@ -359,8 +360,8 @@ NuError Nu_DataSourcePrepareInput(NuArchive* pArchive,
      * We're adding from a file on disk.  Open it.
      */
     err = Nu_OpenInputFile(pArchive,
-            pDataSource->fromFile.pathname, pDataSource->fromFile.fromRsrcFork,
-            &fileFp);
+            pDataSource->fromFile.pathnameUNI,
+            pDataSource->fromFile.fromRsrcFork, &fileFp);
     BailError(err);
 
     Assert(fileFp != NULL);
@@ -404,15 +405,15 @@ void Nu_DataSourceUnPrepareInput(NuArchive* pArchive, NuDataSource* pDataSource)
 
 
 /*
- * Get the pathname from a "from-file" dataSource.
+ * Get the pathname from a "from-file" dataSource.  Returned string is UTF-8.
  */
 const char* Nu_DataSourceFile_GetPathname(NuDataSource* pDataSource)
 {
     Assert(pDataSource != NULL);
     Assert(pDataSource->sourceType == kNuDataSourceFromFile);
-    Assert(pDataSource->fromFile.pathname != NULL);
+    Assert(pDataSource->fromFile.pathnameUNI != NULL);
 
-    return pDataSource->fromFile.pathname;
+    return pDataSource->fromFile.pathnameUNI;
 }
 
 
@@ -527,7 +528,7 @@ NuError Nu_DataSinkFree(NuDataSink* pDataSink)
     switch (pDataSink->sinkType) {
     case kNuDataSinkToFile:
         Nu_DataSinkFile_Close(pDataSink);
-        Nu_Free(NULL, pDataSink->toFile.pathname);
+        Nu_Free(NULL, pDataSink->toFile.pathnameUNI);
         break;
     case kNuDataSinkToFP:
         break;
@@ -551,14 +552,14 @@ NuError Nu_DataSinkFree(NuDataSink* pDataSink)
  * Create a data sink for an unopened file.
  */
 NuError Nu_DataSinkFile_New(Boolean doExpand, NuValue convertEOL,
-    const char* pathname, char fssep, NuDataSink** ppDataSink)
+    const UNICHAR* pathnameUNI, UNICHAR fssep, NuDataSink** ppDataSink)
 {
     NuError err;
 
     if ((doExpand != true && doExpand != false) ||
         (convertEOL != kNuConvertOff && convertEOL != kNuConvertOn &&
          convertEOL != kNuConvertAuto) ||
-        pathname == NULL ||
+        pathnameUNI == NULL ||
         fssep == 0 ||
         ppDataSink == NULL)
     {
@@ -575,7 +576,7 @@ NuError Nu_DataSinkFile_New(Boolean doExpand, NuValue convertEOL,
     else
         (*ppDataSink)->common.convertEOL = kNuConvertOff;
     (*ppDataSink)->common.outCount = 0;
-    (*ppDataSink)->toFile.pathname = strdup(pathname);
+    (*ppDataSink)->toFile.pathnameUNI = strdup(pathnameUNI);
     (*ppDataSink)->toFile.fssep = fssep;
 
     (*ppDataSink)->toFile.fp = NULL;
@@ -717,20 +718,20 @@ uint32_t Nu_DataSinkGetOutCount(const NuDataSink* pDataSink)
 
 
 /*
- * Get "pathname" from a to-file sink.
+ * Get "pathname" from a to-file sink.  Returned string is UTF-8.
  */
 const char* Nu_DataSinkFile_GetPathname(const NuDataSink* pDataSink)
 {
     Assert(pDataSink != NULL);
     Assert(pDataSink->sinkType == kNuDataSinkToFile);
 
-    return pDataSink->toFile.pathname;
+    return pDataSink->toFile.pathnameUNI;
 }
 
 /*
  * Get "fssep" from a to-file sink.
  */
-char Nu_DataSinkFile_GetFssep(const NuDataSink* pDataSink)
+UNICHAR Nu_DataSinkFile_GetFssep(const NuDataSink* pDataSink)
 {
     Assert(pDataSink != NULL);
     Assert(pDataSink->sinkType == kNuDataSinkToFile);

@@ -156,7 +156,7 @@ bz_bail:
 
 bail:
     if (outbuf != NULL)
-        free(outbuf);
+        Nu_Free(NULL, outbuf);
     return err;
 }
 
@@ -289,7 +289,7 @@ bz_bail:
 
 bail:
     if (outbuf != NULL)
-        free(outbuf);
+        Nu_Free(NULL, outbuf);
     return err;
 }
 

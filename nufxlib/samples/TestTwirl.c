@@ -37,8 +37,7 @@ typedef struct CRCList {
 /*
  * Returns true if the compression type is supported, false otherwise.
  */
-int
-CompressionSupported(NuValue compression)
+int CompressionSupported(NuValue compression)
 {
     int result;
 
@@ -76,8 +75,7 @@ CompressionSupported(NuValue compression)
 /* 
  * This gets called when a buffer DataSource is no longer needed.
  */
-NuResult
-FreeCallback(NuArchive* pArchive, void* args)
+NuResult FreeCallback(NuArchive* pArchive, void* args)
 {
     free(args);
     return kNuOK; 
@@ -87,8 +85,7 @@ FreeCallback(NuArchive* pArchive, void* args)
 /*
  * Dump a CRC list.
  */
-void
-DumpCRCs(const CRCList* pCRCList)
+void DumpCRCs(const CRCList* pCRCList)
 {
     int i;
 
@@ -101,8 +98,7 @@ DumpCRCs(const CRCList* pCRCList)
 /*
  * Free a CRC list.
  */
-void
-FreeCRCs(CRCList* pCRCList)
+void FreeCRCs(CRCList* pCRCList)
 {
     if (pCRCList == NULL)
         return;
@@ -119,8 +115,7 @@ FreeCRCs(CRCList* pCRCList)
  *
  * Returns the list on success, NULL on failure.
  */
-CRCList*
-GatherCRCs(NuArchive* pArchive)
+CRCList* GatherCRCs(NuArchive* pArchive)
 {
     NuError err = kNuErrNone;
     const NuMasterHeader* pMasterHeader;
@@ -228,8 +223,7 @@ bail:
  *
  * Returns 0 on success, nonzero on failure.
  */
-int
-CompareCRCs(NuArchive* pArchive, const CRCList* pOldCRCList)
+int CompareCRCs(NuArchive* pArchive, const CRCList* pOldCRCList)
 {
     CRCList* pNewCRCList = NULL;
     int result = -1;
@@ -274,8 +268,7 @@ bail:
  *
  * All of this good stuff gets queued up until the next NuFlush call.
  */
-NuError
-RecompressThread(NuArchive* pArchive, const NuRecord* pRecord,
+NuError RecompressThread(NuArchive* pArchive, const NuRecord* pRecord,
     const NuThread* pThread)
 {
     NuError err = kNuErrNone;
@@ -315,7 +308,7 @@ RecompressThread(NuArchive* pArchive, const NuRecord* pRecord,
         err = NuExtractThread(pArchive, pThread->threadIdx, pDataSink);
         if (err != kNuErrNone) {
             fprintf(stderr, "ERROR: failed extracting thread %u in '%s': %s\n",
-                pThread->threadIdx, pRecord->filename, NuStrError(err));
+                pThread->threadIdx, pRecord->filenameMOR, NuStrError(err));
             goto bail;
         }
     }
@@ -367,8 +360,7 @@ bail:
  * The amount of data we're holding in memory as a result of the
  * recompression is placed in "*pLen".
  */
-NuError
-RecompressRecord(NuArchive* pArchive, NuRecordIdx recordIdx, long* pLen)
+NuError RecompressRecord(NuArchive* pArchive, NuRecordIdx recordIdx, long* pLen)
 {
     NuError err = kNuErrNone;
     const NuRecord* pRecord;
@@ -412,8 +404,7 @@ bail:
 /*
  * Recompress every data thread in the archive.
  */
-NuError
-RecompressArchive(NuArchive* pArchive, NuValue compression)
+NuError RecompressArchive(NuArchive* pArchive, NuValue compression)
 {
     NuError err = kNuErrNone;
     NuRecordIdx* pIndices = NULL;
@@ -478,7 +469,7 @@ RecompressArchive(NuArchive* pArchive, NuValue compression)
         heldLen += recHeldLen;
 
         if (heldLen > kMaxHeldLen) {
-            long statusFlags;
+            uint32_t statusFlags;
 
             printf("    (flush)\n");
             err = NuFlush(pArchive, &statusFlags);
@@ -500,8 +491,7 @@ bail:
 /*
  * Initiate the twirling.
  */
-int
-TwirlArchive(const char* filename)
+int TwirlArchive(const char* filename)
 {
     NuError err = kNuErrNone;
     NuArchive* pArchive = NULL;
@@ -545,7 +535,7 @@ TwirlArchive(const char* filename)
     for (compression = kNuCompressNone; compression <= kNuCompressBzip2;
         compression++)
     {
-        long statusFlags;
+        uint32_t statusFlags;
 
         if (!CompressionSupported(compression))
             continue;
@@ -571,7 +561,7 @@ TwirlArchive(const char* filename)
     for (compression = kNuCompressBzip2; compression >= kNuCompressNone;
         compression--)
     {
-        long statusFlags;
+        uint32_t statusFlags;
 
         if (!CompressionSupported(compression))
             continue;
@@ -615,8 +605,7 @@ bail:
  *
  * (Note "CopyFile()" exists under Win32.)
  */
-FILE*
-MyCopyFile(const char* outFileName, FILE* srcfp)
+FILE* MyCopyFile(const char* outFileName, FILE* srcfp)
 {
     char buf[24576];
     FILE* outfp;
@@ -652,10 +641,9 @@ MyCopyFile(const char* outFileName, FILE* srcfp)
 /*
  * Let's get started.
  */
-int
-main(int argc, char** argv)
+int main(int argc, char** argv)
 {
-    long major, minor, bug;
+    int32_t major, minor, bug;
     const char* pBuildDate;
     FILE* srcfp = NULL;
     FILE* infp = NULL;
@@ -666,7 +654,7 @@ main(int argc, char** argv)
     setvbuf(stderr, NULL, _IONBF, 0);
 
     (void) NuGetVersion(&major, &minor, &bug, &pBuildDate, NULL);
-    printf("Using NuFX lib %ld.%ld.%ld built on or after %s\n\n",
+    printf("Using NuFX lib %d.%d.%d built on or after %s\n\n",
         major, minor, bug, pBuildDate);
 
     if (argc == 2) {

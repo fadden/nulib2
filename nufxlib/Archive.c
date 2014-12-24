@@ -114,8 +114,8 @@ static NuError Nu_NuArchiveFree(NuArchive* pArchive)
     (void) Nu_RecordSet_FreeAllRecords(pArchive, &pArchive->copyRecordSet);
     (void) Nu_RecordSet_FreeAllRecords(pArchive, &pArchive->newRecordSet);
 
-    Nu_Free(NULL, pArchive->archivePathname);
-    Nu_Free(NULL, pArchive->tmpPathname);
+    Nu_Free(NULL, pArchive->archivePathnameUNI);
+    Nu_Free(NULL, pArchive->tmpPathnameUNI);
     Nu_Free(NULL, pArchive->compBuf);
     Nu_Free(NULL, pArchive->lzwCompressState);
     Nu_Free(NULL, pArchive->lzwExpandState);
@@ -743,7 +743,7 @@ NuError Nu_StreamOpenRO(FILE* infp, NuArchive** ppArchive)
 
     pArchive->openMode = kNuOpenStreamingRO;
     pArchive->archiveFp = infp;
-    pArchive->archivePathname = strdup("(stream)");
+    pArchive->archivePathnameUNI = strdup("(stream)");
 
     err = Nu_ReadMasterHeader(pArchive);
     BailError(err);
@@ -761,20 +761,24 @@ bail:
 /*
  * Open an archive in non-streaming read-only mode.
  */
-NuError Nu_OpenRO(const char* archivePathname, NuArchive** ppArchive)
+NuError Nu_OpenRO(const UNICHAR* archivePathnameUNI, NuArchive** ppArchive)
 {
     NuError err;
     NuArchive* pArchive = NULL;
     FILE* fp = NULL;
 
-    if (archivePathname == NULL || !strlen(archivePathname) || ppArchive == NULL)
+    if (archivePathnameUNI == NULL || !strlen(archivePathnameUNI) ||
+            ppArchive == NULL)
+    {
         return kNuErrInvalidArg;
+    }
 
     *ppArchive = NULL;
 
-    fp = fopen(archivePathname, kNuFileOpenReadOnly);
+    fp = fopen(archivePathnameUNI, kNuFileOpenReadOnly);
     if (fp == NULL) {
-        Nu_ReportError(NU_BLOB, errno, "Unable to open '%s'", archivePathname);
+        Nu_ReportError(NU_BLOB, errno, "Unable to open '%s'",
+            archivePathnameUNI);
         err = kNuErrFileOpen;
         goto bail;
     }
@@ -787,7 +791,7 @@ NuError Nu_OpenRO(const char* archivePathname, NuArchive** ppArchive)
     pArchive->openMode = kNuOpenRO;
     pArchive->archiveFp = fp;
     fp = NULL;
-    pArchive->archivePathname = strdup(archivePathname);
+    pArchive->archivePathnameUNI = strdup(archivePathnameUNI);
 
     err = Nu_ReadMasterHeader(pArchive);
     BailError(err);
@@ -807,12 +811,13 @@ bail:
 
 /*
  * Open a temp file.  If "fileName" contains six Xs ("XXXXXX"), it will
- * be treated as a mktemp-style template, and modified before use.
+ * be treated as a mktemp-style template, and modified before use (so
+ * pass a copy of the string in).
  *
  * Thought for the day: consider using Win32 SetFileAttributes() to make
  * temp files hidden.  We will need to un-hide it before rolling it over.
  */
-static NuError Nu_OpenTempFile(char* fileName, FILE** pFp)
+static NuError Nu_OpenTempFile(UNICHAR* fileNameUNI, FILE** pFp)
 {
     NuArchive* pArchive = NULL;  /* dummy for NU_BLOB */
     NuError err = kNuErrNone;
@@ -827,23 +832,23 @@ static NuError Nu_OpenTempFile(char* fileName, FILE** pFp)
      * to complain about mktemp, since it's generally a bad way to do
      * things.
      */
-    len = strlen(fileName);
-    if (len > 6 && strcmp(fileName + len - 6, "XXXXXX") == 0) {
+    len = strlen(fileNameUNI);
+    if (len > 6 && strcmp(fileNameUNI + len - 6, "XXXXXX") == 0) {
 #if defined(HAVE_MKSTEMP) && defined(HAVE_FDOPEN)
         int fd;
 
         DBUG(("+++ Using mkstemp\n"));
 
         /* this modifies the template *and* opens the file */
-        fd = mkstemp(fileName);
+        fd = mkstemp(fileNameUNI);
         if (fd < 0) {
             err = errno ? errno : kNuErrFileOpen;
             Nu_ReportError(NU_BLOB, kNuErrNone, "mkstemp failed on '%s'",
-                fileName);
+                fileNameUNI);
             goto bail;
         }
 
-        DBUG(("--- Fd-opening temp file '%s'\n", fileName));
+        DBUG(("--- Fd-opening temp file '%s'\n", fileNameUNI));
         *pFp = fdopen(fd, kNuFileOpenReadWriteCreat);
         if (*pFp == NULL) {
             close(fd);
@@ -858,10 +863,10 @@ static NuError Nu_OpenTempFile(char* fileName, FILE** pFp)
         char* result;
 
         DBUG(("+++ Using mktemp\n"));
-        result = mktemp(fileName);
+        result = mktemp(fileNameUNI);
         if (result == NULL) {
             Nu_ReportError(NU_BLOB, kNuErrNone, "mktemp failed on '%s'",
-                fileName);
+                fileNameUNI);
             err = kNuErrInternal;
             goto bail;
         }
@@ -870,13 +875,13 @@ static NuError Nu_OpenTempFile(char* fileName, FILE** pFp)
 #endif
     }
 
-    DBUG(("--- Opening temp file '%s'\n", fileName));
+    DBUG(("--- Opening temp file '%s'\n", fileNameUNI));
 
 #if defined(HAVE_FDOPEN)
     {
         int fd;
 
-        fd = open(fileName, O_RDWR|O_CREAT|O_EXCL|O_BINARY, 0600);
+        fd = open(fileNameUNI, O_RDWR|O_CREAT|O_EXCL|O_BINARY, 0600);
         if (fd < 0) {
             err = errno ? errno : kNuErrFileOpen;
             goto bail;
@@ -890,13 +895,12 @@ static NuError Nu_OpenTempFile(char* fileName, FILE** pFp)
         }
     }
 #else
-    /* (not sure how portable "access" is... I think it's POSIX) */
-    if (access(fileName, F_OK) == 0) {
+    if (access(fileNameUNI, F_OK) == 0) {
         err = kNuErrFileExists;
         goto bail;
     }
 
-    *pFp = fopen(fileName, kNuFileOpenReadWriteCreat);
+    *pFp = fopen(fileNameUNI, kNuFileOpenReadWriteCreat);
     if (*pFp == NULL) {
         err = errno ? errno : kNuErrFileOpen;
         goto bail;
@@ -912,8 +916,8 @@ bail:
  * Open an archive in read-write mode, optionally creating it if it doesn't
  * exist.
  */
-NuError Nu_OpenRW(const char* archivePathname, const char* tmpPathname,
-    uint32_t flags, NuArchive** ppArchive)
+NuError Nu_OpenRW(const UNICHAR* archivePathnameUNI,
+    const UNICHAR* tmpPathnameUNI, uint32_t flags, NuArchive** ppArchive)
 {
     NuError err;
     FILE* fp = NULL;
@@ -923,14 +927,14 @@ NuError Nu_OpenRW(const char* archivePathname, const char* tmpPathname,
     Boolean archiveExists;
     Boolean newlyCreated;
 
-    if (archivePathname == NULL || !strlen(archivePathname) ||
-        tmpPathname == NULL || !strlen(tmpPathname) || ppArchive == NULL ||
-        (flags & ~(kNuOpenCreat|kNuOpenExcl)) != 0)
+    if (archivePathnameUNI == NULL || !strlen(archivePathnameUNI) ||
+        tmpPathnameUNI == NULL || !strlen(tmpPathnameUNI) ||
+        ppArchive == NULL || (flags & ~(kNuOpenCreat|kNuOpenExcl)) != 0)
     {
         return kNuErrInvalidArg;
     }
 
-    archiveExists = (access(archivePathname, F_OK) == 0);
+    archiveExists = (access(archivePathnameUNI, F_OK) == 0);
 
     /*
      * Open or create archive file.
@@ -938,18 +942,20 @@ NuError Nu_OpenRW(const char* archivePathname, const char* tmpPathname,
     if (archiveExists) {
         if ((flags & kNuOpenCreat) && (flags & kNuOpenExcl)) {
             err = kNuErrFileExists;
-            Nu_ReportError(NU_BLOB, err, "File '%s' exists", archivePathname);
+            Nu_ReportError(NU_BLOB, err, "File '%s' exists",
+                archivePathnameUNI);
             goto bail;
         }
-        fp = fopen(archivePathname, kNuFileOpenReadWrite);
+        fp = fopen(archivePathnameUNI, kNuFileOpenReadWrite);
         newlyCreated = false;
     } else {
         if (!(flags & kNuOpenCreat)) {
             err = kNuErrFileNotFound;
-            Nu_ReportError(NU_BLOB, err, "File '%s' not found",archivePathname);
+            Nu_ReportError(NU_BLOB, err, "File '%s' not found",
+                archivePathnameUNI);
             goto bail;
         }
-        fp = fopen(archivePathname, kNuFileOpenReadWriteCreat);
+        fp = fopen(archivePathnameUNI, kNuFileOpenReadWriteCreat);
         newlyCreated = true;
     }
 
@@ -958,7 +964,8 @@ NuError Nu_OpenRW(const char* archivePathname, const char* tmpPathname,
             err = kNuErrFileAccessDenied;
         else
             err = kNuErrFileOpen;
-        Nu_ReportError(NU_BLOB, errno, "Unable to open '%s'", archivePathname);
+        Nu_ReportError(NU_BLOB, errno, "Unable to open '%s'",
+            archivePathnameUNI);
         goto bail;
     }
 
@@ -986,12 +993,12 @@ NuError Nu_OpenRW(const char* archivePathname, const char* tmpPathname,
      * So, create a temp file whether we think we need one or not.  Won't
      * do any harm, and might save us some troubles later.
      */
-    tmpPathDup = strdup(tmpPathname);
+    tmpPathDup = strdup(tmpPathnameUNI);
     BailNil(tmpPathDup);
     err = Nu_OpenTempFile(tmpPathDup, &tmpFp);
     if (err != kNuErrNone) {
         Nu_ReportError(NU_BLOB, err, "Failed opening temp file '%s'",
-            tmpPathname);
+            tmpPathnameUNI);
         goto bail;
     }
 
@@ -1002,12 +1009,12 @@ NuError Nu_OpenRW(const char* archivePathname, const char* tmpPathname,
 
     pArchive->openMode = kNuOpenRW;
     pArchive->newlyCreated = newlyCreated;
-    pArchive->archivePathname = strdup(archivePathname);
+    pArchive->archivePathnameUNI = strdup(archivePathnameUNI);
     pArchive->archiveFp = fp;
     fp = NULL;
     pArchive->tmpFp = tmpFp;
     tmpFp = NULL;
-    pArchive->tmpPathname = tmpPathDup;
+    pArchive->tmpPathnameUNI = tmpPathDup;
     tmpPathDup = NULL;
 
     if (archiveExists && !newlyCreated) {
@@ -1116,10 +1123,10 @@ static void Nu_CloseAndFree(NuArchive* pArchive)
         DBUG(("--- Closing and removing temp file\n"));
         fclose(pArchive->tmpFp);
         pArchive->tmpFp = NULL;
-        Assert(pArchive->tmpPathname != NULL);
-        if (remove(pArchive->tmpPathname) != 0) {
+        Assert(pArchive->tmpPathnameUNI != NULL);
+        if (remove(pArchive->tmpPathnameUNI) != 0) {
             Nu_ReportError(NU_BLOB, errno, "Unable to remove temp file '%s'",
-                pArchive->tmpPathname);
+                pArchive->tmpPathnameUNI);
             /* keep going */
         }
     }
@@ -1127,9 +1134,9 @@ static void Nu_CloseAndFree(NuArchive* pArchive)
     if (pArchive->newlyCreated && Nu_RecordSet_IsEmpty(&pArchive->origRecordSet))
     {
         DBUG(("--- Newly-created archive unmodified; removing it\n"));
-        if (remove(pArchive->archivePathname) != 0) {
+        if (remove(pArchive->archivePathnameUNI) != 0) {
             Nu_ReportError(NU_BLOB, errno, "Unable to remove archive file '%s'",
-                pArchive->archivePathname);
+                pArchive->archivePathnameUNI);
         }
     }
     
@@ -1142,7 +1149,7 @@ static void Nu_CloseAndFree(NuArchive* pArchive)
 NuError Nu_Close(NuArchive* pArchive)
 {
     NuError err = kNuErrNone;
-    long flushStatus;
+    uint32_t flushStatus;
 
     Assert(pArchive != NULL);
 
@@ -1174,9 +1181,9 @@ NuError Nu_DeleteArchiveFile(NuArchive* pArchive)
 {
     Assert(pArchive != NULL);
     Assert(pArchive->archiveFp == NULL);
-    Assert(pArchive->archivePathname != NULL);
+    Assert(pArchive->archivePathnameUNI != NULL);
 
-    return Nu_DeleteFile(pArchive->archivePathname);
+    return Nu_DeleteFile(pArchive->archivePathnameUNI);
 }
 
 /*
@@ -1188,9 +1195,10 @@ NuError Nu_RenameTempToArchive(NuArchive* pArchive)
     Assert(pArchive != NULL);
     Assert(pArchive->archiveFp == NULL);
     Assert(pArchive->tmpFp == NULL);
-    Assert(pArchive->archivePathname != NULL);
-    Assert(pArchive->tmpPathname != NULL);
+    Assert(pArchive->archivePathnameUNI != NULL);
+    Assert(pArchive->tmpPathnameUNI != NULL);
 
-    return Nu_RenameFile(pArchive->tmpPathname, pArchive->archivePathname);
+    return Nu_RenameFile(pArchive->tmpPathnameUNI,
+        pArchive->archivePathnameUNI);
 }
 

@@ -105,6 +105,13 @@ add the appropriate goodies.  (Seems to me you'd always want this on, but
 for some reason Solaris makes you take an extra step, so I'm not going to
 define it by default.)
 
+Originally, NufxLib / NuLib2 were intended to be usable natively on the
+Apple IIgs, so some of the design decisions were influenced by the need
+to minimize memory usage (e.g. being able to get a directory listing
+without holding the entire directory in memory) and interact with GS/OS
+(forked files have a single filename, files have type/auxtype).  The IIgs
+port was never started.
+
 
 Legalese
 ========

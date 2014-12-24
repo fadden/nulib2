@@ -15,6 +15,8 @@
 #define kTestTempFile   "nlbt.tmp"
 
 #define kNumEntries     3   /* how many records are we going to add? */
+
+/* stick to ASCII characters for these -- not doing conversions just yet */
 #define kTestEntryBytes     "bytes"
 #define kTestEntryBytesUPPER "BYTES"
 #define kTestEntryEnglish   "English"
@@ -39,8 +41,7 @@ char gSuppressError = false;
 /*
  * Get a single character of input from the user.
  */
-static char
-TGetReplyChar(char defaultReply)
+static char TGetReplyChar(char defaultReply)
 {
     char tmpBuf[32];
 
@@ -52,14 +53,13 @@ TGetReplyChar(char defaultReply)
     return tmpBuf[0];
 }
 
-NuError
-AddSimpleRecord(NuArchive* pArchive, const char* filename,
+NuError AddSimpleRecord(NuArchive* pArchive, const char* filenameMOR,
     NuRecordIdx* pRecordIdx)
 {
     NuFileDetails fileDetails;
 
     memset(&fileDetails, 0, sizeof(fileDetails));
-    fileDetails.storageName = filename;
+    fileDetails.storageNameMOR = filenameMOR;
     fileDetails.fileSysInfo = kLocalFssep;
     fileDetails.access = kNuAccessUnlocked;
 
@@ -70,8 +70,7 @@ AddSimpleRecord(NuArchive* pArchive, const char* filename,
 /*
  * Display error messages... or not.
  */
-NuResult
-ErrorMessageHandler(NuArchive* pArchive, void* vErrorMessage)
+NuResult ErrorMessageHandler(NuArchive* pArchive, void* vErrorMessage)
 {
     const NuErrorMessage* pErrorMessage = (const NuErrorMessage*) vErrorMessage;
 
@@ -95,11 +94,35 @@ ErrorMessageHandler(NuArchive* pArchive, void* vErrorMessage)
 /*
  * This gets called when a buffer DataSource is no longer needed.
  */
-NuResult
-FreeCallback(NuArchive* pArchive, void* args)
+NuResult FreeCallback(NuArchive* pArchive, void* args)
 {
     free(args);
     return kNuOK;
+}
+
+/*
+ * If the test file currently exists, ask the user if it's okay to remove
+ * it.
+ *
+ * Returns 0 if the file was successfully removed, -1 if the file could not
+ * be removed (because the unlink failed, or the user refused).
+ */
+int RemoveTestFile(const char* title, const char* fileName)
+{
+    char answer;
+
+    if (access(fileName, F_OK) == 0) {
+        printf("%s '%s' exists, remove (y/n)? ", title, fileName);
+        fflush(stdout);
+        answer = TGetReplyChar('n');
+        if (tolower(answer) != 'y')
+            return -1;
+        if (unlink(fileName) < 0) {
+            perror("unlink");
+            return -1;
+        }
+    }
+    return 0;
 }
 
 
@@ -113,8 +136,7 @@ FreeCallback(NuArchive* pArchive, void* args)
  * Make sure the flags that control how we open the file work right,
  * and verify that we handle existing zero-byte archive files correctly.
  */
-int
-Test_OpenFlags(void)
+int Test_OpenFlags(void)
 {
     NuError err;
     FILE* fp = NULL;
@@ -170,14 +192,13 @@ failed:
 /*
  * Add some files to the archive.  These will be used by later tests.
  */
-int
-Test_AddStuff(NuArchive* pArchive)
+int Test_AddStuff(NuArchive* pArchive)
 {
     NuError err;
     uint8_t* buf = NULL;
     NuDataSource* pDataSource = NULL;
     NuRecordIdx recordIdx;
-    long status;
+    uint32_t status;
     int i;
     static const char* testMsg =
         "This is a nice test message that has linefeeds in it so we can\n"
@@ -185,7 +206,7 @@ Test_AddStuff(NuArchive* pArchive)
         "all.  It's certainly nice to know that everything works the way\n"
         "it's supposed to, which I suppose is why we have this nifty test\n"
         "program available.  It sure would be nice if everybody tested\n"
-        "there code, but where would Microsoft be without endless upgrades\n"
+        "their code, but where would Microsoft be without endless upgrades\n"
         "and service packs?  Bugs are what America was built on, and\n"
         "anybody who says otherwise is a pinko commie lowlife.  Verily.\n";
 
@@ -308,7 +329,7 @@ Test_AddStuff(NuArchive* pArchive)
      */
     err = NuFlush(pArchive, &status);
     if (err != kNuErrNone) {
-        fprintf(stderr,"ERROR: couldn't flush after add (err=%d, status=%ld)\n",
+        fprintf(stderr, "ERROR: couldn't flush after add (err=%d, status=%u)\n",
             err, status);
         goto failed;
     }
@@ -318,7 +339,7 @@ Test_AddStuff(NuArchive* pArchive)
      */
     err = NuFlush(pArchive, &status);
     if (err != kNuErrNone) {
-        fprintf(stderr,"ERROR: second add flush failed (err=%d, status=%ld)\n",
+        fprintf(stderr, "ERROR: second add flush failed (err=%d, status=%u)\n",
             err, status);
         goto failed;
     }
@@ -336,19 +357,18 @@ failed:
 /*
  * Make sure that what we're seeing makes sense.
  */
-NuResult
-TestContentsCallback(NuArchive* pArchive, void* vpRecord)
+NuResult TestContentsCallback(NuArchive* pArchive, void* vpRecord)
 {
     const NuRecord* pRecord = (NuRecord*) vpRecord;
 
-    if (strcmp(pRecord->filename, kTestEntryBytes) == 0 ||
-        strcmp(pRecord->filename, kTestEntryEnglish) == 0 ||
-        strcmp(pRecord->filename, kTestEntryLong) == 0)
+    if (strcmp(pRecord->filenameMOR, kTestEntryBytes) == 0 ||
+        strcmp(pRecord->filenameMOR, kTestEntryEnglish) == 0 ||
+        strcmp(pRecord->filenameMOR, kTestEntryLong) == 0)
     {
         return kNuOK;
     }
 
-    fprintf(stderr, "ERROR: found mystery entry '%s'\n", pRecord->filename);
+    fprintf(stderr, "ERROR: found mystery entry '%s'\n", pRecord->filenameMOR);
     return kNuAbort;
 }
 
@@ -356,8 +376,7 @@ TestContentsCallback(NuArchive* pArchive, void* vpRecord)
 /*
  * Verify that the contents look about right.
  */
-int
-Test_Contents(NuArchive* pArchive)
+int Test_Contents(NuArchive* pArchive)
 {
     NuError err;
     long posn;
@@ -394,13 +413,13 @@ Test_Contents(NuArchive* pArchive)
 
         switch (posn) {
         case 0:
-            cc = strcmp(pRecord->filename, kTestEntryBytes);
+            cc = strcmp(pRecord->filenameMOR, kTestEntryBytes);
             break;
         case 1:
-            cc = strcmp(pRecord->filename, kTestEntryEnglish);
+            cc = strcmp(pRecord->filenameMOR, kTestEntryEnglish);
             break;
         case 2:
-            cc = strcmp(pRecord->filename, kTestEntryLong);
+            cc = strcmp(pRecord->filenameMOR, kTestEntryLong);
             if (!cc)
                 cc = !(pRecord->recStorageType == kNuStorageExtended);
             break;
@@ -412,7 +431,7 @@ Test_Contents(NuArchive* pArchive)
 
         if (cc) {
             fprintf(stderr, "ERROR: got '%s' for %ld (%u), not expected\n",
-                pRecord->filename, posn, recordIdx);
+                pRecord->filenameMOR, posn, recordIdx);
             goto failed;
         }
     }
@@ -437,15 +456,14 @@ failed:
 /*
  * Selection callback filter for "test".  This gets called once per record.
  */
-NuResult
-VerifySelectionCallback(NuArchive* pArchive, void* vpProposal)
+NuResult VerifySelectionCallback(NuArchive* pArchive, void* vpProposal)
 {
     NuError err;
     const NuSelectionProposal* pProposal = vpProposal;
     long count;
 
     if (pProposal->pRecord == NULL || pProposal->pThread == NULL ||
-        pProposal->pRecord->filename == NULL)
+        pProposal->pRecord->filenameMOR == NULL)
     {
         fprintf(stderr, "ERROR: unexpected NULL in proposal\n");
         goto failed;
@@ -473,8 +491,7 @@ failed:
 /*
  * Verify the archive contents.
  */
-int
-Test_Verify(NuArchive* pArchive)
+int Test_Verify(NuArchive* pArchive)
 {
     NuError err;
     long count;
@@ -520,8 +537,7 @@ failed:
 /*
  * Extract stuff.
  */
-int
-Test_Extract(NuArchive* pArchive)
+int Test_Extract(NuArchive* pArchive)
 {
     NuError err;
     NuRecordIdx recordIdx;
@@ -780,8 +796,7 @@ failed:
 /*
  * Delete the first and last records.  Does *not* flush the archive.
  */
-int
-Test_Delete(NuArchive* pArchive)
+int Test_Delete(NuArchive* pArchive)
 {
     NuError err;
     NuRecordIdx recordIdx;
@@ -847,6 +862,7 @@ Test_Delete(NuArchive* pArchive)
     /*
      * Make sure the attr hasn't been updated yet.
      */
+    count = 0;
     err = NuGetAttr(pArchive, kNuAttrNumRecords, (uint32_t*) &count);
     if (count != kNumEntries) {
         fprintf(stderr, "ERROR: kNuAttrNumRecords %ld vs %d\n",
@@ -901,8 +917,7 @@ failed:
 /*
  * Verify that the count in the master header has been updated.
  */
-int
-Test_MasterCount(NuArchive* pArchive, long expected)
+int Test_MasterCount(NuArchive* pArchive, long expected)
 {
     NuError err;
     const NuMasterHeader* pMasterHeader;
@@ -932,41 +947,21 @@ failed:
  *
  * Returns 0 on success, -1 on error.
  */
-int
-DoTests(void)
+int DoTests(void)
 {
     NuError err;
     NuArchive* pArchive = NULL;
-    long status;
+    uint32_t status;
     int cc, result = 0;
-    char answer;
 
     /*
      * Make sure we're starting with a clean slate.
      */
-    if (access(kTestArchive, F_OK) == 0) {
-        printf("Test archive '%s' exists, remove (y/n)? ", kTestArchive);
-        fflush(stdout);
-        answer = TGetReplyChar('n');
-        if (tolower(answer) != 'y')
-            goto failed;
-        cc = unlink(kTestArchive);
-        if (cc < 0) {
-            perror("unlink kTestArchive");
-            goto failed;
-        }
+    if (RemoveTestFile("Test archive", kTestArchive) < 0) {
+        goto failed;
     }
-    if (access(kTestTempFile, F_OK) == 0) {
-        printf("Test temp file '%s' exists, remove (y/n)? ", kTestTempFile);
-        fflush(stdout);
-        answer = TGetReplyChar('n');
-        if (tolower(answer) != 'y')
-            goto failed;
-        cc = unlink(kTestTempFile);
-        if (cc < 0) {
-            perror("unlink kTestTempFile");
-            goto failed;
-        }
+    if (RemoveTestFile("Test temp file", kTestTempFile) < 0) {
+        goto failed;
     }
 
     /*
@@ -1028,14 +1023,14 @@ DoTests(void)
     }
 
     /*
-     * Make sure the contents are still what we expect.
+     * Make sure the TOC (i.e. list of files) is still what we expect.
      */
     printf("... checking contents\n");
     if (Test_Contents(pArchive) != 0)
         goto failed;
 
     /*
-     * Verify the archive contents.
+     * Verify the archive data.
      */
     if (Test_Verify(pArchive) != 0)
         goto failed;
@@ -1107,7 +1102,7 @@ DoTests(void)
      */
     err = NuFlush(pArchive, &status);
     if (err != kNuErrNone) {
-        fprintf(stderr, "ERROR: flush failed (err=%d, status=%ld)\n",
+        fprintf(stderr, "ERROR: flush failed (err=%d, status=%d)\n",
             err, status);
         goto failed;
     }
@@ -1148,16 +1143,15 @@ failed:
 /*
  * Crank away.
  */
-int
-main(void)
+int main(void)
 {
-    long major, minor, bug;
+    int32_t major, minor, bug;
     const char* pBuildDate;
     const char* pBuildFlags;
     int cc;
 
     (void) NuGetVersion(&major, &minor, &bug, &pBuildDate, &pBuildFlags);
-    printf("Using NuFX library v%ld.%ld.%ld, built on or after\n"
+    printf("Using NuFX library v%d.%d.%d, built on or after\n"
            "  %s with [%s]\n\n",
         major, minor, bug, pBuildDate, pBuildFlags);
 

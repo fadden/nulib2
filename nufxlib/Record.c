@@ -34,9 +34,9 @@ static NuError Nu_InitRecordContents(NuArchive* pArchive, NuRecord* pRecord)
 
     pRecord->recOptionList = NULL;
     pRecord->extraBytes = NULL;
-    pRecord->recFilename = NULL;
-    pRecord->threadFilename = NULL;
-    pRecord->newFilename = NULL;
+    pRecord->recFilenameMOR = NULL;
+    pRecord->threadFilenameMOR = NULL;
+    pRecord->newFilenameMOR = NULL;
     pRecord->pThreads = NULL;
     pRecord->pNext = NULL;
     pRecord->pThreadMods = NULL;
@@ -71,9 +71,9 @@ static NuError Nu_FreeRecordContents(NuArchive* pArchive, NuRecord* pRecord)
 
     Nu_Free(pArchive, pRecord->recOptionList);
     Nu_Free(pArchive, pRecord->extraBytes);
-    Nu_Free(pArchive, pRecord->recFilename);
-    Nu_Free(pArchive, pRecord->threadFilename);
-    Nu_Free(pArchive, pRecord->newFilename);
+    Nu_Free(pArchive, pRecord->recFilenameMOR);
+    Nu_Free(pArchive, pRecord->threadFilenameMOR);
+    Nu_Free(pArchive, pRecord->newFilenameMOR);
     Nu_Free(pArchive, pRecord->pThreads);
     /* don't Free(pRecord->pNext)! */
     Nu_FreeThreadMods(pArchive, pRecord);
@@ -143,24 +143,24 @@ static NuError Nu_RecordCopy(NuArchive* pArchive, NuRecord** ppDst,
         pSrc->recOptionSize);
     CopySizedField(pArchive, &pDst->extraBytes, pSrc->extraBytes,
         pSrc->extraCount);
-    CopySizedField(pArchive, &pDst->recFilename, pSrc->recFilename,
+    CopySizedField(pArchive, &pDst->recFilenameMOR, pSrc->recFilenameMOR,
         pSrc->recFilenameLength == 0 ? 0 : pSrc->recFilenameLength+1);
-    CopySizedField(pArchive, &pDst->threadFilename, pSrc->threadFilename,
-        pSrc->threadFilename == NULL ? 0 : strlen(pSrc->threadFilename) +1);
-    CopySizedField(pArchive, &pDst->newFilename, pSrc->newFilename,
-        pSrc->newFilename == NULL ? 0 : strlen(pSrc->newFilename) +1);
+    CopySizedField(pArchive, &pDst->threadFilenameMOR, pSrc->threadFilenameMOR,
+        pSrc->threadFilenameMOR == NULL ? 0 : strlen(pSrc->threadFilenameMOR) +1);
+    CopySizedField(pArchive, &pDst->newFilenameMOR, pSrc->newFilenameMOR,
+        pSrc->newFilenameMOR == NULL ? 0 : strlen(pSrc->newFilenameMOR) +1);
     CopySizedField(pArchive, &pDst->pThreads, pSrc->pThreads,
         pSrc->recTotalThreads * sizeof(*pDst->pThreads));
 
     /* now figure out what the filename is supposed to point at */
-    if (pSrc->filename == pSrc->threadFilename)
-        pDst->filename = pDst->threadFilename;
-    else if (pSrc->filename == pSrc->recFilename)
-        pDst->filename = pDst->recFilename;
-    else if (pSrc->filename == pSrc->newFilename)
-        pDst->filename = pDst->newFilename;
+    if (pSrc->filenameMOR == pSrc->threadFilenameMOR)
+        pDst->filenameMOR = pDst->threadFilenameMOR;
+    else if (pSrc->filenameMOR == pSrc->recFilenameMOR)
+        pDst->filenameMOR = pDst->recFilenameMOR;
+    else if (pSrc->filenameMOR == pSrc->newFilenameMOR)
+        pDst->filenameMOR = pDst->newFilenameMOR;
     else
-        pDst->filename = pSrc->filename;    /* probably static kDefault value */
+        pDst->filenameMOR = pSrc->filenameMOR; /* probably static kDefault value */
 
     pDst->pNext = NULL;
 
@@ -629,12 +629,12 @@ NuError Nu_RecordSet_FindByThreadIdx(NuRecordSet* pRecordSet,
  * string pointed to by name1 is greater than, equal to, or less than
  * the string pointed to by s2, respectively (i.e. same as strcmp).
  */
-static int Nu_CompareRecordNames(const char* name1, const char* name2)
+static int Nu_CompareRecordNames(const char* name1MOR, const char* name2MOR)
 {
 #ifdef NU_CASE_SENSITIVE
-    return strcmp(name1, name2);
+    return strcmp(name1MOR, name2MOR);
 #else
-    return strcasecmp(name1, name2);
+    return strcasecmp(name1MOR, name2MOR);
 #endif
 }
 
@@ -643,18 +643,18 @@ static int Nu_CompareRecordNames(const char* name1, const char* name2)
  * Find a record in the list by storageName.
  */
 static NuError Nu_RecordSet_FindByName(const NuRecordSet* pRecordSet,
-    const char* name, NuRecord** ppRecord)
+    const char* nameMOR, NuRecord** ppRecord)
 {
     NuRecord* pRecord;
 
     Assert(pRecordSet != NULL);
     Assert(pRecordSet->loaded);
-    Assert(name != NULL);
+    Assert(nameMOR != NULL);
     Assert(ppRecord != NULL);
 
     pRecord = pRecordSet->nuRecordHead;
     while (pRecord != NULL) {
-        if (Nu_CompareRecordNames(pRecord->filename, name) == 0) {
+        if (Nu_CompareRecordNames(pRecord->filenameMOR, nameMOR) == 0) {
             *ppRecord = pRecord;
             return kNuErrNone;
         }
@@ -674,19 +674,19 @@ static NuError Nu_RecordSet_FindByName(const NuRecordSet* pRecordSet,
  * causes a notable reduction in efficiency we'll have to fix this.
  */
 static NuError Nu_RecordSet_ReverseFindByName(const NuRecordSet* pRecordSet,
-    const char* name, NuRecord** ppRecord)
+    const char* nameMOR, NuRecord** ppRecord)
 {
     NuRecord* pRecord;
     NuRecord* pFoundRecord = NULL;
 
     Assert(pRecordSet != NULL);
     Assert(pRecordSet->loaded);
-    Assert(name != NULL);
+    Assert(nameMOR != NULL);
     Assert(ppRecord != NULL);
 
     pRecord = pRecordSet->nuRecordHead;
     while (pRecord != NULL) {
-        if (Nu_CompareRecordNames(pRecord->filename, name) == 0)
+        if (Nu_CompareRecordNames(pRecord->filenameMOR, nameMOR) == 0)
             pFoundRecord = pRecord;
 
         pRecord = pRecord->pNext;
@@ -792,6 +792,7 @@ Boolean Nu_ShouldIgnoreBadCRC(NuArchive* pArchive, const NuRecord* pRecord,
     NuErrorStatus errorStatus;
     NuResult result;
     Boolean retval = false;
+    UNICHAR* pathnameUNI = NULL;
 
     Assert(pArchive->valIgnoreCRC == false);
 
@@ -801,11 +802,12 @@ Boolean Nu_ShouldIgnoreBadCRC(NuArchive* pArchive, const NuRecord* pRecord,
         errorStatus.sysErr = 0;
         errorStatus.message = NULL;
         errorStatus.pRecord = pRecord;
-        errorStatus.pathname = NULL;
+        errorStatus.pathnameUNI = NULL;
         errorStatus.origPathname = NULL;
         errorStatus.filenameSeparator = 0;
         if (pRecord != NULL) {
-            errorStatus.pathname = pRecord->filename;
+            pathnameUNI = Nu_CopyMORToUNI(pRecord->filenameMOR);
+            errorStatus.pathnameUNI = pathnameUNI;
             errorStatus.filenameSeparator =
                 NuGetSepFromSysInfo(pRecord->recFileSysInfo);
         }
@@ -837,6 +839,7 @@ Boolean Nu_ShouldIgnoreBadCRC(NuArchive* pArchive, const NuRecord* pRecord,
     }
 
 bail:
+    Nu_Free(pArchive, pathnameUNI);
     return retval;
 }
 
@@ -864,7 +867,7 @@ static NuError Nu_ReadRecordHeader(NuArchive* pArchive, NuRecord* pRecord)
     pRecord->recordIdx = Nu_GetNextRecordIdx(pArchive);
 
     /* points to whichever filename storage we like best */
-    pRecord->filename = NULL;
+    pRecord->filenameMOR = NULL;
     pRecord->fileOffset = pArchive->currentOffset;
 
     (void) Nu_ReadBytes(pArchive, fp, pRecord->recNufxID, kNufxIDLen);
@@ -994,18 +997,19 @@ static NuError Nu_ReadRecordHeader(NuArchive* pArchive, NuRecord* pRecord)
         goto bail;
     }
     if (pRecord->recFilenameLength) {
-        pRecord->recFilename = Nu_Malloc(pArchive, pRecord->recFilenameLength +1);
-        BailAlloc(pRecord->recFilename);
-        (void) Nu_ReadBytesC(pArchive, fp, pRecord->recFilename,
+        pRecord->recFilenameMOR =
+                Nu_Malloc(pArchive, pRecord->recFilenameLength +1);
+        BailAlloc(pRecord->recFilenameMOR);
+        (void) Nu_ReadBytesC(pArchive, fp, pRecord->recFilenameMOR,
                 pRecord->recFilenameLength, &crc);
-        pRecord->recFilename[pRecord->recFilenameLength] = '\0';
+        pRecord->recFilenameMOR[pRecord->recFilenameLength] = '\0';
 
         bytesRead += pRecord->recFilenameLength;
 
-        Nu_StripHiIfAllSet(pRecord->recFilename);
+        Nu_StripHiIfAllSet(pRecord->recFilenameMOR);
         
         /* use the in-header one */
-        pRecord->filename = pRecord->recFilename;
+        pRecord->filenameMOR = pRecord->recFilenameMOR;
     }
 
     /*
@@ -1226,7 +1230,7 @@ NuError Nu_WriteRecordHeader(NuArchive* pArchive, NuRecord* pRecord, FILE* fp)
     if (pRecord->recFilenameLength && !pRecord->dropRecFilename) {
         Nu_WriteTwoC(pArchive, fp, pRecord->recFilenameLength, &crc);
         bytesWritten += 2;
-        Nu_WriteBytesC(pArchive, fp, pRecord->recFilename,
+        Nu_WriteBytesC(pArchive, fp, pRecord->recFilenameMOR,
             pRecord->recFilenameLength, &crc);
     } else {
         Nu_WriteTwoC(pArchive, fp, 0, &crc);
@@ -1343,7 +1347,7 @@ static NuError Nu_RecordWalkGetNext(NuArchive* pArchive, NuRecord** ppRecord)
         err = Nu_ScanThreads(pArchive, *ppRecord, (*ppRecord)->recTotalThreads);
         BailError(err);
 
-        DBUG(("--- Found record '%s'\n", (*ppRecord)->filename));
+        DBUG(("--- Found record '%s'\n", (*ppRecord)->filenameMOR));
 
         /* add to list */
         err = Nu_RecordSet_AddRecord(&pArchive->origRecordSet, *ppRecord);
@@ -1525,7 +1529,7 @@ NuError Nu_StreamExtract(NuArchive* pArchive)
     long idx;
 
     /* reset this just to be safe */
-    pArchive->lastDirCreated = NULL;
+    pArchive->lastDirCreatedUNI = NULL;
 
     Nu_InitRecordContents(pArchive, &tmpRecord);
     count = pArchive->masterHeader.mhTotalRecords;
@@ -1559,7 +1563,7 @@ NuError Nu_StreamExtract(NuArchive* pArchive)
             BailError(err);
         } else
             idx = 0;
-        if (tmpRecord.filename == NULL) {
+        if (tmpRecord.filenameMOR == NULL) {
             Nu_ReportError(NU_BLOB, kNuErrNone,
                 "Couldn't find filename in record");
             err = kNuErrBadRecord;
@@ -1572,7 +1576,7 @@ NuError Nu_StreamExtract(NuArchive* pArchive)
         hasInterestingThread = false;
 
         /* extract all relevant (remaining) threads */
-        pArchive->lastFileCreated = NULL;
+        pArchive->lastFileCreatedUNI = NULL;
         for ( ; idx < (long)tmpRecord.recTotalThreads; idx++) {
             const NuThread* pThread = Nu_GetThread(&tmpRecord, idx);
 
@@ -1671,7 +1675,7 @@ NuError Nu_Contents(NuArchive* pArchive, NuCallback contentFunc)
         err = Nu_RecordWalkGetNext(pArchive, &pRecord);
         BailError(err);
 
-        Assert(pRecord->filename != NULL);
+        Assert(pRecord->filenameMOR != NULL);
         result = (*contentFunc)(pArchive, pRecord);
         if (result == kNuAbort) {
             err = kNuErrAborted;
@@ -1702,7 +1706,7 @@ static NuError Nu_ExtractRecordByPtr(NuArchive* pArchive, NuRecord* pRecord)
 
     /* extract all relevant threads */
     hasInterestingThread = false;
-    pArchive->lastFileCreated = NULL;
+    pArchive->lastFileCreatedUNI = NULL;
     for (idx = 0; idx < pRecord->recTotalThreads; idx++) {
         const NuThread* pThread = Nu_GetThread(pRecord, idx);
 
@@ -1722,7 +1726,7 @@ static NuError Nu_ExtractRecordByPtr(NuArchive* pArchive, NuRecord* pRecord)
             }
             DBUG(("IGNORING 0x%08lx from '%s'\n",
                 NuMakeThreadID(pThread->thThreadClass, pThread->thThreadKind),
-                pRecord->filename));
+                pRecord->filenameMOR));
         }
     }
 
@@ -1767,7 +1771,7 @@ NuError Nu_Extract(NuArchive* pArchive)
     long offset;
 
     /* reset this just to be safe */
-    pArchive->lastDirCreated = NULL;
+    pArchive->lastDirCreatedUNI = NULL;
 
     err = Nu_RecordWalkPrepare(pArchive, &pRecord);
     BailError(err);
@@ -1905,7 +1909,7 @@ bail:
 /*
  * Find the recordIdx of a record by storage name.
  */
-NuError Nu_GetRecordIdxByName(NuArchive* pArchive, const char* name,
+NuError Nu_GetRecordIdxByName(NuArchive* pArchive, const char* nameMOR,
     NuRecordIdx* pRecordIdx)
 {
     NuError err;
@@ -1919,7 +1923,7 @@ NuError Nu_GetRecordIdxByName(NuArchive* pArchive, const char* name,
     err = Nu_GetTOCIfNeeded(pArchive);
     BailError(err);
 
-    err = Nu_RecordSet_FindByName(&pArchive->origRecordSet, name, &pRecord);
+    err = Nu_RecordSet_FindByName(&pArchive->origRecordSet, nameMOR, &pRecord);
     if (err == kNuErrNone) {
         Assert(pRecord != NULL);
         *pRecordIdx = pRecord->recordIdx;
@@ -2078,7 +2082,9 @@ static NuError Nu_HandleAddDuplicateRecord(NuArchive* pArchive,
             errorStatus.sysErr = 0;
             errorStatus.message = NULL;
             errorStatus.pRecord = pRecord;
-            errorStatus.pathname = pFileDetails->storageName;
+            UNICHAR* pathnameUNI =
+                    Nu_CopyMORToUNI(pFileDetails->storageNameMOR);
+            errorStatus.pathnameUNI = pathnameUNI;
             errorStatus.origPathname = pFileDetails->origName;
             errorStatus.filenameSeparator =
                                 NuGetSepFromSysInfo(pFileDetails->fileSysInfo);
@@ -2091,6 +2097,7 @@ static NuError Nu_HandleAddDuplicateRecord(NuArchive* pArchive,
             errorStatus.canOverwrite = true;
 
             result = (*pArchive->errorHandlerFunc)(pArchive, &errorStatus);
+            Nu_Free(pArchive, pathnameUNI);
 
             switch (result) {
             case kNuAbort:
@@ -2179,8 +2186,8 @@ NuError Nu_AddRecord(NuArchive* pArchive, const NuFileDetails* pFileDetails,
     NuError err;
     NuRecord* pNewRecord = NULL;
 
-    if (pFileDetails == NULL || pFileDetails->storageName == NULL ||
-        pFileDetails->storageName[0] == '\0' ||
+    if (pFileDetails == NULL || pFileDetails->storageNameMOR == NULL ||
+        pFileDetails->storageNameMOR[0] == '\0' ||
         NuGetSepFromSysInfo(pFileDetails->fileSysInfo) == 0)
         /* pRecordIdx may be NULL */
         /* ppNewRecord may be NULL */
@@ -2195,7 +2202,7 @@ NuError Nu_AddRecord(NuArchive* pArchive, const NuFileDetails* pFileDetails,
     BailError(err);
 
     /* NuFX spec forbids leading fssep chars */
-    if (pFileDetails->storageName[0] ==
+    if (pFileDetails->storageNameMOR[0] ==
         NuGetSepFromSysInfo(pFileDetails->fileSysInfo))
     {
         err = kNuErrLeadingFssep;
@@ -2219,12 +2226,12 @@ NuError Nu_AddRecord(NuArchive* pArchive, const NuFileDetails* pFileDetails,
         if (!Nu_RecordSet_GetLoaded(pRecordSet))
             pRecordSet = &pArchive->origRecordSet;
         Assert(Nu_RecordSet_GetLoaded(pRecordSet));
-        err = Nu_RecordSet_FindByName(pRecordSet, pFileDetails->storageName,
+        err = Nu_RecordSet_FindByName(pRecordSet, pFileDetails->storageNameMOR,
                 &pFoundRecord);
         if (err == kNuErrNone) {
             /* handle the existing record */
             DBUG(("--- Duplicate record found (%06ld) '%s'\n",
-                pFoundRecord->recordIdx, pFoundRecord->filename));
+                pFoundRecord->recordIdx, pFoundRecord->filenameMOR));
             err = Nu_HandleAddDuplicateRecord(pArchive, pRecordSet,
                     pFoundRecord, pFileDetails);
             if (err != kNuErrNone) {
@@ -2244,7 +2251,7 @@ NuError Nu_AddRecord(NuArchive* pArchive, const NuFileDetails* pFileDetails,
 
         if (Nu_RecordSet_GetLoaded(&pArchive->newRecordSet)) {
             err = Nu_RecordSet_FindByName(&pArchive->newRecordSet,
-                    pFileDetails->storageName, &pFoundRecord);
+                    pFileDetails->storageNameMOR, &pFoundRecord);
             if (err == kNuErrNone) {
                 /* we can't delete from the "new" list, so return an error */
                 err = kNuErrRecordExists;
@@ -2281,9 +2288,9 @@ NuError Nu_AddRecord(NuArchive* pArchive, const NuFileDetails* pFileDetails,
     pNewRecord->recFilenameLength = 0;
 
     pNewRecord->recordIdx = Nu_GetNextRecordIdx(pArchive);
-    pNewRecord->threadFilename = NULL;
-    pNewRecord->newFilename = strdup(pFileDetails->storageName);
-    pNewRecord->filename = pNewRecord->newFilename;
+    pNewRecord->threadFilenameMOR = NULL;
+    pNewRecord->newFilenameMOR = strdup(pFileDetails->storageNameMOR);
+    pNewRecord->filenameMOR = pNewRecord->newFilenameMOR;
     pNewRecord->recHeaderLength = -1;
     pNewRecord->totalCompLength = 0;
     pNewRecord->fakeThreads = 0;
@@ -2313,7 +2320,7 @@ bail:
  * "add file" thread mod with the same ThreadID.
  */
 static NuError Nu_AddFileThreadMod(NuArchive* pArchive, NuRecord* pRecord,
-    const char* pathname, const NuFileDetails* pFileDetails,
+    const UNICHAR* pathnameUNI, const NuFileDetails* pFileDetails,
     Boolean fromRsrcFork)
 {
     NuError err;
@@ -2323,7 +2330,7 @@ static NuError Nu_AddFileThreadMod(NuArchive* pArchive, NuRecord* pRecord,
 
     Assert(pArchive != NULL);
     Assert(pRecord != NULL);
-    Assert(pathname != NULL);
+    Assert(pathnameUNI != NULL);
     Assert(pFileDetails != NULL);
     Assert(fromRsrcFork == true || fromRsrcFork == false);
 
@@ -2339,7 +2346,7 @@ static NuError Nu_AddFileThreadMod(NuArchive* pArchive, NuRecord* pRecord,
 
     /* create a data source for this file, which is assumed uncompressed */
     err = Nu_DataSourceFile_New(kNuThreadFormatUncompressed, 0,
-            pathname, fromRsrcFork, &pDataSource);
+            pathnameUNI, fromRsrcFork, &pDataSource);
     BailError(err);
 
     /* create a new ThreadMod */
@@ -2372,7 +2379,7 @@ bail:
  *
  * If "pRecordIdx" is non-NULL, it will receive the newly assigned recordID.
  */
-NuError Nu_AddFile(NuArchive* pArchive, const char* pathname,
+NuError Nu_AddFile(NuArchive* pArchive, const UNICHAR* pathnameUNI,
     const NuFileDetails* pFileDetails, Boolean fromRsrcFork,
     NuRecordIdx* pRecordIdx)
 {
@@ -2380,7 +2387,7 @@ NuError Nu_AddFile(NuArchive* pArchive, const char* pathname,
     NuRecordIdx recordIdx = 0;
     NuRecord* pRecord;
 
-    if (pathname == NULL || pFileDetails == NULL ||
+    if (pathnameUNI == NULL || pFileDetails == NULL ||
         !(fromRsrcFork == true || fromRsrcFork == false))
     {
         return kNuErrInvalidArg;
@@ -2391,20 +2398,20 @@ NuError Nu_AddFile(NuArchive* pArchive, const char* pathname,
     err = Nu_GetTOCIfNeeded(pArchive);
     BailError(err);
 
-    if (pFileDetails->storageName == NULL) {
+    if (pFileDetails->storageNameMOR == NULL) {
         err = kNuErrInvalidArg;
         Nu_ReportError(NU_BLOB, err, "Must specify storageName");
         goto bail;
     }
-    if (pFileDetails->storageName[0] ==
+    if (pFileDetails->storageNameMOR[0] ==
         NuGetSepFromSysInfo(pFileDetails->fileSysInfo))
     {
         err = kNuErrLeadingFssep;
         goto bail;
     }
 
-    DBUG(("+++ ADDING '%s' (%s) 0x%02lx 0x%04lx threadID=0x%08lx\n", pathname,
-        pFileDetails->storageName, pFileDetails->fileType,
+    DBUG(("+++ ADDING '%s' (%s) 0x%02lx 0x%04lx threadID=0x%08lx\n",
+        pathnameUNI, pFileDetails->storageName, pFileDetails->fileType,
         pFileDetails->extraType, pFileDetails->threadID));
 
     /*
@@ -2423,7 +2430,7 @@ NuError Nu_AddFile(NuArchive* pArchive, const char* pathname,
         NuRecord* pNewRecord;
 
         err = Nu_RecordSet_ReverseFindByName(&pArchive->newRecordSet,
-                pFileDetails->storageName, &pNewRecord);
+                pFileDetails->storageNameMOR, &pNewRecord);
         if (err == kNuErrNone) {
             /* is it okay to add it here? */
             err = Nu_OkayToAddThread(pArchive, pNewRecord,
@@ -2433,7 +2440,7 @@ NuError Nu_AddFile(NuArchive* pArchive, const char* pathname,
                 /* okay to add it to this record */
                 DBUG(("    attaching to existing record %06ld\n",
                     pNewRecord->recordIdx));
-                err = Nu_AddFileThreadMod(pArchive, pNewRecord, pathname,
+                err = Nu_AddFileThreadMod(pArchive, pNewRecord, pathnameUNI,
                         pFileDetails, fromRsrcFork);
                 BailError(err);
                 recordIdx = pNewRecord->recordIdx;
@@ -2477,7 +2484,7 @@ NuError Nu_AddFile(NuArchive* pArchive, const char* pathname,
     /*
      * Got the record, now add a data file thread.
      */
-    err = Nu_AddFileThreadMod(pArchive, pRecord, pathname, pFileDetails,
+    err = Nu_AddFileThreadMod(pArchive, pRecord, pathnameUNI, pFileDetails,
             fromRsrcFork);
     BailError(err);
 
@@ -2513,8 +2520,8 @@ bail:
  * We might also want to screen out trailing fssep chars, though the NuFX
  * spec doesn't say they're illegal.
  */
-NuError Nu_Rename(NuArchive* pArchive, NuRecordIdx recIdx, const char* pathname,
-    char fssep)
+NuError Nu_Rename(NuArchive* pArchive, NuRecordIdx recIdx,
+    const char* pathnameMOR, char fssepMOR)
 {
     NuError err;
     NuRecord* pRecord;
@@ -2525,10 +2532,13 @@ NuError Nu_Rename(NuArchive* pArchive, NuRecordIdx recIdx, const char* pathname,
     long requiredCapacity, existingCapacity, newCapacity;
     Boolean doDelete, doAdd, doUpdate;
 
-    if (recIdx == 0 || pathname == NULL || pathname[0] == '\0' || fssep == '\0')
+    if (recIdx == 0 || pathnameMOR == NULL || pathnameMOR[0] == '\0' ||
+            fssepMOR == '\0')
+    {
         return kNuErrInvalidArg;
+    }
 
-    if (pathname[0] == fssep) {
+    if (pathnameMOR[0] == fssepMOR) {
         err = kNuErrLeadingFssep;
         Nu_ReportError(NU_BLOB, err, "rename path");
         goto bail;
@@ -2567,7 +2577,7 @@ NuError Nu_Rename(NuArchive* pArchive, NuRecordIdx recIdx, const char* pathname,
      */
     doDelete = doAdd = doUpdate = false;
     newCapacity = existingCapacity = 0;
-    requiredCapacity = strlen(pathname);
+    requiredCapacity = strlen(pathnameMOR);
 
     if (pFilenameThread != NULL) {
         existingCapacity = pFilenameThread->thCompThreadEOF;
@@ -2595,7 +2605,7 @@ NuError Nu_Rename(NuArchive* pArchive, NuRecordIdx recIdx, const char* pathname,
     if (doAdd || doUpdate) {
         Assert(newCapacity);
         err = Nu_DataSourceBuffer_New(kNuThreadFormatUncompressed,
-                newCapacity, (const uint8_t*)strdup(pathname), 0,
+                newCapacity, (const uint8_t*)strdup(pathnameMOR), 0,
                 requiredCapacity /*(strlen)*/, Nu_InternalFreeCallback,
                 &pDataSource);
         BailError(err);
@@ -2628,17 +2638,17 @@ NuError Nu_Rename(NuArchive* pArchive, NuRecordIdx recIdx, const char* pathname,
     }
 
     DBUG(("--- renaming '%s' to '%s' with delete=%d add=%d update=%d\n",
-        pRecord->filename, pathname, doDelete, doAdd, doUpdate));
+        pRecord->filenameMOR, pathnameMOR, doDelete, doAdd, doUpdate));
 
     /*
      * Update the fssep, if necessary.  (This is slightly silly -- we
      * have to rewrite the record header anyway since we're changing
      * threads around.)
      */
-    if (NuGetSepFromSysInfo(pRecord->recFileSysInfo) != fssep) {
+    if (NuGetSepFromSysInfo(pRecord->recFileSysInfo) != fssepMOR) {
         DBUG(("---  and updating the fssep\n"));
         pRecord->recFileSysInfo = NuSetSepInSysInfo(pRecord->recFileSysInfo,
-                                    fssep);
+                                    fssepMOR);
         pRecord->dirtyHeader = true;
     }
 

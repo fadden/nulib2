@@ -24,30 +24,28 @@
  */
 NuError Nu_ProgressDataInit_Compress(NuArchive* pArchive,
     NuProgressData* pProgressData, const NuRecord* pRecord,
-    const char* origPathname)
+    const UNICHAR* origPathnameUNI, const UNICHAR* pathnameUNI)
 {
     const char* cp;
 
     Assert(pProgressData != NULL);
     Assert(pArchive != NULL);
     Assert(pRecord != NULL);
-    Assert(origPathname != NULL);
+    Assert(origPathnameUNI != NULL);
+    Assert(pathnameUNI != NULL);
 
     pProgressData->pRecord = pRecord;
 
-    pProgressData->origPathname = origPathname;
-    pProgressData->pathname = pRecord->filename;
-    cp = strrchr(pRecord->filename,
-            NuGetSepFromSysInfo(pRecord->recFileSysInfo));
+    pProgressData->origPathnameUNI = origPathnameUNI;
+    pProgressData->pathnameUNI = pathnameUNI;
+    cp = strrchr(pathnameUNI, NuGetSepFromSysInfo(pRecord->recFileSysInfo));
     if (cp == NULL || *(cp+1) == '\0')
-        pProgressData->filename = pProgressData->pathname;
+        pProgressData->filenameUNI = pProgressData->pathnameUNI;
     else
-        pProgressData->filename = cp+1;
+        pProgressData->filenameUNI = cp+1;
 
     pProgressData->operation = kNuOpAdd;
     pProgressData->state = kNuProgressPreparing;
-    /*pProgressData->compressedLength = 0;*/
-    /*pProgressData->compressedProgress = 0;*/
     pProgressData->uncompressedLength = 0;
     pProgressData->uncompressedProgress = 0;
 
@@ -69,7 +67,8 @@ NuError Nu_ProgressDataInit_Compress(NuArchive* pArchive,
  */
 NuError Nu_ProgressDataInit_Expand(NuArchive* pArchive,
     NuProgressData* pProgressData, const NuRecord* pRecord,
-    const char* newPathname, char newFssep, NuValue convertEOL)
+    const UNICHAR* newPathnameUNI, UNICHAR newFssep,
+    const UNICHAR* origPathnameUNI, NuValue convertEOL)
 {
     const NuThread* pThreadIter;
     const char* cp;
@@ -78,19 +77,20 @@ NuError Nu_ProgressDataInit_Expand(NuArchive* pArchive,
     Assert(pProgressData != NULL);
     Assert(pArchive != NULL);
     Assert(pRecord != NULL);
-    Assert(newPathname != NULL);
+    Assert(newPathnameUNI != NULL);
+    Assert(origPathnameUNI != NULL);
     Assert(newFssep != 0);
 
     pProgressData->pRecord = pRecord;
     pProgressData->expand.pThread = NULL;
 
-    pProgressData->origPathname = pRecord->filename;
-    pProgressData->pathname = newPathname;
-    cp = strrchr(newPathname, newFssep);
+    pProgressData->origPathnameUNI = origPathnameUNI;
+    pProgressData->pathnameUNI = newPathnameUNI;
+    cp = strrchr(newPathnameUNI, newFssep);
     if (cp == NULL || *(cp+1) == '\0')
-        pProgressData->filename = newPathname;
+        pProgressData->filenameUNI = newPathnameUNI;
     else
-        pProgressData->filename = cp+1;
+        pProgressData->filenameUNI = cp+1;
 
     pProgressData->expand.convertEOL = convertEOL;
 
@@ -110,8 +110,6 @@ NuError Nu_ProgressDataInit_Expand(NuArchive* pArchive,
     if (pArchive->testMode)
         pProgressData->operation = kNuOpTest;
     pProgressData->state = kNuProgressPreparing;
-    /*pProgressData->expand.compressedLength = 0;*/
-    /*pProgressData->expand.compressedProgress = 0;*/
     pProgressData->uncompressedLength = 0;
     pProgressData->uncompressedProgress = 0;
 

@@ -1,12 +1,12 @@
 /*
- * Nulib2
+ * NuLib2
  * Copyright (C) 2000-2007 by Andy McFadden, All Rights Reserved.
  * This is free software; you can redistribute it and/or modify it under the
  * terms of the BSD License, see the file COPYING.
  *
  * Filename manipulation, including file type preservation.
  */
-#include "Nulib2.h"
+#include "NuLib2.h"
 #include <ctype.h>
 
 
@@ -258,7 +258,7 @@ const char* NormalizePath(NulibState* pState, NuPathnameProposal* pPathProposal)
 
     Assert(pState != NULL);
     Assert(pPathProposal != NULL);
-    Assert(pPathProposal->pathname != NULL);
+    Assert(pPathProposal->pathnameUNI != NULL);
 
     localFssep = NState_GetSystemPathSeparator(pState);
 
@@ -267,14 +267,14 @@ const char* NormalizePath(NulibState* pState, NuPathnameProposal* pPathProposal)
      * requires converting all chars to '%' codes and adding the longest
      * possible preservation string.
      */
-    newBufLen = strlen(pPathProposal->pathname)*3 + kMaxPathGrowth +1;
+    newBufLen = strlen(pPathProposal->pathnameUNI)*3 + kMaxPathGrowth +1;
     NState_SetTempPathnameLen(pState, newBufLen);
     pathBuf = NState_GetTempPathnameBuf(pState);
     Assert(pathBuf != NULL);
     if (pathBuf == NULL)
         return NULL;
 
-    startp = pPathProposal->pathname;
+    startp = pPathProposal->pathnameUNI;
     dstp = pathBuf;
     while (*startp == pPathProposal->filenameSeparator) {
         /* ignore leading path sep; always extract to current dir */
@@ -317,7 +317,7 @@ const char* NormalizePath(NulibState* pState, NuPathnameProposal* pPathProposal)
         }
     }
 
-    pPathProposal->newPathname = pathBuf;
+    pPathProposal->newPathnameUNI = pathBuf;
     pPathProposal->newFilenameSeparator = localFssep;
 
     /* check for overflow */

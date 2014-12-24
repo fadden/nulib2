@@ -1,12 +1,12 @@
 /*
- * Nulib2
+ * NuLib2
  * Copyright (C) 2000-2007 by Andy McFadden, All Rights Reserved.
  * This is free software; you can redistribute it and/or modify it under the
  * terms of the BSD License, see the file COPYING.
  *
  * System-dependent utility functions.
  */
-#include "Nulib2.h"
+#include "NuLib2.h"
 
 #ifdef HAVE_WINDOWS_H
 # include <windows.h>
@@ -431,7 +431,7 @@ static void ReplaceFssep(char* str, char oldc, char newc, char newSubst)
  * Set the contents of a NuFileDetails structure, based on the pathname
  * and characteristics of the file.
  */
-static NuError GetFileDetails(NulibState* pState, const char* pathname,
+static NuError GetFileDetails(NulibState* pState, const char* pathnameMOR,
     struct stat* psb, NuFileDetails* pDetails)
 {
     Boolean wasPreserved;
@@ -442,14 +442,14 @@ static NuError GetFileDetails(NulibState* pState, const char* pathname,
     time_t now;
 
     Assert(pState != NULL);
-    Assert(pathname != NULL);
+    Assert(pathnameMOR != NULL);
     Assert(pDetails != NULL);
 
     /* set up the pathname buffer; note pDetails->storageName is const */
-    NState_SetTempPathnameLen(pState, strlen(pathname) +1);
+    NState_SetTempPathnameLen(pState, strlen(pathnameMOR) +1);
     livePathStr = NState_GetTempPathnameBuf(pState);
     Assert(livePathStr != NULL);
-    strcpy(livePathStr, pathname);
+    strcpy(livePathStr, pathnameMOR);
 
     /* under Win32, both '/' and '\' work... we want to settle on one */
     if (NState_GetAltSystemPathSeparator(pState) != '\0') {
@@ -462,7 +462,7 @@ static NuError GetFileDetails(NulibState* pState, const char* pathname,
     /* init to defaults */
     memset(pDetails, 0, sizeof(*pDetails));
     pDetails->threadID = kNuThreadIDDataFork;
-    pDetails->storageName = livePathStr;    /* point at temp buffer */
+    pDetails->storageNameMOR = livePathStr;    /* point at temp buffer */
     pDetails->origName = NULL;
     pDetails->fileSysID = kNuFileSysUnknown;
     pDetails->fileSysInfo = kStorageFssep;

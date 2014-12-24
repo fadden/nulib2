@@ -262,12 +262,12 @@ static Boolean Nu_IsForkedFile(NuArchive* pArchive, const NuRecord* pRecord)
  * Get the file info into a NuFileInfo struct.  Fields which are
  * inappropriate for the current system are set to default values.
  */
-static NuError Nu_GetFileInfo(NuArchive* pArchive, const char* pathname,
+static NuError Nu_GetFileInfo(NuArchive* pArchive, const UNICHAR* pathnameUNI,
     NuFileInfo* pFileInfo)
 {
     NuError err = kNuErrNone;
     Assert(pArchive != NULL);
-    Assert(pathname != NULL);
+    Assert(pathnameUNI != NULL);
     Assert(pFileInfo != NULL);
 
     pFileInfo->isValid = false;
@@ -277,7 +277,7 @@ static NuError Nu_GetFileInfo(NuArchive* pArchive, const char* pathname,
         struct stat sbuf;
         int cc;
 
-        cc = stat(pathname, &sbuf);
+        cc = stat(pathnameUNI, &sbuf);
         if (cc) {
             if (errno == ENOENT)
                 err = kNuErrFileNotFound;
@@ -300,7 +300,7 @@ static NuError Nu_GetFileInfo(NuArchive* pArchive, const char* pathname,
         pFileInfo->auxType = kDefaultAuxType;
 # if defined(MAC_LIKE)
         if (!pFileInfo->isDirectory) {
-            char path[4096];
+            char path[4096];        // TODO: use dynamic alloc or snprintf
             struct stat res_sbuf;
             OSErr result;
             OSType fileType, creator;
@@ -308,7 +308,7 @@ static NuError Nu_GetFileInfo(NuArchive* pArchive, const char* pathname,
             FSRef ref;
             uint32_t proType, proAux;
             
-            strcpy(path, pathname);
+            strcpy(path, pathnameUNI);
             strcat(path, "/rsrc");
             cc = stat(path, &res_sbuf);
             if (cc) {
@@ -317,7 +317,7 @@ static NuError Nu_GetFileInfo(NuArchive* pArchive, const char* pathname,
                 }
             }
             
-            result = FSPathMakeRef(pathname, &ref, NULL);
+            result = FSPathMakeRef(pathnameUNI, &ref, NULL);
             if (!result) {
                 result = FSGetCatalogInfo(&ref, kFSCatInfoFinderInfo, &catalogInfo,
                                 NULL, NULL, NULL);
@@ -411,14 +411,14 @@ bail:
  * file with data and resource forks, we only claim it exists if it has
  * nonzero length.
  */
-static NuError Nu_FileForkExists(NuArchive* pArchive, const char* pathname,
-    Boolean isForkedFile, Boolean checkRsrcFork, Boolean* pExists,
-    NuFileInfo* pFileInfo)
+static NuError Nu_FileForkExists(NuArchive* pArchive,
+    const UNICHAR* pathnameUNI, Boolean isForkedFile, Boolean checkRsrcFork,
+    Boolean* pExists, NuFileInfo* pFileInfo)
 {
     NuError err = kNuErrNone;
 
     Assert(pArchive != NULL);
-    Assert(pathname != NULL);
+    Assert(pathnameUNI != NULL);
     Assert(checkRsrcFork == true || checkRsrcFork == false);
     Assert(pExists != NULL);
     Assert(pFileInfo != NULL);
@@ -433,8 +433,8 @@ static NuError Nu_FileForkExists(NuArchive* pArchive, const char* pathname,
         /*
          * Check the data fork.
          */
-        Assert(pArchive->lastFileCreated == NULL);
-        err = Nu_GetFileInfo(pArchive, pathname, pFileInfo);
+        Assert(pArchive->lastFileCreatedUNI == NULL);
+        err = Nu_GetFileInfo(pArchive, pathnameUNI, pFileInfo);
         if (err == kNuErrFileNotFound) {
             err = kNuErrNone;
             *pExists = false;
@@ -444,8 +444,8 @@ static NuError Nu_FileForkExists(NuArchive* pArchive, const char* pathname,
         /*
          * Check the resource fork.
          */
-        char path[4096];
-        strncpy(path, pathname, 4089);
+        char path[4096];        // TODO - dynamic alloc or snprintf
+        strncpy(path, pathnameUNI, 4089);
         strcat(path, "/rsrc");
         err = Nu_GetFileInfo(pArchive, path, pFileInfo);
         if (err == kNuErrFileNotFound) {
@@ -463,10 +463,10 @@ static NuError Nu_FileForkExists(NuArchive* pArchive, const char* pathname,
      * On Unix and Windows we ignore "isForkedFile" and "checkRsrcFork".
      * The file must not exist at all.
      */
-    Assert(pArchive->lastFileCreated == NULL);
+    Assert(pArchive->lastFileCreatedUNI == NULL);
 
     *pExists = true;
-    err = Nu_GetFileInfo(pArchive, pathname, pFileInfo);
+    err = Nu_GetFileInfo(pArchive, pathnameUNI, pFileInfo);
     if (err == kNuErrFileNotFound) {
         err = kNuErrNone;
         *pExists = false;
@@ -503,13 +503,13 @@ static NuError Nu_FileForkExists(NuArchive* pArchive, const char* pathname,
  * Set the dates on a file according to what's in the record.
  */
 static NuError Nu_SetFileDates(NuArchive* pArchive, const NuRecord* pRecord,
-    const char* pathname)
+    const UNICHAR* pathnameUNI)
 {
     NuError err = kNuErrNone;
 
     Assert(pArchive != NULL);
     Assert(pRecord != NULL);
-    Assert(pathname != NULL);
+    Assert(pathnameUNI != NULL);
 
 #if defined(UNIX_LIKE) || defined(WINDOWS_LIKE)
     {
@@ -521,9 +521,9 @@ static NuError Nu_SetFileDates(NuArchive* pArchive, const NuRecord* pRecord,
 
         /* only do it if the NuDateTime was valid */
         if (utbuf.modtime) {
-            if (utime(pathname, &utbuf) < 0) {
+            if (utime(pathnameUNI, &utbuf) < 0) {
                 Nu_ReportError(NU_BLOB, errno,
-                    "Unable to set time stamp on '%s'", pathname);
+                    "Unable to set time stamp on '%s'", pathnameUNI);
                 err = kNuErrFileSetDate;
                 goto bail;
             }
@@ -570,13 +570,13 @@ static Boolean Nu_IsRecordLocked(const NuRecord* pRecord)
  * to do something if the original file was "locked".
  */
 static NuError Nu_SetFileAccess(NuArchive* pArchive, const NuRecord* pRecord,
-    const char* pathname)
+    const UNICHAR* pathnameUNI)
 {
     NuError err = kNuErrNone;
 
     Assert(pArchive != NULL);
     Assert(pRecord != NULL);
-    Assert(pathname != NULL);
+    Assert(pathnameUNI != NULL);
 
 #if defined(UNIX_LIKE) || defined(WINDOWS_LIKE)
     /* only need to do something if the file was "locked" */
@@ -588,9 +588,10 @@ static NuError Nu_SetFileAccess(NuArchive* pArchive, const NuRecord* pRecord,
         umask(mask);
         //DBUG(("+++ chmod '%s' %03o (mask=%03o)\n", pathname,
         //    (S_IRUSR | S_IRGRP | S_IROTH) & ~mask, mask));
-        if (chmod(pathname, (S_IRUSR | S_IRGRP | S_IROTH) & ~mask) < 0) {
+        if (chmod(pathnameUNI, (S_IRUSR | S_IRGRP | S_IROTH) & ~mask) < 0) {
             Nu_ReportError(NU_BLOB, errno,
-                "unable to set access for '%s' to %03o", pathname, (int) mask);
+                "unable to set access for '%s' to %03o", pathnameUNI,
+                (int) mask);
             err = kNuErrFileSetAccess;
             goto bail;
         }
@@ -617,16 +618,16 @@ bail:
  * Generally this just involves ensuring that the file is writable.  If
  * this is a convenient place to truncate it, we should do that too.
  */
-static NuError Nu_PrepareForWriting(NuArchive* pArchive, const char* pathname,
-    Boolean prepRsrc, NuFileInfo* pFileInfo)
+static NuError Nu_PrepareForWriting(NuArchive* pArchive,
+    const UNICHAR* pathnameUNI, Boolean prepRsrc, NuFileInfo* pFileInfo)
 {
     NuError err = kNuErrNone;
 #if defined(MAC_LIKE)
-    char path[4096];
+    char path[4096];        // TODO: use dynamic alloc or snprintf
 #endif
 
     Assert(pArchive != NULL);
-    Assert(pathname != NULL);
+    Assert(pathnameUNI != NULL);
     Assert(prepRsrc == true || prepRsrc == false);
     Assert(pFileInfo != NULL);
 
@@ -639,16 +640,16 @@ static NuError Nu_PrepareForWriting(NuArchive* pArchive, const char* pathname,
 #if defined(UNIX_LIKE) || defined(WINDOWS_LIKE)
 # if defined(MAC_LIKE)
     if (prepRsrc) {
-        strcpy(path, pathname);
+        strcpy(path, pathnameUNI);
         strcat(path, "/rsrc");
         pathname = path;
     }
 # endif
     if (!(pFileInfo->unixMode & S_IWUSR)) {
         /* make it writable by owner, plus whatever it was before */
-        if (chmod(pathname, S_IWUSR | pFileInfo->unixMode) < 0) {
+        if (chmod(pathnameUNI, S_IWUSR | pFileInfo->unixMode) < 0) {
             Nu_ReportError(NU_BLOB, errno,
-                "unable to set access for '%s'", pathname);
+                "unable to set access for '%s'", pathnameUNI);
             err = kNuErrFileSetAccess;
             goto bail;
         }
@@ -703,21 +704,21 @@ bail:
  * subdirectory level doesn't exist either, cut down the pathname and
  * recurse.
  */
-static NuError Nu_CreateSubdirIFN(NuArchive* pArchive, const char* pathStart,
-    const char* pathEnd, char fssep)
+static NuError Nu_CreateSubdirIFN(NuArchive* pArchive,
+    const UNICHAR* pathStartUNI, const char* pathEnd, char fssep)
 {
     NuError err = kNuErrNone;
     NuFileInfo fileInfo;
     char* tmpBuf = NULL;
 
     Assert(pArchive != NULL);
-    Assert(pathStart != NULL);
+    Assert(pathStartUNI != NULL);
     Assert(pathEnd != NULL);
     Assert(fssep != '\0');
 
     /* pathStart might have whole path, but we only want up to "pathEnd" */
-    tmpBuf = strdup(pathStart);
-    tmpBuf[pathEnd - pathStart +1] = '\0';
+    tmpBuf = strdup(pathStartUNI);
+    tmpBuf[pathEnd - pathStartUNI +1] = '\0';
 
     err = Nu_GetFileInfo(pArchive, tmpBuf, &fileInfo);
     if (err == kNuErrFileNotFound) {
@@ -757,21 +758,21 @@ bail:
  * If "pathname" is just a filename, or the set of directories matches
  * the last directory we created, we don't do anything.
  */
-static NuError Nu_CreatePathIFN(NuArchive* pArchive, const char* pathname,
-    char fssep)
+static NuError Nu_CreatePathIFN(NuArchive* pArchive, const UNICHAR* pathnameUNI,
+    UNICHAR fssep)
 {
     NuError err = kNuErrNone;
     const char* pathStart;
     const char* pathEnd;
 
     Assert(pArchive != NULL);
-    Assert(pathname != NULL);
+    Assert(pathnameUNI != NULL);
     Assert(fssep != '\0');
 
-    pathStart = pathname;
+    pathStart = pathnameUNI;
     
-#if !defined(MAC_LIKE)          /* On the Mac, if it's a full path, treat it like one */
-    if (pathname[0] == fssep)
+#if !defined(MAC_LIKE)  /* On the Mac, if it's a full path, treat it like one */
+    if (pathnameUNI[0] == fssep)
         pathStart++;
 #endif
 
@@ -792,8 +793,9 @@ static NuError Nu_CreatePathIFN(NuArchive* pArchive, const char* pathname,
      * this is meant solely as an optimization to avoid extra stat() calls,
      * so we want to use the most restrictive case.
      */
-    if (pArchive->lastDirCreated &&
-        strncmp(pathStart, pArchive->lastDirCreated, pathEnd - pathStart +1) == 0)
+    if (pArchive->lastDirCreatedUNI &&
+        strncmp(pathStart, pArchive->lastDirCreatedUNI,
+            pathEnd - pathStart +1) == 0)
     {
         /* we created this one recently, don't do it again */
         goto bail;
@@ -815,18 +817,20 @@ bail:
 /*
  * Open the file for writing, possibly truncating it.
  */
-static NuError Nu_OpenFileForWrite(NuArchive* pArchive, const char* pathname,
-    Boolean openRsrc, FILE** pFp)
+static NuError Nu_OpenFileForWrite(NuArchive* pArchive,
+    const UNICHAR* pathnameUNI, Boolean openRsrc, FILE** pFp)
 {
 #if defined(MAC_LIKE)
+    // TODO: fix this -- use dynamic alloc or snprintf
     char path[4096];
     if (openRsrc) {
-        strcpy(path, pathname);
+        strcpy(path, pathnameUNI);
         strcat(path, "/rsrc");
-        pathname = path;
+        pathnameUNI = path;
     }
 #endif
-    *pFp = fopen(pathname, kNuFileOpenWriteTrunc);
+
+    *pFp = fopen(pathnameUNI, kNuFileOpenWriteTrunc);
     if (*pFp == NULL)
         return errno ? errno : -1;
     return kNuErrNone;
@@ -843,7 +847,7 @@ static NuError Nu_OpenFileForWrite(NuArchive* pArchive, const char* pathname,
  * older than what we have.
  */
 NuError Nu_OpenOutputFile(NuArchive* pArchive, const NuRecord* pRecord,
-    const NuThread* pThread, const char* newPathname, char newFssep,
+    const NuThread* pThread, const UNICHAR* newPathnameUNI, UNICHAR newFssep,
     FILE** pFp)
 {
     NuError err = kNuErrNone;
@@ -855,7 +859,7 @@ NuError Nu_OpenOutputFile(NuArchive* pArchive, const NuRecord* pRecord,
     Assert(pArchive != NULL);
     Assert(pRecord != NULL);
     Assert(pThread != NULL);
-    Assert(newPathname != NULL);
+    Assert(newPathnameUNI != NULL);
     Assert(pFp != NULL);
 
     /* set up some defaults, in case something goes wrong */
@@ -864,7 +868,7 @@ NuError Nu_OpenOutputFile(NuArchive* pArchive, const NuRecord* pRecord,
     errorStatus.sysErr = 0;
     errorStatus.message = NULL;
     errorStatus.pRecord = pRecord;
-    errorStatus.pathname = newPathname;
+    errorStatus.pathnameUNI = newPathnameUNI;
     errorStatus.origPathname = NULL;
     errorStatus.filenameSeparator = newFssep;
     /*errorStatus.origArchiveTouched = false;*/
@@ -891,7 +895,7 @@ NuError Nu_OpenOutputFile(NuArchive* pArchive, const NuRecord* pRecord,
      * empty, this will *not* set "exists".
      */
     fileInfo.isValid = false;
-    err = Nu_FileForkExists(pArchive, newPathname, isForkedFile,
+    err = Nu_FileForkExists(pArchive, newPathnameUNI, isForkedFile,
             extractingRsrc, &exists, &fileInfo);
     BailError(err);
 
@@ -989,7 +993,7 @@ NuError Nu_OpenOutputFile(NuArchive* pArchive, const NuRecord* pRecord,
          * return kNuSkip.
          */
         if (pArchive->valHandleExisting == kNuMustOverwrite) {
-            DBUG(("+++ can't freshen nonexistent file '%s'\n", newPathname));
+            DBUG(("+++ can't freshen nonexistent file '%s'\n", newPathnameUNI));
             if (pArchive->errorHandlerFunc != NULL) {
                 errorStatus.err = kNuErrDuplicateNotFound;
 
@@ -1040,23 +1044,23 @@ NuError Nu_OpenOutputFile(NuArchive* pArchive, const NuRecord* pRecord,
      */
     if (exists) {
         Assert(fileInfo.isValid == true);
-        err = Nu_PrepareForWriting(pArchive, newPathname, extractingRsrc,
+        err = Nu_PrepareForWriting(pArchive, newPathnameUNI, extractingRsrc,
                 &fileInfo);
         BailError(err);
     } else if (!fileInfo.isValid) {
-        err = Nu_CreatePathIFN(pArchive, newPathname, newFssep);
+        err = Nu_CreatePathIFN(pArchive, newPathnameUNI, newFssep);
         BailError(err);
     }
 
     /*
      * Open sesame.
      */
-    err = Nu_OpenFileForWrite(pArchive, newPathname, extractingRsrc, pFp);
+    err = Nu_OpenFileForWrite(pArchive, newPathnameUNI, extractingRsrc, pFp);
     BailError(err);
 
 
 #if defined(HAS_RESOURCE_FORKS)
-    pArchive->lastFileCreated = newPathname;
+    pArchive->lastFileCreatedUNI = newPathnameUNI;
 #endif
 
 bail:
@@ -1065,7 +1069,7 @@ bail:
             err != kNuErrFileExists)
         {
             Nu_ReportError(NU_BLOB, err, "Unable to open '%s'%s",
-                newPathname, extractingRsrc ? " (rsrc fork)" : "");
+                newPathnameUNI, extractingRsrc ? " (rsrc fork)" : "");
         }
     }
     return err;
@@ -1090,7 +1094,7 @@ bail:
  * quite right, but it's close enough.
  */
 NuError Nu_CloseOutputFile(NuArchive* pArchive, const NuRecord* pRecord,
-    FILE* fp, const char* pathname)
+    FILE* fp, const UNICHAR* pathnameUNI)
 {
     NuError err;
 
@@ -1100,10 +1104,10 @@ NuError Nu_CloseOutputFile(NuArchive* pArchive, const NuRecord* pRecord,
 
     fclose(fp);
 
-    err = Nu_SetFileDates(pArchive, pRecord, pathname);
+    err = Nu_SetFileDates(pArchive, pRecord, pathnameUNI);
     BailError(err);
 
-    err = Nu_SetFileAccess(pArchive, pRecord, pathname);
+    err = Nu_SetFileAccess(pArchive, pRecord, pathnameUNI);
     BailError(err);
 
 #ifdef MAC_LIKE
@@ -1112,11 +1116,11 @@ NuError Nu_CloseOutputFile(NuArchive* pArchive, const NuRecord* pRecord,
     FSCatalogInfo catalogInfo;
     FSRef ref;
     
-    result = FSPathMakeRef(pathname, &ref, NULL);
+    result = FSPathMakeRef(pathnameUNI, &ref, NULL);
     BailError(result);
     
-    result = FSGetCatalogInfo(&ref, kFSCatInfoNodeFlags|kFSCatInfoFinderInfo, &catalogInfo,
-                    NULL, NULL, NULL);
+    result = FSGetCatalogInfo(&ref, kFSCatInfoNodeFlags | kFSCatInfoFinderInfo,
+            &catalogInfo, NULL, NULL, NULL);
     if (result) {
         BailError(kNuErrFileStat);
     }
@@ -1148,10 +1152,10 @@ bail:
 /*
  * Open the file for reading, in "binary" mode when necessary.
  */
-static NuError Nu_OpenFileForRead(NuArchive* pArchive, const char* pathname,
-    Boolean openRsrc, FILE** pFp)
+static NuError Nu_OpenFileForRead(NuArchive* pArchive,
+    const UNICHAR* pathnameUNI, Boolean openRsrc, FILE** pFp)
 {
-    *pFp = fopen(pathname, kNuFileOpenReadOnly);
+    *pFp = fopen(pathnameUNI, kNuFileOpenReadOnly);
     if (*pFp == NULL)
         return errno ? errno : -1;
     return kNuErrNone;
@@ -1164,7 +1168,7 @@ static NuError Nu_OpenFileForRead(NuArchive* pArchive, const char* pathname,
  * If the file can't be found, we give the application an opportunity to
  * skip the absent file, retry, or abort the whole thing.
  */
-NuError Nu_OpenInputFile(NuArchive* pArchive, const char* pathname,
+NuError Nu_OpenInputFile(NuArchive* pArchive, const UNICHAR* pathnameUNI,
     Boolean openRsrc, FILE** pFp)
 {
     NuError err = kNuErrNone;
@@ -1173,15 +1177,15 @@ NuError Nu_OpenInputFile(NuArchive* pArchive, const char* pathname,
     NuResult result;
 
     Assert(pArchive != NULL);
-    Assert(pathname != NULL);
+    Assert(pathnameUNI != NULL);
     Assert(pFp != NULL);
 
 #if defined(MAC_LIKE)
-    char path[4096];
+    char path[4096];        // TODO - dynamic alloc or snprintf
     if (openRsrc) {
-        strcpy(path, pathname);
+        strcpy(path, pathnameUNI);
         strcat(path, "/rsrc");
-        pathname = path;
+        pathnameUNI = path;
     }
 #endif
 
@@ -1189,7 +1193,7 @@ retry:
     /*
      * Open sesame.
      */
-    err = Nu_OpenFileForRead(pArchive, pathname, openRsrc, pFp);
+    err = Nu_OpenFileForRead(pArchive, pathnameUNI, openRsrc, pFp);
     if (err == kNuErrNone)  /* success! */
         goto bail;
 
@@ -1202,7 +1206,7 @@ retry:
         errorStatus.sysErr = 0;
         errorStatus.message = NULL;
         errorStatus.pRecord = NULL;
-        errorStatus.pathname = pathname;
+        errorStatus.pathnameUNI = pathnameUNI;
         errorStatus.origPathname = NULL;
         errorStatus.filenameSeparator = '\0';
         /*errorStatus.origArchiveTouched = false;*/
@@ -1246,7 +1250,7 @@ bail:
             err != kNuErrFileExists)
         {
             Nu_ReportError(NU_BLOB, err, "Unable to open '%s'%s",
-                pathname, openRsrc ? " (rsrc fork)" : "");
+                pathnameUNI, openRsrc ? " (rsrc fork)" : "");
         }
     }
     return err;
@@ -1262,14 +1266,14 @@ bail:
 /*
  * Delete a file.
  */
-NuError Nu_DeleteFile(const char* pathname)
+NuError Nu_DeleteFile(const UNICHAR* pathnameUNI)
 {
 #if defined(UNIX_LIKE) || defined(WINDOWS_LIKE)
     int cc;
 
-    DBUG(("--- Deleting '%s'\n", pathname));
+    DBUG(("--- Deleting '%s'\n", pathnameUNI));
 
-    cc = unlink(pathname);
+    cc = unlink(pathnameUNI);
     if (cc < 0)
         return errno ? errno : -1;
     else
@@ -1282,14 +1286,14 @@ NuError Nu_DeleteFile(const char* pathname)
 /*
  * Rename a file from "fromPath" to "toPath".
  */
-NuError Nu_RenameFile(const char* fromPath, const char* toPath)
+NuError Nu_RenameFile(const UNICHAR* fromPathUNI, const UNICHAR* toPathUNI)
 {
 #if defined(UNIX_LIKE) || defined(WINDOWS_LIKE)
     int cc;
 
-    DBUG(("--- Renaming '%s' to '%s'\n", fromPath, toPath));
+    DBUG(("--- Renaming '%s' to '%s'\n", fromPathUNI, toPathUNI));
 
-    cc = rename(fromPath, toPath);
+    cc = rename(fromPathUNI, toPathUNI);
     if (cc < 0)
         return errno ? errno : -1;
     else

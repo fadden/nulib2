@@ -1,12 +1,12 @@
 /*
- * Nulib2
+ * NuLib2
  * Copyright (C) 2000-2007 by Andy McFadden, All Rights Reserved.
  * This is free software; you can redistribute it and/or modify it under the
  * terms of the BSD License, see the file COPYING.
  *
  * List files in the archive.
  */
-#include "Nulib2.h"
+#include "NuLib2.h"
 
 
 /* kinds of records */
@@ -111,8 +111,9 @@ static NuResult ShowContentsShort(NuArchive* pArchive, void* vpRecord)
     if (!IsSpecified(pState, pRecord))
         goto bail;
 
-    printf("%s\n",
-        pRecord->filename == NULL ? "<unknown>":(const char*)pRecord->filename);
+    UNICHAR* filenameUNI = CopyMORToUNI(pRecord->filenameMOR);
+    printf("%s\n", filenameUNI == NULL ?  "<unknown>" : filenameUNI);
+    free(filenameUNI);
 
 bail:
     return kNuOK;
@@ -209,14 +210,32 @@ static NuResult ShowContentsVerbose(NuArchive* pArchive, void* vpRecord)
     if (err != kNuErrNone)
         goto bail;
 
-    len = strlen(pRecord->filename);
+    /*
+     * Display the filename, truncating if it's longer than 27 characters.
+     *
+     * Attempting to do column layout with printf string formatting (e.g.
+     * "%-27s") doesn't really work for UTF-8 because printf() is
+     * operating on bytes, and the conversion to a Unicode code point
+     * is happening in the terminal.  We need to do the spacing ourselves,
+     * using the fact that one MOR character turns into one Unicode character.
+     *
+     * If the display isn't converting multi-byte sequences to individual
+     * characters, this won't look right, but we can't make everybody happy.
+     */
+    static const char kSpaces[27+1] = "                           ";
+    UNICHAR* filenameUNI;
+    len = strlen(pRecord->filenameMOR);
     if (len <= 27) {
-        printf("%c%-27.27s ", IsRecordReadOnly(pRecord) ? '+' : ' ',
-            pRecord->filename);
+        filenameUNI = CopyMORToUNI(pRecord->filenameMOR);
+        printf("%c%s%s ", IsRecordReadOnly(pRecord) ? '+' : ' ',
+            filenameUNI, &kSpaces[len]);
     } else {
-        printf("%c..%-25.25s ", IsRecordReadOnly(pRecord) ? '+' : ' ',
-            pRecord->filename + len - 25);
+        filenameUNI = CopyMORToUNI(pRecord->filenameMOR + len - 25);
+        printf("%c..%s ", IsRecordReadOnly(pRecord) ? '+' : ' ',
+            filenameUNI);
     }
+    free(filenameUNI);
+
     switch (recordKind) {
     case kRecordKindUnknown:
         printf("%s- $%04X  ",
@@ -266,8 +285,10 @@ static NuResult ShowContentsVerbose(NuArchive* pArchive, void* vpRecord)
 
 bail:
     if (err != kNuErrNone) {
-        printf("(ERROR on '%s')\n", pRecord->filename == NULL ?
-                "<unknown>" : (const char*)pRecord->filename);
+        filenameUNI = CopyMORToUNI(pRecord->filenameMOR);
+        printf("(ERROR on '%s')\n",
+                filenameUNI == NULL ?  "<unknown>" : filenameUNI);
+        free(filenameUNI);
     }
     return kNuOK;
 }

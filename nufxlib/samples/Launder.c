@@ -47,8 +47,7 @@ char gSentRecordWarning = false;
 /*
  * This gets called when a buffer DataSource is no longer needed.
  */
-NuResult
-FreeCallback(NuArchive* pArchive, void* args)
+NuResult FreeCallback(NuArchive* pArchive, void* args)
 {
     free(args);
     return kNuOK;
@@ -60,8 +59,7 @@ FreeCallback(NuArchive* pArchive, void* args)
  * This assumes the library is configured for compression (it defaults
  * to LZW/2, so this is a reasonable assumption).
  */
-NuError
-CopyThreadRecompressed(NuArchive* pInArchive, NuArchive* pOutArchive,
+NuError CopyThreadRecompressed(NuArchive* pInArchive, NuArchive* pOutArchive,
     long flags, const NuThread* pThread, long newRecordIdx)
 {
     NuError err = kNuErrNone;
@@ -174,8 +172,7 @@ bail:
  * reliable but extracts a little more than we need on pre-sized
  * threads (filenames, comments).
  */
-NuError
-CopyThreadUncompressed(NuArchive* pInArchive, NuArchive* pOutArchive,
+NuError CopyThreadUncompressed(NuArchive* pInArchive, NuArchive* pOutArchive,
     long flags, const NuThread* pThread, long newRecordIdx)
 {
     NuError err = kNuErrNone;
@@ -305,8 +302,7 @@ bail:
  * Depending on "flags", this will either copy it raw or uncompress and
  * recompress.
  */
-NuError
-CopyThread(NuArchive* pInArchive, NuArchive* pOutArchive, long flags,
+NuError CopyThread(NuArchive* pInArchive, NuArchive* pOutArchive, long flags,
     const NuThread* pThread, long newRecordIdx)
 {
     if (flags & kFlagCopyOnly) {
@@ -327,8 +323,7 @@ CopyThread(NuArchive* pInArchive, NuArchive* pOutArchive, long flags,
  * of which will not usually have any effect since NufxLib imposes a
  * specific thread ordering on most common types) depending on "flags".
  */
-NuError
-CopyRecord(NuArchive* pInArchive, NuArchive* pOutArchive, long flags,
+NuError CopyRecord(NuArchive* pInArchive, NuArchive* pOutArchive, long flags,
     NuRecordIdx recordIdx)
 {
     NuError err = kNuErrNone;
@@ -370,7 +365,7 @@ CopyRecord(NuArchive* pInArchive, NuArchive* pOutArchive, long flags,
      * Create a new record that looks just like the original.
      */
     memset(&fileDetails, 0, sizeof(fileDetails));
-    fileDetails.storageName = pRecord->filename;
+    fileDetails.storageNameMOR = pRecord->filenameMOR;
     fileDetails.fileSysID = pRecord->recFileSysID;
     fileDetails.fileSysInfo = pRecord->recFileSysInfo;
     fileDetails.access = pRecord->recAccess;
@@ -422,16 +417,15 @@ bail:
  *
  * Returns 0 on success, nonzero on failure.
  */
-int
-LaunderArchive(const char* inFile, const char* outFile, NuValue compressMethod,
-    long flags)
+int LaunderArchive(const char* inFile, const char* outFile,
+    NuValue compressMethod, long flags)
 {
     NuError err = kNuErrNone;
     NuArchive* pInArchive = NULL;
     NuArchive* pOutArchive = NULL;
     const NuMasterHeader* pMasterHeader;
     NuRecordIdx recordIdx;
-    long idx, flushStatus;
+    uint32_t idx, flushStatus;
 
     err = NuOpenRO(inFile, &pInArchive);
     if (err != kNuErrNone) {
@@ -487,10 +481,10 @@ LaunderArchive(const char* inFile, const char* outFile, NuValue compressMethod,
     /*
      * Iterate through the set of records.
      */
-    for (idx = 0; idx < (int)pMasterHeader->mhTotalRecords; idx++) {
+    for (idx = 0; idx < pMasterHeader->mhTotalRecords; idx++) {
         err = NuGetRecordIdxByPosition(pInArchive, idx, &recordIdx);
         if (err != kNuErrNone) {
-            fprintf(stderr, "ERROR: couldn't get record #%ld (err=%d)\n",
+            fprintf(stderr, "ERROR: couldn't get record #%u (err=%d)\n",
                 idx, err);
             goto bail;
         }
@@ -525,7 +519,7 @@ LaunderArchive(const char* inFile, const char* outFile, NuValue compressMethod,
             err = NuFlush(pOutArchive, &flushStatus);
             if (err != kNuErrNone) {
                 fprintf(stderr,
-                    "ERROR: flush failed (err=%d, status=0x%04lx)\n",
+                    "ERROR: flush failed (err=%d, status=0x%04x)\n",
                     err, flushStatus);
                 goto bail;
             }
@@ -535,7 +529,7 @@ LaunderArchive(const char* inFile, const char* outFile, NuValue compressMethod,
     /* first and only flush if frequent-flushing wasn't enabled */
     err = NuFlush(pOutArchive, &flushStatus);
     if (err != kNuErrNone) {
-        fprintf(stderr, "ERROR: flush failed (err=%d, status=0x%04lx)\n",
+        fprintf(stderr, "ERROR: flush failed (err=%d, status=0x%04x)\n",
             err, flushStatus);
         goto bail;
     }
@@ -563,8 +557,7 @@ char* myoptarg = NULL;
 const char* curchar = NULL;
 int skipnext = false;
 
-int
-mygetopt(int argc, char** argv, const char* optstr)
+int mygetopt(int argc, char** argv, const char* optstr)
 {
     if (!myoptind) {
         myoptind = 1;
@@ -609,8 +602,7 @@ mygetopt(int argc, char** argv, const char* optstr)
 /*
  * Print usage info.
  */
-void
-Usage(const char* argv0)
+void Usage(const char* argv0)
 {
     fprintf(stderr, "Usage: %s [-crfat] [-m method] infile.shk outfile.shk\n",
         argv0);
@@ -627,11 +619,10 @@ Usage(const char* argv0)
 /*
  * Grab the name of an archive to read.
  */
-int
-main(int argc, char** argv)
+int main(int argc, char** argv)
 {
     NuValue compressMethod = kNuCompressLZW2;
-    long major, minor, bug;
+    int32_t major, minor, bug;
     const char* pBuildDate;
     long flags = 0;
     int errorFlag;
@@ -639,7 +630,7 @@ main(int argc, char** argv)
     int cc;
 
     (void) NuGetVersion(&major, &minor, &bug, &pBuildDate, NULL);
-    printf("Using NuFX lib %ld.%ld.%ld built on or after %s\n",
+    printf("Using NuFX lib %d.%d.%d built on or after %s\n",
         major, minor, bug, pBuildDate);
 
     errorFlag = false;
