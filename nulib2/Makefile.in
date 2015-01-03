@@ -44,15 +44,6 @@ OPT			= @CFLAGS@
 GCC_FLAGS	= -Wall -Wwrite-strings -Wstrict-prototypes -Wpointer-arith -Wshadow
 CFLAGS		= @BUILD_FLAGS@ -I. -I$(NUFXSRCDIR) -I$(includedir) @DEFS@
 
-#ifdef PURIFY_BUILD
-#  PURIFY	= purify
-#  CFLAGS	+= -DPURIFY
-#endif
-#ifdef QUANTIFY_BUILD
-#  QUANTIFY	= quantify
-#  CFLAGS	+= -DQUANTIFY
-#endif
-
 SRCS		= Add.c ArcUtils.c Binary2.c Delete.c Extract.c Filename.c \
 			  List.c Main.c MiscStuff.c MiscUtils.c State.c SysUtils.c
 OBJS		= Add.o ArcUtils.o Binary2.o Delete.o Extract.o Filename.o \
@@ -87,16 +78,8 @@ install-shared:
 shared::
 	LIB_PRODUCT="libnufx.so" $(MAKE) -e
 
-quantify:
-	-rm -f $(PRODUCT)
-	@$(MAKE) QUANTIFY_BUILD=1
-
-purify:
-	-rm -f $(PRODUCT)
-	@$(MAKE) PURIFY_BUILD=1
-
 $(PRODUCT): $(OBJS) $(NUFXLIB)
-	$(PURIFY) $(QUANTIFY) $(CC) -o $@ $(OBJS) -L$(NUFXSRCDIR) -L$(libdir) -lnufx @LIBS@
+	$(CC) -o $@ $(OBJS) -L$(NUFXSRCDIR) -L$(libdir) -lnufx @LIBS@
 
 clean:
 	-rm -f *.o core

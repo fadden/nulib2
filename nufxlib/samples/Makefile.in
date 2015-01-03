@@ -35,28 +35,28 @@ all: $(PRODUCTS)
 	@true
 
 exerciser: Exerciser.o $(LIB_PRODUCT)
-	$(PURIFY) $(QUANTIFY) $(CC) -o $@ Exerciser.o $(NUFXLIB) @LIBS@
+	$(CC) -o $@ Exerciser.o $(NUFXLIB) @LIBS@
 
 imgconv: ImgConv.o $(LIB_PRODUCT)
-	$(PURIFY) $(QUANTIFY) $(CC) -o $@ ImgConv.o $(NUFXLIB) @LIBS@
+	$(CC) -o $@ ImgConv.o $(NUFXLIB) @LIBS@
 
 launder: Launder.o $(LIB_PRODUCT)
-	$(PURIFY) $(QUANTIFY) $(CC) -o $@ Launder.o $(NUFXLIB) @LIBS@
+	$(CC) -o $@ Launder.o $(NUFXLIB) @LIBS@
 
 test-basic: TestBasic.o $(LIB_PRODUCT)
-	$(PURIFY) $(QUANTIFY) $(CC) -o $@ TestBasic.o $(NUFXLIB) @LIBS@
+	$(CC) -o $@ TestBasic.o $(NUFXLIB) @LIBS@
 
 test-extract: TestExtract.o $(LIB_PRODUCT)
-	$(PURIFY) $(QUANTIFY) $(CC) -o $@ TestExtract.o $(NUFXLIB) @LIBS@
+	$(CC) -o $@ TestExtract.o $(NUFXLIB) @LIBS@
 
 test-names: TestNames.o $(LIB_PRODUCT)
-	$(PURIFY) $(QUANTIFY) $(CC) -o $@ TestNames.o $(NUFXLIB) @LIBS@
+	$(CC) -o $@ TestNames.o $(NUFXLIB) @LIBS@
 
 test-simple: TestSimple.o $(LIB_PRODUCT)
-	$(PURIFY) $(QUANTIFY) $(CC) -o $@ TestSimple.o $(NUFXLIB) @LIBS@
+	$(CC) -o $@ TestSimple.o $(NUFXLIB) @LIBS@
 
 test-twirl: TestTwirl.o $(LIB_PRODUCT)
-	$(PURIFY) $(QUANTIFY) $(CC) -o $@ TestTwirl.o $(NUFXLIB) @LIBS@
+	$(CC) -o $@ TestTwirl.o $(NUFXLIB) @LIBS@
 
 tags::
 	ctags --totals -R ../*

@@ -309,8 +309,10 @@ const char* NormalizePath(NulibState* pState, NuPathnameProposal* pPathProposal)
                 AddPreservationString(pState, pPathProposal, pathBuf);
             } else if (NuGetThreadID(pPathProposal->pThread) == kNuThreadIDRsrcFork)
             {
+#ifndef HAS_RESOURCE_FORKS
                 /* add this in lieu of the preservation extension */
                 strcat(pathBuf, kResourceStr);
+#endif
             }
 
             startp = NULL;   /* we're done */

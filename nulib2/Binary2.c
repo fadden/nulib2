@@ -1342,8 +1342,16 @@ static NuError BNYExtract(BNYArchive* pBny, BNYEntry* pEntry,
     *pConsumedFlag = true;
 
 bail:
-    if (outfp != NULL && outfp != stdout)
+    if (outfp != NULL && outfp != stdout) {
+#if defined(MAC_LIKE)
+        if (SetFinderInfo(fileno(outfp), pEntry->fileType,
+                 pEntry->auxType) != kNuErrNone)
+        {
+            fprintf(stderr, "WARNING: unable to set finder info\n");
+        }
+#endif
         fclose(outfp);
+    }
     return err;
 }
 

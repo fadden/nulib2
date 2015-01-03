@@ -11,6 +11,9 @@
 #ifdef HAVE_WINDOWS_H
 # include <windows.h>
 #endif
+#ifdef MAC_LIKE
+# include <sys/xattr.h>
+#endif
 
 /* get a grip on this opendir/readdir stuff */
 #if defined(UNIX_LIKE)
@@ -60,6 +63,7 @@
  * ===========================================================================
  */
 
+// 20150103: this makes me nervous
 #define kTempFileNameLen    20
 
 
@@ -411,6 +415,149 @@ static void UNIXTimeToDateTime(const time_t* pWhen, NuDateTime *pDateTime)
 }
 #endif
 
+#if defined(MAC_LIKE)
+/*
+ * Due to historical reasons, the XATTR_FINDERINFO_NAME (defined to be
+ * ``com.apple.FinderInfo'') extended attribute must be 32 bytes; see the
+ * ATTR_CMN_FNDRINFO section in getattrlist(2).
+ *
+ * The FinderInfo block is the concatenation of a FileInfo structure
+ * and an ExtendedFileInfo (or ExtendedFolderInfo) structure -- see
+ * ATTR_CMN_FNDRINFO in getattrlist(2).
+ *
+ * All we're really interested in is the file type and creator code,
+ * which are stored big-endian in the first 8 bytes.
+ */
+static const int kFinderInfoSize = 32;
+
+/*
+ * Obtains the creator and file type from the Finder info block, if any,
+ * and converts the types to ProDOS equivalents.
+ *
+ * If the attribute doesn't exist, this returns an error without modifying
+ * the output args.
+ */
+static NuError GetTypesFromFinder(const char* pathnameUNI, uint32_t* pFileType,
+    uint32_t* pAuxType)
+{
+    uint8_t fiBuf[kFinderInfoSize];
+
+    size_t actual = getxattr(pathnameUNI, XATTR_FINDERINFO_NAME,
+        fiBuf, sizeof(fiBuf), 0, 0);
+    if (actual != kFinderInfoSize) {
+        return kNuErrNotFound;
+    }
+
+    uint32_t fileType, creator;
+    fileType = (fiBuf[0] << 24) | (fiBuf[1] << 16) | (fiBuf[2] << 8) |
+        fiBuf[3];
+    creator = (fiBuf[4] << 24) | (fiBuf[5] << 16) | (fiBuf[6] << 8) |
+        fiBuf[7];
+
+    uint8_t proType;
+    uint16_t proAux;
+
+    /*
+     * Convert to ProDOS file/aux type.
+     */
+    if (creator == 'pdos') {
+        if (fileType == 'PSYS') {
+            proType = 0xFF;         // SYS
+            proAux = 0x0000;
+        } else if (fileType == 'PS16') {
+            proType = 0xB3;         // S16
+            proAux = 0x0000;
+        } else {
+            if (((fileType >> 24) & 0xFF) == 'p') {
+                proType = (fileType >> 16) & 0xFF;
+                proAux = (uint16_t) fileType;
+            } else {
+                proType = 0x00;     // NON
+                proAux = 0x0000;
+            }
+        }
+    } else if (creator == 'dCpy') {
+        if (fileType == 'dImg') {
+            proType = 0xE0;         // LBR
+            proAux = 0x0005;
+        } else {
+            proType = 0x00;         // NON
+            proAux = 0x0000;
+        }
+    } else {
+        switch(fileType) {
+            case 'BINA':
+                proType = 0x06;     // BIN
+                proAux = 0x0000;
+                break;
+            case 'TEXT':
+                proType = 0x04;     // TXT
+                proAux = 0x0000;
+                break;
+            case 'MIDI':
+                proType = 0xD7;     // MDI
+                proAux = 0x0000;
+                break;
+            case 'AIFF':
+                proType = 0xD8;     // SND
+                proAux = 0x0000;
+                break;
+            case 'AIFC':
+                proType = 0xD8;     // SND
+                proAux = 0x0001;
+                break;
+            default:
+                proType = 0x00;     // NON
+                proAux = 0x0000;
+                break;
+        }
+    }
+
+    *pFileType = proType;
+    *pAuxType = proAux;
+    return kNuErrNone;
+}
+
+/*
+ * Set the file type and creator type.
+ */
+NuError SetFinderInfo(int fd, uint8_t proType, uint16_t proAux)
+{
+    uint8_t fiBuf[kFinderInfoSize];
+
+    size_t actual = fgetxattr(fd, XATTR_FINDERINFO_NAME,
+            fiBuf, sizeof(fiBuf), 0, 0);
+    if (actual == (size_t) -1 && errno == ENOATTR) {
+        // doesn't yet have Finder info
+        memset(fiBuf, 0, sizeof(fiBuf));
+    } else if (actual != kFinderInfoSize) {
+        return kNuErrFile;
+    }
+
+    /* build type and creator from 8-bit type and 16-bit aux type */
+    uint32_t fileType, creator;
+    fileType = ('p' << 24) | (proType << 16) | proAux;
+    creator = 'pdos';
+
+    fiBuf[0] = fileType >> 24;
+    fiBuf[1] = fileType >> 16;
+    fiBuf[2] = fileType >> 8;
+    fiBuf[3] = fileType;
+    fiBuf[4] = creator >> 24;
+    fiBuf[5] = creator >> 16;
+    fiBuf[6] = creator >> 8;
+    fiBuf[7] = creator;
+
+    if (fsetxattr(fd, XATTR_FINDERINFO_NAME, fiBuf, sizeof(fiBuf),
+        0, 0) != 0)
+    {
+        return kNuErrFile;
+    }
+
+    return kNuErrNone;
+}
+#endif /*MAC_LIKE*/
+
 #if defined(UNIX_LIKE) || defined(WINDOWS_LIKE)
 /*
  * Replace "oldc" with "newc".  If we find an instance of "newc" already
@@ -492,6 +639,15 @@ static NuError GetFileDetails(NulibState* pState, const char* pathnameMOR,
     UNIXTimeToDateTime(&now, &pDetails->archiveWhen);
     UNIXTimeToDateTime(&psb->st_mtime, &pDetails->modWhen);
     UNIXTimeToDateTime(&psb->st_mtime, &pDetails->createWhen);
+
+#ifdef MAC_LIKE
+    /*
+     * Retrieve the file/aux type from the Finder info.  We want the
+     * type-preservation string to take priority, so get this first.
+     */
+    (void) GetTypesFromFinder(livePathStr,
+            &pDetails->fileType, &pDetails->extraType);
+#endif
 
     /*
      * Check for file type preservation info in the filename.  If present,
@@ -612,8 +768,8 @@ static NuError GetFileDetails(NulibState* pState, const char* pathnameMOR,
  * Do the system-independent part of the file add, including things like
  * adding comments.
  */
-NuError DoAddFile(NulibState* pState, NuArchive* pArchive, const char* pathname,
-    const NuFileDetails* pDetails)
+static NuError DoAddFile(NulibState* pState, NuArchive* pArchive,
+    const char* pathname, const NuFileDetails* pDetails)
 {
     NuError err;
     NuRecordIdx recordIdx = 0;

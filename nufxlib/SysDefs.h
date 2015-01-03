@@ -119,14 +119,10 @@
 # endif
 #endif
 
-/* resource forks on UFS filesystem under Mac OS X are a kluge */
-/*#ifdef MAC*/
-/*# define HAS_RESOURCE_FORKS*/
-/*#endif*/
-
-#if defined(__ORCAC__) || defined(MAC_LIKE)
-# define HAS_RESOURCE_FORKS
-#endif
+/* not currently using filesystem resource forks */
+//#if defined(__ORCAC__) || defined(MAC_LIKE)
+//# define HAS_RESOURCE_FORKS
+//#endif
 
 /* __FUNCTION__ was missing from BeOS __MWERKS__, and might be gcc-only */
 #ifdef __GNUC__

@@ -174,6 +174,16 @@
 #  define SYSTEM_DEFAULT_EOL "\r"
 #endif
 
+#if defined(__APPLE__) && defined(__MACH__)     /* OS X */
+# define MAC_LIKE
+# define UNIX_LIKE
+#endif
+
+/* not currently using filesystem resource forks */
+//#if defined(__ORCAC__) || defined(MAC_LIKE)
+//# define HAS_RESOURCE_FORKS
+//#endif
+
 #if defined(APW) || defined(__ORCAC__)
 #  define __appleiigs__
 #  pragma lint  -1

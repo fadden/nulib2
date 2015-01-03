@@ -106,6 +106,7 @@ NuError NormalizeFileName(NulibState* pState, const char* srcp, long srcLen,
 NuError NormalizeDirectoryName(NulibState* pState, const char* srcp,
     long srcLen, char fssep, char** pDstp, long dstLen);
 char* MakeTempArchiveName(NulibState* pState);
+NuError SetFinderInfo(int fd, uint8_t proType, uint16_t proAux);
 NuError AddFile(NulibState* pState, NuArchive* pArchive,
     const char* pathname);
 NuError Mkdir(const char* dir);

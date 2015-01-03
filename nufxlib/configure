@@ -3970,11 +3970,6 @@ elif test "$host_os" = "beos"; then
         SHARE_FLAGS='-nostartfiles -Xlinker -soname="$@"'
 fi
 
-if test "$host_vendor" = "apple" -a ${host_os:0:6} = "darwin"; then
-    echo "checking for Mac OS X... yes, adding -framework Carbon"
-    LIBS="$LIBS -framework Carbon"
-fi
-
 
 
 

@@ -19,7 +19,7 @@
 #include "NufxLibPriv.h"
 
 #ifdef MAC_LIKE
-# include <Carbon/Carbon.h>
+# include <sys/xattr.h>
 #endif
 
 /*
@@ -214,12 +214,10 @@ typedef struct NuFileInfo {
 
     Boolean     isRegularFile;  /* is this a regular file? */
     Boolean     isDirectory;    /* is this a directory? */
+    Boolean     isForked;       /* does file have a non-empty resource fork? */
 
     uint32_t    dataEof;
-    uint32_t    rsrcEof;
 
-    uint32_t    fileType;
-    uint32_t    auxType;
     NuDateTime  modWhen;
     mode_t      unixMode;       /* UNIX-style permissions */
 } NuFileInfo;
@@ -256,6 +254,98 @@ static Boolean Nu_IsForkedFile(NuArchive* pArchive, const NuRecord* pRecord)
     else
         return false;
 }
+
+
+#if defined(MAC_LIKE)
+# if defined(HAS_RESOURCE_FORKS)
+/*
+ * String to append to the filename to access the resource fork.
+ *
+ * This appears to be the correct way to access the resource fork, since
+ * at least OS X 10.1.  Up until 10.7 ("Lion", July 2011), you could also
+ * access the fork with "/rsrc".
+ */
+static const char kMacRsrcPath[] = "/..namedfork/rsrc";
+
+/*
+ * Generates the resource fork pathname from the file path.
+ *
+ * The caller must free the string returned.
+ */
+static UNICHAR* GetResourcePath(const UNICHAR* pathnameUNI)
+{
+    Assert(pathnameUNI != NULL);
+
+    // sizeof(kMacRsrcPath) includes the string and the terminating null byte
+    const size_t bufLen =
+        strlen(pathnameUNI) * sizeof(UNICHAR) + sizeof(kMacRsrcPath);
+    char* buf;
+
+    buf = (char*) malloc(bufLen);
+    snprintf(buf, bufLen, "%s%s", pathnameUNI, kMacRsrcPath);
+    return buf;
+}
+# endif /*HAS_RESOURCE_FORKS*/
+
+/*
+ * Due to historical reasons, the XATTR_FINDERINFO_NAME (defined to be
+ * ``com.apple.FinderInfo'') extended attribute must be 32 bytes; see the
+ * ATTR_CMN_FNDRINFO section in getattrlist(2).
+ *
+ * The FinderInfo block is the concatenation of a FileInfo structure
+ * and an ExtendedFileInfo (or ExtendedFolderInfo) structure -- see
+ * ATTR_CMN_FNDRINFO in getattrlist(2).
+ *
+ * All we're really interested in is the file type and creator code,
+ * which are stored big-endian in the first 8 bytes.
+ */
+static const int kFinderInfoSize = 32;
+
+/*
+ * Set the file type and creator type.
+ */
+static NuError Nu_SetFinderInfo(NuArchive* pArchive, const NuRecord* pRecord,
+    const UNICHAR* pathnameUNI)
+{
+    uint8_t fiBuf[kFinderInfoSize];
+
+    size_t actual = getxattr(pathnameUNI, XATTR_FINDERINFO_NAME,
+            fiBuf, sizeof(fiBuf), 0, 0);
+    if (actual == (size_t) -1 && errno == ENOATTR) {
+        // doesn't yet have Finder info
+        memset(fiBuf, 0, sizeof(fiBuf));
+    } else if (actual != kFinderInfoSize) {
+        Nu_ReportError(NU_BLOB, errno,
+            "Finder info on '%s' returned %d", pathnameUNI, (int) actual);
+        return kNuErrFile;
+    }
+
+    /* build type and creator from 8-bit type and 16-bit aux type */
+    uint32_t fileType, creator;
+    fileType = ('p' << 24) | ((pRecord->recFileType & 0xff) << 16) |
+            (pRecord->recExtraType & 0xffff);
+    creator = 'pdos';
+
+    fiBuf[0] = fileType >> 24;
+    fiBuf[1] = fileType >> 16;
+    fiBuf[2] = fileType >> 8;
+    fiBuf[3] = fileType;
+    fiBuf[4] = creator >> 24;
+    fiBuf[5] = creator >> 16;
+    fiBuf[6] = creator >> 8;
+    fiBuf[7] = creator;
+
+    if (setxattr(pathnameUNI, XATTR_FINDERINFO_NAME, fiBuf, sizeof(fiBuf),
+        0, 0) != 0)
+    {
+        Nu_ReportError(NU_BLOB, errno,
+            "Unable to set Finder info on '%s'", pathnameUNI);
+        return kNuErrFile;
+    }
+
+    return kNuErrNone;
+}
+#endif /*MAC_LIKE*/
 
 
 /*
@@ -295,99 +385,28 @@ static NuError Nu_GetFileInfo(NuArchive* pArchive, const UNICHAR* pathnameUNI,
 
         /* BUG: should check for 32-bit overflow from 64-bit off_t */
         pFileInfo->dataEof = sbuf.st_size;
-        pFileInfo->rsrcEof = 0;
-        pFileInfo->fileType = kDefaultFileType;
-        pFileInfo->auxType = kDefaultAuxType;
-# if defined(MAC_LIKE)
+        pFileInfo->isForked = false;
+# if defined(MAC_LIKE) && defined(HAS_RESOURCE_FORKS)
         if (!pFileInfo->isDirectory) {
-            char path[4096];        // TODO: use dynamic alloc or snprintf
+            /*
+             * Check for the presence of a resource fork.  You can check
+             * these from a terminal with "ls -l@" -- look for the
+             * "com.apple.ResourceFork" attribute.
+             *
+             * We can either use getxattr() and check for the presence of
+             * the attribute, or get the file length with stat().  I
+             * don't know if xattr has always worked with resource forks,
+             * so we'll stick with stat for now.
+             */
+            UNICHAR* rsrcPath = GetResourcePath(pathnameUNI);
+
             struct stat res_sbuf;
-            OSErr result;
-            OSType fileType, creator;
-            FSCatalogInfo catalogInfo;
-            FSRef ref;
-            uint32_t proType, proAux;
-            
-            strcpy(path, pathnameUNI);
-            strcat(path, "/rsrc");
-            cc = stat(path, &res_sbuf);
-            if (cc) {
-                if (!errno) {
-                    pFileInfo->rsrcEof = res_sbuf.st_size;
-                }
+
+            if (stat(rsrcPath, &res_sbuf) == 0) {
+                pFileInfo->isForked = (res_sbuf.st_size != 0);
             }
-            
-            result = FSPathMakeRef(pathnameUNI, &ref, NULL);
-            if (!result) {
-                result = FSGetCatalogInfo(&ref, kFSCatInfoFinderInfo, &catalogInfo,
-                                NULL, NULL, NULL);
-                if (!result) {
-                    fileType = ((FileInfo *) &catalogInfo.finderInfo)->fileType;
-                    creator = ((FileInfo *) &catalogInfo.finderInfo)->fileCreator;
-                    
-                    /* This actually is probably more efficient than a weird table, for
-                       so few values */
-                    
-                    switch(creator) {
-                        case 'pdos':
-                            if (fileType == 'PSYS') {
-                                proType = 0xFF;
-                                proAux = 0x0000;
-                            } else if (fileType == 'PS16') {
-                                proType = 0xB3;
-                                proAux = 0x0000;
-                            } else {
-                                if (((fileType >> 24) & 0xFF) == 'p') {
-                                    proType = (fileType >> 16) & 0xFF;
-                                    proAux = fileType & 0xFFFF;
-                                } else {
-                                    proType = 0x00;
-                                    proAux = 0x0000;
-                                }
-                            }
-                            break;
-                        case 'dCpy':
-                            if (fileType == 'dImg') {
-                                proType = 0xE0;
-                                proAux = 0x0005;
-                            } else {
-                                proType = 0x00;
-                                proAux = 0x0000;
-                            }
-                            break;
-                        default:
-                            switch(fileType) {
-                                case 'BINA':
-                                    proType = 0x06;
-                                    proAux = 0x0000;
-                                    break;
-                                case 'TEXT':
-                                    proType = 0x04;
-                                    proAux = 0x0000;
-                                    break;
-                                case 'MIDI':
-                                    proType = 0xD7;
-                                    proAux = 0x0000;
-                                    break;
-                                case 'AIFF':
-                                    proType = 0xD8;
-                                    proAux = 0x0000;
-                                    break;
-                                case 'AIFC':
-                                    proType = 0xD8;
-                                    proAux = 0x0001;
-                                    break;
-                                default:
-                                    proType = 0x00;
-                                    proAux = 0x0000;
-                                    break;
-                            }
-                            break;
-                    }
-                    pFileInfo->fileType = proType;
-                    pFileInfo->auxType = proAux;
-                }
-            }
+
+            free(rsrcPath);
         }
 # endif
         Nu_GMTSecondsToDateTime(&sbuf.st_mtime, &pFileInfo->modWhen);
@@ -423,47 +442,14 @@ static NuError Nu_FileForkExists(NuArchive* pArchive,
     Assert(pExists != NULL);
     Assert(pFileInfo != NULL);
 
-#if defined(MAC_LIKE)
-    /*
-     * On Mac OS X, we do much like on Unix, but we do need to look for
-     * a resource fork.
-     */
-    *pExists = true;
-    if (!checkRsrcFork) {
-        /*
-         * Check the data fork.
-         */
-        Assert(pArchive->lastFileCreatedUNI == NULL);
-        err = Nu_GetFileInfo(pArchive, pathnameUNI, pFileInfo);
-        if (err == kNuErrFileNotFound) {
-            err = kNuErrNone;
-            *pExists = false;
-        }
-/*      DBUG(("Data fork %s: %d (err %d)\n", pathname, *pExists, err));*/
-    } else {
-        /*
-         * Check the resource fork.
-         */
-        char path[4096];        // TODO - dynamic alloc or snprintf
-        strncpy(path, pathnameUNI, 4089);
-        strcat(path, "/rsrc");
-        err = Nu_GetFileInfo(pArchive, path, pFileInfo);
-        if (err == kNuErrFileNotFound) {
-            err = kNuErrNone;
-            *pExists = false;
-        } else if (!err && !pFileInfo->rsrcEof) {
-            err = kNuErrNone;
-            *pExists = false;
-        }
-/*      DBUG(("Rsrc fork %s: %d (err %d)\n", path, *pExists, err));*/
-    }
-    
-#elif defined(UNIX_LIKE) || defined(WINDOWS_LIKE)
+#if defined(UNIX_LIKE) || defined(WINDOWS_LIKE)
+# if !defined(MAC_LIKE)
     /*
      * On Unix and Windows we ignore "isForkedFile" and "checkRsrcFork".
      * The file must not exist at all.
      */
     Assert(pArchive->lastFileCreatedUNI == NULL);
+# endif
 
     *pExists = true;
     err = Nu_GetFileInfo(pArchive, pathnameUNI, pFileInfo);
@@ -471,6 +457,16 @@ static NuError Nu_FileForkExists(NuArchive* pArchive,
         err = kNuErrNone;
         *pExists = false;
     }
+
+# if defined(MAC_LIKE)
+    /*
+     * On Mac OS X, we'll use the resource fork, but we may not want to
+     * overwrite existing data.
+     */
+    if (*pExists && checkRsrcFork) {
+        *pExists = pFileInfo->isForked;
+    }
+# endif
 
 #elif defined(__ORCAC__)
     /*
@@ -617,14 +613,14 @@ bail:
  *
  * Generally this just involves ensuring that the file is writable.  If
  * this is a convenient place to truncate it, we should do that too.
+ *
+ * 20150103: we don't seem to be doing the truncation here, so prepRsrc
+ * is unused.
  */
 static NuError Nu_PrepareForWriting(NuArchive* pArchive,
     const UNICHAR* pathnameUNI, Boolean prepRsrc, NuFileInfo* pFileInfo)
 {
     NuError err = kNuErrNone;
-#if defined(MAC_LIKE)
-    char path[4096];        // TODO: use dynamic alloc or snprintf
-#endif
 
     Assert(pArchive != NULL);
     Assert(pathnameUNI != NULL);
@@ -638,13 +634,6 @@ static NuError Nu_PrepareForWriting(NuArchive* pArchive,
         return kNuErrNotRegularFile;
 
 #if defined(UNIX_LIKE) || defined(WINDOWS_LIKE)
-# if defined(MAC_LIKE)
-    if (prepRsrc) {
-        strcpy(path, pathnameUNI);
-        strcat(path, "/rsrc");
-        pathnameUNI = path;
-    }
-# endif
     if (!(pFileInfo->unixMode & S_IWUSR)) {
         /* make it writable by owner, plus whatever it was before */
         if (chmod(pathnameUNI, S_IWUSR | pFileInfo->unixMode) < 0) {
@@ -770,8 +759,9 @@ static NuError Nu_CreatePathIFN(NuArchive* pArchive, const UNICHAR* pathnameUNI,
     Assert(fssep != '\0');
 
     pathStart = pathnameUNI;
-    
+
 #if !defined(MAC_LIKE)  /* On the Mac, if it's a full path, treat it like one */
+    // 20150103: not sure what use case this is for
     if (pathnameUNI[0] == fssep)
         pathStart++;
 #endif
@@ -820,17 +810,17 @@ bail:
 static NuError Nu_OpenFileForWrite(NuArchive* pArchive,
     const UNICHAR* pathnameUNI, Boolean openRsrc, FILE** pFp)
 {
-#if defined(MAC_LIKE)
-    // TODO: fix this -- use dynamic alloc or snprintf
-    char path[4096];
+#if defined(MAC_LIKE) && defined(HAS_RESOURCE_FORKS)
     if (openRsrc) {
-        strcpy(path, pathnameUNI);
-        strcat(path, "/rsrc");
-        pathnameUNI = path;
+        UNICHAR* rsrcPath = GetResourcePath(pathnameUNI);
+        *pFp = fopen(rsrcPath, kNuFileOpenWriteTrunc);
+        free(rsrcPath);
+    } else {
+        *pFp = fopen(pathnameUNI, kNuFileOpenWriteTrunc);
     }
-#endif
-
+#else
     *pFp = fopen(pathnameUNI, kNuFileOpenWriteTrunc);
+#endif
     if (*pFp == NULL)
         return errno ? errno : -1;
     return kNuErrNone;
@@ -1110,33 +1100,10 @@ NuError Nu_CloseOutputFile(NuArchive* pArchive, const NuRecord* pRecord,
     err = Nu_SetFileAccess(pArchive, pRecord, pathnameUNI);
     BailError(err);
 
-#ifdef MAC_LIKE
-    OSErr result;
-    OSType fileType;
-    FSCatalogInfo catalogInfo;
-    FSRef ref;
-    
-    result = FSPathMakeRef(pathnameUNI, &ref, NULL);
-    BailError(result);
-    
-    result = FSGetCatalogInfo(&ref, kFSCatInfoNodeFlags | kFSCatInfoFinderInfo,
-            &catalogInfo, NULL, NULL, NULL);
-    if (result) {
-        BailError(kNuErrFileStat);
-    }
-    
-    /* Build the type and creator */
-    
-    fileType = 0x70000000;
-    fileType |= (pRecord->recFileType & 0xFF) << 16;
-    fileType |= (pRecord->recExtraType & 0xFFFF);
-    
-    /* Set the type and creator */
-        
-    ((FileInfo *) &catalogInfo.finderInfo)->fileType = fileType;
-    ((FileInfo *) &catalogInfo.finderInfo)->fileCreator = 'pdos';
-    result = FSSetCatalogInfo(&ref, kFSCatInfoFinderInfo, &catalogInfo);
-    BailError(result);
+#if defined(MAC_LIKE)
+    /* could also do this earlier and pass the fd for fsetxattr */
+    err = Nu_SetFinderInfo(pArchive, pRecord, pathnameUNI);
+    BailError(err);
 #endif
 
 bail:
@@ -1180,12 +1147,11 @@ NuError Nu_OpenInputFile(NuArchive* pArchive, const UNICHAR* pathnameUNI,
     Assert(pathnameUNI != NULL);
     Assert(pFp != NULL);
 
-#if defined(MAC_LIKE)
-    char path[4096];        // TODO - dynamic alloc or snprintf
+#if defined(MAC_LIKE) && defined(HAS_RESOURCE_FORKS)
+    UNICHAR* rsrcPath = NULL;
     if (openRsrc) {
-        strcpy(path, pathnameUNI);
-        strcat(path, "/rsrc");
-        pathnameUNI = path;
+        rsrcPath = GetResourcePath(pathnameUNI);
+        pathnameUNI = rsrcPath;
     }
 #endif
 
@@ -1253,6 +1219,9 @@ bail:
                 pathnameUNI, openRsrc ? " (rsrc fork)" : "");
         }
     }
+#if defined(MAC_LIKE) && defined(HAS_RESOURCE_FORKS)
+    free(rsrcPath);
+#endif
     return err;
 }
 

@@ -1,9 +1,9 @@
-NuLib2 README, updated 2014/12/23
+NuLib2 README, updated 2015/01/03
 http://www.nulib.com/
 
 
 To build NuLib2, you will also need a copy of NufxLib.  This should have come
-in the same .tar.gz file.  Build the NufxLib library first.
+in the same distribution file.  Build the NufxLib library first.
 
 
 UNIX
