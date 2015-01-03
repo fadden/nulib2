@@ -642,7 +642,7 @@ static NuError Nu_PrepareForWriting(NuArchive* pArchive,
     if (prepRsrc) {
         strcpy(path, pathnameUNI);
         strcat(path, "/rsrc");
-        pathname = path;
+        pathnameUNI = path;
     }
 # endif
     if (!(pFileInfo->unixMode & S_IWUSR)) {
