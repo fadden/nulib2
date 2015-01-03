@@ -563,20 +563,15 @@ NuError Nu_CopyPresizedToArchive(NuArchive* pArchive,
 /* Crc16.c */
 extern const uint16_t gNuCrc16Table[256];
 uint16_t Nu_CalcCRC16(uint16_t seed, const uint8_t* ptr, int count);
-#ifdef COMPILE_CRC16_C  /* just doing "static inline" warns def-but-not-used */
- #define CRC_INLINE /**/
-#else
- #define CRC_INLINE extern inline
-#endif
-#if defined(inline) && !defined(COMPILE_CRC16_C) /* somebody ovrd inline def? */
-uint16_t Nu_UpdateCRC16(uint8_t val, uint16_t crc);
-#else
-CRC_INLINE uint16_t
-Nu_UpdateCRC16(uint8_t val, uint16_t crc)
-{
-    return (gNuCrc16Table[((crc >> 8) & 0xFF) ^ val] ^ (crc << 8)) & 0xFFFF;
-}
-#endif
+/*
+ * Update the CRC-16.
+ *
+ * _val (uint8_t) is the byte to add to the CRC.  It's evaluated once.
+ * _crc (uint16_t) is the previous CRC.  It's evaluated twice.
+ * Returns the updated CRC as a uint16_t.
+ */
+#define Nu_UpdateCRC16(_val, _crc) \
+    (gNuCrc16Table[(((_crc) >> 8) & 0xff) ^ (_val)] ^ ((_crc) << 8))
 
 /* Debug.c */
 #if defined(DEBUG_MSGS) || !defined(NDEBUG)
@@ -822,23 +817,7 @@ NuError Nu_ExpandHuffmanSQ(NuArchive* pArchive, const NuRecord* pRecord,
     const NuThread* pThread, FILE* infp, NuFunnel* pFunnel, uint16_t* pCrc);
 
 /* Thread.c */
-#ifdef COMPILE_THREAD_C
- #define THREAD_INLINE  /**/
-#else
- #define THREAD_INLINE extern inline
-#endif
-#if defined(inline) && !defined(COMPILE_THREAD_C)  /*somebody ovrd inline def?*/
 NuThread* Nu_GetThread(const NuRecord* pRecord, int idx);
-#else
-THREAD_INLINE NuThread*
-Nu_GetThread(const NuRecord* pRecord, int idx)
-{
-    if (idx >= (int)pRecord->recTotalThreads)
-        return NULL;
-    else
-        return &pRecord->pThreads[idx];
-}
-#endif
 void Nu_StripHiIfAllSet(char* str);
 Boolean Nu_IsPresizedThreadID(NuThreadID threadID);
 Boolean Nu_IsCompressibleThreadID(NuThreadID threadID);

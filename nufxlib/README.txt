@@ -64,14 +64,10 @@ If you're using BeOS/PPC, it will also do:
 Mac OS X
 ========
 
-This works just like the UNIX version, with the exception that when you link
-against nufxlib, your project must also link against the Carbon framework.
-This can be done in ProjectBuilder by using the Add Framework option in the
-Project menu, or by adding "-framework Carbon" to the gcc command line.
+This works just like the UNIX version, but includes support for resource
+forks and Finder file/aux types.
 
-You'll see some warnings due to some namespace collisions between nufxlib and
-Carbon, but everything will work fine.  Carbon is used to provide support for
-file types and resource forks.
+Tested with Xcode v5.1.1 and Mac OS 10.8.5.
 
 
 Win32

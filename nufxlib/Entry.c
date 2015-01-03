@@ -48,7 +48,6 @@ static NuError Nu_PartiallyValidateNuArchive(const NuArchive* pArchive)
     if (pArchive == NULL)
         return kNuErrInvalidArg;
 
-    pArchive =  pArchive;
     if (pArchive->structMagic != kNuArchiveStructMagic)
         return kNuErrBadStruct;
 

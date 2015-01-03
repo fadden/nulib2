@@ -6,7 +6,6 @@
  *
  * Thread-level operations.
  */
-#define COMPILE_THREAD_C 1
 #include "NufxLibPriv.h"
 
 
@@ -15,6 +14,17 @@
  *      Utils
  * ===========================================================================
  */
+
+/*
+ * Returns thread N, or NULL if the index is invalid.
+ */
+NuThread* Nu_GetThread(const NuRecord* pRecord, int idx)
+{
+    if (idx >= (int)pRecord->recTotalThreads)
+        return NULL;
+    else
+        return &pRecord->pThreads[idx];
+}
 
 /*
  * ShrinkIt v3.0.0 had a bug where the filename thread would get created

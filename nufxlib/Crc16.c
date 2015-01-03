@@ -7,7 +7,6 @@
  * Compute 16-bit CRCs.  Depending on the hardware, the table version
  * might be slower than the loop computation.
  */
-#define COMPILE_CRC16_C 1
 #include "NufxLibPriv.h"
 
 #define CRC_TAB
