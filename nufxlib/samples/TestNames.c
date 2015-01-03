@@ -401,7 +401,7 @@ int TestExtract(NuArchive* pArchive, const char* entryNameMOR)
     (void) NuFreeDataSink(pDataSink);
 
     printf("... confirming extraction of '%s'\n", entryNameUNI);
-    if (access(entryNameUNI, R_OK) != 0) {
+    if (access(entryNameUNI, F_OK) != 0) {
         fprintf(stderr, "ERROR: unable to read '%s' (err=%d)\n",
             entryNameUNI, errno);
         free(entryNameUNI);
@@ -493,7 +493,7 @@ int DoTests(void)
     }
     pArchive = NULL;
 
-    if (access(kTestArchive, R_OK) != 0) {
+    if (access(kTestArchive, F_OK) != 0) {
         fprintf(stderr, "ERROR: did not find %s (err=%d)\n", kTestArchive, err);
         goto failed;
     }
