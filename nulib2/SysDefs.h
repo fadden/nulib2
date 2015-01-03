@@ -192,10 +192,6 @@
 # define HAS__FUNCTION__
 #endif
 
-#if defined(__sun__) && !defined(__SVR4)
-# include "SunOS4.h"
-#endif
-
 /* general defaults, mainly for UNIX */
 
 #ifndef PATH_SEP

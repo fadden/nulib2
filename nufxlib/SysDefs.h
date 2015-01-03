@@ -133,10 +133,6 @@
 # define HAS__FUNCTION__
 #endif
 
-#if defined(__sun__) && !defined(__SVR4)
-# include "SunOS4.h"
-#endif
-
 #if defined(__linux__)
 # define HAS_MALLOC_CHECK_
 #endif
