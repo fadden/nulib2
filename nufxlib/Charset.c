@@ -460,8 +460,8 @@ fail:
  *
  * Returns the number of bytes required to represent stringUNI in MOR.
  */
-NUFXLIB_API size_t Nu_ConvertUNIToMOR(const UNICHAR* stringUNI,
-    char* bufMOR, size_t bufSize)
+size_t Nu_ConvertUNIToMOR(const UNICHAR* stringUNI, char* bufMOR,
+    size_t bufSize)
 {
     Assert(stringUNI != 0);
 
@@ -551,4 +551,3 @@ UNICHAR* Nu_CopyMORToUNI(const char* stringMOR)
     Nu_ConvertMORToUNI(stringMOR, uniBuf, uniLen);
     return uniBuf;
 }
-
