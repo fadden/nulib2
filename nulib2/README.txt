@@ -80,6 +80,12 @@ Prompt" shortcut to get a shell.  Change to the nulib2 directory, then:
 If you want to have zlib support enabled, you will need to have zlib.lib
 copied into the directory.  See "makefile.msc" for more details.
 
+Unicode filename support has not been ported to Windows.  Non-ASCII
+characters will be interpreted as the default character set (CP1252).
+This is the way NuLib2 has always worked in Windows, but it may not
+match with the behavior of CiderPress.  In any event, this only affects
+files with non-ASCII filenames.
+
 
 Other Notes
 ===========
