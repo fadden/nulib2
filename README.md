@@ -7,8 +7,8 @@ operate on ShrinkIt and Binary II files (.shk, .sdk, .bxy, .bse, .bny, .bqy).
 NufxLib is a library of code that supports ShrinkIt archives.  It's
 used by NuLib2 and CiderPress.
 
-A pre-built NuLib2 binary is available for x86 Windows.  For Linux systems,
-you can download the source code and build it.
+A pre-built NuLib2 binary is available for x86 Windows.  For Linux and
+Mac OS X systems, you can download the source code and build it.
 
 More information, including full documentation for NuLib2 and NufxLib,
 can be found on http://www.nulib.com/.
