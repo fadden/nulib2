@@ -59,10 +59,10 @@ If you're using BeOS/PPC, it will also do:
 Mac OS X
 ========
 
-This works just like the UNIX version.  You'll see some warnings due to some
-namespace collisions between nufxlib and Carbon, but everything will work
-fine.  The Carbon framework is used to enable support for filetypes and
-resource forks.
+This works just like the UNIX version, but includes support for resource
+forks and Finder file/aux types.
+
+Tested with Xcode v5.1.1 and Mac OS 10.8.5.
 
 
 Win32
