@@ -3,24 +3,23 @@
 <head>
 <meta http-equiv="Content-Language" content="en-us">
 <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
-<meta name="GENERATOR" content="Microsoft FrontPage 4.0">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
 <meta name="ProgId" content="FrontPage.Editor.Document">
 <title>NuFX Addendum</title>
-<meta name="Microsoft Border" content="t, default">
+<meta content="t, default" name="Microsoft Border">
 </head>
 
 <body bgcolor="#FFFFFF" text="#000000"><!--msnavigation--><table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td>
 
 <p align="center"><font size="6"><strong>NuFX Addendum</strong></font><br>
-<nobr>[&nbsp;<a href="../index.htm">Home</a>&nbsp;]</nobr> <nobr>[&nbsp;<a href="index.htm">Up</a>&nbsp;]</nobr> <nobr>[&nbsp;NuFX&nbsp;Addendum&nbsp;]</nobr> <nobr>[&nbsp;<a href="nulib2-preserve.htm">ProDOS&nbsp;Attribute&nbsp;Preservation</a>&nbsp;]</nobr></p>
+<nobr>[&nbsp;<a href="../index.htm" target="">Home</a>&nbsp;]</nobr> <nobr>[&nbsp;<a href="index.htm" target="">Up</a>&nbsp;]</nobr> <nobr>[&nbsp;NuFX&nbsp;Addendum&nbsp;]</nobr> <nobr>[&nbsp;<a href="nulib2-preserve.htm" target="">ProDOS&nbsp;Attribute&nbsp;Preservation</a>&nbsp;]</nobr></p>
 <hr>
 
-</td></tr><!--msnavigation--></table><!--msnavigation--><table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><!--msnavigation--><td valign="top">
+</td></tr><!--msnavigation--></table><!--msnavigation--><table border="0" cellpadding="0" cellspacing="0" dir="ltr" width="100%"><tr><!--msnavigation--><td valign="top"><msnavigation border="0" cellpadding="0" cellspacing="0" width="100%"><msnavigation border="0" cellpadding="0" cellspacing="0" width="100%"><tr><msnavigation valign="top">
 
 <h6>&nbsp;</h6>
 
-<h6>NuFX Addendum - <b>By Andy McFadden - Last revised 2014/12/22</b></h6>
-
+<h6>NuFX Addendum - <b>By Andy McFadden - Last revised 2015/01/09</b></h6>
 <p align="left">This addendum clarifies and extends certain aspects of the <a href="FTN.e08002.htm"> NuFX
 specification</a>.&nbsp; This was developed by Andy McFadden, and is not an
 &quot;official&quot; modification of the original document.</p>
@@ -121,7 +120,24 @@ where the filename may live, and no guarantee that only one will be used..<p ali
 Never put the filename in the record header when creating a new record.&nbsp;
 It's okay to leave existing records alone, but if an application has the
 opportunity to rewrite the record header, the record filename must be removed.<p align="left"><b>Extracting:</b>
-The thread filename takes precedence over the record header filename.<p align="left">&nbsp;<h3 align="left">File
+The thread filename takes precedence over the record header filename.<p align="left">
+&nbsp;<h3 align="left">Filename character set</h3>
+<p align="left">Filenames in NuFX archives use the Mac OS Roman character set, 
+which is ASCII plus some symbols and the usual set of latin language characters 
+(see <a href="http://www.unicode.org/Public/MAPPINGS/VENDORS/APPLE/ROMAN.TXT">
+Unicode definition</a>).&nbsp; The NuFX filename definition was intended to 
+accommodate files from HFS volumes, which may contain any character except ':'.&nbsp; 
+Control characters, including NUL ('\0'), were allowed but discouraged.<p align="left">
+On modern systems, converting between Mac OS Roman and Unicode is useful and 
+(mostly) straightforward.&nbsp; Dealing with embedded null bytes is very 
+annoying in C-like languages though.<p align="left"><strong>Creating:</strong> 
+Convert Unicode to Mac OS Roman, replacing any untranslatable characters with 
+'?'.&nbsp; Embedded nulls must be replaced with '?'.<p align="left"><strong>
+Extracting:</strong> Convert Mac OS Roman to Unicode.&nbsp; If embedded nulls 
+are encountered, they should be replaced with something appropriate for the 
+current system.&nbsp; Applications are allowed to ignore the problem and 
+truncate the filename, but must be prepared to handle duplicate or empty 
+filenames.<p align="left">&nbsp;<h3 align="left">File
 system separator characters</h3>
 <p align="left">Every record header has a &quot;file system separator&quot;
 character (&quot;fssep&quot;) in the &quot;file_sys_info&quot; word.&nbsp; This
@@ -403,11 +419,14 @@ exist.</p>
 <h3 align="left">Message thread format</h3>
 <p align="left">The specification says that message threads are ASCII text, but
 doesn't specify an EOL character.&nbsp; For the benefit of Apple II utilities,
-it's best to use a carriage return (ctrl-M).</p>
-<p align="left"><b>Creating:</b> Convert any EOL markers to CR.</p>
+it's best to use a carriage return (ctrl-M).&nbsp; The comments are expected to 
+be readable on 8-bit Apple IIs, so plain ASCII rather than Mac OS Roman should 
+be used.</p>
+<p align="left"><b>Creating:</b> Convert any EOL markers to CR, and any 
+non-ASCII characters (i.e. bytes with the high bit set) to ASCII.</p>
 <p align="left"><b>Extracting:</b> Assume that the comment may be using CR, LF,
 or CRLF, and convert as needed for display.&nbsp; GS/ShrinkIt used a
-proportional font, so there is no need to worry about &quot;ASCII art&quot; in
+proportional font, so there is no need to worry about formatting to preserve &quot;ASCII art&quot; in
 comments.</p>
 <p align="left">&nbsp;</p>
 <h3 align="left">GS/OS option lists</h3>
@@ -546,6 +565,6 @@ unspecified date rather than midnight of January 1, 2000.</p>
 McFadden</a>.&nbsp; All Rights Reserved.</p>
 <p>The latest version can be found on the NuLib web site at
 <a href="http://www.nulib.com/">http://www.nulib.com/</a>.</p>
-<!--msnavigation--></td></tr><!--msnavigation--></table></body>
+</td></tr></table></td></tr></table><!--msnavigation--></td></tr><!--msnavigation--></table></body>
 
 </html>

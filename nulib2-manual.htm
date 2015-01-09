@@ -2,22 +2,22 @@
 
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
-<meta name="GENERATOR" content="Microsoft FrontPage 4.0">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
 <meta name="ProgId" content="FrontPage.Editor.Document">
 <title>NuLib2 Manual</title>
-<meta name="Microsoft Border" content="t, default">
+<meta content="t, default" name="Microsoft Border">
 </head>
 
 <body bgcolor="#FFFFFF" text="#000000"><!--msnavigation--><table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td>
 
 <p align="center"><font size="6"><strong>NuLib2 Manual</strong></font><br>
-<nobr>[&nbsp;<a href="index.htm">Home</a>&nbsp;]</nobr> <nobr>[&nbsp;<a href="downloads/index.htm">NuLib&nbsp;Downloads</a>&nbsp;]</nobr> <nobr>[&nbsp;<a href="library/index.htm">NuLib&nbsp;Library</a>&nbsp;]</nobr> <nobr>[&nbsp;NuLib2&nbsp;Manual&nbsp;]</nobr> <nobr>[&nbsp;<a href="nufxlibapi.htm">NufxLib&nbsp;API</a>&nbsp;]</nobr> <nobr>[&nbsp;<a href="bugs.htm">Bugs&nbsp;&amp;&nbsp;Features</a>&nbsp;]</nobr></p>
+<nobr>[&nbsp;<a href="index.htm" target="">Home</a>&nbsp;]</nobr> <nobr>[&nbsp;<a href="downloads/index.htm" target="">NuLib&nbsp;Downloads</a>&nbsp;]</nobr> <nobr>[&nbsp;<a href="library/index.htm" target="">NuLib&nbsp;Library</a>&nbsp;]</nobr> <nobr>[&nbsp;NuLib2&nbsp;Manual&nbsp;]</nobr> <nobr>[&nbsp;<a href="nufxlibapi.htm" target="">NufxLib&nbsp;API</a>&nbsp;]</nobr> <nobr>[&nbsp;<a href="bugs.htm" target="">Bugs&nbsp;&amp;&nbsp;Features</a>&nbsp;]</nobr></p>
 <hr>
 
-</td></tr><!--msnavigation--></table><!--msnavigation--><table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><!--msnavigation--><td valign="top">
+</td></tr><!--msnavigation--></table><!--msnavigation--><table border="0" cellpadding="0" cellspacing="0" dir="ltr" width="100%"><tr><!--msnavigation--><td valign="top"><msnavigation border="0" cellpadding="0" cellspacing="0" width="100%"><msnavigation border="0" cellpadding="0" cellspacing="0" width="100%"><tr><msnavigation valign="top">
 
 <h6>&nbsp;</h6>
-<h6>NuLib2 v2.1.1 Manual - By Andy McFadden - Last revised 2006/02/18</h6>
+<h6>NuLib2 v3.0.0 Manual - By Andy McFadden - Last revised 2015/01/09</h6>
 
 <h2>Table of Contents</h2>
 
@@ -653,12 +653,17 @@ be left lying around.</p>
 for the current system (e.g. &quot;/&quot; is set to &quot;_&quot; on UNIX-like
 systems).&nbsp; If file type preservation is enabled, the character will be
 preserved exactly (e.g. '/' becomes &quot;%2f&quot;).</p>
+<p>The character set used for filenames in ShrinkIt archives is Mac OS Roman; 
+this is the character set used on the IIgs and old Macintoshes (and, 
+consequently, on HFS disks).&nbsp; The Linux and Mac OS X versions of NuLib2 
+will automatically convert between Mac OS Roman and Unicode when adding, 
+extracting, and listing files, using UTF-8 encoding.</p>
 <p>NuFX archives store three dates with every file: creation, modification, and when
 it was archived.&nbsp; On systems that don't have creation dates, the
 modification date will be substituted.</p>
 <p>There are certain filenames you can't use on a Windows &quot;FAT&quot;
 filesystem, such as &quot;AUX&quot; and &quot;PRN&quot;.&nbsp;
-Neither Win98 nor Linux's vfat driver will allow it.&nbsp; Standard utilities
+Neither Windows nor Linux's vfat driver will allow it.&nbsp; Standard utilities
 like WinZip fail with a mysterious error message.&nbsp; As a workaround, the Win32 version of NuLib2 will consistently
 prefix all MS-DOS device entries with '_', so &quot;AUX&quot; and &quot;aux.foo.txt&quot;
 will be extracted
@@ -690,10 +695,10 @@ on BeOS, and helped me get all the configuration stuff in order.<p>Devin Reade
 built it on several different platforms, and made a repository for binary
 distributions.</p>
 <hr>
-<p>This document is Copyright © 2000-2006 by <a href="http://www.fadden.com/">Andy
+<p>This document is Copyright © 2000-2015 by <a href="http://www.fadden.com/">Andy
 McFadden</a>.&nbsp; All Rights Reserved.</p>
 <p>The latest version can be found on the NuLib web site at
 <a href="http://www.nulib.com/">http://www.nulib.com/</a>.</p>
-<!--msnavigation--></td></tr><!--msnavigation--></table></body>
+</td></tr></table></td></tr></table><!--msnavigation--></td></tr><!--msnavigation--></table></body>
 
 </html>
