@@ -1862,6 +1862,7 @@ NufxLib is intended for manipulating archives, not compressing streams of data,
 the added flexibility did not justify the cost.&nbsp; (I'm becoming less certain
 of that as time goes by.&nbsp; If I had it all to do again, I probably would use
 the functional interface for all file accesses.)</p>
+
 <p>It might have been useful to allow read/write/seek hooks for the archive
 itself.&nbsp; The current architecture prevents you from processing an archive
 that has been loaded into memory, unless you have memory-based FILE* streams in your
@@ -1872,17 +1873,19 @@ until I wanted to set a parameter that affected the way open works (the
 junk-skipping feature).&nbsp; Creating the structure in a separate call before
 the &quot;open&quot; would
 have been better.</p>
-<p>It might, for portability reasons, have been better to require a &quot;create
-file&quot; callback.&nbsp; This would offload most of the system-dependent stuff
-in FileIO.c onto the application.&nbsp; I chose not to do this because I felt it
-moved too much of the work out of NufxLib and into the hands of the
-developer.&nbsp; Requiring the application to deal with the &quot;OnlyUpdateOlder&quot;
-and &quot;HandleExisting&quot; flags seemed excessive, and if there really are
-wide variants in the way files are created and modification dates are tested,
-then we might as well solve the problem once and for all in the library instead
-of requiring every application to solve it for themselves.&nbsp; (I could, of
-course, provide sample code for several different platforms, but sample code
-tends to suffer from bit rot.)</p>
+
+<p>The biggest problem with NufxLib is that it tries to do too much.  A much
+larger share of the work should have been done in NuLib2.  The easiest way to
+see this is to look at a feature like the built-in end-of-line conversion.  It's
+certainly handy to have, but applications like NuLib2 and CiderPress work with
+more than one type of archive, which means we either won't support EOL conversions
+(e.g. NuLib2 doesn't convert when extracting from BNY) or we have to
+reimplement it in the app anyway (e.g. CiderPress has a complete copy of the NufxLib
+implementation).  Nearly everything relating to files should have been done by
+the application, with NufxLib using a file descriptor or memory buffer to
+access the archive, and app-supplied read/write functions to handle compressed
+data.</p>
+
 <p>There is no real support for GS/OS option lists.&nbsp; The only place you'd
 ever want to add these is on a IIgs, and I find it unlikely that NufxLib will
 edge out GS/ShrinkIt as the preferred archiver.&nbsp; (Besides, I question their
