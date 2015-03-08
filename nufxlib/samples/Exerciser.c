@@ -24,6 +24,15 @@ static const char kFssep = PATH_SEP;
 
 #define kTempFile   "exer-temp"
 
+#ifndef HAVE_STRCASECMP
+static int strcasecmp(const char *str1, const char *str2)
+{
+    while (*str1 && *str2 && toupper(*str1) == toupper(*str2))
+        str1++, str2++;
+    return (toupper(*str1) - toupper(*str2));
+}
+#endif
+
 
 /*
  * ===========================================================================
