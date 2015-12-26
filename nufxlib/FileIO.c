@@ -228,6 +228,13 @@ typedef struct NuFileInfo {
 
 /*
  * Determine whether the record has both data and resource forks.
+ *
+ * TODO: if we're not using "mask dataless", scanning threads may not
+ * get the right answer, because GSHK omits theads for zero-length forks.
+ * We could check pRecord->recStorageType, though we have to be careful
+ * because that's overloaded for disk images.  In any event, the result
+ * from this method isn't relevant unless we're trying to use forked
+ * files on the native filesystem.
  */
 static Boolean Nu_IsForkedFile(NuArchive* pArchive, const NuRecord* pRecord)
 {

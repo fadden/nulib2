@@ -135,10 +135,14 @@ bail:
  * a disk image thread, but it's a fair bet ShrinkIt would ignore one
  * or the other.
  *
- * NOTE: we don't currently work around the GSHK zero-length file bug.
- * Such records, which have a filename thread but no data threads at all,
- * will be categorized as "unknown".  We could detect the situation and
- * correct it, but we might as well flag it in a user-visible way.
+ * NOTE: GSHK likes to omit the data threads for zero-length data and
+ * resource forks.  That screws up analysis by scanning for threads.  We
+ * can work around missing resource forks by simply checking the record's
+ * storage type.  We could be clever and detect records that have no
+ * data-class threads at all, and no additional threads other than a
+ * comment and filename, but this is just for display.  ShrinkIt doesn't
+ * handle these records correctly in all cases, so flagging them in a
+ * user-visible way seems reasonable.
  */
 static NuError AnalyzeRecord(const NuRecord* pRecord,
     enum RecordKind* pRecordKind, uint16_t* pFormat, uint32_t* pTotalLen,
@@ -175,6 +179,16 @@ static NuError AnalyzeRecord(const NuRecord* pRecord,
             *pTotalLen += pThread->actualThreadEOF;
             *pTotalCompLen += pThread->thCompThreadEOF;
         }
+    }
+
+    /*
+     * Fix up the case where we have a forked file, but GSHK decided not
+     * to include a resource fork in the record.
+     */
+    if (pRecord->recStorageType == kNuStorageExtended &&
+        *pRecordKind != kRecordKindForkedFile)
+    {
+        *pRecordKind = kRecordKindForkedFile;
     }
 
     return kNuErrNone;
