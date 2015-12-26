@@ -72,23 +72,24 @@ static const char gFileTypeNames[256][4] = {
  * file rather than a hard-coded table.  Ought to fix that someday.
  */
 static const struct {
-    const char*         label;
-    uint16_t            fileType;
-    uint32_t            auxType;
-    uint8_t             unused;         // remove?
+    const char*     label;
+    uint8_t         fileType;
+    uint16_t        auxType;
 } gRecognizedExtensions[] = {
-    { "ASM",  0xb0, 0x0003, 0 },        /* APW assembly source */
-    { "C",    0xb0, 0x000a, 0 },        /* APW C source */
-    { "H",    0xb0, 0x000a, 0 },        /* APW C header */
-    { "BNY",  0xe0, 0x8000, 0 },        /* Binary II lib */
-    { "BQY",  0xe0, 0x8000, 0 },        /* Binary II lib, w/ compress */
-    { "BXY",  0xe0, 0x8000, 0 },        /* Binary II wrap around SHK */
-    { "BSE",  0xe0, 0x8000, 0 },        /* Binary II wrap around SEA */
-    { "SEA",  0xb3, 0xdb07, 0 },        /* GSHK SEA */
-    { "GIF",  0xc0, 0x8006, 0 },        /* GIF image */
-    { "JPG",  0x06, 0x0000, 0 },        /* JPEG (nicer than 'NON') */
-    { "JPEG", 0x06, 0x0000, 0 },        /* JPEG (nicer than 'NON') */
-    { "SHK",  0xe0, 0x8002, 0 },        /* ShrinkIt archive */
+    { "ASM",  0xb0, 0x0003 },       /* APW assembly source */
+    { "C",    0xb0, 0x000a },       /* APW C source */
+    { "H",    0xb0, 0x000a },       /* APW C header */
+    { "CPP",  0xb0, 0x0000 },       /* generic source file */
+    { "BNY",  0xe0, 0x8000 },       /* Binary II lib */
+    { "BQY",  0xe0, 0x8000 },       /* Binary II lib, w/ compress */
+    { "BXY",  0xe0, 0x8000 },       /* Binary II wrap around SHK */
+    { "BSE",  0xe0, 0x8000 },       /* Binary II wrap around SEA */
+    { "SEA",  0xb3, 0xdb07 },       /* GSHK SEA */
+    { "TEXT", 0x04, 0x0000 },       /* ASCII text */
+    { "GIF",  0xc0, 0x8006 },       /* GIF image */
+    { "JPG",  0x06, 0x0000 },       /* JPEG (nicer than 'NON') */
+    { "JPEG", 0x06, 0x0000 },       /* JPEG (nicer than 'NON') */
+    { "SHK",  0xe0, 0x8002 },       /* ShrinkIt archive */
 };
 
 
