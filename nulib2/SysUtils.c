@@ -454,6 +454,7 @@ static NuError GetTypesFromFinder(const char* pathnameUNI, uint32_t* pFileType,
     creator = (fiBuf[4] << 24) | (fiBuf[5] << 16) | (fiBuf[6] << 8) |
         fiBuf[7];
 
+    Boolean found = false;
     uint8_t proType;
     uint16_t proAux;
 
@@ -461,31 +462,36 @@ static NuError GetTypesFromFinder(const char* pathnameUNI, uint32_t* pFileType,
      * Convert to ProDOS file/aux type.
      */
     if (creator == 'pdos') {
+        /*
+         * TODO: handle conversion from 'pdos'/'XY  ' to $XY/$0000.
+         * I think this conversion was deprecated and not widely used;
+         * the inability to retain the aux type renders it inapplicable
+         * to many files.
+         */
         if (fileType == 'PSYS') {
             proType = 0xFF;         // SYS
             proAux = 0x0000;
+            found = true;
         } else if (fileType == 'PS16') {
             proType = 0xB3;         // S16
             proAux = 0x0000;
+            found = true;
         } else {
             if (((fileType >> 24) & 0xFF) == 'p') {
                 proType = (fileType >> 16) & 0xFF;
                 proAux = (uint16_t) fileType;
-            } else {
-                proType = 0x00;     // NON
-                proAux = 0x0000;
+                found = true;
             }
         }
     } else if (creator == 'dCpy') {
         if (fileType == 'dImg') {
             proType = 0xE0;         // LBR
             proAux = 0x0005;
-        } else {
-            proType = 0x00;         // NON
-            proAux = 0x0000;
+            found = true;
         }
-    } else {
-        switch(fileType) {
+    }
+    if (!found) {
+        switch (fileType) {
             case 'BINA':
                 proType = 0x06;     // BIN
                 proAux = 0x0000;
@@ -519,7 +525,11 @@ static NuError GetTypesFromFinder(const char* pathnameUNI, uint32_t* pFileType,
 }
 
 /*
- * Set the file type and creator type.
+ * Set the file type and creator type, based on the ProDOS file type
+ * and aux type.
+ *
+ * This is a clone of the function in NufxLib; it exists for the
+ * benefit of the Binary ][ code.
  */
 NuError SetFinderInfo(int fd, uint8_t proType, uint16_t proAux)
 {
@@ -534,19 +544,41 @@ NuError SetFinderInfo(int fd, uint8_t proType, uint16_t proAux)
         return kNuErrFile;
     }
 
-    /* build type and creator from 8-bit type and 16-bit aux type */
-    uint32_t fileType, creator;
-    fileType = ('p' << 24) | (proType << 16) | proAux;
-    creator = 'pdos';
+    /*
+     * Attempt to use one of the convenience types.  If nothing matches,
+     * use the generic pdos/pXYZ approach.  Note that PSYS/PS16 will
+     * lose the file's aux type.
+     *
+     * I'm told this is from page 336 of _Programmer's Reference for
+     * System 6.0_.
+     */
+    uint8_t* fileTypeBuf = fiBuf;
+    uint8_t* creatorBuf = fiBuf + 4;
 
-    fiBuf[0] = fileType >> 24;
-    fiBuf[1] = fileType >> 16;
-    fiBuf[2] = fileType >> 8;
-    fiBuf[3] = fileType;
-    fiBuf[4] = creator >> 24;
-    fiBuf[5] = creator >> 16;
-    fiBuf[6] = creator >> 8;
-    fiBuf[7] = creator;
+    memcpy(creatorBuf, "pdos", 4);
+    if (proType == 0x00 && proAux == 0x0000) {
+        memcpy(fileTypeBuf, "BINA", 4);
+    } else if (proType == 0x04 && proAux == 0x0000) {
+        memcpy(fileTypeBuf, "TEXT", 4);
+    } else if (proType == 0xff) {
+        memcpy(fileTypeBuf, "PSYS", 4);
+    } else if (proType == 0xb3 && (proAux & 0xff00) != 0xdb00) {
+        memcpy(fileTypeBuf, "PS16", 4);
+    } else if (proType == 0xd7 && proAux == 0x0000) {
+        memcpy(fileTypeBuf, "MIDI", 4);
+    } else if (proType == 0xd8 && proAux == 0x0000) {
+        memcpy(fileTypeBuf, "AIFF", 4);
+    } else if (proType == 0xd8 && proAux == 0x0001) {
+        memcpy(fileTypeBuf, "AIFC", 4);
+    } else if (proType == 0xe0 && proAux == 0x0005) {
+        memcpy(creatorBuf, "dCpy", 4);
+        memcpy(fileTypeBuf, "dImg", 4);
+    } else {
+        fileTypeBuf[0] = 'p';
+        fileTypeBuf[1] = proType;
+        fileTypeBuf[2] = (uint8_t) (proAux >> 8);
+        fileTypeBuf[3] = (uint8_t) proAux;
+    }
 
     if (fsetxattr(fd, XATTR_FINDERINFO_NAME, fiBuf, sizeof(fiBuf),
         0, 0) != 0)

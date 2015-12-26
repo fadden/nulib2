@@ -1,5 +1,6 @@
 2015/12/26  fadden
     - Fix handling of entries with missing threads.
+    - Improve handling of Mac OS X file type attributes.
 
 2015/01/09  ***** v3.0.0 shipped *****
 
