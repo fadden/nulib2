@@ -5,7 +5,6 @@ Universal Disk Image file
 - Auxiliary Type: $0130
 - Full Name: Universal Disk Image file
 - Short Name: 2IMG
-- Written by: Eric Shepherd,  March 1999
 
 Files of this type and auxiliary type contain Universal Disk Image format disk images.
 
@@ -13,7 +12,7 @@ Files of this type and auxiliary type contain Universal Disk Image format disk i
 
 Files of this type and auxtype contain data in Universal Disk Image format. This file format, a recent standard developed by cooperation among Apple II emulator authors, is used to represent an entire Apple II-compatible disk in a data file. It's an extremely easy-to-use and flexible format that's compatible with most currently-supported Apple II emulation products.
 
-Univeral Disk Image files (also known as '2IMG' or '2MG', from the Macintosh® creator code and filename extensions typically used for these files) consist of four chunks: the header, the data chunk, the comment, and the creator-specific data chunk.
+Univeral Disk Image files (also known as '2IMG' or '2MG', from the Macintosh creator code and filename extensions typically used for these files) consist of four chunks: the header, the data chunk, the comment, and the creator-specific data chunk.
 
 ### The Universal Disk Image header ###
 
@@ -29,24 +28,29 @@ offset | size | description
 +$010  | Long |  Flags. See table below.
 +$014  | Long |  The number of 512-byte blocks in the disk image. This value should be zero unless the image format is 1 (ProDOS order).
 +$018  | Long |  Offset to the first byte of the first block of the disk in the image file, from the beginning of the file. The disk data must come before the comment and creator-specific chunks.
-+$01C  | Long |  Length of the disk data in bytes. This should be the number of blocks * 512.
-+$020  | Long |  Offset to the first byte of the image comment. Can be zero if there's no comment. The comment must come after the data chunk, but before the creator-specific chunk. The comment, if it exists, should be raw text; no length byte or C-style null terminator byte is required (that's what the next field is for).
++$01C  | Long |  Length of the disk data in bytes. For a ProDOS image, this would be the number of blocks * 512.
++$020  | Long |  Offset to the first byte of the image comment, or zero if there's no comment. The comment must come after the data chunk, but before the creator-specific chunk. The comment, if it exists, should be raw ASCII text; no length byte or C-style null terminator byte is required (that's what the next field is for).
 +$024  | Long |  Length of the comment chunk. Zero if there's no comment.
-+$028  | Long |  Offset to the first byte of the creator-specific data chunk, or zero if there is none.
++$028  | Long |  Offset to the first byte of the creator-specific data chunk, or zero if there is none.  This chunk must come last.
 +$02C  | Long |  Length of the creator-specific chunk; zero if there is no creator-specific data.
 +$030  | 16 bytes |  Reserved space; this pads the header to 64 bytes. These values must all be zero.
 
 
 ### Creator Codes ###
 
-If the file is created by a Macintosh application, this should be the creator code of the creating application; otherwise, this should be a unique ID specific to the creating application. As a courtesy, you should let A2Pro know the creator code you choose to use for your application.
+If the file is created by a Macintosh application, this should be the creator code of the creating application; otherwise, this should be a unique ID specific to the creating application.
 
 The following creator codes are already in use by various applications:
 
+- ASIMOV2               '!nfc'
 - Bernie ][ the Rescue  'B2TR'
 - Catakig               'CTKG'
+- Ciderpress            'CdrP'
 - Sheppy's ImageMaker   'ShIm'
 - Sweet 16              'WOOF'
+- XGS                   'XGS!'
+
+If you replace the creator type, you should also convert or remove the contents of the creator-specific data chunk.
 
 
 ### The Image Format field ###
@@ -67,4 +71,18 @@ Bit | Description
 31  | If this bit is set, the disk image is locked and no changes should be permitted to the disk data it contains. This is used by emulators to provide support for write-protecting disk images.
 8   | If this bit is set, the low byte of the flags field contains the DOS 3.3 volume number of the disk image. This bit should only be set for DOS 3.3 disk images. If the disk is DOS 3.3 format (the image format is 0), and this bit is 0, volume number 254 is assumed.
 7-0 | The DOS 3.3 volume number, from 0-254, if bit 8 is set. Otherwise these bits should be 0.
+
+
+### Authors ###
+
+The format was developed primarily by Henrik Gudat.  A [newsgroup post]
+(https://groups.google.com/d/msg/comp.emulators.apple2/xhKfAlrMBVU/EkJNLOCweeQJ)
+from December 1997 has a basic explanation, and a page from
+[www.magnet.ch](http://web.archive.org/web/19981206023530/http://www.magnet.ch/emutech/Tech/),
+archived December 1998, describes the format in detail.
+
+A file-type-note-format version was created by Eric Shepherd in March 1999.
+
+This doc, formatted for github-style Markdown, was created by Andy McFadden
+in December 2014.
 
