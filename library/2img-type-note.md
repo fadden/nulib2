@@ -45,7 +45,7 @@ The following creator codes are already in use by various applications:
 - ASIMOV2               '!nfc'
 - Bernie ][ the Rescue  'B2TR'
 - Catakig               'CTKG'
-- Ciderpress            'CdrP'
+- CiderPress            'CdrP'
 - Sheppy's ImageMaker   'ShIm'
 - Sweet 16              'WOOF'
 - XGS                   'XGS!'
@@ -83,6 +83,5 @@ archived December 1998, describes the format in detail.
 
 A file-type-note-format version was created by Eric Shepherd in March 1999.
 
-This doc, formatted for github-style Markdown, was created by Andy McFadden
-in December 2014.
+This doc, formatted for github-style Markdown, was created by Andy McFadden in December 2014.
 
