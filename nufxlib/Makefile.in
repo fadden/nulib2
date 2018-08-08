@@ -34,7 +34,7 @@ OPT			= @CFLAGS@
 #OPT 		= @CFLAGS@ -DDEBUG_MSGS
 #OPT 		= @CFLAGS@ -DDEBUG_VERBOSE
 GCC_FLAGS	= -Wall -Wwrite-strings -Wstrict-prototypes -Wpointer-arith -Wshadow
-CFLAGS		= @BUILD_FLAGS@ -I. @DEFS@ -DOPTFLAGSTR="\"$(OPT)\""
+CFLAGS		= @BUILD_FLAGS@ -I. @DEFS@ -fPIC -DOPTFLAGSTR="\"$(OPT)\""
 
 SRCS		= Archive.c ArchiveIO.c Bzip2.c Charset.c Compress.c Crc16.c \
 			  Debug.c Deferred.c Deflate.c Entry.c Expand.c FileIO.c Funnel.c \
