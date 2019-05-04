@@ -47,7 +47,7 @@ if test $enable_deflate = "yes"; then
     fi
     if $got_zlibh; then
         echo "  (found libz and zlib.h, enabling deflate)"
-        AC_DEFINE(ENABLE_DEFLATE)
+        AC_DEFINE(ENABLE_DEFLATE, [], [Define to include deflate (zlib) compresion (also need -l in Makefile).])
     else
         echo "  (couldn't find libz and zlib.h, not enabling deflate)"
     fi
@@ -67,7 +67,7 @@ if test $enable_bzip2 = "yes"; then
     fi
     if $got_bzlibh; then
         echo "  (found libbz2 and bzlib.h, enabling bzip2)"
-        AC_DEFINE(ENABLE_BZIP2)
+        AC_DEFINE(ENABLE_BZIP2, [], [Define to include bzip2 (libbz2) compression (also need -l in Makefile).])
     else
         echo "  (couldn't find libbz2 and bzlib.h, not enabling bzip2)"
     fi
@@ -138,6 +138,6 @@ AC_SUBST(BUILD_FLAGS)
 
 AC_ARG_ENABLE(dmalloc, [  --enable-dmalloc        do dmalloc stuff], \
     [ echo "--- enabling dmalloc";
-    LIBS="$LIBS -L/usr/local/lib -ldmalloc"; AC_DEFINE(USE_DMALLOC) ])
+    LIBS="$LIBS -L/usr/local/lib -ldmalloc"; AC_DEFINE(USE_DMALLOC, [], [Define if we want to use the dmalloc library (also need -l in Makefile).]) ])
 
 AC_OUTPUT(Makefile)

@@ -42,7 +42,7 @@ AC_CACHE_VAL(nufxlib_cv_snprintf_in_header, [
         [nufxlib_cv_snprintf_in_header=no])
 ])
 if test $nufxlib_cv_snprintf_in_header = "yes"; then
-    AC_DEFINE(SNPRINTF_DECLARED)
+    AC_DEFINE(SNPRINTF_DECLARED, [], [Define it SNPRINTF is declared in stdio.h.])
 fi
 AC_MSG_RESULT($nufxlib_cv_snprintf_in_header)
 
@@ -54,7 +54,7 @@ AC_CACHE_VAL(nufxlib_cv_vsnprintf_in_header, [
         [nufxlib_cv_vsnprintf_in_header=no])
 ])
 if test $nufxlib_cv_vsnprintf_in_header = "yes"; then
-    AC_DEFINE(VSNPRINTF_DECLARED)
+    AC_DEFINE(VSNPRINTF_DECLARED, [], [Define if VSNPRINTF is declared in stdio.h.])
 fi
 AC_MSG_RESULT($nufxlib_cv_vsnprintf_in_header)
 
@@ -138,7 +138,7 @@ AC_CACHE_VAL(nufxlib_cv_sprintf_returns_int, [
 ])
 
 if test $nufxlib_cv_sprintf_returns_int = "yes"; then
-    AC_DEFINE(SPRINTF_RETURNS_INT)
+    AC_DEFINE(SPRINTF_RETURNS_INT, [], [Define if sprintf returns an int.])
 fi
 AC_MSG_RESULT($nufxlib_cv_sprintf_returns_int)
 
@@ -155,21 +155,21 @@ AC_ARG_ENABLE(sq,
     [  --disable-sq            disable SQ compression],
     [ ], [ enable_sq=yes ])
 if test $enable_sq = "yes"; then
-    AC_DEFINE(ENABLE_SQ)
+    AC_DEFINE(ENABLE_SQ, [], [Define to include SQ (Huffman+RLE) compression.])
 fi
 
 AC_ARG_ENABLE(lzw,
     [  --disable-lzw           disable LZW/1 and LZW/2 compression],
     [ ], [ enable_lzw=yes ])
 if test $enable_lzw = "yes"; then
-    AC_DEFINE(ENABLE_LZW)
+    AC_DEFINE(ENABLE_LZW, [], [Define to include LZW (ShrinkIt LZW/1 and LZW/2) compression.])
 fi
 
 AC_ARG_ENABLE(lzc,
     [  --disable-lzc           disable 12- and 16-bit LZC compression],
     [ ], [ enable_lzc=yes ])
 if test $enable_lzc = "yes"; then
-    AC_DEFINE(ENABLE_LZC)
+    AC_DEFINE(ENABLE_LZC, [], [Define to include LZC (12-bit and 16-bit UNIX "compress") compression.])
 fi
 
 AC_ARG_ENABLE(deflate,
@@ -184,7 +184,7 @@ if test $enable_deflate = "yes"; then
     fi
     if $got_zlibh; then
         echo "  (found libz and zlib.h, enabling deflate)"
-        AC_DEFINE(ENABLE_DEFLATE)
+        AC_DEFINE(ENABLE_DEFLATE, [], [Define to include deflate (zlib) compression (also need -l in Makefile).])
     else
         echo "  (couldn't find libz and zlib.h, not enabling deflate)"
     fi
@@ -204,7 +204,7 @@ if test $enable_bzip2 = "yes"; then
     fi
     if $got_bzlibh; then
         echo "  (found libbz2 and bzlib.h, enabling bzip2)"
-        AC_DEFINE(ENABLE_BZIP2)
+        AC_DEFINE(ENABLE_BZIP2, [], [Define to include bzip2 (libbz2) compression (also need -l in Makefile).])
     else
         echo "  (couldn't find libbz2 and bzlib.h, not enabling bzip2)"
     fi
@@ -213,6 +213,6 @@ fi
 
 AC_ARG_ENABLE(dmalloc, [  --enable-dmalloc        do dmalloc stuff],
     [ echo "--- enabling dmalloc";
-    LIBS="$LIBS -L/usr/local/lib -ldmalloc"; AC_DEFINE(USE_DMALLOC) ])
+    LIBS="$LIBS -L/usr/local/lib -ldmalloc"; AC_DEFINE(USE_DMALLOC, [], [Define if we want to use the dmalloc library (also need -l in Makefile).]) ])
 
 AC_OUTPUT(Makefile samples/Makefile)
