@@ -79,7 +79,7 @@ shared::
 	LIB_PRODUCT="libnufx.so" $(MAKE) -e
 
 $(PRODUCT): $(OBJS) $(NUFXLIB)
-	$(CC) -o $@ $(OBJS) -L$(NUFXSRCDIR) -L$(libdir) -lnufx @LIBS@
+	$(CC) $(LDFLAGS) -o $@ $(OBJS) -L$(NUFXSRCDIR) -L$(libdir) -lnufx @LIBS@
 
 clean:
 	-rm -f *.o core
