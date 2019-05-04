@@ -69,7 +69,7 @@ install-shared: $(SHARED_PRODUCT)
 	$(srcdir)/mkinstalldirs $(includedir)
 	$(INSTALL_DATA) NufxLib.h $(includedir)
 
-samples::
+samples:: $(STATIC_PRODUCT)
 	@echo "Building samples..."
 	@(cd samples; set +e; unset CFLAGS OBJS; set -e; \
 		@SET_MAKE@ LIB_PRODUCT="../$(PRODUCT)" $(MAKE))
