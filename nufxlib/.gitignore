@@ -3,6 +3,7 @@ Makefile
 config.h
 config.log
 config.status
+nufxlib.pc
 
 # generated binaries
 libnufx.a
