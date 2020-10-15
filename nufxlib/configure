@@ -626,6 +626,7 @@ BUILD_FLAGS
 EGREP
 GREP
 CPP
+NUFX_VERSION
 RANLIB
 SET_MAKE
 INSTALL_DATA
@@ -3273,6 +3274,10 @@ else
 fi
 
 
+NUFX_VERSION=3.1.0
+
+
+
 
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
@@ -4220,7 +4225,7 @@ if test "${enable_dmalloc+set}" = set; then :
 fi
 
 
-ac_config_files="$ac_config_files Makefile samples/Makefile"
+ac_config_files="$ac_config_files Makefile samples/Makefile nufxlib.pc"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -4915,6 +4920,7 @@ do
     "config.h") CONFIG_HEADERS="$CONFIG_HEADERS config.h" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "samples/Makefile") CONFIG_FILES="$CONFIG_FILES samples/Makefile" ;;
+    "nufxlib.pc") CONFIG_FILES="$CONFIG_FILES nufxlib.pc" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac
