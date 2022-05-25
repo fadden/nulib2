@@ -24,12 +24,13 @@
 <!--msnavigation--><msnavigation border="0" cellpadding="0" cellspacing="0" dir="ltr" width="100%"><tr><!--msnavigation--><msnavigation valign="top"><msnavigation border="0" cellpadding="0" cellspacing="0" width="100%"><msnavigation border="0" cellpadding="0" cellspacing="0" dir="ltr" width="100%"><tr><msnavigation valign="top"><msnavigation border="0" cellpadding="0" cellspacing="0" width="100%"><msnavigation border="0" cellpadding="0" cellspacing="0" width="100%"><tr><msnavigation valign="top">
 
 
-<h6>NuFX Addendum - <b>By Andy McFadden - Last revised 2015/01/09</b></h6>
+<h6>NuFX Addendum - <b>By Andy McFadden - Last revised 2022/05/25</b></h6>
 <p align="left">This addendum clarifies and extends certain aspects of the <a href="FTN.e08002.htm"> NuFX
 specification</a>.&nbsp; This is not an &quot;official&quot; modification
 of the original document - it has not been reviewed and approved by
 the original author - but anyone developing NuFX utilities would do
 well to follow these recommendations.</p>
+
 <h2 align="left">Purpose</h2>
 <p align="left">The NuFX specification defines&nbsp;a very loose structure, and
 leaves much to the imagination of the implementer.&nbsp; For example, &quot;If a
@@ -428,20 +429,27 @@ or CRLF, and convert as needed for display.&nbsp; GS/ShrinkIt used a
 proportional font, so there is no need to worry about formatting to preserve &quot;ASCII art&quot; in
 comments.</p>
 <p align="left">&nbsp;</p>
+
 <h3 align="left">GS/OS option lists</h3>
 <p align="left">Files archived from HFS AppleShare volumes come with
 &quot;option lists&quot;, a GS/OS feature that provides a way for non-ProDOS
-filesystem information to be preserved.&nbsp; GS/ShrinkIt tries to save this
-information, but it doesn't seem to do a very good job.&nbsp; It appears to drop
-a big chunk of the data without altering the size (e.g. the size field says 36
-bytes, but there's only space for 18 bytes in the record header).</p>
+filesystem information to be preserved (e.g. the HFS FInfo and FXInfo data).
+GS/ShrinkIt tries to save this information, but it doesn't seem to do a very good job.
+Sometimes it appears to drop some of the data without altering the size, e.g. the
+size field says 36 bytes, but there's only space for 18 bytes in the record header.
+(ProDOS technote #25 suggests this could relate to the ProDOS FSM on
+a Macintosh with a //e card.)</p>
 <p align="left">GS/ShrinkIt seems to work correctly whether the option list size
 is correct or not, so other applications should do the same.</p>
+<p>Side note: the NuFX specification reversed the values of MFS and HFS
+in the file_sys_id definition.  In practice, GS/ShrinkIt correctly uses the
+GS/OS FST definitions: MFS=5, HFS=6.</p>
 <p align="left"><b>Opening:</b> Assume the option_size field is correct
 unless it exceeds attrib_count-2.&nbsp; If it's too large, clip it down to size.</p>
 <p align="left"><b>Updating:</b> Always use the actual size.&nbsp; Do not
 propagate incorrect values.&nbsp; Discarding existing option lists is
 discouraged but allowed.</p>
+
 <p align="left">&nbsp;</p>
 <h3 align="left">Master EOF</h3>
 <p align="left">For the most part, ShrinkIt correctly sets the MasterEOF field
