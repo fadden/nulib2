@@ -430,25 +430,43 @@ proportional font, so there is no need to worry about formatting to preserve &qu
 comments.</p>
 <p align="left">&nbsp;</p>
 
-<h3 align="left">GS/OS option lists</h3>
-<p align="left">Files archived from HFS AppleShare volumes come with
-&quot;option lists&quot;, a GS/OS feature that provides a way for non-ProDOS
-filesystem information to be preserved (e.g. the HFS FInfo and FXInfo data).
-GS/ShrinkIt tries to save this information, but it doesn't seem to do a very good job.
-Sometimes it appears to drop some of the data without altering the size, e.g. the
-size field says 36 bytes, but there's only space for 18 bytes in the record header.
-(ProDOS technote #25 suggests this could relate to the ProDOS FSM on
-a Macintosh with a //e card.)</p>
-<p align="left">GS/ShrinkIt seems to work correctly whether the option list size
-is correct or not, so other applications should do the same.</p>
+<h3>GS/OS option lists and HFS file types</h3>
+<p>Files on HFS volumes have two four-byte values, called file type and
+creator, that identify the file contents.  These are part of the
+Macintosh Finder info structures, called FInfo and FXInfo.
+Files copied from HFS to ProDOS may have this data stored in the extended
+key block of a forked file (see ProDOS technical note #25).  This appears
+as two 18-byte chunks, consisting of a size byte followed by a type
+byte, and then 16 bytes of FInfo or FXInfo data.
+To expose the data to applications, GS/OS returns an "option list"
+with the contents on certain calls.  Most of the fields are uninteresting
+to anything but the Mac Finder, so the option list may be viewed simply
+as a way to preserve the file type and creator.</p>
+
+<p>GS/ShrinkIt tries to record this data, but doesn't entirely succeed.  A
+file archived from HFS will have a 36-byte option list in the record, but
+with the size/type bytes removed, and some extra junk near the end.  In some
+archives it appears to drop some of the data without altering the size,
+e.g. the size field says 36 bytes, but there's only space for 18 bytes
+in the record header.</p>
+<p>Unfortunately, when archiving files from an HFS volume under GS/OS,
+GSHK records the ProDOS type/auxtype rather than the full HFS file type
+and creator (likely because that's what GS/OS provides). The only way to
+recover the original Finder types is through the malformed option list.</p>
 <p>Side note: the NuFX specification reversed the values of MFS and HFS
-in the file_sys_id definition.  In practice, GS/ShrinkIt correctly uses the
-GS/OS FST definitions: MFS=5, HFS=6.</p>
-<p align="left"><b>Opening:</b> Assume the option_size field is correct
-unless it exceeds attrib_count-2.&nbsp; If it's too large, clip it down to size.</p>
-<p align="left"><b>Updating:</b> Always use the actual size.&nbsp; Do not
-propagate incorrect values.&nbsp; Discarding existing option lists is
-discouraged but allowed.</p>
+in the file_sys_id enumeration.  In practice, GS/ShrinkIt
+correctly uses the GS/OS FST definitions: MFS=5, HFS=6.</p>
+<p><b>Opening:</b> Assume the option_size field is correct
+unless it exceeds attrib_count-2. If it's too large, clip it down to size.
+If the filesystem type is ProDOS or HFS, and the first 8 bytes look like
+ASCII, use the first 4 bytes of the option list data as the file type and
+the second 4 bytes as the creator.</p>
+<p><b>Updating:</b> Always use the actual size. Do not
+propagate incorrect values. Retaining option lists for ProDOS and HFS
+entries is required, since that may have the only record of the original
+file type and creator.  Updates to the archive attributes that alter
+the file/aux type should modify the values in the record and delete the
+option list, or provide a way to edit the option list independently.</p>
 
 <p align="left">&nbsp;</p>
 <h3 align="left">Master EOF</h3>
