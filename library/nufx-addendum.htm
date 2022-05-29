@@ -24,7 +24,7 @@
 <!--msnavigation--><msnavigation border="0" cellpadding="0" cellspacing="0" dir="ltr" width="100%"><tr><!--msnavigation--><msnavigation valign="top"><msnavigation border="0" cellpadding="0" cellspacing="0" width="100%"><msnavigation border="0" cellpadding="0" cellspacing="0" dir="ltr" width="100%"><tr><msnavigation valign="top"><msnavigation border="0" cellpadding="0" cellspacing="0" width="100%"><msnavigation border="0" cellpadding="0" cellspacing="0" width="100%"><tr><msnavigation valign="top">
 
 
-<h6>NuFX Addendum - <b>By Andy McFadden - Last revised 2022/05/25</b></h6>
+<h6>NuFX Addendum - <b>By Andy McFadden - Last revised 2022/05/28</b></h6>
 <p align="left">This addendum clarifies and extends certain aspects of the <a href="FTN.e08002.htm"> NuFX
 specification</a>.&nbsp; This is not an &quot;official&quot; modification
 of the original document - it has not been reviewed and approved by
@@ -36,10 +36,9 @@ well to follow these recommendations.</p>
 leaves much to the imagination of the implementer.&nbsp; For example, &quot;If a
 utility finds a redundancy in a Thread Record, it must decide whether to skip
 the record or to do something with that particular thread...&quot;.&nbsp;
-A strict specification would declare that the situation must never arise, and
-define a standard approach for dealing with the anomalous condition.&nbsp; The
-current specification declares that the situation may arise, and
-requires the application author to come up with a solution.</p>
+A strict specification would define a standard approach that all applications
+must follow when dealing with the anomalous condition, to ensure consistent
+handling of all archives.</p>
 <p align="left">This document refines the NuFX specification and brings some of
 the &quot;fuzzy&quot; areas into sharper focus.&nbsp; Nothing in this document
 contravenes the original document.</p>
@@ -72,6 +71,7 @@ the application should recognize that the archive is empty and proceed as if it
 were a new archive.</p>
 <p align="left"><b>Modifying:</b> If all records in an archive are deleted, the
 archive file must be deleted as well.</p>
+
 <p align="left">&nbsp;</p>
 <h3 align="left"> Records with no threads</h3>
 <p align="left">A record without threads is pretty pointless.</p>
@@ -130,69 +130,87 @@ It's okay to leave existing records alone, but if an application has the
 opportunity to rewrite the record header, the record filename must be removed.<p align="left"><b>Extracting:</b>
 The thread filename takes precedence over the record header filename.<p align="left">
 &nbsp;<h3 align="left">Filename character set</h3>
-<p align="left">Filenames in NuFX archives use the Mac OS Roman character set, 
-which is ASCII plus some symbols and the usual set of latin language characters 
+<p align="left">Filenames in NuFX archives use the Mac OS Roman character set,
+which is ASCII plus some symbols and the usual set of latin language characters
 (see <a href="http://www.unicode.org/Public/MAPPINGS/VENDORS/APPLE/ROMAN.TXT">
-Unicode definition</a>).&nbsp; The NuFX filename definition was intended to 
-accommodate files from HFS volumes, which may contain any character except ':'.&nbsp; 
+Unicode definition</a>).&nbsp; The NuFX filename definition was intended to
+accommodate files from HFS volumes, which may contain any character except ':'.&nbsp;
 Control characters, including NUL ('\0'), were allowed but discouraged.<p align="left">
-On modern systems, converting between Mac OS Roman and Unicode is useful and 
-(mostly) straightforward.&nbsp; Dealing with embedded null bytes is very 
-annoying in C-like languages though.<p align="left"><strong>Creating:</strong> 
-Convert Unicode to Mac OS Roman, replacing any untranslatable characters with 
-'?'.&nbsp; Embedded nulls must be replaced with '?'.<p align="left"><strong>
-Extracting:</strong> Convert Mac OS Roman to Unicode.&nbsp; If embedded nulls 
-are encountered, they should be replaced with something appropriate for the 
-current system.&nbsp; Applications are allowed to ignore the problem and 
-truncate the filename, but must be prepared to handle duplicate or empty 
-filenames.<p align="left">&nbsp;<h3 align="left">File
-system separator characters</h3>
+On modern systems, converting between Mac OS Roman and Unicode is useful and
+(mostly) straightforward.&nbsp; Dealing with embedded null bytes is very
+annoying in C-like languages though.<p align="left"><strong>Creating:</strong>
+Convert Unicode to Mac OS Roman, replacing any untranslatable characters with
+'?'.&nbsp; Embedded nulls must be replaced with '?'.</p>
+<p align="left"><strong>Extracting:</strong> Convert Mac OS Roman to Unicode.&nbsp; If embedded nulls
+are encountered, they should be replaced with something appropriate for the
+current system.&nbsp; Applications are allowed to ignore the problem and
+truncate the filename, but must be prepared to handle duplicate or empty
+filenames.</p>
+
+<p align="left">&nbsp;</p>
+<h3 align="left">File system separator characters</h3>
 <p align="left">Every record header has a &quot;file system separator&quot;
 character (&quot;fssep&quot;) in the &quot;file_sys_info&quot; word.&nbsp; This
 is usually something like ':' for GS/OS or '/' for UNIX.&nbsp; It's necessary to
 know what the separator is in order to break a pathname down into its individual
-components.<p align="left">Not all filesystems support subdirectories, however,
+components.</p>
+<p align="left">Not all filesystems support subdirectories, however,
 which means that not all filenames need to have a separator.&nbsp; The
 appropriate separator character for such a filesystem is not defined in the NuFX
 spec.&nbsp; Clearly it should be something illegal on the source filesystem, or
 we could inadvertently see pathnames where they don't exist (e.g. a file called
-&quot;foo:bar&quot; on DOS 3.3 if the fssep char were set to ':').<p align="left">The
-trouble is, DOS 3.3 doesn't actually have any illegal characters, just a field
+&quot;foo:bar&quot; on DOS 3.3 if the fssep char were set to ':').</p>
+<p align="left">The trouble is, DOS 3.3 doesn't actually have any illegal characters, just a field
 of 30 characters padded with spaces.&nbsp; Pascal disks are similar.&nbsp; Since
 we must define an fssep for every filename, our best choice is to use '\0'
 (0x00), because it's unlikely to occur, and any program that stores names in C
-strings will find it awkward to store and scan for '\0'.<p align="left">This
-situation also applies to archived disk images, which must be simple filenames.<p align="left">(NOTE:
-as of v2.0.3, NufxLib rejects 0x00 as an fssep character.&nbsp; This is a bug.)<p align="left"><b>Creating:</b>
-When adding files directly from filesystems without subdirectories, use 0x00 as
-the fssep char.<p align="left"><b>Extracting:</b> An fssep char of 0x00 means
-the pathname is just the filename.<p align="left">&nbsp;<h3 align="left">Disk
-image pathnames</h3>
+strings will find it awkward to store and scan for '\0'.</p>
+<p align="left">This situation also applies to archived disk images, which must
+be simple filenames.</p>
+<p>The application should have some understanding of which filesystems
+have subdirectories and which don't, which would allow it to disregard the
+fssep char when it can't be relevant for a record, but it's easier to
+let the fssep char's usefulness be self-evident.</p>
+<p align="left">(NOTE:
+as of v2.0.3, NufxLib rejects 0x00 as an fssep character.&nbsp; This is a bug.)</p>
+
+<p align="left"><b>Creating:</b> When adding files directly from filesystems without subdirectories, use 0x00 as
+the fssep char.</p>
+<p align="left"><b>Extracting:</b> An fssep char of 0x00 means
+the pathname is just the filename.</p>
+
+<p align="left">&nbsp;</p>
+<h3 align="left">Disk image pathnames</h3>
 <p align="left">While files may have multiple path components (e.g.
 &quot;subdir:subdir2:filename&quot;), it makes no sense for disk images to have
 them.&nbsp; The stored filename for a disk is either the disk's ProDOS volume
 name, or for non-ProDOS disks, a simple label defined by the user.&nbsp; Since
 the eventual target is a disk device, specifying a subdirectory path makes no
-sense.<p align="left">The issue becomes a little more confusing when storage of
+sense.</p>
+<p align="left">The issue becomes a little more confusing when storage of
 disk images used for emulators is considered.&nbsp; At first glance, it seems
 useful to be able to store a hierarchy of disk images.&nbsp; In practice, such
 images would either be archived as a hierarchy of .PO files, or as an archive of
-.SDK archives.<p align="left"><b>Adding/renaming</b> Applications must
+.SDK archives.</p>
+<p align="left"><b>Adding/renaming</b> Applications must
 strip any leading path components from disk image &quot;storage names&quot;.&nbsp;
 (The NuFX specification does explicitly forbid the use of a filesystem separator
-character in a disk volume name.)<p align="left"><b>Extracting:</b>
+character in a disk volume name.)</p>
+<p align="left"><b>Extracting:</b>
 Applications extracting directly to a disk must strip leading path components
 before assigning the ProDOS volume name.&nbsp; Applications extracting images to
 a file don't need to do anything unusual.
 
-<p align="left">&nbsp;<h3 align="left">Filename case sensitivity</h3>
+<p align="left">&nbsp;</p>
+<h3 align="left">Filename case sensitivity</h3>
 <p align="left">There isn't a &quot;filename is case-sensitive&quot; flag in
 NuFX archives.&nbsp; Since it was designed primarily for ProDOS and HFS
 filesystems, neither of which is case-sensitive, we should assume that case is
 not meant to be significant when determining whether two records have the same
 filename.&nbsp; This becomes important when adding files (to test for
 duplicates), extracting files by name, and when attempting
-to display archive contents as a hierarchical tree.<p align="left">Applications
+to display archive contents as a hierarchical tree.</p>
+<p align="left">Applications
 should try to recognize that &quot;foo/bar&quot;, &quot;foo/BAR&quot;, and
 &quot;FOO/bar&quot; are the same file, but it's probably not worth
 &quot;probing&quot; a case-sensitive filesystem like Linux ext2 to guarantee
@@ -258,18 +276,12 @@ comments as the file is being downloaded.</p>
 threads.&nbsp; The recommended (but not required) ordering for common thread
 types is:</p>
 <ul>
-  <li>
-    <p align="left">Filename</li>
-  <li>
-    <p align="left">Message(s) (i.e. comments)</li>
-  <li>
-    <p align="left">Data fork</li>
-  <li>
-    <p align="left">Disk image</li>
-  <li>
-    <p align="left">Resource fork</li>
-  <li>
-    <p align="left">all other threads</li>
+  <li>Filename</li>
+  <li>Message(s) (i.e. comments)</li>
+  <li>Data fork</li>
+  <li>Disk image</li>
+  <li>Resource fork</li>
+  <li>all other threads</li>
 </ul>
 <p align="left"><b>Extracting:</b> If the filename thread does not appear before
 the first data-class thread, the record may be ignored.</p>
@@ -279,17 +291,13 @@ the first data-class thread, the record may be ignored.</p>
 a single record.</p>
 <p align="left"><b>Creating:</b></p>
 <ul>
-  <li>
-    <p align="left">If a <b>data fork</b> is present, the record must not
+  <li> If a <b>data fork</b> is present, the record must not
     contain another data fork or a disk image.</li>
-  <li>
-    <p align="left">If a <b>resource fork</b> is present, the record must not
+  <li> If a <b>resource fork</b> is present, the record must not
     contain another resource fork or a disk image.</li>
-  <li>
-    <p align="left">If a <b>disk image</b> is present, the record must not
+  <li> If a <b>disk image</b> is present, the record must not
     contain another disk image, a data fork, or a resource fork.</li>
-  <li>
-    <p align="left">If a <b>control-class thread</b> is present, the record must
+  <li> If a <b>control-class thread</b> is present, the record must
     not contain any data-class threads.</li>
 </ul>
 <p align="left"><b>Extracting:</b> When incompatible threads are found, they
@@ -419,10 +427,10 @@ exist.</p>
 <h3 align="left">Message thread format</h3>
 <p align="left">The specification says that message threads are ASCII text, but
 doesn't specify an EOL character.&nbsp; For the benefit of Apple II utilities,
-it's best to use a carriage return (ctrl-M).&nbsp; The comments are expected to 
-be readable on 8-bit Apple IIs, so plain ASCII rather than Mac OS Roman should 
+it's best to use a carriage return (ctrl-M).&nbsp; The comments are expected to
+be readable on 8-bit Apple IIs, so plain ASCII rather than Mac OS Roman should
 be used.</p>
-<p align="left"><b>Creating:</b> Convert any EOL markers to CR, and any 
+<p align="left"><b>Creating:</b> Convert any EOL markers to CR, and any
 non-ASCII characters (i.e. bytes with the high bit set) to ASCII.</p>
 <p align="left"><b>Extracting:</b> Assume that the comment may be using CR, LF,
 or CRLF, and convert as needed for display.&nbsp; GS/ShrinkIt used a
@@ -432,41 +440,56 @@ comments.</p>
 
 <h3>GS/OS option lists and HFS file types</h3>
 <p>Files on HFS volumes have two four-byte values, called file type and
-creator, that identify the file contents.  These are part of the
-Macintosh Finder info structures, called FInfo and FXInfo.
-Files copied from HFS to ProDOS may have this data stored in the extended
-key block of a forked file (see ProDOS technical note #25).  This appears
-as two 18-byte chunks, consisting of a size byte followed by a type
-byte, and then 16 bytes of FInfo or FXInfo data.
-To expose the data to applications, GS/OS returns an "option list"
-with the contents on certain calls.  Most of the fields are uninteresting
-to anything but the Mac Finder, so the option list may be viewed simply
-as a way to preserve the file type and creator.</p>
+creator, that identify the file contents.  These are part of the Macintosh
+Finder info structures, called FInfo and FXInfo.  Files copied from HFS
+to ProDOS may have this data stored in the extended key block of a forked
+file (see ProDOS technical note #25).  This appears as two 18-byte chunks,
+consisting of a size byte followed by a type byte, and then 16 bytes of
+FInfo or FXInfo data (which are defined in <i>Inside Macintosh: Macintosh
+Toolbox Essentials</i>, page 7-47).  To expose the data to applications,
+certain GS/OS calls pass an "option list" with the contents.  Most of
+the fields are uninteresting to anything but the Mac Finder, so for our
+purposes the option list may be viewed simply as a way to preserve the
+file type and creator.</p>
 
-<p>GS/ShrinkIt tries to record this data, but doesn't entirely succeed.  A
-file archived from HFS will have a 36-byte option list in the record, but
-with the size/type bytes removed, and some extra junk near the end.  In some
-archives it appears to drop some of the data without altering the size,
-e.g. the size field says 36 bytes, but there's only space for 18 bytes
-in the record header.</p>
+<p>Experiments with the GS/OS exerciser reveal that the option list doesn't
+include the size/type bytes.  For an HFS file copied to ProDOS with GS/OS,
+the GetFileInfo call returns a 32-byte buffer that begins with FInfo.
+When called on an HFS volume, the option list is 36 bytes, with the last
+four bytes set to 02 00 00 00.  GSHK appears to record these exactly as
+it receives them, which means the first four bytes hold the HFS file type,
+and the second four bytes hold the HFS creator.  Because most of the
+fields only have meaning to the Macintosh finder, the rest of the data is
+zeroes.  Files archived from an HFS volume created by a Macintosh would
+presumably have nonzero data in more places.</p>
+
+<p>Sometimes the option list is a little messed up, e.g. the size field
+says 36 bytes, but there's only space for 18 bytes in the record header.</p>
 <p>Unfortunately, when archiving files from an HFS volume under GS/OS,
 GSHK records the ProDOS type/auxtype rather than the full HFS file type
 and creator (likely because that's what GS/OS provides). The only way to
-recover the original Finder types is through the malformed option list.</p>
+recover the original Mac Finder types is through the option list.</p>
 <p>Side note: the NuFX specification reversed the values of MFS and HFS
 in the file_sys_id enumeration.  In practice, GS/ShrinkIt
 correctly uses the GS/OS FST definitions: MFS=5, HFS=6.</p>
 <p><b>Opening:</b> Assume the option_size field is correct
 unless it exceeds attrib_count-2. If it's too large, clip it down to size.
-If the filesystem type is ProDOS or HFS, and the first 8 bytes look like
+If the filesystem type is ProDOS or HFS, and the second 4 bytes look like
 ASCII, use the first 4 bytes of the option list data as the file type and
 the second 4 bytes as the creator.</p>
-<p><b>Updating:</b> Always use the actual size. Do not
-propagate incorrect values. Retaining option lists for ProDOS and HFS
-entries is required, since that may have the only record of the original
-file type and creator.  Updates to the archive attributes that alter
-the file/aux type should modify the values in the record and delete the
-option list, or provide a way to edit the option list independently.</p>
+<p><b>Creating:</b> For broadest compatibility it would be best to store
+a ProDOS type/auxtype in the record header, and generate a filesystem-specific
+option list with the HFS Finder types (i.e. 32 bytes for ProDOS or 36
+bytes for HFS).  For an HFS record, simply using the four-byte HFS types
+is allowed.</p>
+<p><b>Updating:</b> Always output the actual record size. Do not propagate
+incorrect size values. Retaining option lists for ProDOS and HFS entries
+is required, since they may have the only copy of the original file type
+and creator.  Updates to the archive attributes that alter the file/aux
+type should usually retain the option list, since the purpose may be to
+improve ProDOS usability without losing the original type information.
+However, applications are allowed to delete the option list in this case,
+especially if it is storing the full HFS types in the record.</p>
 
 <p align="left">&nbsp;</p>
 <h3 align="left">Master EOF</h3>
