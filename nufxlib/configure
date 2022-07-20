@@ -666,6 +666,7 @@ infodir
 docdir
 oldincludedir
 includedir
+runstatedir
 localstatedir
 sharedstatedir
 sysconfdir
@@ -742,6 +743,7 @@ datadir='${datarootdir}'
 sysconfdir='${prefix}/etc'
 sharedstatedir='${prefix}/com'
 localstatedir='${prefix}/var'
+runstatedir='${localstatedir}/run'
 includedir='${prefix}/include'
 oldincludedir='/usr/include'
 docdir='${datarootdir}/doc/${PACKAGE}'
@@ -994,6 +996,15 @@ do
   | -silent | --silent | --silen | --sile | --sil)
     silent=yes ;;
 
+  -runstatedir | --runstatedir | --runstatedi | --runstated \
+  | --runstate | --runstat | --runsta | --runst | --runs \
+  | --run | --ru | --r)
+    ac_prev=runstatedir ;;
+  -runstatedir=* | --runstatedir=* | --runstatedi=* | --runstated=* \
+  | --runstate=* | --runstat=* | --runsta=* | --runst=* | --runs=* \
+  | --run=* | --ru=* | --r=*)
+    runstatedir=$ac_optarg ;;
+
   -sbindir | --sbindir | --sbindi | --sbind | --sbin | --sbi | --sb)
     ac_prev=sbindir ;;
   -sbindir=* | --sbindir=* | --sbindi=* | --sbind=* | --sbin=* \
@@ -1131,7 +1142,7 @@ fi
 for ac_var in	exec_prefix prefix bindir sbindir libexecdir datarootdir \
 		datadir sysconfdir sharedstatedir localstatedir includedir \
 		oldincludedir docdir infodir htmldir dvidir pdfdir psdir \
-		libdir localedir mandir
+		libdir localedir mandir runstatedir
 do
   eval ac_val=\$$ac_var
   # Remove trailing slashes.
@@ -1284,6 +1295,7 @@ Fine tuning of the installation directories:
   --sysconfdir=DIR        read-only single-machine data [PREFIX/etc]
   --sharedstatedir=DIR    modifiable architecture-independent data [PREFIX/com]
   --localstatedir=DIR     modifiable single-machine data [PREFIX/var]
+  --runstatedir=DIR       modifiable per-process data [LOCALSTATEDIR/run]
   --libdir=DIR            object code libraries [EPREFIX/lib]
   --includedir=DIR        C header files [PREFIX/include]
   --oldincludedir=DIR     C header files for non-gcc [/usr/include]
@@ -3922,7 +3934,8 @@ rm -f conftest*
 fi
 
 if test $nufxlib_cv_snprintf_in_header = "yes"; then
-    $as_echo "#define SNPRINTF_DECLARED 1" >>confdefs.h
+
+$as_echo "#define SNPRINTF_DECLARED /**/" >>confdefs.h
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $nufxlib_cv_snprintf_in_header" >&5
@@ -3951,7 +3964,8 @@ rm -f conftest*
 fi
 
 if test $nufxlib_cv_vsnprintf_in_header = "yes"; then
-    $as_echo "#define VSNPRINTF_DECLARED 1" >>confdefs.h
+
+$as_echo "#define VSNPRINTF_DECLARED /**/" >>confdefs.h
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $nufxlib_cv_vsnprintf_in_header" >&5
@@ -4037,7 +4051,8 @@ fi
 
 
 if test $nufxlib_cv_sprintf_returns_int = "yes"; then
-    $as_echo "#define SPRINTF_RETURNS_INT 1" >>confdefs.h
+
+$as_echo "#define SPRINTF_RETURNS_INT /**/" >>confdefs.h
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $nufxlib_cv_sprintf_returns_int" >&5
@@ -4052,7 +4067,8 @@ else
 fi
 
 if test $enable_sq = "yes"; then
-    $as_echo "#define ENABLE_SQ 1" >>confdefs.h
+
+$as_echo "#define ENABLE_SQ /**/" >>confdefs.h
 
 fi
 
@@ -4064,7 +4080,8 @@ else
 fi
 
 if test $enable_lzw = "yes"; then
-    $as_echo "#define ENABLE_LZW 1" >>confdefs.h
+
+$as_echo "#define ENABLE_LZW /**/" >>confdefs.h
 
 fi
 
@@ -4076,7 +4093,8 @@ else
 fi
 
 if test $enable_lzc = "yes"; then
-    $as_echo "#define ENABLE_LZC 1" >>confdefs.h
+
+$as_echo "#define ENABLE_LZC /**/" >>confdefs.h
 
 fi
 
@@ -4141,7 +4159,8 @@ fi
     fi
     if $got_zlibh; then
         echo "  (found libz and zlib.h, enabling deflate)"
-        $as_echo "#define ENABLE_DEFLATE 1" >>confdefs.h
+
+$as_echo "#define ENABLE_DEFLATE /**/" >>confdefs.h
 
     else
         echo "  (couldn't find libz and zlib.h, not enabling deflate)"
@@ -4209,7 +4228,8 @@ fi
     fi
     if $got_bzlibh; then
         echo "  (found libbz2 and bzlib.h, enabling bzip2)"
-        $as_echo "#define ENABLE_BZIP2 1" >>confdefs.h
+
+$as_echo "#define ENABLE_BZIP2 /**/" >>confdefs.h
 
     else
         echo "  (couldn't find libbz2 and bzlib.h, not enabling bzip2)"
@@ -4220,7 +4240,8 @@ fi
 # Check whether --enable-dmalloc was given.
 if test "${enable_dmalloc+set}" = set; then :
   enableval=$enable_dmalloc;  echo "--- enabling dmalloc";
-    LIBS="$LIBS -L/usr/local/lib -ldmalloc"; $as_echo "#define USE_DMALLOC 1" >>confdefs.h
+    LIBS="$LIBS -L/usr/local/lib -ldmalloc";
+$as_echo "#define USE_DMALLOC /**/" >>confdefs.h
 
 fi
 
