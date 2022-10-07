@@ -24,9 +24,10 @@
 <!--msnavigation--><msnavigation border="0" cellpadding="0" cellspacing="0" dir="ltr" width="100%"><tr><!--msnavigation--><msnavigation valign="top"><msnavigation border="0" cellpadding="0" cellspacing="0" width="100%"><msnavigation border="0" cellpadding="0" cellspacing="0" dir="ltr" width="100%"><tr><msnavigation valign="top"><msnavigation border="0" cellpadding="0" cellspacing="0" width="100%"><msnavigation border="0" cellpadding="0" cellspacing="0" width="100%"><tr><msnavigation valign="top">
 
 
-<h6>NuFX Addendum - <b>By Andy McFadden - Last revised 2022/05/28</b></h6>
-<p align="left">This addendum clarifies and extends certain aspects of the <a href="FTN.e08002.htm"> NuFX
-specification</a>.&nbsp; This is not an &quot;official&quot; modification
+<h6>NuFX Addendum - <b>By Andy McFadden - Last revised 2022/10/07</b></h6>
+<p align="left">This addendum clarifies and extends certain aspects of the
+<a href="FTN.e08002.htm"> NuFX specification</a>. This is not an
+&quot;official&quot; modification
 of the original document - it has not been reviewed and approved by
 the original author - but anyone developing NuFX utilities would do
 well to follow these recommendations.</p>
@@ -48,11 +49,10 @@ are strongly encouraged to follow.</p>
 <hr>
 <h2 align="left"> Clarifications</h2>
 <h3 align="left"> Pronunciation</h3>
-<p align="left">What's the correct way to pronounce &quot;NuFX&quot;?&nbsp; The
-specification doesn't say.&nbsp; There are two basic camps, letter-by-letter
-(&quot;en you eff ecks&quot;) and minimal-syllable (&quot;new fix&quot; or
-&quot;new fuchs&quot;).&nbsp; I don't recall how Andy Nicholas says it, so let
-it be &quot;new fix&quot;.</p>
+<p align="left">What's the correct way to pronounce &quot;NuFX&quot;? One
+approach is letter-by-letter ("en you eff ecks"), another is minimal-syllable
+("new fix").  According to the file type note, it's a bit of both ("new eff ecks").</p>
+
 <p align="left">&nbsp;</p>
 <h3 align="left">Use of &quot;.SDK&quot; suffix</h3>
 <p align="left">Originally, only &quot;.SHK&quot; was used to represent a NuFX
@@ -60,21 +60,25 @@ archive.&nbsp; Over time, a convention of using &quot;.SDK&quot; to represent
 archives with a single disk image in them has arisen.&nbsp; This is very
 convenient for emulators on systems that rely on the file extension (e.g.
 Windows), so use of &quot;.SDK&quot; is encouraged.</p>
+
 <p align="left">&nbsp;</p>
 <h3 align="left">Archives with no records</h3>
 <p align="left">An archive without records, i.e. nothing but a master header
-block, serves no purpose.</p>
-<p align="left"><b>Creating:</b> Archives without any records in them must never
-be created.&nbsp; All archives must have at least one record.</p>
+block, serves no purpose.  However, it can be useful to have a "create new
+archive" operation that creates an empty file to be populated later.</p>
+<p align="left"><b>Creating:</b> Archives without any records in them may be
+created.</p>
 <p align="left"><b>Opening:</b> If asked to open a record-less archive,
 the application should recognize that the archive is empty and proceed as if it
 were a new archive.</p>
 <p align="left"><b>Modifying:</b> If all records in an archive are deleted, the
-archive file must be deleted as well.</p>
+archive file should be deleted as well.</p>
 
 <p align="left">&nbsp;</p>
 <h3 align="left"> Records with no threads</h3>
-<p align="left">A record without threads is pretty pointless.</p>
+<p align="left">A record without threads is pretty pointless.  The initial
+release of the NuFX spec mandated that there be at least one thread attached
+to each record, but this language was removed from later versions.</p>
 <p align="left"><b>Creating:</b> Records without threads must never be
 created.&nbsp; All records must have at least one thread.</p>
 <p align="left"><b>Extracting: </b>Empty records should be ignored.</p>
@@ -128,23 +132,27 @@ where the filename may live, and no guarantee that only one will be used..<p ali
 Never put the filename in the record header when creating a new record.&nbsp;
 It's okay to leave existing records alone, but if an application has the
 opportunity to rewrite the record header, the record filename must be removed.<p align="left"><b>Extracting:</b>
-The thread filename takes precedence over the record header filename.<p align="left">
+The thread filename takes precedence over the record header filename.
+
+<p align="left">
 &nbsp;<h3 align="left">Filename character set</h3>
 <p align="left">Filenames in NuFX archives use the Mac OS Roman character set,
 which is ASCII plus some symbols and the usual set of latin language characters
 (see <a href="http://www.unicode.org/Public/MAPPINGS/VENDORS/APPLE/ROMAN.TXT">
 Unicode definition</a>).&nbsp; The NuFX filename definition was intended to
 accommodate files from HFS volumes, which may contain any character except ':'.&nbsp;
-Control characters, including NUL ('\0'), were allowed but discouraged.<p align="left">
+Control characters, including NUL ('\0'), were allowed but discouraged.
+<p align="left">
 On modern systems, converting between Mac OS Roman and Unicode is useful and
 (mostly) straightforward.&nbsp; Dealing with embedded null bytes is very
-annoying in C-like languages though.<p align="left"><strong>Creating:</strong>
+annoying in C-like languages though.
+<p align="left"><strong>Creating:</strong>
 Convert Unicode to Mac OS Roman, replacing any untranslatable characters with
-'?'.&nbsp; Embedded nulls must be replaced with '?'.</p>
+'?'.&nbsp; Embedded nulls may be replaced with '?'.</p>
 <p align="left"><strong>Extracting:</strong> Convert Mac OS Roman to Unicode.&nbsp; If embedded nulls
-are encountered, they should be replaced with something appropriate for the
-current system.&nbsp; Applications are allowed to ignore the problem and
-truncate the filename, but must be prepared to handle duplicate or empty
+are encountered, they may be replaced with something appropriate for the
+current system.&nbsp; Applications should not ignore the problem and
+truncate the filename; if they do, they must be prepared to handle duplicate or empty
 filenames.</p>
 
 <p align="left">&nbsp;</p>
@@ -171,8 +179,7 @@ be simple filenames.</p>
 have subdirectories and which don't, which would allow it to disregard the
 fssep char when it can't be relevant for a record, but it's easier to
 let the fssep char's usefulness be self-evident.</p>
-<p align="left">(NOTE:
-as of v2.0.3, NufxLib rejects 0x00 as an fssep character.&nbsp; This is a bug.)</p>
+<p align="left">(NOTE: NufxLib v2.0.3 rejected 0x00 as an fssep character. This was a bug.)</p>
 
 <p align="left"><b>Creating:</b> When adding files directly from filesystems without subdirectories, use 0x00 as
 the fssep char.</p>
@@ -210,6 +217,9 @@ not meant to be significant when determining whether two records have the same
 filename.&nbsp; This becomes important when adding files (to test for
 duplicates), extracting files by name, and when attempting
 to display archive contents as a hierarchical tree.</p>
+<p>HFS files will use the Mac OS Roman character set, so a simple ASCII
+case conversion will be inadequate.  An HFS filename comparison routine must
+be used.</p>
 <p align="left">Applications
 should try to recognize that &quot;foo/bar&quot;, &quot;foo/BAR&quot;, and
 &quot;FOO/bar&quot; are the same file, but it's probably not worth
@@ -229,7 +239,8 @@ separator.&nbsp; Two names should be considered identical if each distinct path
 component matches, so &quot;foo/bar&quot; and &quot;foo:bar&quot; are identical
 if the separators are '/' and ':', respectively.&nbsp; Comparisons should be
 case-insensitive.<p align="left"><b>Adding/renaming:</b> Applications
-should prevent multiple records from having the same filename.
+should prevent multiple records from having the same case-insensitive filename.
+
 <p align="left">&nbsp;</p>
 <h3 align="left">Pre-sized or not pre-sized</h3>
 <p align="left">The specification declares that filename threads and comments
@@ -465,31 +476,30 @@ presumably have nonzero data in more places.</p>
 
 <p>Sometimes the option list is a little messed up, e.g. the size field
 says 36 bytes, but there's only space for 18 bytes in the record header.</p>
-<p>Unfortunately, when archiving files from an HFS volume under GS/OS,
-GSHK records the ProDOS type/auxtype rather than the full HFS file type
-and creator (likely because that's what GS/OS provides). The only way to
+<p>When archiving files from an HFS volume under GS/OS, GSHK records the
+ProDOS type/auxtype rather than the full HFS file type and creator,
+because that's what GS/OS provides. The only way to
 recover the original Mac Finder types is through the option list.</p>
 <p>Side note: the NuFX specification reversed the values of MFS and HFS
 in the file_sys_id enumeration.  In practice, GS/ShrinkIt
 correctly uses the GS/OS FST definitions: MFS=5, HFS=6.</p>
 <p><b>Opening:</b> Assume the option_size field is correct
 unless it exceeds attrib_count-2. If it's too large, clip it down to size.
-If the filesystem type is ProDOS or HFS, and the second 4 bytes look like
-ASCII, use the first 4 bytes of the option list data as the file type and
-the second 4 bytes as the creator.</p>
-<p><b>Creating:</b> For broadest compatibility it would be best to store
-a ProDOS type/auxtype in the record header, and generate a filesystem-specific
-option list with the HFS Finder types (i.e. 32 bytes for ProDOS or 36
-bytes for HFS).  For an HFS record, simply using the four-byte HFS types
-is allowed.</p>
+If the filesystem type is ProDOS or HFS, and the second 4 bytes are nonzero,
+use the first 4 bytes of the option list data as the file type and
+the second 4 bytes as the creator.  If a secondary test is desired to
+avoid garbage, the creator value is usually ASCII.</p>
+<p><b>Creating:</b> The specification says that applications should store
+whatever the OS gives them, which means putting a ProDOS type/auxtype in the
+record header, and generating a filesystem-specific option list with the
+HFS Finder types (i.e. 32 bytes for ProDOS or 36 bytes for HFS).  Simply
+storing the four-byte HFS types in the record header is not allowed.</p>
 <p><b>Updating:</b> Always output the actual record size. Do not propagate
 incorrect size values. Retaining option lists for ProDOS and HFS entries
 is required, since they may have the only copy of the original file type
 and creator.  Updates to the archive attributes that alter the file/aux
 type should usually retain the option list, since the purpose may be to
-improve ProDOS usability without losing the original type information.
-However, applications are allowed to delete the option list in this case,
-especially if it is storing the full HFS types in the record.</p>
+improve ProDOS usability without losing the original type information.</p>
 
 <p align="left">&nbsp;</p>
 <h3 align="left">Master EOF</h3>
