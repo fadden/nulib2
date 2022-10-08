@@ -11,4 +11,4 @@ A pre-built NuLib2 binary is available for x86 Windows.  For Linux and
 Mac OS X systems, you can download the source code and build it.
 
 More information, including full documentation for NuLib2 and NufxLib,
-can be found on https://www.nulib.com/ (or https://fadden.github.io/nulib2).
+can be found on https://nulib.com/ (or https://fadden.github.io/nulib2).
