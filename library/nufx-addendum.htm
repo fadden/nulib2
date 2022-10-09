@@ -199,8 +199,10 @@ disk images used for emulators is considered.&nbsp; At first glance, it seems
 useful to be able to store a hierarchy of disk images.&nbsp; In practice, such
 images would either be archived as a hierarchy of .PO files, or as an archive of
 .SDK archives.</p>
+<p>Ultimately, the disk volume name is embedded in the disk image itself. The
+name stored in the archive is purely decorative.</p>
 <p align="left"><b>Adding/renaming</b> Applications must
-strip any leading path components from disk image &quot;storage names&quot;.&nbsp;
+strip any leading path components from disk image &quot;storage names&quot;
 (The NuFX specification does explicitly forbid the use of a filesystem separator
 character in a disk volume name.)</p>
 <p align="left"><b>Extracting:</b>
@@ -272,30 +274,30 @@ For GSHK compatibility, the filename thread compThreadEOF must be the greater of
 free space remaining after a file is renamed.&nbsp; However, if the filename
 itself exceeds the buffer size and the thread must be rebuilt, the 8-byte
 padding should be added.</p>
+
 <p align="left">&nbsp;</p>
 <h3 align="left">Thread ordering</h3>
-<p align="left">The NuFX specification does not require that threads appear in
-any particular order.&nbsp; However, writing them in a certain order can make
-some operations significantly easier.</p>
+<p align="left">The NuFX specification specifies a general ordering for
+threads ("blocks must occur in the following fashion"), but doesn't indicate
+what should be done if they appear out of order.  Handling out-of-order
+threads isn't impossible, but it can be inconvenient.</p>
 <p align="left">For example, if an archive is being unpacked as it is received,
-it is important to know the filename before receiving the data.&nbsp; If the
+it is important to know the filename before receiving the data.  If the
 filename thread comes after the data threads, the application has to write the
 incoming data into a temp file, and then rename it later when the filename
-thread finally shows up.&nbsp; It would also be nice to be able to display file
+thread finally shows up.  It would also be nice to be able to display file
 comments as the file is being downloaded.</p>
 <p align="left"><b>Creating:</b> The filename thread must precede all other
-threads.&nbsp; The recommended (but not required) ordering for common thread
-types is:</p>
+threads.  The recommended ordering for common thread types is:</p>
 <ul>
   <li>Filename</li>
   <li>Message(s) (i.e. comments)</li>
-  <li>Data fork</li>
-  <li>Disk image</li>
-  <li>Resource fork</li>
+  <li>Data threads (data fork, resource fork, disk image)</li>
   <li>all other threads</li>
 </ul>
 <p align="left"><b>Extracting:</b> If the filename thread does not appear before
 the first data-class thread, the record may be ignored.</p>
+
 <p align="left">&nbsp;</p>
 <h3 align="left">Incompatible thread types</h3>
 <p align="left">There are some combinations of threads that must never appear in
@@ -329,8 +331,8 @@ systems.&nbsp; However, certain values are significant.</p>
 <ul>
   <li>
     <p align="left">For records with <b>only a data fork</b>, the storage type
-    must be one of 0, 1, 2, or 3.&nbsp; The value &quot;2&quot; is recommended
-    for applications that don't wish to mimic ProDOS behavior exactly.</li>
+    must be one of 0, 1, 2, or 3.  The specific choice is not useful to
+    anyone, but a nonzero value (say, 1) should be used.</li>
   <li>
     <p align="left">For records with <b>a resource fork</b>, the storage type
     must be &quot;5&quot; (ProDOS extended file).</li>
@@ -345,6 +347,102 @@ systems.&nbsp; However, certain values are significant.</p>
 not be used.</p>
 <p align="left">It is important to update the storage type as threads are added
 and deleted, so that it always accurately reflects the contents of the record.</p>
+<p>The spec seems to claim that HFS volumes have 524 bytes per block (though
+the assertion was weakened from "would" to "might" in the final version).
+This refers to the 12 "tag" bytes available on 3.5" floppies, which are
+accessible from Mac OS but not actually required by HFS.</p>
+
+<p>&nbsp;</p>
+<h3>GS/OS option lists and HFS file types</h3>
+<p>GS/OS was designed to work with a variety of different filesystems.
+Instead of trying to handle all conceivable file attributes explicitly,
+GS/OS returns filesystem-specific values in "option lists".  These can
+be provided to the get/set file info calls when copying files around.</p>
+<p>Files on HFS volumes have two four-byte values, called file type and
+creator, that identify the file contents.  These are part of the Macintosh
+Finder info structures, called FInfo and FXInfo.  Files copied from HFS
+to ProDOS may have this data stored in the extended key block of a forked
+file (see ProDOS technical note #25).  This appears as two 18-byte chunks,
+consisting of a size byte followed by a type byte, and then 16 bytes of
+FInfo or FXInfo data (which are defined in <i>Inside Macintosh: Macintosh
+Toolbox Essentials</i>, page 7-47).  To expose the data to applications,
+certain GS/OS calls pass an "option list" with the contents.  Most of
+the fields are uninteresting to anything but the Mac Finder on the system
+where the files were stored, so for our purposes the option list may be
+viewed simply as a way to preserve the file type and creator.</p>
+
+<p>Experiments with the GS/OS Exerciser reveal that the option list returned
+doesn't include the size/type bytes.  For an HFS file copied to ProDOS
+with GS/OS, the GetFileInfo call returns a 32-byte buffer that begins
+with FInfo.  When called on an HFS volume, the option list is 36 bytes,
+with the last four bytes set to 02 00 00 00.  GSHK appears to record these
+exactly as it receives them, which means the first four bytes hold the
+HFS file type, and the second four bytes hold the HFS creator, in
+big-endian byte order.  Because most of the fields only have meaning to the
+Macintosh finder, the rest of the data is zeroes.  Files archived from an
+HFS volume created by a Macintosh would presumably have nonzero data in
+more places.</p>
+<p>When archiving files from an HFS volume under GS/OS, GSHK records the
+ProDOS type/auxtype rather than the full HFS file type and creator,
+because that's what the GS/OS file info query returns. The only way to
+recover the original Mac Finder types is through the option list.</p>
+<p>Sometimes the option list found in a NuFX archive is a little messed up,
+e.g. the size field says 36 bytes, but there's only space for 18 bytes in
+the record header.</p>
+<p>Side note: the NuFX specification reversed the values of MFS and HFS
+in the file_sys_id enumeration.  In practice, GS/ShrinkIt
+correctly uses the GS/OS FST definitions: MFS=5, HFS=6.</p>
+<p><b>Opening:</b> Assume the option_size field is correct
+unless it exceeds attrib_count-2. If it's too large, clip it down to size.
+If the filesystem type is ProDOS or HFS, the option list is at least 16 bytes
+long, and the second 4 bytes are nonzero,
+use the first 4 bytes of the option list data as the file type and
+the second 4 bytes as the creator.  If a secondary test is desired to
+avoid garbage, the creator value is usually ASCII.</p>
+<p><b>Creating:</b> If a record has HFS type values, generate a
+filesystem-specific option list (32 bytes for ProDOS or 36 bytes for HFS)
+and store them there.</p>
+<p><b>Updating:</b> Always output the actual record size. Do not propagate
+incorrect size values. Retaining option lists for ProDOS and HFS entries
+is required, since they may have the only copy of the original file type
+and creator, but only if at least one of the first 8 bytes of the option
+list are nonzero.  Updates to the archive attributes that alter the file/aux
+type should usually retain the option list, since the purpose may be to
+improve ProDOS usability without losing the original type information.</p>
+
+<p>&nbsp;</p>
+<h3>ProDOS vs. HFS file types</h3>
+<p>The initial release of the specification stated that the HFS file type and
+creator should be stored in the record header.  The final version of the
+specification abdicates responsibility for defining the field, stating simply,
+"For ProDOS 8 or GS/OS, this field should always be what the operating system
+returns when asked".</p>
+<p>For reference, when an application asks GS/OS to get the information for
+a file on an HFS volume, it returns a ProDOS file type and aux type (usually
+BIN), and puts the HFS type and creator into an option list.  If this
+behavior defines the field, then this is how the types should be stored.</p>
+<p>However, the vague wording of the specification raises the possibility that
+a Mac OS-based archiver should store the file type and creator directly in
+the record header, because that's what "the operating system" returned.  The
+record header does not provide a way to define the source of the type values,
+so an extraction program attempting to set the file info would need to draw
+conclusions based on whether the types are small enough values to be valid
+for ProDOS.</p>
+<p>It's worth noting that files on an AppleShare volume have independent
+ProDOS and HFS file types.  When a ProDOS file is written to the AppleShare
+FST, Mac OS type and creator values are generated according to a scheme
+documented in the AppleShare FST public ERS document.  It's possible that a
+Mac archiver could store ProDOS file types as HFS file types that are
+actually ProDOS file types that must be decoded based on a collection of
+rules.</p>
+<p>To avoid ambiguity, we want to follow the GS/OS behavior, regardless of
+what the host operating system does.</p>
+<p><b>Creating:</b> store the ProDOS file type and aux type in the record
+header.  For files on HFS volumes, put a simple ProDOS type (BIN or TXT)
+in the record header, and put the file type and creator in an option list.</p>
+<p><b>Extracting:</b> if the file type and aux type do not fit in 8 and 16
+bits, respectively, treat them as values from HFS.</p>
+
 <p align="left">&nbsp;</p>
 <h3 align="left">Disk block size and block count</h3>
 <p align="left">For a compressed disk image, the &quot;storage_type&quot; and
@@ -449,58 +547,6 @@ proportional font, so there is no need to worry about formatting to preserve &qu
 comments.</p>
 <p align="left">&nbsp;</p>
 
-<h3>GS/OS option lists and HFS file types</h3>
-<p>Files on HFS volumes have two four-byte values, called file type and
-creator, that identify the file contents.  These are part of the Macintosh
-Finder info structures, called FInfo and FXInfo.  Files copied from HFS
-to ProDOS may have this data stored in the extended key block of a forked
-file (see ProDOS technical note #25).  This appears as two 18-byte chunks,
-consisting of a size byte followed by a type byte, and then 16 bytes of
-FInfo or FXInfo data (which are defined in <i>Inside Macintosh: Macintosh
-Toolbox Essentials</i>, page 7-47).  To expose the data to applications,
-certain GS/OS calls pass an "option list" with the contents.  Most of
-the fields are uninteresting to anything but the Mac Finder, so for our
-purposes the option list may be viewed simply as a way to preserve the
-file type and creator.</p>
-
-<p>Experiments with the GS/OS exerciser reveal that the option list doesn't
-include the size/type bytes.  For an HFS file copied to ProDOS with GS/OS,
-the GetFileInfo call returns a 32-byte buffer that begins with FInfo.
-When called on an HFS volume, the option list is 36 bytes, with the last
-four bytes set to 02 00 00 00.  GSHK appears to record these exactly as
-it receives them, which means the first four bytes hold the HFS file type,
-and the second four bytes hold the HFS creator.  Because most of the
-fields only have meaning to the Macintosh finder, the rest of the data is
-zeroes.  Files archived from an HFS volume created by a Macintosh would
-presumably have nonzero data in more places.</p>
-
-<p>Sometimes the option list is a little messed up, e.g. the size field
-says 36 bytes, but there's only space for 18 bytes in the record header.</p>
-<p>When archiving files from an HFS volume under GS/OS, GSHK records the
-ProDOS type/auxtype rather than the full HFS file type and creator,
-because that's what GS/OS provides. The only way to
-recover the original Mac Finder types is through the option list.</p>
-<p>Side note: the NuFX specification reversed the values of MFS and HFS
-in the file_sys_id enumeration.  In practice, GS/ShrinkIt
-correctly uses the GS/OS FST definitions: MFS=5, HFS=6.</p>
-<p><b>Opening:</b> Assume the option_size field is correct
-unless it exceeds attrib_count-2. If it's too large, clip it down to size.
-If the filesystem type is ProDOS or HFS, and the second 4 bytes are nonzero,
-use the first 4 bytes of the option list data as the file type and
-the second 4 bytes as the creator.  If a secondary test is desired to
-avoid garbage, the creator value is usually ASCII.</p>
-<p><b>Creating:</b> The specification says that applications should store
-whatever the OS gives them, which means putting a ProDOS type/auxtype in the
-record header, and generating a filesystem-specific option list with the
-HFS Finder types (i.e. 32 bytes for ProDOS or 36 bytes for HFS).  Simply
-storing the four-byte HFS types in the record header is not allowed.</p>
-<p><b>Updating:</b> Always output the actual record size. Do not propagate
-incorrect size values. Retaining option lists for ProDOS and HFS entries
-is required, since they may have the only copy of the original file type
-and creator.  Updates to the archive attributes that alter the file/aux
-type should usually retain the option list, since the purpose may be to
-improve ProDOS usability without losing the original type information.</p>
-
 <p align="left">&nbsp;</p>
 <h3 align="left">Master EOF</h3>
 <p align="left">For the most part, ShrinkIt correctly sets the MasterEOF field
@@ -554,27 +600,34 @@ got left behind.&nbsp; If a record has two filenames, they'd better have the
 same fssep char, or interpreting one of them will be impossible.&nbsp; (This is
 one of the reasons why it's important to clearly define which filename takes
 precedence in all circumstances.)</p>
+
 <h3 align="left">Files with zero or two CRCs</h3>
 <p align="left">The &quot;threadCRC&quot; field in the thread header block can
 have one of three meanings: nothing (v0, v1), the CRC of the compressed data
-(v2), or the CRC of the uncompressed data (v3).&nbsp; The version 2 meaning
-wasn't used in anything significant, and can be ignored.</p>
+(v2), or the CRC of the uncompressed data (v3). Version 2 records weren't
+generated by anything significant, and can be ignored.  (If you actually find
+an archive with v2 records, it's reasonable to just treat them as v1.)</p>
 <p align="left">Version 1 records generally have threads compressed with LZW/1
-data.&nbsp; The LZW/1 compression format includes a 16-bit CRC at the start of
-the thread.&nbsp; Version 3 records generally have threads compressed with LZW/2
-data, which does not include a CRC.</p>
-<p align="left">Applications like P8 ShrinkIt and NuLib creation v1 records and
+data. The LZW/1 compression format includes the 16-bit CRC of the uncompressed
+data at the start of the thread. Version 3 records generally have threads compressed
+with LZW/2 data, which does not include a CRC.</p>
+<p align="left">Applications like P8 ShrinkIt and NuLib create v1 records and
 compress with LZW/1, while GS/ShrinkIt and NuLib2 create v3 records and compress
-with LZW/2.&nbsp; This means that each compressed thread has exactly one CRC.&nbsp;
+with LZW/2. This means that each compressed thread has exactly one CRC.
+(Uncompressed data stored by P8 ShrinkIt has no CRC at all.)
 So what happens if you tell NuLib2 to create a new record with
 LZW/1, or tell it to add a new LZW/2 thread to an existing v1 record?</p>
-<p align="left">In one case, you end up with two CRCS; in the other, you end up
-with no CRC on your data at all.&nbsp; For some bizarre reason, the v3 thread
+<p align="left">In one case, you end up with two CRCs; in the other, you end up
+with no CRC on your data at all. Unfortunately, the v3 thread
 CRC is computed with a different initial value, so it is necessary to compute
-the CRC twice, not merely store the same value twice.</p>
-<p align="left">Please select your compression methods appropriately.&nbsp;
-Also, bear in mind that uncompressed data stored with P8 ShrinkIt has no CRC
-whatsoever.</p>
+the CRC twice for LZW/1 data, not merely store the same value twice.</p>
+<p>When replacing a data thread in an existing record, it's tempting to
+update the record to the latest (v3), but this may come at a cost.  For
+example, if the record has both resource and data forks, and only the data fork
+is being replaced, it would be necessary to uncompress the resource fork to
+calculate its uncompressed CRC.  Programs that rewrite records should be
+prepared to output v1 or v3.</p>
+
 <h3 align="left">Extra data in compressed threads</h3>
 <p align="left">ShrinkIt adds an extra byte at the end of all LZW compressed
 data, probably due to an off-by-one bug in the compression code.&nbsp; It turns
