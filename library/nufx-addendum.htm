@@ -24,7 +24,7 @@
 <!--msnavigation--><msnavigation border="0" cellpadding="0" cellspacing="0" dir="ltr" width="100%"><tr><!--msnavigation--><msnavigation valign="top"><msnavigation border="0" cellpadding="0" cellspacing="0" width="100%"><msnavigation border="0" cellpadding="0" cellspacing="0" dir="ltr" width="100%"><tr><msnavigation valign="top"><msnavigation border="0" cellpadding="0" cellspacing="0" width="100%"><msnavigation border="0" cellpadding="0" cellspacing="0" width="100%"><tr><msnavigation valign="top">
 
 
-<h6>NuFX Addendum - <b>By Andy McFadden - Last revised 2022/10/07</b></h6>
+<h6>NuFX Addendum - <b>By Andy McFadden - Last revised 2022/10/26</b></h6>
 <p align="left">This addendum clarifies and extends certain aspects of the
 <a href="FTN.e08002.htm"> NuFX specification</a>. This is not an
 &quot;official&quot; modification
@@ -128,10 +128,12 @@ with filenames in two places</h3>
 <p align="left">The old way of storing filenames, used by NuLib and old versions of ShrinkIt, was to
 put the filename in the record header.&nbsp; To facilitate renaming, the
 filename was moved into a thread.&nbsp; Thus, there are two possible locations
-where the filename may live, and no guarantee that only one will be used..<p align="left"><b>Creating:</b>
+where the filename may live, and no guarantee that only one will be used.
+<p align="left"><b>Creating:</b>
 Never put the filename in the record header when creating a new record.&nbsp;
 It's okay to leave existing records alone, but if an application has the
-opportunity to rewrite the record header, the record filename must be removed.<p align="left"><b>Extracting:</b>
+opportunity to rewrite the record header, the record filename must be removed.
+<p align="left"><b>Extracting:</b>
 The thread filename takes precedence over the record header filename.
 
 <p align="left">
@@ -156,7 +158,7 @@ truncate the filename; if they do, they must be prepared to handle duplicate or 
 filenames.</p>
 
 <p align="left">&nbsp;</p>
-<h3 align="left">File system separator characters</h3>
+<h3 align="left">Filesystem separator characters</h3>
 <p align="left">Every record header has a &quot;file system separator&quot;
 character (&quot;fssep&quot;) in the &quot;file_sys_info&quot; word.&nbsp; This
 is usually something like ':' for GS/OS or '/' for UNIX.&nbsp; It's necessary to
@@ -254,6 +256,7 @@ so such decisions must be based on the thread class and thread kind.</p>
 <p align="left">Filename threads and comment threads are pre-sized.&nbsp; All
 other threads are not pre-sized (including other members of the
 &quot;filename&quot; and &quot;message&quot; classes).</p>
+
 <p align="left">&nbsp;</p>
 <h3 align="left">Proper pre-size for filename threads</h3>
 <p align="left">ShrinkIt allocates a 32-byte pre-sized buffer for the
@@ -262,10 +265,17 @@ the filename exactly.&nbsp; If renaming files is considered useful, then the
 buffer should always be slightly larger than is needed to hold the
 filename.&nbsp; (Filenames longer than 32 characters are most likely the result
 of nested directories, so renaming the file itself is inhibited if the buffer
-length is an exact match.)
-<p align="left">Side note: GSHK appears to have a bug where it can't deal with
+length is an exact match.)</p>
+<!-- <p align="left">Side note: GSHK appears to have a bug where it can't deal with
 32-byte HFS filenames (e.g. &quot;foo:abcdefghijabcdefghijabcdefghijxy&quot;
-can't be added to an archive).&nbsp; Emulating this behavior is discouraged.
+can't be added to an archive). Emulating this behavior is discouraged.</p> -->
+<p>Side note: the specification does not specify a minimum or maximum length
+for a filename.  The specification notes that "GS/OS can create
+8,000-character filenames", so that seems safe to use as an upper bound.
+Zero-length filenames cannot be stored in a record header, because a length
+of zero indicates that the filename is in a thread, so it's reasonable to
+require that filenames be at least one character long.  A zero-length filename
+should be treated the same as a missing filename.</p>
 <p align="left"><b>Creating:</b> If GS/ShrinkIt compatibility is not important,
 all filenames should have at least 8 bytes of free space in the filename thread.&nbsp;
 For GSHK compatibility, the filename thread compThreadEOF must be the greater of
