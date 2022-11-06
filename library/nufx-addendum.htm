@@ -24,7 +24,7 @@
 <!--msnavigation--><msnavigation border="0" cellpadding="0" cellspacing="0" dir="ltr" width="100%"><tr><!--msnavigation--><msnavigation valign="top"><msnavigation border="0" cellpadding="0" cellspacing="0" width="100%"><msnavigation border="0" cellpadding="0" cellspacing="0" dir="ltr" width="100%"><tr><msnavigation valign="top"><msnavigation border="0" cellpadding="0" cellspacing="0" width="100%"><msnavigation border="0" cellpadding="0" cellspacing="0" width="100%"><tr><msnavigation valign="top">
 
 
-<h6>NuFX Addendum - <b>By Andy McFadden - Last revised 2022/10/26</b></h6>
+<h6>NuFX Addendum - <b>By Andy McFadden - Last revised 2022/11/06</b></h6>
 <p align="left">This addendum clarifies and extends certain aspects of the
 <a href="FTN.e08002.htm"> NuFX specification</a>. This is not an
 &quot;official&quot; modification
@@ -140,7 +140,7 @@ The thread filename takes precedence over the record header filename.
 &nbsp;<h3 align="left">Filename character set</h3>
 <p align="left">Filenames in NuFX archives use the Mac OS Roman character set,
 which is ASCII plus some symbols and the usual set of latin language characters
-(see <a href="http://www.unicode.org/Public/MAPPINGS/VENDORS/APPLE/ROMAN.TXT">
+(see <a href="https://www.unicode.org/Public/MAPPINGS/VENDORS/APPLE/ROMAN.TXT">
 Unicode definition</a>).&nbsp; The NuFX filename definition was intended to
 accommodate files from HFS volumes, which may contain any character except ':'.&nbsp;
 Control characters, including NUL ('\0'), were allowed but discouraged.
@@ -454,35 +454,45 @@ in the record header, and put the file type and creator in an option list.</p>
 bits, respectively, treat them as values from HFS.</p>
 
 <p align="left">&nbsp;</p>
-<h3 align="left">Disk block size and block count</h3>
-<p align="left">For a compressed disk image, the &quot;storage_type&quot; and
-&quot;extra_type&quot; fields take on a different meaning, notably the block
-size (typically 512) and block count (e.g. 280 for a 140K disk) of the disk.</p>
-<p align="left">These fields are more important than you might expect, because
-some older versions of ShrinkIt would set the thread EOF to a strange value like
-68096 (which, curiously enough, is 133 * 512).&nbsp; These same versions of
-ShrinkIt tended to leave the &quot;storage_type&quot; set to 2.&nbsp;
-Apparently, ShrinkIt just used extra_type * 512 as the uncompressed size when
-trying to figure out what sort of disk it had.&nbsp; An early version of
+<h3 align="left">Disk image size values</h3>
+<p>For a compressed disk image, the &quot;storage_type&quot; and
+&quot;extra_type&quot; fields take on different meanings: the extra_type
+field holds the block size (usually 512), and the extra_type field holds
+the block count (e.g. 280 for a 140KB disk).</p>
+<p>These fields are more important than you might expect, because
+ShrinkIt doesn't appear to set the thread EOF value for disk images.  (A quick
+test with ShrinkIt v3.4 on a 5.25" DOS disk yielded a thread EOF of zero,
+while GS/ShrinkIt v1.1 on a 3.5" ProDOS disk generated a mysterious
+thread EOF of $4a00.)
+Worse, some older versions of ShrinkIt tended to leave the
+&quot;storage_type&quot; set to 2.
+Apparently, ShrinkIt just uses extra_type * 512 as the uncompressed size when
+trying to figure out what sort of disk it has. An early version of
 GS/ShrinkIt went one step further: it used a block count of 280 with a block
 size of 256, resulting in archives that apparently held 70K disk images.</p>
-<p align="left">It is simple enough to disregard the thread EOF value, and
+<p>It is simple enough to disregard the thread EOF value, and
 replace the storage_type when it is absurdly small, but there is a deeper
-problem.&nbsp; If you delete a 140K disk image thread and replace it with an
-800K disk image thread, the block count stored in the extra_type no longer
-accurately reflects the contents of the record.&nbsp; (This linkage between the
+problem. If you delete a 140KB disk image thread and replace it with an
+800KB disk image thread, the block count stored in the extra_type no longer
+accurately reflects the contents of the record. (This linkage between the
 record header and the thread contents is the reason why this document forbids
 mixing of disk image threads with any other data-class thread, including other
 disk images.)</p>
-<p align="left"><b>Creating:</b> Applications must update the extra_type
-whenever a disk image thread is added.&nbsp; The value (storage_type *
-extra_type) must be equal to the uncompressed size.&nbsp; The application may
-wish to reject threads that are not a multiple of 512 bytes.</p>
-<p align="left"><b>Extracting:</b> The application must normalize storage_type
-to 512 if it is less than 16 (0x0f is the largest possible ProDOS storage
-type).&nbsp; The value storage_type * extra_type must then be used as the
-uncompressed size.&nbsp; If the uncompressed size is zero, the thread may be
-ignored.</p>
+<p>Because the length of the disk image thread can only be determined from
+the extra_type field, it is important for applications that support changing
+the file and aux types to prevent such changes in records with disk images.</p>
+<p><b>Creating:</b> Applications must update the record's storage_type and
+extra_type fields whenever a disk image thread is added. The value
+(storage_type * extra_type) must be equal to the uncompressed size.  The
+application should reject disk image files that are not a multiple of
+512 bytes.  For consistency with other applications, the thread EOF field
+should be zeroed.</p>
+<p><b>Extracting:</b> The application must ignore the thread EOF, and
+normalize storage_type to 512 if it is less than 16 (0x0f is the largest
+valid ProDOS storage type). The value (512 * extra_type) should be
+used as the uncompressed size. If the uncompressed size is zero, the
+thread may be ignored.</p>
+
 <p align="left">&nbsp;</p>
 <h3 align="left">Access permissions</h3>
 <p align="left">NuFX supports four boolean access permission flags (read, write,
@@ -542,34 +552,60 @@ for which no files are added to the archive.</p>
 thread is present.&nbsp; As noted in the NuFX specification, the application
 must also create any directories listed in the record's pathname that don't yet
 exist.</p>
+
 <p align="left">&nbsp;</p>
 <h3 align="left">Message thread format</h3>
 <p align="left">The specification says that message threads are ASCII text, but
-doesn't specify an EOL character.&nbsp; For the benefit of Apple II utilities,
-it's best to use a carriage return (ctrl-M).&nbsp; The comments are expected to
+doesn't specify an EOL character. For the benefit of Apple II utilities,
+it's best to use a carriage return (Ctrl+M). The comments are expected to
 be readable on 8-bit Apple IIs, so plain ASCII rather than Mac OS Roman should
 be used.</p>
 <p align="left"><b>Creating:</b> Convert any EOL markers to CR, and any
 non-ASCII characters (i.e. bytes with the high bit set) to ASCII.</p>
 <p align="left"><b>Extracting:</b> Assume that the comment may be using CR, LF,
-or CRLF, and convert as needed for display.&nbsp; GS/ShrinkIt used a
-proportional font, so there is no need to worry about formatting to preserve &quot;ASCII art&quot; in
-comments.</p>
-<p align="left">&nbsp;</p>
+or CRLF, and convert as needed for display. GS/ShrinkIt used a
+proportional font, so there is no need to worry about formatting to preserve
+&quot;ASCII art&quot; in comments.</p>
 
-<p align="left">&nbsp;</p>
-<h3 align="left">Master EOF</h3>
-<p align="left">For the most part, ShrinkIt correctly sets the MasterEOF field
-in the Master Header block.&nbsp; A very old version of ShrinkIt left it set to
+<p>&nbsp;</p>
+<h3>Message thread maximum length</h3>
+<p>Comments are rarely used, and when they are they tend to be fairly short.
+The contents are never compressed, aren't covered by a CRC, and aren't
+extracted to files, making them a bad way to convey vital information.
+Adding and editing the comment field was introduced with GS/ShrinkIt, which
+creates a pre-sized comment on the first entry in each batch.  The editor
+does not expand or reduce the length of the field, which is limited to
+1,000 bytes.  It does support longer comments created by other programs.</p>
+<p>It's convenient to assign a maximum possible length to comments, so that
+they can be manipulated by code that doesn't need to handle their maximum
+possible length of 4GB.  A cap of 64KB (same as ZIP) seems reasonable as an
+absolute maximum, considering likely content and what Apple II software can
+support.</p>
+<p><b>Creating:</b> Limit comments to 64KB.  Applications may establish a
+lower limit, but should allow them to be at least 1000 bytes.</p>
+<p><b>Updating:</b> Truncation of comments longer than 64KB is
+discouraged but allowed.</p>
+
+<p>&nbsp;</p>
+<h3>Master EOF</h3>
+<p>For the most part, ShrinkIt correctly sets the MasterEOF field
+in the Master Header block.  The field was introduced with version 1 of the
+header definition.  A very old version of ShrinkIt left it set to
 zero (this is the same version that completely omitted the filename for DOS 3.3
-disk images).&nbsp; GS/ShrinkIt appears to initialize it to 48 (the size of the
+disk images). GS/ShrinkIt appears to initialize it to 48 (the size of the
 MH block), and if the creation process is interrupted you can end up with a
 partial archive with a nonzero EOF.</p>
-<p align="left"><b>Opening:</b> Accept a MasterEOF of zero, but reject a
-MasterEOF of 48.&nbsp; Don't assume the MasterEOF is accurate.</p>
-<p align="left"><b>Updating:</b> Applications must write the correct MasterEOF
+<p>The master EOF is useful as a quick file truncation test, but provides
+no other value.  The record count in the header is more important.</p>
+<p><b>Opening:</b> Don't assume the master EOF is accurate.  Walk through the
+list of records to determine the actual end-of-file before appending new
+records.</p>
+<p><b>Updating:</b> Applications must write the correct MasterEOF
 value if an archive is modified.</p>
+
+<p>&nbsp;</p>
 <hr>
+
 <h2 align="left">Extensions</h2>
 <p align="left">Unofficial extensions to the NuFX specification.&nbsp; Anyone
 working with NuFX archives should take heed.</p>
@@ -578,14 +614,14 @@ working with NuFX archives should take heed.</p>
 following thread format values have been added:</p>
 <ul>
   <li>
-    <p align="left">0x0006 - deflate.&nbsp; The thread contains data conforming
-    to RFC 1951 (deflate1.3 specification).&nbsp; A more practical way of
-    putting it is it contains exactly the data that zlib v1.1.4 outputs.&nbsp; Visit <a href="http://www.zlib.org/">http://www.zlib.org/</a>
-    for more details.</li>
+    <p align="left">0x0006 - deflate. The thread contains data conforming
+    to RFC 1951 (deflate 1.3 specification), which is the compression format
+    used by ZIP and gzip.  The canonical implementation is "zlib".
+    Visit <a href="https://zlib.net/">zlib.net</a> for more details.</li>
   <li>
     <p align="left">0x0007 - bzip2.&nbsp; The thread contains BWT+Huffman
-    compressed data as output by Julian Seward's &quot;libbz2&quot; v1.0.2.&nbsp; Visit
-    <a href="http://sources.redhat.com/bzip2/">http://sources.redhat.com/bzip2/</a>
+    compressed data as output by &quot;libbz2&quot;. Visit
+    <a href="https://sourceware.org/bzip2/">sourceware.org/bzip2</a>
     for more information.</li>
 </ul>
 <p align="left">Support for these formats is nonexistent on the Apple II, so
@@ -656,20 +692,22 @@ problems, but can make you wonder where all the extra bits came from.</p>
 <p align="left">The SQ compression algorithm, as implemented by Don Elton's SQ3,
 appears to add an extra 0xff to the end of the compressed data.&nbsp; It can
 safely be ignored.</p>
+
 <h3 align="left">Preserving BXY and SEA wrappers</h3>
 <p align="left">Preserving BXY wrappers is pretty easy, since the Binary II
 format is well documented.&nbsp; Updating block counts and file lengths is all
 that is required.</p>
-<p align="left">Preserving SEA wrappers is a little harder, since (as far as I
-can tell) there is no documentation on the format.&nbsp; A little
-experimentation shows that the SEA header is always 12005 bytes long, and the
-only part that changes from file to file is a short piece right before the NuFX
-archive begins.</p>
-<p align="left">It is necessary to update the file length in three different
-places, all right next to each other, one of which is offset by 64 bytes.&nbsp;
-I would guess the header allows for more than one archive to be present, but
-since such things have never actually been created, the possibility can be
-ignored.</p>
+<p>Preserving SEA wrappers is a little more obscure, since there
+is no documentation on the format.  A bit of reverse engineering reveals that
+SEA files are OMF executables with two segments.  The first segment holds the
+extraction code, and is the same for all archives.  The second holds the NuFX
+data, and requires that a few length values in the segment header be adjusted.
+Also, to be correct, the file must have a $00 byte appended after the NuFX
+data (it's an OMF "END" opcode).</p>
+<p>The archives have a minor bug: an offset field in the header is off by one,
+so actually loading the segment in GS/OS would likely fail.  The segment
+header has the "skip" flag set, though, so this isn't a problem in practice.</p>
+
 <h3 align="left">Y2K</h3>
 <p align="left">The NuFX standard says that the Date/Time format is the same as
 that returned by the IIgs ReadTimeHex toolbox call.&nbsp; That call returns the
@@ -682,10 +720,10 @@ also accept the year 0.&nbsp; However, if you find a Date/Time with zero in all
 useful fields (second, minute, hour, day, month, year), treat it as an
 unspecified date rather than midnight of January 1, 2000.</p>
 <hr>
-<p>This document is Copyright &copy; 2000-2004 by <a href="http://www.fadden.com/">Andy
+<p>This document is Copyright &copy; 2000-2004 by <a href="https://www.fadden.com/">Andy
 McFadden</a>.&nbsp; All Rights Reserved.</p>
 <p>The latest version can be found on the NuLib web site at
-<a href="http://www.nulib.com/">http://www.nulib.com/</a>.</p>
+<a href="https://www.nulib.com/">https://www.nulib.com/</a>.</p>
 </td></tr></table></td></tr></table></td></tr></table></td></tr></table><!--msnavigation--></td></tr><!--msnavigation--></table><!--msnavigation--></td></tr><!--msnavigation--></table></body>
 
 </html>
