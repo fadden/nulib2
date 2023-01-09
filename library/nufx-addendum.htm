@@ -83,22 +83,24 @@ to each record, but this language was removed from later versions.</p>
 created.&nbsp; All records must have at least one thread.</p>
 <p align="left"><b>Extracting: </b>Empty records should be ignored.</p>
 <p align="left">&nbsp;</p>
+
 <h3 align="left">Records with only a filename thread</h3>
 <p align="left">GS/ShrinkIt v1.1 has a bug that prevents it from creating an empty
 data thread when asked to add a zero-byte file.&nbsp; This results in a thread
 with a filename and nothing else.&nbsp; (If it was the first new record added,
-it will have an empty comment thread as well.)<p align="left">There is no valid
-reason for deliberately creating such a file.
+it will have an empty comment thread as well.)</p>
+<p>GS/ShrinkIt does nothing when asked to extract records without threads.</p>
 <p align="left"><b>Creating:</b> Records composed solely of a filename thread
-must not be created.
+must not be created.</p>
 <p align="left"><b>Extracting:</b> Records with nothing but a filename thread
 should be ignored.&nbsp; <i>For GSHK v1.1 bug compatibility</i>: if a record has a filename
 thread, and no other threads except &quot;message&quot; threads (i.e. no data
 threads or control threads), then a zero-byte data fork file should be
 created.&nbsp; Otherwise, the record should be ignored.&nbsp; If the ProDOS
 storage type field indicates an extended file, a zero-byte resource fork should
-also be created.
-<p align="left">&nbsp;
+also be created.</p>
+<p align="left">&nbsp;</p>
+
 <h3 align="left">Records with no filename</h3>
 <p align="left">A record without a filename thread is a curious beast.&nbsp;
 Ideally, there wouldn't be any such thing as a filename thread, since it doesn't
