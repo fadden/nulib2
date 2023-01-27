@@ -4033,7 +4033,7 @@ else
             int count;
             char buf[8];
             count = sprintf(buf, "123");    /* should return three */
-            exit(count != 3);
+            return count != 3;
         }
 
 _ACEOF
