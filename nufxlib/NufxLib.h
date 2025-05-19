@@ -224,6 +224,7 @@ typedef enum NuThreadFormat {
     kNuThreadFormatLZC16        = 0x0005,
     kNuThreadFormatDeflate      = 0x0006,   /* NOTE: not in NuFX standard */
     kNuThreadFormatBzip2        = 0x0007,   /* NOTE: not in NuFX standard */
+    kNuThreadFormatZX0          = 0x0008,   /* NOTE: not in NuFX standard */
 } NuThreadFormat;
 
 
@@ -323,6 +324,7 @@ enum NuValueValue {
     kNuCompressLZC16            = 15,
     kNuCompressDeflate          = 16,
     kNuCompressBzip2            = 17,
+    kNuCompressZX0              = 18,
 
     /* for kNuValueEOL */
     kNuEOLUnknown               = 50,
@@ -732,6 +734,7 @@ typedef enum NuFeature {
     kNuFeatureCompressLZC = 3,          /* kNuThreadFormatLZC12 and LZC16 */
     kNuFeatureCompressDeflate = 4,      /* kNuThreadFormatDeflate */
     kNuFeatureCompressBzip2 = 5,        /* kNuThreadFormatBzip2 */
+    kNuFeatureCompressZX0 = 6,          /* kNuThreadFormatZX0 */
 } NuFeature;
 
 
