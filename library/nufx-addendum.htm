@@ -24,9 +24,11 @@
 <!--msnavigation--><msnavigation border="0" cellpadding="0" cellspacing="0" dir="ltr" width="100%"><tr><!--msnavigation--><msnavigation valign="top"><msnavigation border="0" cellpadding="0" cellspacing="0" width="100%"><msnavigation border="0" cellpadding="0" cellspacing="0" dir="ltr" width="100%"><tr><msnavigation valign="top"><msnavigation border="0" cellpadding="0" cellspacing="0" width="100%"><msnavigation border="0" cellpadding="0" cellspacing="0" width="100%"><tr><msnavigation valign="top">
 
 
-<h6>NuFX Addendum - <b>By Andy McFadden - Last revised 2022/11/06</b></h6>
+<h6>NuFX Addendum - By Andy McFadden - <b>Last revised 2025/05/19</b></h6>
+
 <p align="left">This addendum clarifies and extends certain aspects of the
-<a href="FTN.e08002.htm"> NuFX specification</a>. This is not an
+<a href="FTN.e08002.htm"> NuFX specification</a>, which defines an archive
+format designed for use with Apple II computers. This is not an
 &quot;official&quot; modification
 of the original document - it has not been reviewed and approved by
 the original author - but anyone developing NuFX utilities would do
@@ -58,8 +60,8 @@ approach is letter-by-letter ("en you eff ecks"), another is minimal-syllable
 <p align="left">Originally, only &quot;.SHK&quot; was used to represent a NuFX
 archive.&nbsp; Over time, a convention of using &quot;.SDK&quot; to represent
 archives with a single disk image in them has arisen.&nbsp; This is very
-convenient for emulators on systems that rely on the file extension (e.g.
-Windows), so use of &quot;.SDK&quot; is encouraged.</p>
+convenient for emulators that rely on the file extension,
+so use of &quot;.SDK&quot; is encouraged.</p>
 
 <p align="left">&nbsp;</p>
 <h3 align="left">Archives with no records</h3>
@@ -621,12 +623,17 @@ following thread format values have been added:</p>
     used by ZIP and gzip.  The canonical implementation is "zlib".
     Visit <a href="https://zlib.net/">zlib.net</a> for more details.</li>
   <li>
-    <p align="left">0x0007 - bzip2.&nbsp; The thread contains BWT+Huffman
+    <p align="left">0x0007 - bzip2. The thread contains BWT+Huffman
     compressed data as output by &quot;libbz2&quot;. Visit
     <a href="https://sourceware.org/bzip2/">sourceware.org/bzip2</a>
     for more information.</li>
+  <li>
+    <p align="left">0x0008 - ZX0. The thread contains ZX0 compressed
+    data, using the version 2 format.  See
+    <a href="https://github.com/einar-saukas/ZX0">the project</a> for
+    details.</li>
 </ul>
-<p align="left">Support for these formats is nonexistent on the Apple II, so
+<p align="left">These formats are not supported by ShrinkIt on the Apple II, so
 they should not be used except in situations where compatibility is unimportant
 (e.g. collections of disk archives for use with A2 emulators).</p>
 
@@ -644,7 +651,7 @@ while not bugs, are worth noting.</p>
 <p align="left">Originally, the filename was stored in the record header, so it
 made sense that the filename separator character (&quot;fssep char&quot;) should
 also be there.&nbsp; When the filenames were moved into threads, the fssep char
-got left behind.&nbsp; If a record has two filenames, they'd better have the
+got left behind.&nbsp; If a record has two filenames, they must have the
 same fssep char, or interpreting one of them will be impossible.&nbsp; (This is
 one of the reasons why it's important to clearly define which filename takes
 precedence in all circumstances.)</p>
@@ -706,9 +713,11 @@ extraction code, and is the same for all archives.  The second holds the NuFX
 data, and requires that a few length values in the segment header be adjusted.
 Also, to be correct, the file must have a $00 byte appended after the NuFX
 data (it's an OMF "END" opcode).</p>
-<p>The archives have a minor bug: an offset field in the header is off by one,
-so actually loading the segment in GS/OS would likely fail.  The segment
-header has the "skip" flag set, though, so this isn't a problem in practice.</p>
+<p>The generated executables have a minor bug: an offset field in the header
+is off by one, so actually loading the segment in GS/OS would likely fail.
+The segment header has the "skip" flag set, though, so this isn't a problem
+in practice.  More details
+<a href="https://github.com/fadden/CiderPress2/blob/main/DiskArc/Arc/NuFX-notes.md#wrappers">here</a>.
 
 <h3 align="left">Y2K</h3>
 <p align="left">The NuFX standard says that the Date/Time format is the same as
@@ -721,10 +730,12 @@ for the year 2000 instead of 100.</p>
 also accept the year 0.&nbsp; However, if you find a Date/Time with zero in all
 useful fields (second, minute, hour, day, month, year), treat it as an
 unspecified date rather than midnight of January 1, 2000.</p>
+
 <hr>
-<p>This document is Copyright &copy; 2000-2004 by <a href="https://www.fadden.com/">Andy
+
+<p>This document is Copyright &copy; 2000-2025 by <a href="https://www.fadden.com/">Andy
 McFadden</a>.&nbsp; All Rights Reserved.</p>
-<p>The latest version can be found on the NuLib web site at
+<p>The latest version of this document can be found on the NuLib web site at
 <a href="https://www.nulib.com/">https://www.nulib.com/</a>.</p>
 </td></tr></table></td></tr></table></td></tr></table></td></tr></table><!--msnavigation--></td></tr><!--msnavigation--></table><!--msnavigation--></td></tr><!--msnavigation--></table></body>
 
